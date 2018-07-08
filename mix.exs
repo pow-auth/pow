@@ -8,6 +8,7 @@ defmodule Authex.MixProject do
       elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env() == :prod,
+      compilers: [:phoenix] ++ Mix.compilers,
       deps: deps()
     ]
   end
@@ -22,7 +23,8 @@ defmodule Authex.MixProject do
     [
       {:plug, "~> 1.6", optional: true},
       {:uuid, "~> 1.0"},
-      {:phoenix, "~> 1.3", optional: true}
+      {:phoenix, "~> 1.3", optional: true},
+      {:phoenix_html, "~> 2.11", only: [:test, :dev]},
     ]
   end
 
