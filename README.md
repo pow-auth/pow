@@ -1,15 +1,77 @@
 # Authex
 
-Authex is a flexible authentication solution for Phoenix and Plug based apps.
+Authex is a highly flexible and extendable authentication solution for Phoenix and Plug based apps.
 
 ## Features
 
+* Per Endpoint/Plug customization
 * User registration
 * Email confirmation
 * Extendable
-* Session user authentication
+* Session authentication
 * I18n
-* Nested configuration level (ideal for apps with separate user tables)
+
+## Installation
+
+Add Authex to your list of dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    # ...
+    {:authex, "~> 0.1"}
+    # ...
+  ]
+end
+```
+
+Run `mix deps.get` to install it.
+
+## Getting started
+
+To install necessary templates, migrations and ecto user schema:
+
+```bash
+mix authex.install
+```
+
+Set up routes to enable session based authentication:
+
+```elixir
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
+  use Authex.Router
+
+  pipeline :browser do
+    # ...
+    use Authex.Authorization.Plug.Session.Plug.Session,
+      user_mod: MyApp.User
+  end
+
+  pipeline :protected do
+    use Authex.Authroization.Plug.EnsureAuthenticated
+  end
+
+  scope "/", MyAppWeb do
+    pipe_through :browser
+    authex_routes()
+  end
+
+  scope "/", MyAppWeb do
+    pipe_through [:browser, :protected]
+
+    # Routes that requires a user has authenticated.
+  end
+end
+```
+
+That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
+
+Authex is highly customizable, and created with multiple configurations in mind (a common use case would be umbrella apps). The plug configuration options takes priority over any environment configuration.
+
+## Migrating from Coherence
+
+If you've previously used Coherence, the migration is simple. You'll have to remove all coherence files such as templates, views, and mailers, and remove all file modifications such as `config.exs`, `user.ex`, etc. After this, you can just follow the steps in **Getting started**, and then customize your configuration. Authex use your existing `User` module.
 
 ## Plugs
 
