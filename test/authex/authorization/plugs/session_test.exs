@@ -19,7 +19,7 @@ defmodule Authex.Authorization.Plug.SessionTest do
   end
 
   setup do
-    conn = :get |> ConnHelpers.conn("/") |> ConnHelpers.with_encrypted_session()
+    conn = :get |> ConnHelpers.conn("/") |> ConnHelpers.with_session()
 
     {:ok, %{conn: conn}}
   end
