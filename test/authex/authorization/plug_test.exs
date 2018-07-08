@@ -3,7 +3,9 @@ defmodule Authex.Authorization.PlugTest do
   doctest Authex
 
   alias Plug.Conn
-  alias Authex.Authorization.{Plug, Plug.ConfigError, Plug.Session}
+  alias Authex.{Authorization.Plug,
+                Authorization.Plug.Session,
+                Config.ConfigError}
   alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UserMock}
 
   @default_config [
