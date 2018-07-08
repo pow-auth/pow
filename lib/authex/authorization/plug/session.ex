@@ -19,7 +19,7 @@ defmodule Authex.Authorization.Plug.Session do
 
   @spec call(Conn.t(), Keyword.t()) :: Conn.t()
   def call(conn, config) do
-    conn = Plug.put_config(conn, config)
+    conn = Plug.put_config(conn, Keyword.put(config, :mod, __MODULE__))
 
     conn
     |> Plug.current_user()

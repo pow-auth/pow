@@ -32,7 +32,7 @@ defmodule Authex.Authorization.Plug.SessionTest do
     conn = Session.call(conn, @default_opts)
 
     assert is_nil(conn.assigns[:current_user])
-    assert conn.private[:authex_config] == @default_opts
+    assert conn.private[:authex_config] == Keyword.put(@default_opts, :mod, Session)
   end
 
   test "call/2 with assigned current_user", %{conn: conn} do
