@@ -21,7 +21,8 @@ defmodule Authex.MixProject do
   defp deps do
     [
       {:plug, "~> 1.6", optional: true},
-      {:uuid, "~> 1.0"}
+      {:uuid, "~> 1.0"},
+      {:phoenix, "~> 1.3", optional: true}
     ]
   end
 
