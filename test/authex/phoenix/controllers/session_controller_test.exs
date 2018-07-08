@@ -1,7 +1,6 @@
 defmodule Authex.Phoenix.SessionControllerTest do
   use Authex.Test.Phoenix.ConnCase
   alias Authex.Authorization.Plug
-  alias Authex.Test.Phoenix.Router
 
   describe "new/2" do
     test "shows", %{conn: conn} do
