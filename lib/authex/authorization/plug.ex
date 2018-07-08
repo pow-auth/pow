@@ -3,7 +3,8 @@ defmodule Authex.Authorization.Plug do
   Authorization methods for Plug.
   """
   alias Plug.Conn
-  alias Authex.Config
+  alias Authex.{Authentication, Config}
+
   defmodule ConfigError do
     defexception [:message]
   end
@@ -39,7 +40,20 @@ defmodule Authex.Authorization.Plug do
     private[@private_config_key] || raise_no_config()
   end
 
+  @spec authenticate_user(Conn.t(), map()) :: {:ok, map()} | {:error, term()}
+  def authenticate_user(conn, params) do
+    conn
+    |> fetch_config()
+    |> Config.get(:user_mod, nil)
+    |> Kernel.||(raise_no_user_mod())
+    |> Authentication.authenticate(params)
+  end
+
   defp raise_no_config() do
     raise __MODULE__.ConfigError, message: "Authex configuration not found. Please set the Authex.Authorization.Plug.Session plug beforehand."
+  end
+
+  defp raise_no_user_mod() do
+    raise __MODULE__.ConfigError, message: "Can't find user module. Please add the correct user module by setting the :user_mod config value."
   end
 end
