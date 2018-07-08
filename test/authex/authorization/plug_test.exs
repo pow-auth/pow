@@ -3,16 +3,15 @@ defmodule Authex.Authorization.PlugTest do
   doctest Authex
 
   alias Plug.Conn
-  alias Authex.Authorization.{Plug, Plug.ConfigError}
+  alias Authex.Authorization.{Plug, Plug.ConfigError, Plug.Session}
+  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UserMock}
 
-  @default_config [current_user_assigns_key: :current_user, user_mod: __MODULE__.User]
-  @admin_config [current_user_assigns_key: :current_admin_user, user_mod: __MODULE__.User]
-
-  defmodule User do
-    def authenticate(%{"email" => "test@example.com", "password" => "secret"}), do: {:ok, %{id: 1}}
-    def authenticate(%{"email" => "test@example.com"}), do: {:error, :invalid_password}
-    def authenticate(_params), do: {:error, :not_found}
-  end
+  @default_config [
+    current_user_assigns_key: :current_user,
+    user_mod: UserMock,
+    session_store: CredentialsCacheMock
+  ]
+  @admin_config Keyword.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
   test "current_user/1" do
     assert_raise ConfigError, "Authex configuration not found. Please set the Authex.Authorization.Plug.Session plug beforehand.", fn ->
@@ -46,9 +45,18 @@ defmodule Authex.Authorization.PlugTest do
   end
 
   test "authenticate_user/2" do
-    assert Plug.authenticate_user(conn(), %{"email" => "test@example.com", "password" => "secret"}) == {:ok, %{id: 1}}
-    assert Plug.authenticate_user(conn(), %{}) == {:error, :not_found}
-    assert Plug.authenticate_user(conn(), %{"email" => "test@example.com"}) == {:error, :invalid_password}
+    CredentialsCacheMock.init()
+
+    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    refute conn.private[:plug_session]["auth"]
+    refute Plug.current_user(conn)
+
+    assert {:ok, loaded_conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert Plug.current_user(loaded_conn) == %{id: 1}
+    assert loaded_conn.private[:plug_session]["auth"]
+
+    assert Plug.authenticate_user(conn, %{}) == {:error, :not_found}
+    assert Plug.authenticate_user(conn, %{"email" => "test@example.com"}) == {:error, :invalid_password}
   end
 
   test "authenticate_user/2 with missing user_mod" do
@@ -61,6 +69,21 @@ defmodule Authex.Authorization.PlugTest do
     assert_raise UndefinedFunctionError, fn ->
       Plug.authenticate_user(conn(user_mod: Invalid), %{})
     end
+  end
+
+  test "clear_authenticated_user/1" do
+    CredentialsCacheMock.init()
+
+    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert Plug.current_user(conn) == %{id: 1}
+    assert session_id = conn.private[:plug_session]["auth"]
+    assert CredentialsCacheMock.get(nil, session_id) == %{id: 1}
+
+    conn = Plug.clear_authenticated_user(conn)
+    refute Plug.current_user(conn)
+    refute conn.private[:plug_session]["auth"]
+    assert CredentialsCacheMock.get(nil, session_id) == :not_found
   end
 
   defp conn(config \\ @default_config) do

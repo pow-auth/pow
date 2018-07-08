@@ -40,13 +40,26 @@ defmodule Authex.Authorization.Plug do
     private[@private_config_key] || raise_no_config()
   end
 
-  @spec authenticate_user(Conn.t(), map()) :: {:ok, map()} | {:error, term()}
+  @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, atom()}
   def authenticate_user(conn, params) do
-    conn
-    |> fetch_config()
-    |> Config.get(:user_mod, nil)
-    |> Kernel.||(raise_no_user_mod())
+    config   = fetch_config(conn)
+    mod      = config[:mod]
+    user_mod = Config.get(config, :user_mod, nil) || raise_no_user_mod()
+
+    user_mod
     |> Authentication.authenticate(params)
+    |> case do
+      {:ok, user}     -> {:ok, mod.create(conn, user)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec clear_authenticated_user(Conn.t()) :: Conn.t()
+  def clear_authenticated_user(conn) do
+    config = fetch_config(conn)
+    mod    = config[:mod]
+
+    mod.delete(conn)
   end
 
   defp raise_no_config() do

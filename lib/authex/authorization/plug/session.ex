@@ -36,7 +36,10 @@ defmodule Authex.Authorization.Plug.Session do
 
     delete(conn)
     store.create(config, key, user)
-    Conn.put_session(conn, session_key, key)
+
+    conn
+    |> Conn.put_session(session_key, key)
+    |> Plug.assign_current_user(user, config)
   end
 
   @spec delete(Conn.t()) :: Conn.t()
@@ -47,7 +50,10 @@ defmodule Authex.Authorization.Plug.Session do
     session_key = session_key(config)
 
     store.delete(config, key)
-    Conn.delete_session(conn, session_key)
+
+    conn
+    |> Conn.delete_session(session_key)
+    |> Plug.assign_current_user(nil, config)
   end
 
   defp maybe_fetch_from_session(nil, conn, config) do
