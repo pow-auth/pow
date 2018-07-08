@@ -20,13 +20,13 @@ defmodule Authex.Phoenix.ErrorHandlerTest do
     conn = ErrorHandler.call(conn, :not_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/"
-    assert ConnTest.get_flash(conn, :error) == "You're not authenticated"
+    assert ConnTest.get_flash(conn, :error) == "You're not authenticated."
   end
 
   test "call/2 :already_authenticated", %{conn: conn} do
     conn = ErrorHandler.call(conn, :already_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/"
-    assert ConnTest.get_flash(conn, :error) == "You're already authenticated"
+    assert ConnTest.get_flash(conn, :error) == "You're already authenticated."
   end
 end
