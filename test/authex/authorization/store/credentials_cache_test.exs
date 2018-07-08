@@ -15,16 +15,21 @@ defmodule Authex.Authorization.Plug.CredentialsCacheTest do
     refute :ets.info(CredentialsCache) == :undefined
   end
 
-  test "can push and retrieve values" do
+  test "can put, get and delete records" do
     {:ok, _pid} = CredentialsCache.start_link(@default_config)
 
     assert CredentialsCache.get(@default_config, "key") == :not_found
+
     CredentialsCache.put(@default_config, "key", "value")
     :timer.sleep(100)
     assert CredentialsCache.get(@default_config, "key") == "value"
+
+    CredentialsCache.delete(@default_config, "key")
+    :timer.sleep(100)
+    assert CredentialsCache.get(@default_config, "key") == :not_found
   end
 
-  test "values auto purge" do
+  test "records auto purge" do
     {:ok, _pid} = CredentialsCache.start_link(@default_config)
 
     config = Keyword.put(@default_config, :credentials_cache_ttl, 100)

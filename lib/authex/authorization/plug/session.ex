@@ -26,6 +26,29 @@ defmodule Authex.Authorization.Plug.Session do
     |> maybe_fetch_from_session(conn, config)
   end
 
+  @spec create(Conn.t(), any()) :: Conn.t()
+  def create(conn, user) do
+    key           = UUID.uuid1()
+    config        = Plug.fetch_config(conn)
+    session_key   = session_key(config)
+    store         = store(config)
+
+    delete(conn)
+    store.create(config, key, user)
+    Conn.put_session(conn, session_key, key)
+  end
+
+  @spec delete(Conn.t()) :: Conn.t()
+  def delete(conn) do
+    config      = Plug.fetch_config(conn)
+    key         = Conn.get_session(conn, session_key(config))
+    store       = store(config)
+    session_key = session_key(config)
+
+    store.delete(config, key)
+    Conn.delete_session(conn, session_key)
+  end
+
   defp maybe_fetch_from_session(nil, conn, config) do
     case get_session(conn, config) do
       :not_found -> conn

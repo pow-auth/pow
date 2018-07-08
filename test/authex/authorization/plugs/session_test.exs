@@ -16,6 +16,10 @@ defmodule Authex.Authorization.Plug.SessionTest do
   defmodule CredentialsCacheMock do
     def get(_config, "token"), do: "cached"
     def get(_config, _token), do: :not_found
+
+    def delete(_config, _token), do: nil
+
+    def create(_config, _token, _value), do: nil
   end
 
   setup do
@@ -53,5 +57,31 @@ defmodule Authex.Authorization.Plug.SessionTest do
            |> Session.call(@default_opts)
 
     assert is_nil(conn.assigns[:current_user])
+  end
+
+  test "create/2 creates new session id", %{conn: conn} do
+    conn = conn
+           |> Session.call(@default_opts)
+           |> Session.create(%{id: 1})
+
+    session_id = conn.private[:plug_session]
+
+    assert session_id != %{}
+
+    conn = Session.create(conn, %{id: 1})
+
+    assert conn.private[:plug_session] != session_id
+  end
+
+  test "delete/1 removes session id", %{conn: conn} do
+    conn = conn
+           |> Session.call(@default_opts)
+           |> Session.create(%{id: 1})
+
+    assert conn.private[:plug_session] != %{}
+
+    conn = Session.delete(conn)
+
+    assert conn.private[:plug_session] == %{}
   end
 end

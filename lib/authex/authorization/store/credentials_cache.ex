@@ -24,6 +24,11 @@ defmodule Authex.Authorization.Store.CredentialsCache do
     GenServer.cast(__MODULE__, {:cache, config, key, value})
   end
 
+  @spec delete(Keyword.t(), binary()) :: :ok
+  def delete(config, key) do
+    GenServer.cast(__MODULE__, {:delete, config, key})
+  end
+
   @spec get(Keyword.t(), binary()) :: any() | :not_found
   def get(config, key), do: table_get(config, key)
 
@@ -44,6 +49,14 @@ defmodule Authex.Authorization.Store.CredentialsCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
+  @spec handle_cast({:delete, Keyword.t(), binary()}, map()) :: {:noreply, map()}
+  def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
+    invalidators = clear_invalidator(invalidators, key)
+    table_delete(config, key)
+
+    {:noreply, %{state | invalidators: invalidators}}
+  end
+
   @spec handle_info({:invalidate, Keyword.t(), binary()}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, state) do
     table_delete(config, key)
@@ -53,14 +66,19 @@ defmodule Authex.Authorization.Store.CredentialsCache do
   defp update_invalidators(config, invalidators, key) do
     ttl = Config.get(config, :credentials_cache_ttl, @default_ttl)
 
+    invalidators = clear_invalidator(invalidators, key)
+    invalidator = Process.send_after(self(), {:invalidate, config, key}, ttl)
+
+    Map.put(invalidators, key, invalidator)
+  end
+
+  defp clear_invalidator(invalidators, key) do
     case Map.get(invalidators, key) do
       nil         -> nil
       invalidator -> Process.cancel_timer(invalidator)
     end
 
-    invalidator = Process.send_after(self(), {:invalidate, config, key}, ttl)
-
-    Map.put(invalidators, key, invalidator)
+    Map.drop(invalidators, [key])
   end
 
   defp table_get(config, key) do
