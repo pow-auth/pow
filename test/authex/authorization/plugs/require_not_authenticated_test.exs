@@ -15,7 +15,7 @@ defmodule Authex.Authorization.Plug.RequireNotAuthenticatedTest do
   end
 
   defmodule ErrorHandler do
-    def call(conn, :not_authenticated) do
+    def call(conn, :already_authenticated) do
       Conn.put_private(conn, :authenticated, true)
     end
   end

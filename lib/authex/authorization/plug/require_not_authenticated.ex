@@ -27,7 +27,7 @@ defmodule Authex.Authorization.Plug.RequireNotAuthenticated do
     handler = Keyword.get(opts, :error_handler, ErrorHandler)
 
     conn
-    |> handler.call(:not_authenticated)
+    |> handler.call(:already_authenticated)
     |> Conn.halt()
   end
 end
