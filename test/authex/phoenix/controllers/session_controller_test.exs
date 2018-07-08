@@ -36,7 +36,7 @@ defmodule Authex.Phoenix.SessionControllerTest do
     test "with invalid params", %{conn: conn} do
       conn = post conn, Routes.authex_session_path(conn, :create, @invalid_params)
       assert redirected_to(conn) == "/"
-      assert get_flash(conn, :info) == "Could not sign in user. Please try again."
+      assert get_flash(conn, :error) == "Could not sign in user. Please try again."
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end

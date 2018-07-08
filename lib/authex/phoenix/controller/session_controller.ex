@@ -37,7 +37,7 @@ defmodule Authex.Phoenix.SessionController do
   end
   defp handle_authentication({:error, _error}, conn) do
     conn
-    |> put_flash(:info, "Could not sign in user. Please try again.")
+    |> put_flash(:error, "Could not sign in user. Please try again.")
     |> redirect(to: "/")
   end
 end
