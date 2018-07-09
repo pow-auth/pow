@@ -35,8 +35,9 @@ defmodule Authex.Phoenix.SessionControllerTest do
 
     test "with invalid params", %{conn: conn} do
       conn = post conn, Routes.authex_session_path(conn, :create, @invalid_params)
-      assert redirected_to(conn) == "/"
+      assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "Could not sign in user. Please try again."
+      assert html =~ "New session"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
@@ -56,7 +57,7 @@ defmodule Authex.Phoenix.SessionControllerTest do
       assert conn.private[:plug_session]["auth"]
 
       conn = delete(conn, Routes.authex_session_path(conn, :delete))
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.authex_session_path(conn, :new)
       assert get_flash(conn, :info) == "Signed out successfullly."
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
