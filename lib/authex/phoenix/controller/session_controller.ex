@@ -5,7 +5,7 @@ defmodule Authex.Phoenix.SessionController do
   alias Authex.Authorization.{Plug,
                               Plug.RequireAuthenticated,
                               Plug.RequireNotAuthenticated}
-  alias Authex.Phoenix.{ViewHelpers, RouterHelpers}
+  alias Authex.Phoenix.{Messages, ViewHelpers, RouterHelpers}
 
   plug RequireNotAuthenticated when action in [:new, :create]
   plug RequireAuthenticated when action in [:delete]
@@ -26,18 +26,18 @@ defmodule Authex.Phoenix.SessionController do
   def delete(conn, _params) do
     conn
     |> Plug.clear_authenticated_user()
-    |> put_flash(:info, "Signed out successfullly.")
+    |> put_flash(:info, Messages.signed_out())
     |> redirect(to: RouterHelpers.after_sign_out_path(conn))
   end
 
   defp handle_authentication({:ok, conn}, _conn) do
     conn
-    |> put_flash(:info, "User successfully signed in.")
+    |> put_flash(:info, Messages.signed_in())
     |> redirect(to: RouterHelpers.after_sign_in_path(conn))
   end
   defp handle_authentication({:error, changeset}, conn) do
     conn
-    |> put_flash(:error, "Could not sign in user. Please try again.")
+    |> put_flash(:error, Messages.invalid_credentials())
     |> ViewHelpers.render("new.html", changeset: changeset)
   end
 end
