@@ -15,7 +15,7 @@ defmodule Authex.Test.Phoenix.Router do
       session_store: Authex.Test.CredentialsCacheMock,
       credentials_cache_name: "credentials",
       credentials_cache_ttl: :timer.hours(48),
-      user_mod: Authex.Test.UserMock,
+      users_context: Authex.Test.UsersContextMock,
       phoenix_views_namespace: Authex.Test.Phoenix
   end
 

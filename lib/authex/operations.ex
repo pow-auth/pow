@@ -30,9 +30,9 @@ defmodule Authex.Operations do
   end
 
   defp module(config) do
-    Config.get(config, :user_mod, nil) || Config.raise_error(no_user_mod_error())
+    Config.get(config, :users_context, nil) || Config.raise_error(no_users_context_error())
   end
 
-  defp no_user_mod_error,
-    do: "Can't find user module. Please add the correct user module by setting the :user_mod config value."
+  defp no_users_context_error,
+    do: "Can't find users context module. Please add the correct users context module by setting the :users_context config value."
 end

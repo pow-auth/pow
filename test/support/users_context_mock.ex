@@ -1,4 +1,4 @@
-defmodule Authex.Test.UserMock do
+defmodule Authex.Test.UsersContextMock do
   @valid_params %{"email" => "test@example.com", "password" => "secret"}
   @invalid_params %{"email" => "test@example.com"}
 

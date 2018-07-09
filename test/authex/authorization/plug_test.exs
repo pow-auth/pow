@@ -7,11 +7,11 @@ defmodule Authex.Authorization.PlugTest do
                 Authorization.Plug.Session,
                 Config,
                 Config.ConfigError}
-  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UserMock}
+  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UsersContextMock}
 
   @default_config [
     current_user_assigns_key: :current_user,
-    user_mod: UserMock,
+    users_context: UsersContextMock,
     session_store: CredentialsCacheMock
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
@@ -62,15 +62,15 @@ defmodule Authex.Authorization.PlugTest do
     assert Plug.authenticate_user(conn, %{"email" => "test@example.com"}) == {:error, :invalid_password}
   end
 
-  test "authenticate_user/2 with missing user_mod" do
-    assert_raise ConfigError, "Can't find user module. Please add the correct user module by setting the :user_mod config value.", fn ->
+  test "authenticate_user/2 with missing users_context" do
+    assert_raise ConfigError, "Can't find users context module. Please add the correct users context module by setting the :users_context config value.", fn ->
       Plug.authenticate_user(conn([]), %{})
     end
   end
 
-  test "authenticate_user/2 with invalid user_mod" do
+  test "authenticate_user/2 with invalid users_context" do
     assert_raise UndefinedFunctionError, fn ->
-      Plug.authenticate_user(conn(user_mod: Invalid), %{})
+      Plug.authenticate_user(conn(users_context: Invalid), %{})
     end
   end
 
