@@ -12,7 +12,7 @@ defmodule Authex.Phoenix.SessionController do
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
-    ViewHelpers.render(conn, "new.html")
+    ViewHelpers.render(conn, "new.html", changeset: %{})
   end
 
   @spec create(Conn.t(), map()) :: Conn.t()

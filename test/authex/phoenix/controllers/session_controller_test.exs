@@ -7,7 +7,17 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = get(conn, Routes.authex_session_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "New session"
+      assert html =~ "New session %{}"
+    end
+
+    test "already signed in", %{conn: conn} do
+      conn =
+        conn
+        |> Plug.assign_current_user(%{id: 1}, [])
+        |> get(Routes.authex_session_path(conn, :new))
+
+      assert redirected_to(conn) == "/"
+      assert get_flash(conn, :error) == "You're already authenticated."
     end
   end
 
@@ -37,9 +47,10 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = post conn, Routes.authex_session_path(conn, :create, @invalid_params)
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "Could not sign in user. Please try again."
-      assert html =~ "New session"
+      assert html =~ "New session :invalid_password"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
+      assert conn.assigns[:changeset] == :invalid_password
     end
   end
 
