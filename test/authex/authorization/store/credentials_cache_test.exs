@@ -2,7 +2,8 @@ defmodule Authex.Authorization.Plug.CredentialsCacheTest do
   use ExUnit.Case
   doctest Authex
 
-  alias Authex.Authorization.Store.CredentialsCache
+  alias Authex.{Authorization.Store.CredentialsCache,
+                Config}
 
   @default_config [
     credentials_cache_namespace: "authex:test:",
@@ -32,7 +33,7 @@ defmodule Authex.Authorization.Plug.CredentialsCacheTest do
   test "records auto purge" do
     {:ok, _pid} = CredentialsCache.start_link(@default_config)
 
-    config = Keyword.put(@default_config, :credentials_cache_ttl, 100)
+    config = Config.put(@default_config, :credentials_cache_ttl, 100)
 
     CredentialsCache.put(config, "key", "value")
     :timer.sleep(50)

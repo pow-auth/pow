@@ -5,6 +5,7 @@ defmodule Authex.Authorization.PlugTest do
   alias Plug.Conn
   alias Authex.{Authorization.Plug,
                 Authorization.Plug.Session,
+                Config,
                 Config.ConfigError}
   alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UserMock}
 
@@ -13,7 +14,7 @@ defmodule Authex.Authorization.PlugTest do
     user_mod: UserMock,
     session_store: CredentialsCacheMock
   ]
-  @admin_config Keyword.put(@default_config, :current_user_assigns_key, :current_admin_user)
+  @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
   test "current_user/1" do
     assert_raise ConfigError, "Authex configuration not found. Please set the Authex.Authorization.Plug.Session plug beforehand.", fn ->

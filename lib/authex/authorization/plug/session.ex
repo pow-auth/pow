@@ -16,12 +16,12 @@ defmodule Authex.Authorization.Plug.Session do
   alias Plug.Conn
   alias Authex.{Authorization.Plug, Config, Store.CredentialsCache}
 
-  @spec init(Keyword.t()) :: Keyword.t()
+  @spec init(Config.t()) :: Config.t()
   def init(config), do: config
 
-  @spec call(Conn.t(), Keyword.t()) :: Conn.t()
+  @spec call(Conn.t(), Config.t()) :: Conn.t()
   def call(conn, config) do
-    conn = Plug.put_config(conn, Keyword.put(config, :mod, __MODULE__))
+    conn = Plug.put_config(conn, Config.put(config, :mod, __MODULE__))
 
     conn
     |> Plug.current_user()

@@ -2,7 +2,9 @@ defmodule Authex.Authorization.Plug.SessionTest do
   use ExUnit.Case
   doctest Authex
 
-  alias Authex.Authorization.{Plug, Plug.Session}
+  alias Authex.{Authorization.Plug,
+                Authorization.Plug.Session,
+                Config}
   alias Authex.Test.{ConnHelpers, CredentialsCacheMock}
 
   @default_opts [
@@ -24,7 +26,7 @@ defmodule Authex.Authorization.Plug.SessionTest do
     conn = Session.call(conn, @default_opts)
 
     assert is_nil(conn.assigns[:current_user])
-    assert conn.private[:authex_config] == Keyword.put(@default_opts, :mod, Session)
+    assert conn.private[:authex_config] == Config.put(@default_opts, :mod, Session)
   end
 
   test "call/2 with assigned current_user", %{conn: conn} do

@@ -14,34 +14,34 @@ defmodule Authex.Authorization.Store.CredentialsCache do
   @credentials_cache_tab       __MODULE__
   @credentials_cache_namespace "credentials"
 
-  @spec start_link(Keyword.t()) :: GenServer.on_start()
+  @spec start_link(Config.t()) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
-  @spec put(Keyword.t(), binary(), any()) :: :ok
+  @spec put(Config.t(), binary(), any()) :: :ok
   def put(config, key, value) do
     GenServer.cast(__MODULE__, {:cache, config, key, value})
   end
 
-  @spec delete(Keyword.t(), binary()) :: :ok
+  @spec delete(Config.t(), binary()) :: :ok
   def delete(config, key) do
     GenServer.cast(__MODULE__, {:delete, config, key})
   end
 
-  @spec get(Keyword.t(), binary()) :: any() | :not_found
+  @spec get(Config.t(), binary()) :: any() | :not_found
   def get(config, key), do: table_get(config, key)
 
   # Callbacks
 
-  @spec init(Keyword.t()) :: {:ok, map()}
+  @spec init(Config.t()) :: {:ok, map()}
   def init(_config) do
     table_init()
 
     {:ok, %{invalidators: %{}}}
   end
 
-  @spec handle_cast({:cache, Keyword.t(), binary(), any()}, map()) :: {:noreply, map()}
+  @spec handle_cast({:cache, Config.t(), binary(), any()}, map()) :: {:noreply, map()}
   def handle_cast({:cache, config, key, value}, %{invalidators: invalidators} = state) do
     invalidators = update_invalidators(config, invalidators, key)
     table_update(config, key, value)
@@ -49,7 +49,7 @@ defmodule Authex.Authorization.Store.CredentialsCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:delete, Keyword.t(), binary()}, map()) :: {:noreply, map()}
+  @spec handle_cast({:delete, Config.t(), binary()}, map()) :: {:noreply, map()}
   def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)
     table_delete(config, key)
@@ -57,7 +57,7 @@ defmodule Authex.Authorization.Store.CredentialsCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_info({:invalidate, Keyword.t(), binary()}, map()) :: {:noreply, map()}
+  @spec handle_info({:invalidate, Config.t(), binary()}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, state) do
     table_delete(config, key)
     {:noreply, state}
