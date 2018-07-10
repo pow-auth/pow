@@ -15,16 +15,23 @@ defmodule Authex.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: extra_applications(Mix.env)
     ]
   end
 
+  defp extra_applications(:test), do: [:ecto, :logger]
+  defp extra_applications(_), do: [:logger]
+
   defp deps do
     [
-      {:plug, "~> 1.6", optional: true},
       {:uuid, "~> 1.0"},
+      {:comeonin, "~> 4.1"},
+      {:pbkdf2_elixir, "~> 0.12"},
+      {:ecto, "~> 2.2", optional: true},
       {:phoenix, "~> 1.3", optional: true},
-      {:phoenix_html, "~> 2.11", only: [:test, :dev]},
+      {:plug, "~> 1.6", optional: true},
+      {:phoenix_html, "~> 2.11", only: [:test]},
+      {:postgrex, ">= 0.0.0", only: [:test]}
     ]
   end
 

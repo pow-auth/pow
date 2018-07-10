@@ -5,12 +5,13 @@ defmodule Authex.Authorization.Plug.Session do
   Example:
 
     plug Authex.Authorization.Plug.Session,
+      user: MyApp.User,
       current_user_assigns_key: :current_user,
       session_key: "auth",
       session_store: Authex.Authorization.Store.CredentialsCache,
       credentials_cache_name: "credentials",
       credentials_cache_ttl: :timer.hours(48),
-      users_context: MyApp.Users,
+      users_context: Authex.Ecto.Users,
       phoenix_view_namespace: Authex.Phoenix
   """
   alias Plug.Conn
