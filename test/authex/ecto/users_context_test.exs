@@ -80,7 +80,7 @@ defmodule Authex.Ecto.UsersContextTest do
     test "can use custom password hash methods" do
       password_hash = &(&1 <> "123")
       password_verify = &(&1 == &2 <> "123")
-      config = Keyword.merge(@config, [password_hash_method: password_hash, password_verify_method: password_verify])
+      config = Keyword.merge(@config, [password_hash_methods: {password_hash, password_verify}])
 
       changeset = UsersContext.changeset(%User{}, config, @valid_params)
 

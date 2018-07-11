@@ -13,8 +13,8 @@ defmodule Authex.Ecto.UsersContext do
         use Authex.Ecto.UsersContext,
           repo: MyApp.Repo,
           user: MyProject.Users.User,
-          password_verify_method: &Comeonin.Pbkdf2.checkpw/2,
-          password_hash_method: &Comeonin.Pbkdf2.hashpwsalt/1
+          password_hash_methods: {&Authex.Ecto.UserContext.pbkdf2_hash/1,
+                                  &Authex.Ecto.UserContext.pbkdf2_verify/2}
 
         def changeset(user_or_changeset, config, params) do
           user_or_changeset
@@ -211,6 +211,12 @@ defmodule Authex.Ecto.UsersContext do
     repo(config).delete(user)
   end
 
+  @spec pbkdf2_hash(binary()) :: binary()
+  def pbkdf2_hash(password), do: Comeonin.Pbkdf2.hashpwsalt(password)
+
+  @spec pbkdf2_verify(binary(), binary()) :: boolean()
+  def pbkdf2_verify(hash, password), do: Comeonin.Pbkdf2.checkpw(hash, password)
+
   defp repo(config) do
     Config.get(config, :repo, nil) || raise_no_repo_error()
   end
@@ -219,12 +225,20 @@ defmodule Authex.Ecto.UsersContext do
     Config.get(config, :user, nil) || raise_no_user_error()
   end
 
-  defp password_verify_method(config) do
-    Config.get(config, :password_verify_method, &Comeonin.Pbkdf2.checkpw/2)
+  defp password_hash_method(config) do
+    {password_hash_method, _} = password_hash_methods(config)
+
+    password_hash_method
   end
 
-  defp password_hash_method(config) do
-    Config.get(config, :password_hash_method, &Comeonin.Pbkdf2.hashpwsalt/1)
+  defp password_verify_method(config) do
+    {_, password_verify_method} = password_hash_methods(config)
+
+    password_verify_method
+  end
+
+  defp password_hash_methods(config) do
+    Config.get(config, :password_hash_methods, {&pbkdf2_hash/1, &pbkdf2_verify/2})
   end
 
   @spec raise_no_repo_error() :: no_return
