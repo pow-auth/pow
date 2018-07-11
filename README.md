@@ -4,11 +4,11 @@ Authex is a highly flexible and extendable authentication solution for Phoenix a
 
 ## Features
 
-* Per Endpoint/Plug customization
 * User registration
-* Email confirmation
+* User authentication
+* Session based authorization
+* Per Endpoint/Plug configuration
 * Extendable
-* Session authentication
 * I18n
 
 ## Installation
@@ -29,10 +29,19 @@ Run `mix deps.get` to install it.
 
 ## Getting started
 
-To install necessary templates, migrations and ecto user schema:
+Install the necessary templates and migrations:
 
 ```bash
 mix authex.install
+```
+
+This will add the following files to your phoenix app:
+
+```bash
+LIB_PATH/user.ex
+WEB_PATH/templates/authex/registrations/edit.html.eex
+WEB_PATH/templates/authex/registrations/new.html.eex
+PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
 ```
 
 Set up routes to enable session based authentication:
@@ -45,7 +54,7 @@ defmodule MyAppWeb.Router do
   pipeline :browser do
     # ...
     use Authex.Authorization.Plug.Session.Plug.Session,
-      user_mod: MyApp.User
+      user: MyApp.User
   end
 
   pipeline :protected do
@@ -67,62 +76,27 @@ end
 
 That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
 
-Authex is highly customizable, and created with multiple configurations in mind (a common use case would be umbrella apps). The plug configuration options takes priority over any environment configuration.
+By default, Authex will only expose files that are absolutely necessary, but you can expose other files such as user schema/context, views, etc using the `mix authex.install` command.
 
-## Migrating from Coherence
+## Configuration
 
-If you've previously used Coherence, the migration is simple. You'll have to remove all coherence files such as templates, views, and mailers, and remove all file modifications such as `config.exs`, `user.ex`, etc. After this, you can just follow the steps in **Getting started**, and then customize your configuration. Authex use your existing `User` module.
+Authex is build to be modular, and easy customizable. All configuration in method calls, and plug options will take priority over any environment configuration. This is ideal in case you've an umbrella app with multiple separate user domains.
 
-## Plugs
+Authex has four groups of modules that each can used individually, or in conjunction with each other:
 
-### Authex.Authentication.Plug.Session
+### Authex.Authorization.Plug
 
-Enables session based authorization. The user struct will be collected from an ETS table through a GenServer using a unique token generated for the session. The token will be updated every time the authorization level changes, or every hour for security.
+This group will handle plug connection. The configuration will be assigned to `conn.private[:authex_config]` and passed through the controller to the users context module. The authorization is session based.
 
-### Authex.Authentication.Plug.RequireAuthenticated
+### Authex.Ecto
 
-Used for pages that requires user has authentication.
+This group contains all modules related to the Ecto based user schema and context. By default, Authex will use the `Authex.Ecto.UsersContext` module for authenticating, creating, updating and deleting users. However, it's very simple to extend, or write your own user context. Remember to set the `:user_context` configuration key.
 
-### Authex.Authentication.Plug.RequireNotAuthenticated
+### Authex.Phoenix
 
-Used for pages that can't be visited for users who have been authenticated.
+This contains the controllers, views and templates for Phoenix. Templates are installed in your phoenix library as you would need full control over these files from the start. However, views and controller modules will not be exposed, but you can decide to expose these.
 
-## Installation
-
-Add Authex to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    # ...
-    {:authex, git: "https://github.com/danschultzer/authex.git}
-    # ...
-  ]
-end
-```
-
-Run `mix deps.get` to install it.
-
-## Set up Authex
-
-Authex will only expose what's necessary for you to configure, but is fully customizable.
-
-To get started, install Authex:
-
-```bash
-mix authex.install
-```
-
-This will add the following files to your phoenix app:
-
-```bash
-LIB_PATH/authex/user.ex
-WEB_PATH/templates/authex/registrations/edit.html.eex
-WEB_PATH/templates/authex/registrations/new.html.eex
-PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
-```
-
-### Configure authentication
+### Change authentication
 
 Authex ships with a session plug module that's enabled by default, but you can easily switch it out with [Guardian](https://github.com/ueberauth/guardian) (or any other plug authentication):
 
@@ -137,6 +111,21 @@ defmodule MyAppWeb.Router do
   end
 end
 ```
+
+## Plugs
+
+### Authex.Authentication.Plug.Session
+
+Enables session based authorization. The user struct will be collected from an ETS table through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes.
+
+### Authex.Authentication.Plug.RequireAuthenticated
+
+By default, this will redirect the user to the log in page if the user hasn't been authenticated.
+
+### Authex.Authentication.Plug.RequireNotAuthenticated
+
+By default, this will redirect the user to the front page if the user is already authenticated.
+
 
 ## Extensions
 
