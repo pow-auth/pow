@@ -1,11 +1,8 @@
 defmodule Authex.Test.Phoenix.LayoutView do
   use Authex.Test.Phoenix.Web, :view
 end
-defmodule Authex.Test.Phoenix.SessionView do
-  use Authex.Test.Phoenix.Web, :view
-end
-defmodule Authex.Test.Phoenix.RegistrationView do
-  use Authex.Test.Phoenix.Web, :view
+defmodule Authex.Test.Phoenix.Authex.SessionView do
+  use Authex.Test.Phoenix.Web, :context_app_view
 end
 defmodule Authex.Test.Phoenix.ErrorView do
   def render("500.html", _assigns), do: "500.html"

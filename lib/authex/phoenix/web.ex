@@ -16,9 +16,20 @@ defmodule Authex.Phoenix.Web do
   and import those modules here.
   """
 
+  @spec controller :: Macro.t()
   def controller do
     quote do
-      use Phoenix.Controller, namespace: Authex.Phoenix
+      use Phoenix.Controller,
+        namespace: Authex.Phoenix
+    end
+  end
+
+  @spec view :: Macro.t()
+  def view do
+    quote do
+      use Phoenix.View,
+        root: "lib/authex/phoenix/templates",
+        namespace: Authex.Phoenix
     end
   end
 

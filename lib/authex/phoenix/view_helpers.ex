@@ -2,42 +2,101 @@ defmodule Authex.Phoenix.ViewHelpers do
   @moduledoc """
   Module that renders views.
 
-  The value set as :phoenix_views_namespace in the
-  configuration option will be used. If not set,
-  the default :phoenix_view inflection will be used.
+  By default, the controller views and templates in this library
+  will be used, and the layout view will be based on the module
+  namespace of the Endpoint module.
+
+  By setting the `:context_app` key in config, the controller
+  and layout views can be used from this context app.
+
+  So if you set up your endpoint like this:
+
+    defmodule MyProjectWeb.Endpoint do
+      plug Authex.Authorization.Plug.Session
+    end
+
+  Only `MyProjectWeb.LayoutView` will be used from your app.
+  However, if you set up the endpoint with a `:context_app` key:
+
+    defmodule MyProjectWeb.Endpoint do
+      plug Authex.Authorization.Plug.Session, context_app: MyProjectWeb
+    end
+
+  The following modules are will be used from your app:
+
+  * `MyProjectWeb.LayoutView`
+  * `MyProjectWeb.Authex.RegistrationView`
+  * `MyProjectWeb.Authex.SessionView`
+
+  And also the following templates has to exist in
+  `lib/my_project_web/templates/authex`:
+
+  * `registration/new.html.eex`
+  * `registration/edit.html.eex`
+  * `registration/show.html.eex`
+  * `session/new.html.eex`
   """
   alias Plug.Conn
   alias Authex.{Authorization.Plug, Config}
+  alias Phoenix.Controller
 
   @spec render(Conn.t(), binary() | atom(), Keyword.t() | map() | binary() | atom()) :: Conn.t()
   def render(conn, template, assigns \\ []) do
-    default_view = Map.get(conn.private, :phoenix_view)
-    {default_layout_view, layout_template} =
-      Map.get(conn.private, :phoenix_layout)
-    namespace =
+    endpoint_module = Controller.endpoint_module(conn)
+    view_module     = Controller.view_module(conn)
+    layout          = Controller.layout(conn)
+    base            = base_module(endpoint_module)
+    context_app     =
       conn
       |> Plug.fetch_config()
-      |> Config.get(:phoenix_views_namespace, nil)
+      |> Config.get(:context_app, nil)
+      |> split_module()
 
-    view        = maybe_build_module_name(namespace, default_view)
-    layout_view = maybe_build_module_name(namespace, default_layout_view)
+    view   = build_view_module(view_module, context_app)
+    layout = build_layout(layout, context_app || base)
+    # raise conn
 
     conn
-    |> Phoenix.Controller.put_view(view)
-    |> Phoenix.Controller.put_layout({layout_view, layout_template})
-    |> Phoenix.Controller.render(template, assigns)
+    |> Controller.put_view(view)
+    |> Controller.put_layout(layout)
+    |> Controller.render(template, assigns)
   end
 
-  defp maybe_build_module_name(nil, view), do: view
-  defp maybe_build_module_name(namespace, view), do: module_name(namespace, view)
+  defp build_view_module(module, nil), do: module
+  defp build_view_module(module, base) do
+    base = base ++ ["Authex"]
 
-  defp module_name(namespace, view) do
-    [_authex, _phoenix, rest] = Module.split(view)
-    rest                      = List.wrap(rest)
-    namespace                 = Module.split(namespace)
+    module
+    |> split_module()
+    |> build_module(base)
+  end
 
-    namespace
+  defp build_layout({view, template}, base) do
+    view =
+      view
+      |> split_module()
+      |> build_module(base)
+
+    {view, template}
+  end
+
+  defp build_module(["Authex", "Phoenix" | rest], base) do
+    base
     |> Enum.concat(rest)
     |> Module.concat()
   end
+
+  defp base_module(endpoint_module) do
+    endpoint_module
+    |> split_module()
+    |> Enum.reverse()
+    |> case do
+      ["Endpoint" | base] -> base
+      base              -> base
+    end
+    |> Enum.reverse()
+  end
+
+  defp split_module(nil), do: nil
+  defp split_module(module) when is_atom(module), do: Module.split(module)
 end

@@ -6,10 +6,17 @@ defmodule Authex.Test.Phoenix.Web do
       use Phoenix.View,
         root: "test/support/phoenix/templates",
         namespace: Authex.Test.Phoenix
-
-      alias Authex.Test.Router.Helpers, as: Routes
     end
   end
+
+  def context_app_view do
+    quote do
+      use Phoenix.View,
+        root: "lib/authex/phoenix/templates",
+        namespace: Authex.Test.Phoenix.Authex
+    end
+  end
+
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
