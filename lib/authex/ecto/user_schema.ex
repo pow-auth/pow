@@ -98,8 +98,8 @@ defmodule Authex.Ecto.UserSchema do
 
   defp schema_migration_opts(opts) do
     attrs              = opts |> attrs() |> Enum.reject(&is_virtual?/1) |> Enum.map(&to_migration_attr/1)
-    ctx_app            = Keyword.get(opts, :context_app, Mix.Phoenix.context_app())
-    base               = Mix.Phoenix.context_base(ctx_app)
+    ctx_app            = Keyword.get(opts, :context_app, context_app())
+    base               = context_base(ctx_app)
     repo               = Keyword.get(opts, :repo, Module.concat([base, "Repo"]))
     table              = Keyword.get(opts, :table, "users")
     binary_id          = opts[:binary_id]
@@ -118,7 +118,7 @@ defmodule Authex.Ecto.UserSchema do
     }
   end
 
-  template =
+  migration_template =
     """
     defmodule <%= inspect schema.repo %>.Migrations.Create<%= Macro.camelize(schema.table) %> do
       use Ecto.Migration
@@ -138,6 +138,33 @@ defmodule Authex.Ecto.UserSchema do
     """
 
   defp schema_migration(schema) do
-    EEx.eval_string(unquote(template), schema: schema)
+    EEx.eval_string(unquote(migration_template), schema: schema)
+  end
+
+  defp context_app() do
+    this_app = otp_app()
+
+    this_app
+    |> Application.get_env(:generators, [])
+    |> Keyword.get(:context_app)
+    |> case do
+      nil          -> this_app
+      false        -> Mix.raise("No context_app configured for current application")
+      {app, _path} -> app
+      app          -> app
+    end
+    Mix.Project.config |> Keyword.fetch!(:app)
+  end
+
+  defp otp_app() do
+    Mix.Project.config()
+    |> Keyword.fetch!(:app)
+  end
+
+  def context_base(app) do
+    case Application.get_env(app, :namespace, app) do
+      ^app -> app |> to_string() |> Macro.camelize()
+      mod  -> mod |> inspect()
+    end
   end
 end
