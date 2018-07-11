@@ -13,7 +13,7 @@ defmodule Authex.Ecto.UserSchemaTest do
   end
 
   test "migration_file/1" do
-    content = UserSchema.migration_file()
+    content = UserSchema.migration_file(Authex)
 
     assert content =~ "defmodule Authex.Repo.Migrations.CreateUsers do"
     assert content =~ "create table(:users)"
@@ -22,25 +22,25 @@ defmodule Authex.Ecto.UserSchemaTest do
     refute content =~ ":current_password"
     assert content =~ "create unique_index(:users, [:email])"
 
-    content = UserSchema.migration_file(login_field: :username)
+    content = UserSchema.migration_file(Authex, login_field: :username)
     assert content =~ "add :username, :string, null: false"
     assert content =~ "create unique_index(:users, [:username])"
 
-    content = UserSchema.migration_file(context_app: :test)
+    content = UserSchema.migration_file(Test)
     assert content =~ "defmodule Test.Repo.Migrations.CreateUsers do"
   end
 
   test "schema_file/1" do
-    content = UserSchema.schema_file()
+    content = UserSchema.schema_file(Authex)
 
     assert content =~ "defmodule Authex.Users.User do"
     assert content =~ "schema \"users\" do"
     assert content =~ "Authex.Ecto.UserSchema.user_schema()"
 
-    content = UserSchema.schema_file(login_field: :username)
+    content = UserSchema.schema_file(Authex, login_field: :username)
     assert content =~ "Authex.Ecto.UserSchema.user_schema(login_field: :username)"
 
-    content = UserSchema.schema_file(context_app: :test)
+    content = UserSchema.schema_file(Test)
     assert content =~ "defmodule Test.Users.User do"
   end
 end

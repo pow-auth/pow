@@ -1,4 +1,8 @@
-defmodule Authex.Ecto.UserSchema.Utils do
+defmodule Mix.Authex.Context do
+  @moduledoc """
+  A helper module for fetching app context in mix tasks.
+  """
+
   @spec context_app :: atom() | no_return
   def context_app do
     this_app = otp_app()

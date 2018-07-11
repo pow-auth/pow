@@ -41,14 +41,14 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Schema do
   defp maybe_run_gen_migration(config, _args), do: config
 
   defp create_schema_file(config) do
-    ctx_app = Map.get(config, :context_app, UserSchema.Utils.context_app())
+    context_app  = Map.get(config, :context_app, Mix.Authex.Context.context_app())
+    context_base = Mix.Authex.Context.context_base(context_app)
 
     base_name = "user.ex"
-    content   = UserSchema.schema_file(context_app: ctx_app,
-                                       module: "Users.User")
+    content   = UserSchema.schema_file(context_base, module: "Users.User")
 
-    UserSchema.Utils.context_app()
-    |> UserSchema.Utils.context_lib_path("users")
+    context_app
+    |> Mix.Authex.Context.context_lib_path("users")
     |> maybe_create_directory()
     |> Path.join(base_name)
     |> ensure_unique()

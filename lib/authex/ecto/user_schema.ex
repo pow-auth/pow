@@ -21,8 +21,6 @@ defmodule Authex.Ecto.UserSchema do
   Remember to add `user: MyProject.Users.User` to configuration.
   """
 
-  alias __MODULE__.Utils
-
   @spec user_schema(Keyword.t()) :: [tuple()]
   defmacro user_schema(config \\ []) do
     config
@@ -30,17 +28,17 @@ defmodule Authex.Ecto.UserSchema do
     |> Enum.map(&to_schema_attr/1)
   end
 
-  @spec migration_file(Keyword.t()) :: binary()
-  def migration_file(config \\ []) do
-    config
-    |> schema_migration_opts()
+  @spec migration_file(binary(), Keyword.t()) :: binary()
+  def migration_file(context_base, config \\ []) do
+    context_base
+    |> schema_migration_opts(config)
     |> schema_migration()
   end
 
-  @spec schema_file(Keyword.t()) :: binary()
-  def schema_file(config \\ []) do
-    config
-    |> schema_module_opts()
+  @spec schema_file(binary(), Keyword.t()) :: binary()
+  def schema_file(context_base, config \\ []) do
+    context_base
+    |> schema_module_opts(config)
     |> schema_module()
   end
 
@@ -105,10 +103,8 @@ defmodule Authex.Ecto.UserSchema do
     ["create unique_index(:#{table}, [:#{key}])"]
   end
 
-  defp schema_migration_opts(opts) do
+  defp schema_migration_opts(base, opts) do
     attrs              = opts |> attrs() |> Enum.reject(&is_virtual?/1) |> Enum.map(&to_migration_attr/1)
-    ctx_app            = Keyword.get(opts, :context_app, Utils.context_app())
-    base               = Utils.context_base(ctx_app)
     repo               = Keyword.get(opts, :repo, Module.concat([base, "Repo"]))
     table              = Keyword.get(opts, :table, "users")
     binary_id          = opts[:binary_id]
@@ -127,9 +123,7 @@ defmodule Authex.Ecto.UserSchema do
     }
   end
 
-  defp schema_module_opts(opts) do
-    ctx_app     = Keyword.get(opts, :context_app, Utils.context_app())
-    base        = Utils.context_base(ctx_app)
+  defp schema_module_opts(base, opts) do
     module      = Module.concat([base, "Users", "User"])
     table       = Keyword.get(opts, :table, "users")
     binary_id   = opts[:binary_id]
