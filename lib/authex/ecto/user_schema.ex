@@ -21,6 +21,8 @@ defmodule Authex.Ecto.UserSchema do
   Remember to add `user: MyProject.Users.User` to configuration.
   """
 
+  alias __MODULE__.Utils
+
   @spec user_schema(Keyword.t()) :: [tuple()]
   defmacro user_schema(config \\ []) do
     config
@@ -33,6 +35,13 @@ defmodule Authex.Ecto.UserSchema do
     config
     |> schema_migration_opts()
     |> schema_migration()
+  end
+
+  @spec schema_file(Keyword.t()) :: binary()
+  def schema_file(config \\ []) do
+    config
+    |> schema_module_opts()
+    |> schema_module()
   end
 
   @attrs [
@@ -98,8 +107,8 @@ defmodule Authex.Ecto.UserSchema do
 
   defp schema_migration_opts(opts) do
     attrs              = opts |> attrs() |> Enum.reject(&is_virtual?/1) |> Enum.map(&to_migration_attr/1)
-    ctx_app            = Keyword.get(opts, :context_app, context_app())
-    base               = context_base(ctx_app)
+    ctx_app            = Keyword.get(opts, :context_app, Utils.context_app())
+    base               = Utils.context_base(ctx_app)
     repo               = Keyword.get(opts, :repo, Module.concat([base, "Repo"]))
     table              = Keyword.get(opts, :table, "users")
     binary_id          = opts[:binary_id]
@@ -115,6 +124,22 @@ defmodule Authex.Ecto.UserSchema do
       migration_defaults: migration_defaults,
       assocs: assocs,
       indexes: indexes
+    }
+  end
+
+  defp schema_module_opts(opts) do
+    ctx_app     = Keyword.get(opts, :context_app, Utils.context_app())
+    base        = Utils.context_base(ctx_app)
+    module      = Module.concat([base, "Users", "User"])
+    table       = Keyword.get(opts, :table, "users")
+    binary_id   = opts[:binary_id]
+    login_field = opts[:login_field]
+
+    %{
+      module: module,
+      table: table,
+      binary_id: binary_id,
+      login_field: login_field
     }
   end
 
@@ -141,30 +166,23 @@ defmodule Authex.Ecto.UserSchema do
     EEx.eval_string(unquote(migration_template), schema: schema)
   end
 
-  defp context_app() do
-    this_app = otp_app()
+  schema_template =
+    """
+    defmodule <%= inspect schema.module %> do
+      use Ecto.Schema
 
-    this_app
-    |> Application.get_env(:generators, [])
-    |> Keyword.get(:context_app)
-    |> case do
-      nil          -> this_app
-      false        -> Mix.raise("No context_app configured for current application")
-      {app, _path} -> app
-      app          -> app
+    <%= if schema.binary_id do %>
+      @primary_key {:id, :binary_id, autogenerate: true}
+      @foreign_key_type :binary_id<% end %>
+      schema <%= inspect schema.table %> do
+        Authex.Ecto.UserSchema.user_schema(<%= if schema.login_field do %>login_field: <%= inspect(schema.login_field) %><% end %>)
+
+        timestamps()
+      end
     end
-    Mix.Project.config |> Keyword.fetch!(:app)
-  end
+    """
 
-  defp otp_app() do
-    Mix.Project.config()
-    |> Keyword.fetch!(:app)
-  end
-
-  def context_base(app) do
-    case Application.get_env(app, :namespace, app) do
-      ^app -> app |> to_string() |> Macro.camelize()
-      mod  -> mod |> inspect()
-    end
+  defp schema_module(schema) do
+    EEx.eval_string(unquote(schema_template), schema: schema)
   end
 end
