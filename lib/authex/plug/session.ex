@@ -4,6 +4,11 @@ defmodule Authex.Plug.Session do
 
   Example:
 
+    plug Plug.Session,
+      store: :cookie,
+      key: "_my_app_demo_key",
+      signing_salt: "secret"
+
     plug Authex.Plug.Session,
       user: MyApp.User,
       current_user_assigns_key: :current_user,
