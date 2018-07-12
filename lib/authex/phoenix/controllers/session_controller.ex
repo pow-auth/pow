@@ -2,7 +2,7 @@ defmodule Authex.Phoenix.SessionController do
   @moduledoc false
   use Authex.Phoenix.Web, :controller
 
-  alias Authex.Plug
+  alias Authex.{Config, Plug}
   alias Authex.Phoenix.{Messages, ViewHelpers, RouterHelpers}
 
   plug Plug.RequireNotAuthenticated when action in [:new, :create]
@@ -10,14 +10,15 @@ defmodule Authex.Phoenix.SessionController do
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
-    ViewHelpers.render(conn, "new.html", changeset: %{})
+    changeset = Plug.change_user(conn)
+    render_new(conn, changeset)
   end
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => user_params}) do
     conn
     |> Plug.authenticate_user(user_params)
-    |> handle_authentication(conn)
+    |> handle_authentication(user_params)
   end
 
   @spec delete(Conn.t(), map()) :: Conn.t()
@@ -28,14 +29,26 @@ defmodule Authex.Phoenix.SessionController do
     |> redirect(to: RouterHelpers.after_sign_out_path(conn))
   end
 
-  defp handle_authentication({:ok, conn}, _conn) do
+  defp handle_authentication({:error, conn}, params) do
+    changeset = Plug.change_user(conn, params)
+
+    conn
+    |> put_flash(:error, Messages.invalid_credentials())
+    |> render_new(changeset)
+  end
+  defp handle_authentication({:ok, conn}, _params) do
     conn
     |> put_flash(:info, Messages.signed_in())
     |> redirect(to: RouterHelpers.after_sign_in_path(conn))
   end
-  defp handle_authentication({:error, changeset}, conn) do
-    conn
-    |> put_flash(:error, Messages.invalid_credentials())
-    |> ViewHelpers.render("new.html", changeset: changeset)
+
+  defp render_new(conn, changeset) do
+    action      = RouterHelpers.helpers(conn).authex_registration_path(conn, :create)
+    login_field =
+      conn
+      |> Plug.fetch_config()
+      |> Config.login_field()
+
+    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action, login_field: login_field)
   end
 end

@@ -17,6 +17,11 @@ defmodule Authex.Config do
     get(config, :login_field, :email)
   end
 
+  @spec user_module(t()) :: atom()
+  def user_module(config) do
+    get(config, :user, nil) || raise_no_user_error()
+  end
+
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default) do
     Keyword.get(config, key, get_global(key, default))
@@ -29,6 +34,11 @@ defmodule Authex.Config do
 
   defp get_global(key, default) do
     Keyword.get(Authex.config(), key, default)
+  end
+
+  @spec raise_no_user_error() :: no_return
+  defp raise_no_user_error() do
+    raise_error("No :user configuration option found for user schema module.")
   end
 
   @spec raise_error(binary()) :: no_return

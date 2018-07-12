@@ -56,6 +56,7 @@ defmodule MyAppWeb.Endpoint do
     signing_salt: "secret"
 
   plug Authex.Plug.Session,
+    repo: MyApp.Repo,
     user: MyApp.Users.User
 
   # ...

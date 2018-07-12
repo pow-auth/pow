@@ -38,7 +38,7 @@ defmodule Authex.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    CredentialsCacheMock.create(nil, "token", "cached")
+    CredentialsCacheMock.put(nil, "token", "cached")
 
     conn = conn
            |> ConnHelpers.put_session(@default_opts[:session_key], "token")
@@ -48,7 +48,7 @@ defmodule Authex.Plug.SessionTest do
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
-    CredentialsCacheMock.create(nil, "token", "cached")
+    CredentialsCacheMock.put(nil, "token", "cached")
 
     conn = conn
            |> ConnHelpers.put_session(@default_opts[:session_key], "invalid")

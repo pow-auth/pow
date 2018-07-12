@@ -7,7 +7,12 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
       conn = get(conn, Routes.authex_registration_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "New registration"
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password_confirm\">Password confirm</label>"
+      assert html =~ "<input id=\"user_password_confirm\" name=\"user[password_confirm]\" type=\"password\">"
     end
 
     test "already signed in", %{conn: conn} do
@@ -39,15 +44,19 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
       conn = post conn, Routes.authex_registration_path(conn, :create, @valid_params)
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "User has been created successfully."
-      assert Plug.current_user(conn) == %{id: 1}
+      assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
     test "with invalid params", %{conn: conn} do
       conn = post conn, Routes.authex_registration_path(conn, :create, @invalid_params)
       assert html = html_response(conn, 200)
-      assert html =~ "New registration"
-      assert conn.assigns[:changeset] == @invalid_params["user"]
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<span class=\"help-block\">can&#39;t be blank</span>"
+      assert errors = conn.assigns[:changeset].errors
+      assert errors[:password]
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
@@ -61,7 +70,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
         |> get(Routes.authex_registration_path(conn, :show))
 
       assert html = html_response(conn, 200)
-      assert html =~ "Show registration %{id: 1}"
+      assert html =~ "id: 1"
     end
 
     test "not signed in", %{conn: conn} do
@@ -80,7 +89,10 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
         |> get(Routes.authex_registration_path(conn, :edit))
 
       assert html = html_response(conn, 200)
-      assert html =~ "Edit registration %{id: 1}"
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<label for=\"user_current_password\">Current password</label>"
+      assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
     end
 
     test "not signed in", %{conn: conn} do
@@ -121,9 +133,14 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
       conn = put(conn, Routes.authex_registration_path(conn, :update, @invalid_params))
 
       assert html = html_response(conn, 200)
-      assert html =~ "Edit registration"
-      assert conn.assigns[:changeset] == @invalid_params["user"]
-      assert Plug.current_user(conn) == %{id: 1}
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
+      assert html =~ "<label for=\"user_current_password\">Current password</label>"
+      assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
+      assert html =~ "<span class=\"help-block\">can&#39;t be blank</span>"
+      assert errors = conn.assigns[:changeset].errors
+      assert errors[:current_password]
+      assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"] == session_id
     end
   end
@@ -154,15 +171,15 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
         |> Plug.assign_current_user(:fail_deletion, [])
         |> delete(Routes.authex_registration_path(conn, :delete))
 
-      assert html = html_response(conn, 200)
-      assert html =~ "Edit registration :fail_deletion"
+      assert redirected_to(conn) == Routes.authex_registration_path(conn, :edit)
+      assert get_flash(conn, :info) == "User could not be deleted."
       assert Plug.current_user(conn) == :fail_deletion
     end
   end
 
   defp create_user_and_sign_in(conn) do
     conn = post conn, Routes.authex_registration_path(conn, :create, @valid_params)
-    assert Plug.current_user(conn) == %{id: 1}
+    assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]
 
     conn

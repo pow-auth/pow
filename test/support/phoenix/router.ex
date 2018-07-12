@@ -8,14 +8,6 @@ defmodule Authex.Test.Phoenix.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-
-    plug Authex.Plug.Session,
-      current_user_assigns_key: :current_user,
-      session_key: "auth",
-      session_store: Authex.Test.CredentialsCacheMock,
-      credentials_cache_name: "credentials",
-      credentials_cache_ttl: :timer.hours(48),
-      users_context: Authex.Test.UsersContextMock
   end
 
   scope "/" do

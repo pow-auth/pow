@@ -7,7 +7,10 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = get(conn, Routes.authex_session_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "New session %{}"
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
     end
 
     test "already signed in", %{conn: conn} do
@@ -39,7 +42,7 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = post conn, Routes.authex_session_path(conn, :create, @valid_params)
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "User successfully signed in."
-      assert Plug.current_user(conn) == %{id: 1}
+      assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
@@ -47,10 +50,10 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = post conn, Routes.authex_session_path(conn, :create, @invalid_params)
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "Could not sign in user. Please try again."
-      assert html =~ "New session :invalid_password"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
-      assert conn.assigns[:changeset] == :invalid_password
     end
   end
 
@@ -64,7 +67,7 @@ defmodule Authex.Phoenix.SessionControllerTest do
 
     test "removes authenticated", %{conn: conn} do
       conn = post conn, Routes.authex_session_path(conn, :create, @valid_params)
-      assert Plug.current_user(conn) == %{id: 1}
+      assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
 
       conn = delete(conn, Routes.authex_session_path(conn, :delete))

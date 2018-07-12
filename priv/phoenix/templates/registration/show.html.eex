@@ -1,1 +1,1 @@
-Show registration <%= inspect(@user) %>
+<%= inspect(@user) %>

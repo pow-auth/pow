@@ -36,7 +36,7 @@ defmodule Authex.Plug do
     private[@private_config_key] || Config.raise_error(no_config_error())
   end
 
-  @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, atom()} | no_return
+  @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Conn.t()} | no_return
   def authenticate_user(conn, params) do
     config   = fetch_config(conn)
     mod      = config[:mod]
@@ -44,8 +44,8 @@ defmodule Authex.Plug do
     config
     |> Operations.authenticate(params)
     |> case do
-      {:ok, user}     -> {:ok, mod.create(conn, user)}
-      {:error, error} -> {:error, error}
+      nil  -> {:error, conn}
+      user -> {:ok, mod.create(conn, user)}
     end
   end
 
@@ -57,12 +57,14 @@ defmodule Authex.Plug do
     mod.delete(conn)
   end
 
-  @spec changeset_user(Conn.t()) :: map()
-  def changeset_user(conn) do
+  @spec change_user(Conn.t(), map()) :: map()
+  def change_user(conn, params \\ %{}) do
     config   = fetch_config(conn)
-    user     = current_user(conn) || %{}
 
-    Operations.changeset(config, user)
+    case current_user(conn) do
+      nil  -> Operations.changeset(config, params)
+      user -> Operations.changeset(config, user, params)
+    end
   end
 
   @spec create_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, map()} | no_return

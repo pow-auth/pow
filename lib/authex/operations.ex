@@ -2,16 +2,20 @@ defmodule Authex.Operations do
   @moduledoc """
   A module that handles struct operations (User).
   """
-  alias Authex.Config
+  alias Authex.{Config, Ecto.UsersContext}
 
-  @spec authenticate(Config.t(), map()) :: {:ok, map()} | {:error, term()} | no_return
+  @spec authenticate(Config.t(), map()) :: map() | nil | no_return
   def authenticate(config, params) do
     module(config).authenticate(config, params)
   end
 
   @spec changeset(Config.t(), map()) :: map()
-  def changeset(config, user_or_params) do
-    module(config).changeset(config, user_or_params)
+  def changeset(config, params) do
+    module(config).changeset(config, params)
+  end
+  @spec changeset(Config.t(), map(), map()) :: map()
+  def changeset(config, user, params) do
+    module(config).changeset(user, config, params)
   end
 
   @spec create(Config.t(), map()) :: {:ok, map()} | {:error, map()} | no_return
@@ -30,9 +34,6 @@ defmodule Authex.Operations do
   end
 
   defp module(config) do
-    Config.get(config, :users_context, nil) || Config.raise_error(no_users_context_error())
+    Config.get(config, :users_context, UsersContext)
   end
-
-  defp no_users_context_error,
-    do: "Can't find users context module. Please add the correct users context module by setting the :users_context config value."
 end

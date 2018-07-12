@@ -3,9 +3,13 @@ defmodule Authex.Phoenix.ViewHelpersTest do
   doctest Authex
 
   alias Authex.Phoenix.ViewHelpers
+  alias Authex.Test.UsersContextMock
   alias Plug.Conn
 
   setup %{conn: conn} do
+    changeset   = UsersContextMock.changeset([], %{})
+    login_field = :email
+    action      = "/"
     conn =
       conn
       |> Map.put(:params, %{"_format" => "html"})
@@ -13,7 +17,10 @@ defmodule Authex.Phoenix.ViewHelpersTest do
       |> Conn.put_private(:phoenix_endpoint, Authex.Test.Phoenix.Endpoint)
       |> Conn.put_private(:phoenix_view, Authex.Phoenix.SessionView)
       |> Conn.put_private(:phoenix_layout, {Authex.Phoenix.LayoutView, :app})
-      |> Conn.assign(:changeset, %{})
+      |> Conn.put_private(:phoenix_router, Authex.Test.Phoenix.Router)
+      |> Conn.assign(:changeset, changeset)
+      |> Conn.assign(:login_field, login_field)
+      |> Conn.assign(:action, action)
 
     {:ok, %{conn: conn}}
   end

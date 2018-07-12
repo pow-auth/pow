@@ -1,1 +1,1 @@
-New session <%= inspect(@changeset) %>
+<%= unquote(Authex.Phoenix.HTML.form(:session, :new)) %>

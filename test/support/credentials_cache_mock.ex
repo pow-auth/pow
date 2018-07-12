@@ -16,7 +16,7 @@ defmodule Authex.Test.CredentialsCacheMock do
     :ets.delete(@tab, key)
   end
 
-  def create(_config, key, value) do
+  def put(_config, key, value) do
     :ets.insert(@tab, {key, value})
   end
 end

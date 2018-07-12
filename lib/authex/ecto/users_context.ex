@@ -96,6 +96,13 @@ defmodule Authex.Ecto.UsersContext do
     end
   end
 
+  @spec changeset(Config.t(), map()) :: Changeset.t()
+  def changeset(config, params) do
+    config
+    |> user_schema_mod()
+    |> struct()
+    |> changeset(config, params)
+  end
   @spec changeset(user() | Changeset.t(), Config.t(), map()) :: Changeset.t()
   def changeset(user_or_changeset, config, params) do
     login_field = Config.login_field(config)
@@ -103,6 +110,7 @@ defmodule Authex.Ecto.UsersContext do
     user_or_changeset
     |> Changeset.cast(params, [login_field, :current_password, :password, :password_confirm])
     |> maybe_validate_current_password(config)
+    |> maybe_require_password()
     |> maybe_validate_password_confirm()
     |> maybe_put_password_hash(config)
     |> Changeset.validate_required([login_field, :password_hash])
@@ -128,6 +136,11 @@ defmodule Authex.Ecto.UsersContext do
       _    -> Changeset.add_error(changeset, :current_password, "is invalid")
     end
   end
+
+  defp maybe_require_password(%{data: %{password_hash: nil}} = changeset) do
+    Changeset.validate_required(changeset, [:password])
+  end
+  defp maybe_require_password(changeset), do: changeset
 
   defp maybe_validate_password_confirm(changeset) do
     changeset

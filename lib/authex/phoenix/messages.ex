@@ -20,4 +20,7 @@ defmodule Authex.Phoenix.Messages do
 
   @spec user_has_been_deleted() :: binary()
   def user_has_been_deleted, do: "User has been deleted successfully."
+
+  @spec user_could_not_be_deleted() :: binary()
+  def user_could_not_be_deleted, do: "User could not be deleted."
 end

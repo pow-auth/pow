@@ -55,15 +55,15 @@ defmodule Authex.PlugTest do
     refute Plug.current_user(conn)
 
     assert {:ok, loaded_conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
-    assert Plug.current_user(loaded_conn) == %{id: 1}
+    assert %{id: 1} = Plug.current_user(loaded_conn)
     assert loaded_conn.private[:plug_session]["auth"]
 
-    assert Plug.authenticate_user(conn, %{}) == {:error, :not_found}
-    assert Plug.authenticate_user(conn, %{"email" => "test@example.com"}) == {:error, :invalid_password}
+    assert {:error, %Conn{}} = Plug.authenticate_user(conn, %{})
+    assert {:error, %Conn{}} = Plug.authenticate_user(conn, %{"email" => "test@example.com"})
   end
 
-  test "authenticate_user/2 with missing users_context" do
-    assert_raise ConfigError, "Can't find users context module. Please add the correct users context module by setting the :users_context config value.", fn ->
+  test "authenticate_user/2 with missing user" do
+    assert_raise ConfigError, "No :user configuration option found for user schema module.", fn ->
       Plug.authenticate_user(conn([]), %{})
     end
   end
@@ -79,9 +79,9 @@ defmodule Authex.PlugTest do
 
     conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
-    assert Plug.current_user(conn) == %{id: 1}
+    assert %{id: 1} = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
-    assert CredentialsCacheMock.get(nil, session_id) == %{id: 1}
+    assert %{id: 1} = CredentialsCacheMock.get(nil, session_id)
 
     conn = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)

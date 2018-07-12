@@ -1,1 +1,1 @@
-Edit registration <%= inspect(@changeset) %>
+<%= unquote(Authex.Phoenix.HTML.form(:registration, :edit)) %>

@@ -10,6 +10,7 @@ defmodule Authex.Plug.Session do
       signing_salt: "secret"
 
     plug Authex.Plug.Session,
+      repo: MyApp.Repo,
       user: MyApp.User,
       current_user_assigns_key: :current_user,
       session_key: "auth",
@@ -41,7 +42,7 @@ defmodule Authex.Plug.Session do
     store         = store(config)
 
     delete(conn)
-    store.create(config, key, user)
+    store.put(config, key, user)
 
     conn
     |> Conn.put_session(session_key, key)
