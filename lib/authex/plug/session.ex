@@ -11,8 +11,7 @@ defmodule Authex.Plug.Session do
       session_store: Authex.Store.CredentialsCache,
       credentials_cache_name: "credentials",
       credentials_cache_ttl: :timer.hours(48),
-      users_context: Authex.Ecto.Users,
-      phoenix_view_namespace: Authex.Phoenix
+      users_context: Authex.Ecto.Users
   """
   alias Plug.Conn
   alias Authex.{Plug, Store.CredentialsCache, Config}

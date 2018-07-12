@@ -47,29 +47,26 @@ defmodule Mix.Tasks.Authex.Phoenix.Install do
 
     defmodule MyAppWeb.Router do
       use MyAppWeb, :router
-      use Authex.Router
+      user Authex.Phoenix.Router
 
-      pipeline :browser do
-        # ...
-        plug Authex.Plug.Session,
-          user: MyApp.Users.User
-      end
+      # ...
 
       pipeline :protected do
-        plug Authex.Plug.EnsureAuthenticated
+        plug Authex.Plug.RequireAuthenticated
       end
 
-      scope "/", MyAppWeb do
+      scope "/" do
         pipe_through :browser
-        authex_routes()
 
-        # ...
+        authex_routes()
       end
+
+      # ...
 
       scope "/", MyAppWeb do
         pipe_through [:browser, :protected]
 
-        # ...
+        # Protected routes ...
       end
     end
     """

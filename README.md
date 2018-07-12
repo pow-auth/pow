@@ -38,35 +38,55 @@ mix authex.phoenix.install
 This will add the following files to your phoenix app:
 
 ```bash
-LIB_PATH/user.ex
-PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
+LIB_PATH/users/user.ex
+PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
 
-Set up routes to enable session based authentication:
+Set up `endpoint.ex` to enable session based authentication:
+
+```elixir
+defmodule MyAppWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :my_app
+
+  # ...
+
+  plug Plug.Session,
+    store: :cookie,
+    key: "_my_project_demo_key",
+    signing_salt: "secret"
+
+  plug Authex.Plug.Session,
+    user: MyApp.Users.User
+
+  # ...
+end
+```
+
+And add the Authex routes and plugs to `router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
+  user Authex.Phoenix.Router
 
-  pipeline :browser do
-    # ...
-    plug Authex.Plug.Session,
-      user: MyApp.Users.User
-  end
+  # ...
 
   pipeline :protected do
-    plug Authex.Plug.EnsureAuthenticated
+    plug Authex.Plug.RequireAuthenticated
   end
 
-  scope "/", MyAppWeb do
+  scope "/" do
     pipe_through :browser
+
     authex_routes()
   end
+
+  # ...
 
   scope "/", MyAppWeb do
     pipe_through [:browser, :protected]
 
-    # Routes that requires a user has authenticated.
+    # Protected routes ...
   end
 end
 ```

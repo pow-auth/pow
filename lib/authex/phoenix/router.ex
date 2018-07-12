@@ -10,13 +10,15 @@ defmodule Authex.Phoenix.Router do
         use MyProjectWeb, :router
         use Authex.Phoenix.Router
 
-        scope "/", MyProjectWeb do
+        # ...
+
+        scope "/" do
           pipe_through :browser
 
           authex_routes()
         end
 
-        ...
+        # ...
       end
   """
 
