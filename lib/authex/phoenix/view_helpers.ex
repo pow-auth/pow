@@ -6,7 +6,7 @@ defmodule Authex.Phoenix.ViewHelpers do
   will be used, and the layout view will be based on the module
   namespace of the Endpoint module.
 
-  By setting the `:context_app` key in config, the controller
+  By setting the `:web_module` key in config, the controller
   and layout views can be used from this context app.
 
   So if you set up your endpoint like this:
@@ -16,10 +16,10 @@ defmodule Authex.Phoenix.ViewHelpers do
     end
 
   Only `MyProjectWeb.LayoutView` will be used from your app.
-  However, if you set up the endpoint with a `:context_app` key:
+  However, if you set up the endpoint with a `:web_module` key:
 
     defmodule MyProjectWeb.Endpoint do
-      plug Authex.Plug.Session, context_app: MyProjectWeb
+      plug Authex.Plug.Session, web_module: MyProjectWeb
     end
 
   The following modules are will be used from your app:
@@ -46,14 +46,14 @@ defmodule Authex.Phoenix.ViewHelpers do
     view_module     = Controller.view_module(conn)
     layout          = Controller.layout(conn)
     base            = base_module(endpoint_module)
-    context_app     =
+    web_module      =
       conn
       |> Plug.fetch_config()
-      |> Config.get(:context_app, nil)
+      |> Config.get(:web_module, nil)
       |> split_module()
 
-    view   = build_view_module(view_module, context_app)
-    layout = build_layout(layout, context_app || base)
+    view   = build_view_module(view_module, web_module)
+    layout = build_layout(layout, web_module || base)
     # raise conn
 
     conn

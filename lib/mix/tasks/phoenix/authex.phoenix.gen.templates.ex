@@ -76,7 +76,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
     Mix.shell.info """
     All Authex templates and views has been generated.
 
-    Please update set `context_app: #{inspect web_mod}` in your configuration,
+    Please update set `web_module: #{inspect web_mod}` in your configuration,
     like so:
 
     defmodule #{inspect web_mod}.Endpoint do
@@ -87,7 +87,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
       plug Authex.Plug.Session,
         repo: #{mod}.Repo,
         user: #{mod}.Users.User,
-        context_app: #{inspect web_mod}
+        web_module: #{inspect web_mod}
 
       # ...
     end

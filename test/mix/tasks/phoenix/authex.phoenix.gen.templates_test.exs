@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
       assert msg =~ "otp_app: :authex"
       assert msg =~ "repo: Authex.Repo"
       assert msg =~ "user: Authex.Users.User"
-      assert msg =~ "context_app: AuthexWeb"
+      assert msg =~ "web_module: AuthexWeb"
     end
   end
 
@@ -71,7 +71,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
       assert msg =~ "otp_app: :test"
       assert msg =~ "repo: Test.Repo"
       assert msg =~ "user: Test.Users.User"
-      assert msg =~ "context_app: TestWeb"
+      assert msg =~ "web_module: TestWeb"
     end
   end
 

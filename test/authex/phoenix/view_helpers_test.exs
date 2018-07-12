@@ -33,10 +33,10 @@ defmodule Authex.Phoenix.ViewHelpersTest do
     assert conn.private[:phoenix_layout] == {Authex.Test.Phoenix.LayoutView, :app}
   end
 
-  test "render/3 with :context_app", %{conn: conn} do
+  test "render/3 with :web_module", %{conn: conn} do
     conn =
       conn
-      |> Conn.put_private(:authex_config, [context_app: Authex.Test.Phoenix])
+      |> Conn.put_private(:authex_config, [web_module: Authex.Test.Phoenix])
       |> ViewHelpers.render(:new)
 
     assert conn.private[:phoenix_endpoint] == Authex.Test.Phoenix.Endpoint
