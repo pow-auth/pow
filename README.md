@@ -29,18 +29,16 @@ Run `mix deps.get` to install it.
 
 ## Getting started
 
-Install the necessary templates and migrations:
+Install the necessary files:
 
 ```bash
-mix authex.install
+mix authex.phoenix.install
 ```
 
 This will add the following files to your phoenix app:
 
 ```bash
 LIB_PATH/user.ex
-WEB_PATH/templates/authex/registrations/edit.html.eex
-WEB_PATH/templates/authex/registrations/new.html.eex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
 ```
 
@@ -76,7 +74,7 @@ end
 
 That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
 
-By default, Authex will only expose files that are absolutely necessary, but you can expose other files such as user schema/context, views, etc using the `mix authex.install` command.
+By default, Authex will only expose files that are absolutely necessary, but you can expose other files such as views and templates using the `mix authex.phoenix.install` command.
 
 ## Configuration
 

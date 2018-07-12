@@ -28,7 +28,7 @@ defmodule Authex.Phoenix.Web do
   def view do
     quote do
       use Phoenix.View,
-        root: "lib/authex/phoenix/templates",
+        root: "priv/phoenix/templates",
         namespace: Authex.Phoenix
     end
   end
