@@ -13,27 +13,19 @@ defmodule Mix.Tasks.Authex.Ecto.Install do
   use Mix.Task
 
   alias Mix.Tasks.Authex.Ecto.Gen
-  alias Mix.Ecto
+  alias Mix.Authex.Utils
 
   @switches [migrations: :boolean, schema: :boolean]
   @default_opts [migrations: true, schema: true]
 
   @doc false
   def run(args) do
-    Ecto.no_umbrella!("authex.ecto.install")
+    Utils.no_umbrella!("authex.ecto.install")
 
     args
-    |> parse_options()
+    |> Utils.parse_options(@switches, @default_opts)
     |> maybe_run_gen_migration(args)
     |> maybe_run_gen_schema(args)
-  end
-
-  defp parse_options(args) do
-    {opts, _parsed, _invalid} = OptionParser.parse(args, switches: @switches)
-
-    @default_opts
-    |> Keyword.merge(opts)
-    |> Map.new()
   end
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do

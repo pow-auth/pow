@@ -9,11 +9,11 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
   use Mix.Task
 
   alias Authex.Ecto.UserSchema
-  alias Mix.{Generator, Ecto}
+  alias Mix.{Authex.Utils, Ecto, Generator}
 
   @doc false
   def run(args) do
-    Ecto.no_umbrella!("authex.ecto.gen.migration")
+    Utils.no_umbrella!("authex.ecto.gen.migration")
 
     create_migrations_files(args)
   end

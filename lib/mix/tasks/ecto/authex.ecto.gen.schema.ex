@@ -10,34 +10,20 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Schema do
 
   alias Authex.Ecto.UserSchema
   alias Mix.Tasks.Authex.Ecto.Gen
-  alias Mix.{Generator, Ecto}
+  alias Mix.{Authex.Utils, Generator}
 
   @switches [migrations: :boolean, context_app: :string]
   @default_opts [migrations: true]
 
   @doc false
   def run(args) do
-    Ecto.no_umbrella!("authex.ecto.gen.schema")
+    Utils.no_umbrella!("authex.ecto.gen.schema")
 
     args
-    |> parse_options()
+    |> Utils.parse_options(@switches, @default_opts)
     |> maybe_run_gen_migration(args)
     |> create_schema_file()
   end
-
-  defp parse_options(args) do
-    {opts, _parsed, _invalid} = OptionParser.parse(args, switches: @switches)
-
-    @default_opts
-    |> Keyword.merge(opts)
-    |> Map.new()
-    |> context_app_to_atom()
-  end
-
-  defp context_app_to_atom(%{context_app: context_app} = config),
-    do: Map.put(config, :context_app, String.to_atom(context_app))
-  defp context_app_to_atom(config),
-    do: config
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do
     Gen.Migration.run(args)
