@@ -5,7 +5,7 @@ defmodule Authex.Application do
     import Supervisor.Spec
 
     children = [
-      worker(Authex.Store.CredentialsCache, [[]])
+      worker(Authex.Store.EtsCache, [[]])
     ]
     opts = [
       strategy: :one_for_one,
