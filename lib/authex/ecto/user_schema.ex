@@ -21,21 +21,23 @@ defmodule Authex.Ecto.UserSchema do
   Remember to add `user: MyProject.Users.User` to configuration.
   """
 
-  @spec user_schema(Keyword.t()) :: [tuple()]
+  alias Authex.Config
+
+  @spec user_schema(Config.t()) :: [tuple()]
   defmacro user_schema(config \\ []) do
     config
     |> attrs()
     |> Enum.map(&to_schema_attr/1)
   end
 
-  @spec migration_file(binary(), Keyword.t()) :: binary()
+  @spec migration_file(binary(), Config.t()) :: binary()
   def migration_file(context_base, config \\ []) do
     context_base
     |> schema_migration_opts(config)
     |> schema_migration()
   end
 
-  @spec schema_file(binary(), Keyword.t()) :: binary()
+  @spec schema_file(binary(), Config.t()) :: binary()
   def schema_file(context_base, config \\ []) do
     context_base
     |> schema_module_opts(config)
@@ -50,7 +52,7 @@ defmodule Authex.Ecto.UserSchema do
   ]
 
   defp attrs(config) do
-    login_field = Keyword.get(config, :login_field, :email)
+    login_field = Config.login_field(config)
 
     [{login_field, :string, null: false}]
     |> Enum.concat(@attrs)
@@ -103,11 +105,11 @@ defmodule Authex.Ecto.UserSchema do
     ["create unique_index(:#{table}, [:#{key}])"]
   end
 
-  defp schema_migration_opts(base, opts) do
-    attrs              = opts |> attrs() |> Enum.reject(&is_virtual?/1) |> Enum.map(&to_migration_attr/1)
-    repo               = Keyword.get(opts, :repo, Module.concat([base, "Repo"]))
-    table              = Keyword.get(opts, :table, "users")
-    binary_id          = opts[:binary_id]
+  defp schema_migration_opts(base, config) do
+    attrs              = config |> attrs() |> Enum.reject(&is_virtual?/1) |> Enum.map(&to_migration_attr/1)
+    repo               = Config.get(config, :repo, Module.concat([base, "Repo"]))
+    table              = Config.get(config, :table, "users")
+    binary_id          = config[:binary_id]
     migration_defaults = migration_defaults(attrs)
     {assocs, attrs}    = partition_attrs(attrs)
     indexes            = indexes(table, attrs)
@@ -123,11 +125,11 @@ defmodule Authex.Ecto.UserSchema do
     }
   end
 
-  defp schema_module_opts(base, opts) do
+  defp schema_module_opts(base, config) do
     module      = Module.concat([base, "Users", "User"])
-    table       = Keyword.get(opts, :table, "users")
-    binary_id   = opts[:binary_id]
-    login_field = opts[:login_field]
+    table       = Config.get(config, :table, "users")
+    binary_id   = config[:binary_id]
+    login_field = config[:login_field]
 
     %{
       module: module,

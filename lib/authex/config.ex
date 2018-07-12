@@ -12,6 +12,11 @@ defmodule Authex.Config do
     get(config, :current_user_assigns_key, :current_user)
   end
 
+  @spec login_field(t()) :: atom()
+  def login_field(config) do
+    get(config, :login_field, :email)
+  end
+
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default) do
     Keyword.get(config, key, get_global(key, default))

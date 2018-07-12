@@ -98,7 +98,7 @@ defmodule Authex.Ecto.UsersContext do
 
   @spec changeset(user() | Changeset.t(), Config.t(), map()) :: Changeset.t()
   def changeset(user_or_changeset, config, params) do
-    login_field = Config.get(config, :login_field, :email)
+    login_field = Config.login_field(config)
 
     user_or_changeset
     |> Changeset.cast(params, [login_field, :current_password, :password, :password_confirm])
@@ -160,7 +160,7 @@ defmodule Authex.Ecto.UsersContext do
 
   @spec authenticate(Config.t(), map()) :: user() | nil
   def authenticate(config, params) do
-    login_field = Config.get(config, :login_field, :email)
+    login_field = Config.login_field(config)
     login_value = params[Atom.to_string(login_field)]
     password    = params["password"]
     user        = user_schema_mod(config)
