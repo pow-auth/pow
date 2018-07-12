@@ -59,7 +59,10 @@ defmodule Authex.Plug.Session do
   end
 
   defp maybe_fetch_from_session(nil, conn, config) do
-    case get_session(conn, config) do
+    conn
+    |> Conn.fetch_session()
+    |> get_session(config)
+    |> case do
       :not_found -> conn
       user       -> Plug.assign_current_user(conn, user, config)
     end
