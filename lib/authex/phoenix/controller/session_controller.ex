@@ -2,13 +2,11 @@ defmodule Authex.Phoenix.SessionController do
   @moduledoc false
   use Authex.Phoenix.Web, :controller
 
-  alias Authex.Authorization.{Plug,
-                              Plug.RequireAuthenticated,
-                              Plug.RequireNotAuthenticated}
+  alias Authex.Plug
   alias Authex.Phoenix.{Messages, ViewHelpers, RouterHelpers}
 
-  plug RequireNotAuthenticated when action in [:new, :create]
-  plug RequireAuthenticated when action in [:delete]
+  plug Plug.RequireNotAuthenticated when action in [:new, :create]
+  plug Plug.RequireAuthenticated when action in [:delete]
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do

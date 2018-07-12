@@ -12,14 +12,14 @@ defmodule Authex.Phoenix.ViewHelpers do
   So if you set up your endpoint like this:
 
     defmodule MyProjectWeb.Endpoint do
-      plug Authex.Authorization.Plug.Session
+      plug Authex.Plug.Session
     end
 
   Only `MyProjectWeb.LayoutView` will be used from your app.
   However, if you set up the endpoint with a `:context_app` key:
 
     defmodule MyProjectWeb.Endpoint do
-      plug Authex.Authorization.Plug.Session, context_app: MyProjectWeb
+      plug Authex.Plug.Session, context_app: MyProjectWeb
     end
 
   The following modules are will be used from your app:
@@ -37,7 +37,7 @@ defmodule Authex.Phoenix.ViewHelpers do
   * `session/new.html.eex`
   """
   alias Plug.Conn
-  alias Authex.{Authorization.Plug, Config}
+  alias Authex.{Plug, Config}
   alias Phoenix.Controller
 
   @spec render(Conn.t(), binary() | atom(), Keyword.t() | map() | binary() | atom()) :: Conn.t()

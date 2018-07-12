@@ -9,7 +9,7 @@ defmodule Authex.Test.Phoenix.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 
-    plug Authex.Authorization.Plug.Session,
+    plug Authex.Plug.Session,
       current_user_assigns_key: :current_user,
       session_key: "auth",
       session_store: Authex.Test.CredentialsCacheMock,

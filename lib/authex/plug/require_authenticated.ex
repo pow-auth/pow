@@ -1,16 +1,16 @@
-defmodule Authex.Authorization.Plug.RequireAuthenticated do
+defmodule Authex.Plug.RequireAuthenticated do
   @moduledoc """
   This plug ensures that a user has been authenticated.
 
   Example:
 
-    plug Authex.Authorization.Plug.Session,
+    plug Authex.Plug.Session,
       current_user_assigns_key: :current_user
-    plug Authex.Authorization.Plug.RequireAuthenticated,
+    plug Authex.Plug.RequireAuthenticated,
       error_handler: Authex.Phoenix.ErrorHandler
   """
   alias Plug.Conn
-  alias Authex.{Authorization.Plug, Phoenix.ErrorHandler}
+  alias Authex.{Plug, Phoenix.ErrorHandler}
 
   @spec init(Keyword.t()) :: nil
   def init(opts), do: opts

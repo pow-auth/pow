@@ -1,9 +1,9 @@
-defmodule Authex.Authorization.Plug.RequireAuthenticatedTest do
+defmodule Authex.Plug.RequireNotAuthenticatedTest do
   use ExUnit.Case
   doctest Authex
 
   alias Plug.Conn
-  alias Authex.Authorization.{Plug, Plug.RequireAuthenticated}
+  alias Authex.{Plug, Plug.RequireNotAuthenticated}
   alias Authex.Test.ConnHelpers
 
   setup do
@@ -15,26 +15,26 @@ defmodule Authex.Authorization.Plug.RequireAuthenticatedTest do
   end
 
   defmodule ErrorHandler do
-    def call(conn, :not_authenticated) do
-      Conn.put_private(conn, :not_authenticated, true)
+    def call(conn, :already_authenticated) do
+      Conn.put_private(conn, :authenticated, true)
     end
   end
 
   @default_config [error_handler: __MODULE__.ErrorHandler]
 
   test "call/2", %{conn: conn} do
-    conn = RequireAuthenticated.call(conn, @default_config)
+    conn = RequireNotAuthenticated.call(conn, @default_config)
 
-    assert conn.private[:not_authenticated]
-    assert conn.halted
+    refute conn.private[:authenticated]
+    refute conn.halted
   end
 
   test "call/2 with assigned user", %{conn: conn} do
     conn = conn
            |> Plug.assign_current_user("user", [])
-           |> RequireAuthenticated.call(@default_config)
+           |> RequireNotAuthenticated.call(@default_config)
 
-    refute conn.private[:not_authenticated]
-    refute conn.halted
+    assert conn.private[:authenticated]
+    assert conn.halted
   end
 end

@@ -1,4 +1,4 @@
-defmodule Authex.Authorization.Plug do
+defmodule Authex.Plug do
   @moduledoc """
   Authorization methods for Plug.
   """
@@ -107,5 +107,5 @@ defmodule Authex.Authorization.Plug do
   end
 
   defp no_config_error,
-    do: "Authex configuration not found. Please set the Authex.Authorization.Plug.Session plug beforehand."
+    do: "Authex configuration not found. Please set the Authex.Plug.Session plug beforehand."
 end

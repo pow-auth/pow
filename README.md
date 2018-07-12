@@ -47,16 +47,15 @@ Set up routes to enable session based authentication:
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
-  use Authex.Router
 
   pipeline :browser do
     # ...
-    use Authex.Authorization.Plug.Session.Plug.Session,
-      user: MyApp.User
+    plug Authex.Plug.Session,
+      user: MyApp.Users.User
   end
 
   pipeline :protected do
-    use Authex.Authroization.Plug.EnsureAuthenticated
+    plug Authex.Plug.EnsureAuthenticated
   end
 
   scope "/", MyAppWeb do
@@ -82,7 +81,7 @@ Authex is build to be modular, and easy customizable. All configuration in metho
 
 Authex has four groups of modules that each can used individually, or in conjunction with each other:
 
-### Authex.Authorization.Plug
+### Authex.Plug
 
 This group will handle plug connection. The configuration will be assigned to `conn.private[:authex_config]` and passed through the controller to the users context module. The authorization is session based.
 
@@ -112,15 +111,15 @@ end
 
 ## Plugs
 
-### Authex.Authentication.Plug.Session
+### Authex.Plug.Session
 
 Enables session based authorization. The user struct will be collected from an ETS table through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes.
 
-### Authex.Authentication.Plug.RequireAuthenticated
+### Authex.Plug.RequireAuthenticated
 
 By default, this will redirect the user to the log in page if the user hasn't been authenticated.
 
-### Authex.Authentication.Plug.RequireNotAuthenticated
+### Authex.Plug.RequireNotAuthenticated
 
 By default, this will redirect the user to the front page if the user is already authenticated.
 

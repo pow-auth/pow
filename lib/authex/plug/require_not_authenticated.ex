@@ -1,16 +1,16 @@
-defmodule Authex.Authorization.Plug.RequireNotAuthenticated do
+defmodule Authex.Plug.RequireNotAuthenticated do
   @moduledoc """
   This plug ensures that a user hasn't already been authenticated.
 
   Example:
 
-    plug Authex.Authorization.Plug.Session,
+    plug Authex.Plug.Session,
       current_user_assigns_key: :current_user
-    plug Authex.Authorization.Plug.RequireAuthenticated,
+    plug Authex.Plug.RequireAuthenticated,
       error_handler: Authex.Phoenix.ErrorHandler
   """
   alias Plug.Conn
-  alias Authex.{Authorization.Plug, Phoenix.ErrorHandler}
+  alias Authex.{Plug, Phoenix.ErrorHandler}
 
   @spec init(Keyword.t()) :: Keyword.t()
   def init(opts), do: opts

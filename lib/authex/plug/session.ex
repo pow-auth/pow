@@ -1,21 +1,21 @@
-defmodule Authex.Authorization.Plug.Session do
+defmodule Authex.Plug.Session do
   @moduledoc """
   This plug will handle user authorization using session.
 
   Example:
 
-    plug Authex.Authorization.Plug.Session,
+    plug Authex.Plug.Session,
       user: MyApp.User,
       current_user_assigns_key: :current_user,
       session_key: "auth",
-      session_store: Authex.Authorization.Store.CredentialsCache,
+      session_store: Authex.Store.CredentialsCache,
       credentials_cache_name: "credentials",
       credentials_cache_ttl: :timer.hours(48),
       users_context: Authex.Ecto.Users,
       phoenix_view_namespace: Authex.Phoenix
   """
   alias Plug.Conn
-  alias Authex.{Authorization.Plug, Config, Store.CredentialsCache}
+  alias Authex.{Plug, Store.CredentialsCache, Config}
 
   @spec init(Config.t()) :: Config.t()
   def init(config), do: config

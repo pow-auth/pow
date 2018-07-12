@@ -1,9 +1,9 @@
-defmodule Authex.Authorization.Store.CredentialsCache do
+defmodule Authex.Store.CredentialsCache do
   @moduledoc """
   GenServer that stores credentials in an ETS cache. By default,
   credentials expire after 48 hours.
   """
-  # alias Authex.Authorization.Store
+  # alias Authex.Store
   # @behavior Store
 
   use GenServer

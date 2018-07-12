@@ -51,12 +51,12 @@ defmodule Mix.Tasks.Authex.Phoenix.Install do
 
       pipeline :browser do
         # ...
-        use Authex.Authorization.Plug.Session.Plug.Session,
-          user: MyApp.User
+        plug Authex.Plug.Session,
+          user: MyApp.Users.User
       end
 
       pipeline :protected do
-        use Authex.Authroization.Plug.EnsureAuthenticated
+        plug Authex.Plug.EnsureAuthenticated
       end
 
       scope "/", MyAppWeb do

@@ -1,9 +1,8 @@
-defmodule Authex.Authorization.Plug.CredentialsCacheTest do
+defmodule Authex.Plug.CredentialsCacheTest do
   use ExUnit.Case
   doctest Authex
 
-  alias Authex.{Authorization.Store.CredentialsCache,
-                Config}
+  alias Authex.{Store.CredentialsCache, Config}
 
   @default_config [
     credentials_cache_namespace: "authex:test:",

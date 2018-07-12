@@ -1,6 +1,6 @@
 defmodule Authex.Phoenix.RegistrationControllerTest do
   use Authex.Test.Phoenix.ConnCase
-  alias Authex.Authorization.Plug
+  alias Authex.Plug
 
   describe "new/2" do
     test "shows", %{conn: conn} do

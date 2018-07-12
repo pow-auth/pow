@@ -3,15 +3,13 @@ defmodule Authex.Phoenix.RegistrationController do
   use Authex.Phoenix.Web, :controller
 
   alias Authex.{Operations,
-                Authorization.Plug,
-                Authorization.Plug.RequireAuthenticated,
-                Authorization.Plug.RequireNotAuthenticated,
+                Plug,
                 Phoenix.RouterHelpers,
                 Phoenix.ViewHelpers,
                 Phoenix.Messages}
 
-  plug RequireNotAuthenticated when action in [:new, :create]
-  plug RequireAuthenticated when action in [:show, :edit, :update, :delete]
+  plug Plug.RequireNotAuthenticated when action in [:new, :create]
+  plug Plug.RequireAuthenticated when action in [:show, :edit, :update, :delete]
 
   def new(conn, _params) do
     changeset = Plug.changeset_user(conn)

@@ -1,9 +1,9 @@
-defmodule Authex.Authorization.Plug.SessionTest do
+defmodule Authex.Plug.SessionTest do
   use ExUnit.Case
   doctest Authex
 
-  alias Authex.{Authorization.Plug,
-                Authorization.Plug.Session,
+  alias Authex.{Plug,
+                Plug.Session,
                 Config}
   alias Authex.Test.{ConnHelpers, CredentialsCacheMock}
 

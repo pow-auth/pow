@@ -1,10 +1,10 @@
-defmodule Authex.Authorization.PlugTest do
+defmodule Authex.PlugTest do
   use ExUnit.Case
   doctest Authex
 
   alias Plug.Conn
-  alias Authex.{Authorization.Plug,
-                Authorization.Plug.Session,
+  alias Authex.{Plug,
+                Plug.Session,
                 Config,
                 Config.ConfigError}
   alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UsersContextMock}
@@ -17,7 +17,7 @@ defmodule Authex.Authorization.PlugTest do
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
   test "current_user/1" do
-    assert_raise ConfigError, "Authex configuration not found. Please set the Authex.Authorization.Plug.Session plug beforehand.", fn ->
+    assert_raise ConfigError, "Authex configuration not found. Please set the Authex.Plug.Session plug beforehand.", fn ->
       Plug.current_user(%Conn{private: %{}, assigns: %{}})
     end
 

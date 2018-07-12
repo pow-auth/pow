@@ -3,7 +3,7 @@ defmodule Authex.Phoenix.RouterHelpers do
   Module that handles routes.
   """
   alias Plug.Conn
-  alias Authex.{Authorization.Plug, Config}
+  alias Authex.{Plug, Config}
 
   @spec helpers(Conn.t()) :: atom()
   def helpers(%{private: private}) do
