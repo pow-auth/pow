@@ -31,7 +31,13 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Schema do
     @default_opts
     |> Keyword.merge(opts)
     |> Map.new()
+    |> context_app_to_atom()
   end
+
+  defp context_app_to_atom(%{context_app: context_app} = config),
+    do: Map.put(config, :context_app, String.to_atom(context_app))
+  defp context_app_to_atom(config),
+    do: config
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do
     Gen.Migration.run(args)
