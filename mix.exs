@@ -15,7 +15,8 @@ defmodule Authex.MixProject do
 
   def application do
     [
-      extra_applications: extra_applications(Mix.env)
+      extra_applications: extra_applications(Mix.env),
+      mod: {Authex.Application, []}
     ]
   end
 

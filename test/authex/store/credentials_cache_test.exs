@@ -10,14 +10,7 @@ defmodule Authex.Plug.CredentialsCacheTest do
     credentials_cache_ttl: :timer.hours(48)
   ]
 
-  test "initializes" do
-    {:ok, _pid} = CredentialsCache.start_link(@default_config)
-    refute :ets.info(CredentialsCache) == :undefined
-  end
-
   test "can put, get and delete records" do
-    {:ok, _pid} = CredentialsCache.start_link(@default_config)
-
     assert CredentialsCache.get(@default_config, "key") == :not_found
 
     CredentialsCache.put(@default_config, "key", "value")
@@ -30,8 +23,6 @@ defmodule Authex.Plug.CredentialsCacheTest do
   end
 
   test "records auto purge" do
-    {:ok, _pid} = CredentialsCache.start_link(@default_config)
-
     config = Config.put(@default_config, :credentials_cache_ttl, 100)
 
     CredentialsCache.put(config, "key", "value")
