@@ -37,11 +37,9 @@ defmodule Authex.Phoenix.Router do
         authex_routes()
       end
   """
-  defmacro authex_routes(options \\ %{}) do
+  defmacro authex_routes() do
     quote location: :keep do
-      options = Map.merge(%{scope: ""}, unquote(Macro.escape(options)))
-
-      scope "/#{options[:scope]}", Authex.Phoenix, as: "authex" do
+      scope "/", Authex.Phoenix, as: "authex" do
         resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
         resources "/registration", RegistrationController, singleton: true
       end
