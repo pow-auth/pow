@@ -39,6 +39,14 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
       assert ls(views_path) == expected_view_files
       assert view_content =~ "defmodule AuthexWeb.Authex.SessionView do"
       assert view_content =~ "use AuthexWeb, :view"
+
+      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "defmodule AuthexWeb.Endpoint"
+      assert msg =~ "otp_app: :authex"
+      assert msg =~ "repo: Authex.Repo"
+      assert msg =~ "user: Authex.Users.User"
+      assert msg =~ "context_app: AuthexWeb"
     end
   end
 
@@ -56,6 +64,14 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
 
       assert view_content =~ "defmodule TestWeb.Authex.SessionView do"
       assert view_content =~ "use TestWeb, :view"
+
+      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "defmodule TestWeb.Endpoint"
+      assert msg =~ "otp_app: :test"
+      assert msg =~ "repo: Test.Repo"
+      assert msg =~ "user: Test.Users.User"
+      assert msg =~ "context_app: TestWeb"
     end
   end
 

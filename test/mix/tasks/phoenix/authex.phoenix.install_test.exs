@@ -29,6 +29,16 @@ defmodule Mix.Tasks.Authex.Phoenix.InstallTest do
       assert [_one] = File.ls!("migrations")
       refute File.exists?(@templates_path)
       refute File.exists?(@views_path)
+
+
+      for _ <- 1..4, do: assert_received {:mix_shell, :info, [_msg]}
+      assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "plug Authex.Plug.Session"
+      assert msg =~ "repo: Authex.Repo"
+      assert msg =~ "user: Authex.Users.User"
+
+      assert msg =~ "use Authex.Phoenix.Router"
+      assert msg =~ "authex_routes()"
     end
   end
 

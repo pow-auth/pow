@@ -10,7 +10,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
 
   alias Mix.{Authex.Utils, Generator, Phoenix}
 
-  @switches [context_app: :string, web_path: :string]
+  @switches [context_app: :string]
   @default_opts []
 
   @doc false
@@ -20,6 +20,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
     args
     |> Utils.parse_options(@switches, @default_opts)
     |> create_template_files()
+    |> print_shell_instructions()
   end
 
   @template_files [
@@ -28,25 +29,27 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
   ]
 
   defp create_template_files(config) do
-    apps        = [".", :authex]
-    binding     = []
-    context_app = Map.get(config, :context_app, Mix.Authex.Context.context_app())
-    web_prefix  = web_path(context_app)
+    apps         = [".", :authex]
+    binding      = []
+    structure    = Mix.Phoenix.Utils.parse_structure(config)
+    context_base = structure[:context_base]
+    web_module   = structure[:web_module]
+    web_prefix   = structure[:web_prefix]
 
     Enum.each @template_files, fn {name, files} ->
-      create_view_file(name, context_app, web_prefix)
+      create_view_file(name, web_module, web_prefix)
       create_templates(apps, binding, web_prefix, name, files)
     end
+
+    %{context_base: context_base, web_module: web_module}
   end
 
-  defp create_view_file(name, context_app, web_prefix) do
+  defp create_view_file(name, web_mod, web_prefix) do
     path        = Path.join([web_prefix, "views", "authex", "#{name}_view.ex"])
-    context_base = Mix.Authex.Context.context_base(context_app)
-    mod          = web_module(context_base, web_prefix)
 
     content     = """
-    defmodule #{inspect mod}.Authex.#{Macro.camelize(name)}View do
-      use #{inspect mod}, :view
+    defmodule #{inspect web_mod}.Authex.#{Macro.camelize(name)}View do
+      use #{inspect web_mod}, :view
     end
     """
 
@@ -69,12 +72,25 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
     {:text, source, dest}
   end
 
-  defp web_path(this_app), do: Path.join("lib", "#{this_app}_web")
+  defp print_shell_instructions(%{context_base: mod, web_module: web_mod}) do
+    Mix.shell.info """
+    All Authex templates and views has been generated.
 
-  defp web_module(base, web_prefix) do
-    case String.ends_with?(web_prefix, "_web") do
-      true  -> Module.concat(["#{base}Web"])
-      false -> Module.concat([base])
+    Please update set `context_app: #{inspect web_mod}` in your configuration,
+    like so:
+
+    defmodule #{inspect web_mod}.Endpoint do
+      use #{inspect web_mod}.Endpoint, otp_app: :#{Macro.underscore(mod)}
+
+      # ...
+
+      plug Authex.Plug.Session,
+        repo: #{mod}.Repo,
+        user: #{mod}.Users.User,
+        context_app: #{inspect web_mod}
+
+      # ...
     end
+    """
   end
 end
