@@ -19,29 +19,29 @@ defmodule Authex.Plug.Session do
       credentials_cache_ttl: :timer.hours(48),
       users_context: Authex.Ecto.Users
   """
+  use Authex.Plug.Base
+
   alias Plug.Conn
-  alias Authex.{Plug, Store.CredentialsCache, Config}
+  alias Authex.{Config, Plug, Store.CredentialsCache}
 
-  @spec init(Config.t()) :: Config.t()
-  def init(config), do: config
-
-  @spec call(Conn.t(), Config.t()) :: Conn.t()
-  def call(conn, config) do
-    conn = Plug.put_config(conn, Config.put(config, :mod, __MODULE__))
-
+  @spec fetch(Conn.t(), Config.t()) :: map() | nil
+  def fetch(conn, config) do
     conn
-    |> Plug.current_user()
-    |> maybe_fetch_from_session(conn, config)
+    |> Conn.fetch_session()
+    |> get_session(config)
+    |> case do
+      :not_found -> nil
+      user       -> user
+    end
   end
 
-  @spec create(Conn.t(), any()) :: Conn.t()
-  def create(conn, user) do
+  @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
+  def create(conn, user, config) do
     key           = UUID.uuid1()
-    config        = Plug.fetch_config(conn)
     session_key   = session_key(config)
     store         = store(config)
 
-    delete(conn)
+    delete(conn, config)
     store.put(config, key, user)
 
     conn
@@ -49,9 +49,8 @@ defmodule Authex.Plug.Session do
     |> Plug.assign_current_user(user, config)
   end
 
-  @spec delete(Conn.t()) :: Conn.t()
-  def delete(conn) do
-    config      = Plug.fetch_config(conn)
+  @spec delete(Conn.t(), Config.t()) :: Conn.t()
+  def delete(conn, config) do
     key         = Conn.get_session(conn, session_key(config))
     store       = store(config)
     session_key = session_key(config)
@@ -62,17 +61,6 @@ defmodule Authex.Plug.Session do
     |> Conn.delete_session(session_key)
     |> Plug.assign_current_user(nil, config)
   end
-
-  defp maybe_fetch_from_session(nil, conn, config) do
-    conn
-    |> Conn.fetch_session()
-    |> get_session(config)
-    |> case do
-      :not_found -> conn
-      user       -> Plug.assign_current_user(conn, user, config)
-    end
-  end
-  defp maybe_fetch_from_session(_user, conn, _config), do: conn
 
   defp get_session(conn, config) do
     key = Conn.get_session(conn, session_key(config))

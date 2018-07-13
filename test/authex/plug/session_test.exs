@@ -61,14 +61,14 @@ defmodule Authex.Plug.SessionTest do
     user = %{id: 1}
     conn = conn
            |> Session.call(@default_opts)
-           |> Session.create(user)
+           |> Session.do_create(user)
 
     assert session_id = get_session_id(conn)
     assert is_binary(session_id)
     assert CredentialsCacheMock.get(nil, session_id) == user
     assert Plug.current_user(conn) == user
 
-    conn = Session.create(conn, user)
+    conn = Session.do_create(conn, user)
     assert new_session_id = get_session_id(conn)
     assert is_binary(session_id)
 
@@ -82,14 +82,14 @@ defmodule Authex.Plug.SessionTest do
     user = %{id: 1}
     conn = conn
            |> Session.call(@default_opts)
-           |> Session.create(user)
+           |> Session.do_create(user)
 
     assert session_id = get_session_id(conn)
     assert is_binary(session_id)
     assert CredentialsCacheMock.get(nil, session_id) == user
     assert Plug.current_user(conn) == user
 
-    conn = Session.delete(conn)
+    conn = Session.do_delete(conn)
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)

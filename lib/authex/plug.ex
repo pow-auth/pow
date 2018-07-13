@@ -45,7 +45,7 @@ defmodule Authex.Plug do
     |> Operations.authenticate(params)
     |> case do
       nil  -> {:error, conn}
-      user -> {:ok, mod.create(conn, user)}
+      user -> {:ok, mod.do_create(conn, user)}
     end
   end
 
@@ -54,7 +54,7 @@ defmodule Authex.Plug do
     config = fetch_config(conn)
     mod    = config[:mod]
 
-    mod.delete(conn)
+    mod.do_delete(conn)
   end
 
   @spec change_user(Conn.t(), map()) :: map()
@@ -75,7 +75,7 @@ defmodule Authex.Plug do
     config
     |> Operations.create(params)
     |> case do
-      {:ok, user}     -> {:ok, mod.create(conn, user)}
+      {:ok, user}     -> {:ok, mod.do_create(conn, user)}
       {:error, error} -> {:error, error}
     end
   end
@@ -89,7 +89,7 @@ defmodule Authex.Plug do
     config
     |> Operations.update(user, params)
     |> case do
-      {:ok, user}     -> {:ok, mod.create(conn, user)}
+      {:ok, user}     -> {:ok, mod.do_create(conn, user)}
       {:error, error} -> {:error, error}
     end
   end
@@ -103,7 +103,7 @@ defmodule Authex.Plug do
     config
     |> Operations.delete(user)
     |> case do
-      {:ok, _user}    -> {:ok, mod.delete(conn)}
+      {:ok, _user}    -> {:ok, mod.do_delete(conn)}
       {:error, error} -> {:error, error}
     end
   end

@@ -120,22 +120,26 @@ This contains the controllers, views and templates for Phoenix. Templates are no
 Authex ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Guardian](https://github.com/ueberauth/guardian):
 
 ```elixir
-defmodule MyAppWeb.Plug.AuthexGuardian do
-  alias Authex.{Config, Plug}
+defmodule MyAppWeb.Authex.Plug do
+  use Authex.Plug.Base
 
-  def init(config), do: config
+  def fetch(conn, config) do
+    MyApp.Guardian.Plug.current_resource(conn)
+  end
 
-  def call(conn, config), do: Plug.put_config(conn, Config.put(config, :mod, __MODULE__))
+  def create(conn, user, config) do
+    MyApp.Guardian.Plug.sign_in(conn, user)
+  end
 
-  def create(conn, user), do: MyApp.Guardian.Plug.sign_in(conn, user)
-
-  def delete(conn), do: MyApp.Guardian.Plug.sign_out(conn)
+  def delete(conn, config) do
+    MyApp.Guardian.Plug.sign_out(conn)
+  end
 end
 
 defmodule MyAppWeb.Endpoint do
   # ...
 
-  plug MyAppWeb.Plug.AuthexGuardian,
+  plug MyAppWeb.Authex.Plug,
     repo: MyApp.Repo,
     user: MyApp.Users.User
 end
