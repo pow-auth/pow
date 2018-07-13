@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Install do
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("authex.ecto.install")
+    Utils.no_umbrella!("authex.phoenix.install")
 
     args
     |> Utils.parse_options(@switches, @default_opts)
