@@ -1,8 +1,8 @@
-defmodule Authex.Phoenix.ErrorHandlerTest do
+defmodule Authex.Phoenix.PlugErrorHandlerTest do
   use ExUnit.Case
   doctest Authex
 
-  alias Authex.Phoenix.ErrorHandler
+  alias Authex.Phoenix.PlugErrorHandler
   alias Phoenix.ConnTest
   alias Authex.Test.ConnHelpers
 
@@ -17,14 +17,14 @@ defmodule Authex.Phoenix.ErrorHandlerTest do
   end
 
   test "call/2 :not_autenticated", %{conn: conn} do
-    conn = ErrorHandler.call(conn, :not_authenticated)
+    conn = PlugErrorHandler.call(conn, :not_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/"
     assert ConnTest.get_flash(conn, :error) == "You're not authenticated."
   end
 
   test "call/2 :already_authenticated", %{conn: conn} do
-    conn = ErrorHandler.call(conn, :already_authenticated)
+    conn = PlugErrorHandler.call(conn, :already_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/"
     assert ConnTest.get_flash(conn, :error) == "You're already authenticated."

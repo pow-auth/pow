@@ -1,6 +1,6 @@
-defmodule Authex.Phoenix.ErrorHandler do
+defmodule Authex.Phoenix.PlugErrorHandler do
   @moduledoc """
-  Defines default handling of errors.
+  Used with Authex.Plug.RequireAuthenticated or Authex.Plug.RequireNotAuthenticated.
   """
   alias Plug.Conn
   alias Phoenix.Controller

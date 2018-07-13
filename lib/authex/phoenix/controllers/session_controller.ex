@@ -3,10 +3,10 @@ defmodule Authex.Phoenix.SessionController do
   use Authex.Phoenix.Web, :controller
 
   alias Authex.{Config, Plug}
-  alias Authex.Phoenix.{Messages, ViewHelpers, RouterHelpers}
+  alias Authex.Phoenix.{Messages, PlugErrorHandler, RouterHelpers, ViewHelpers}
 
-  plug Plug.RequireNotAuthenticated when action in [:new, :create]
-  plug Plug.RequireAuthenticated when action in [:delete]
+  plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
+  plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:delete]
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do

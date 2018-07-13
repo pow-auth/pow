@@ -4,13 +4,14 @@ defmodule Authex.Plug.RequireNotAuthenticated do
 
   Example:
 
-    plug Authex.Plug.Session,
-      current_user_assigns_key: :current_user
     plug Authex.Plug.RequireAuthenticated,
-      error_handler: Authex.Phoenix.ErrorHandler
+      error_handler: MyAppWeb.Authex.ErrorHandler
+
+  You can see `Authex.Phoenix.PlugErrorHandler` for an example of the error
+  handler module.
   """
   alias Plug.Conn
-  alias Authex.{Config, Plug, Phoenix.ErrorHandler}
+  alias Authex.{Config, Plug}
 
   @spec init(Config.t()) :: Config.t()
   def init(config), do: config
@@ -24,10 +25,16 @@ defmodule Authex.Plug.RequireNotAuthenticated do
 
   defp maybe_halt(nil, conn, _config), do: conn
   defp maybe_halt(_user, conn, config) do
-    handler = Config.get(config, :error_handler, ErrorHandler)
+    handler = Config.get(config, :error_handler, nil)
 
-    conn
-    |> handler.call(:already_authenticated)
-    |> Conn.halt()
+    case handler do
+      nil ->
+        Conn.halt(conn)
+
+      handler ->
+        conn
+        |> handler.call(:already_authenticated)
+        |> Conn.halt()
+    end
   end
 end
