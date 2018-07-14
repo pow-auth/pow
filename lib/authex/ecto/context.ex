@@ -9,17 +9,17 @@ defmodule Authex.Ecto.Context do
   do configure `lib/my_project/user/users.ex`
   the following way:
 
-      defmodule MyProject.Users do
+      defmodule MyApp.Users do
         use Authex.Ecto.Context,
           repo: MyApp.Repo,
-          user: MyProject.Users.User
+          user: MyApp.Users.User
 
         def create(params) do
           authex_create(params)
         end
       end
 
-  Remember to update configuration with `users_context: MyProject.Users`.
+  Remember to update configuration with `users_context: MyApp.Users`.
 
   The following Authex methods can be accessed:
     - `authex_authenticate/1`

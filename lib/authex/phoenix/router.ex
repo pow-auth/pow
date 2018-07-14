@@ -6,8 +6,8 @@ defmodule Authex.Phoenix.Router do
 
   Configure `lib/my_project_web/router.ex` the following way:
 
-      defmodule MyProjectWeb.Router do
-        use MyProjectWeb, :router
+      defmodule MyAppWeb.Router do
+        use MyAppWeb, :router
         use Authex.Phoenix.Router
 
         # ...

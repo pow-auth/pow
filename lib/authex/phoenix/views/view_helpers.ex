@@ -11,22 +11,22 @@ defmodule Authex.Phoenix.ViewHelpers do
 
   So if you set up your endpoint like this:
 
-    defmodule MyProjectWeb.Endpoint do
+    defmodule MyAppWeb.Endpoint do
       plug Authex.Plug.Session
     end
 
-  Only `MyProjectWeb.LayoutView` will be used from your app.
+  Only `MyAppWeb.LayoutView` will be used from your app.
   However, if you set up the endpoint with a `:web_module` key:
 
-    defmodule MyProjectWeb.Endpoint do
-      plug Authex.Plug.Session, web_module: MyProjectWeb
+    defmodule MyAppWeb.Endpoint do
+      plug Authex.Plug.Session, web_module: MyAppWeb
     end
 
   The following modules are will be used from your app:
 
-  * `MyProjectWeb.LayoutView`
-  * `MyProjectWeb.Authex.RegistrationView`
-  * `MyProjectWeb.Authex.SessionView`
+  * `MyAppWeb.LayoutView`
+  * `MyAppWeb.Authex.RegistrationView`
+  * `MyAppWeb.Authex.SessionView`
 
   And also the following templates has to exist in
   `lib/my_project_web/templates/authex`:

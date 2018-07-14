@@ -6,7 +6,7 @@ defmodule Authex.Ecto.Schema do
 
   Configure `lib/my_project/user/user.ex` the following way:
 
-      defmodule MyProject.Users.User do
+      defmodule MyApp.Users.User do
         use Ecto.Schema
         use Authex.Ecto.Schema,
           login_field: :email,
@@ -26,7 +26,7 @@ defmodule Authex.Ecto.Schema do
         end
       end
 
-  Remember to add `user: MyProject.Users.User` to configuration.
+  Remember to add `user: MyApp.Users.User` to configuration.
   """
   alias Authex.{Config, Ecto.Schema.Fields}
 
