@@ -2,7 +2,7 @@ defmodule Authex.Ecto.Schema.Migration do
   @moduledoc """
   Generates schema migration content.
   """
-  alias Authex.{Config, Ecto.Schema, Ecto.Schema.Fields}
+  alias Authex.{Config, Ecto.Schema.Fields}
 
   @template """
     defmodule <%= inspect schema.repo %>.Migrations.Create<%= Macro.camelize(schema.table) %> do
@@ -32,7 +32,6 @@ defmodule Authex.Ecto.Schema.Migration do
   defp parse_options(base, config) do
     attrs =
       config
-      |> Schema.login_field()
       |> Fields.attrs()
       |> Enum.reject(&is_virtual?/1)
       |> Enum.map(&to_migration_attr/1)
@@ -41,7 +40,10 @@ defmodule Authex.Ecto.Schema.Migration do
     binary_id          = config[:binary_id]
     migration_defaults = defaults(attrs)
     {assocs, attrs}    = partition_attrs(attrs)
-    indexes            = indexes(table, attrs)
+    indexes =
+      config
+      |> Fields.indexes()
+      |> Enum.map(&to_migration_index(table, &1))
 
     %{
       repo: repo,
@@ -86,9 +88,8 @@ defmodule Authex.Ecto.Schema.Migration do
     |> Enum.split_with(fn _ -> false end)
   end
 
-  defp indexes(table, [{key, _} | _rest]) do
-    ["create unique_index(:#{table}, [:#{key}])"]
-  end
+  defp to_migration_index(table, {key, true}),
+    do: "create unique_index(:#{table}, [:#{key}])"
 
   defp migration_file(schema) do
     EEx.eval_string(unquote(@template), schema: schema)

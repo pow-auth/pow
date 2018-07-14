@@ -39,9 +39,6 @@ defmodule Authex.Ecto.Schema do
       import unquote(__MODULE__), only: [user_fields: 0]
       @behaviour unquote(__MODULE__)
 
-      @authex_login_field unquote(__MODULE__).login_field(unquote(config))
-      def authex_login_field(), do: @authex_login_field
-
       def changeset(user, attrs), do: authex_changeset(user, attrs)
       def verify_password(user, password), do: authex_verify_password(user, password)
 
@@ -54,23 +51,23 @@ defmodule Authex.Ecto.Schema do
       end
 
       defoverridable unquote(__MODULE__)
+
+      @authex_fields Fields.attrs(unquote(config))
+      @authex_login_field unquote(__MODULE__).login_field(unquote(config))
+      def authex_login_field(), do: @authex_login_field
     end
   end
 
   @spec user_fields() :: Macro.t()
   defmacro user_fields() do
     quote do
-      attrs =
-        @authex_login_field
-        |> Fields.attrs()
-        |> Enum.map(fn
-          {name, type} -> %{name: name, type: type, defaults: []}
-          {name, type, defaults} -> %{name: name, type: type, defaults: defaults}
-        end)
+      Enum.each(@authex_fields, fn
+        {name, type} ->
+          field(name, type)
 
-      for %{name: name, type: type, defaults: defaults} <- attrs do
-        field(name, type, defaults)
-      end
+        {name, type, defaults} ->
+          field(name, type, defaults)
+      end)
     end
   end
 
