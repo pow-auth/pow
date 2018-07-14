@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
       |> Path.join("migrations")
     name = "CreateUser"
     base_name = "#{Macro.underscore(name)}.exs"
-    context_base = Mix.Authex.Context.context_base(Mix.Authex.Context.context_app())
+    context_base = Utils.context_base(Utils.context_app())
     content = Migration.gen(context_base, repo: repo)
 
     path

@@ -1,8 +1,8 @@
 defmodule Mix.Phoenix.Utils do
   @spec parse_structure(map()) :: map()
   def parse_structure(config) do
-    context_app  = Map.get(config, :context_app, Mix.Authex.Context.context_app())
-    context_base = Mix.Authex.Context.context_base(context_app)
+    context_app  = Map.get(config, :context_app, Mix.Authex.Utils.context_app())
+    context_base = Mix.Authex.Utils.context_base(context_app)
     web_prefix   = web_path(context_app)
     web_module   = web_module(context_base, web_prefix)
 
