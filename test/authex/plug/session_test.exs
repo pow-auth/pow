@@ -1,6 +1,6 @@
 defmodule Authex.Plug.SessionTest do
   use ExUnit.Case
-  doctest Authex
+  doctest Authex.Plug.Session
 
   alias Authex.{Plug,
                 Plug.Session,

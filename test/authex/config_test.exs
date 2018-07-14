@@ -1,6 +1,6 @@
 defmodule Authex.ConfigTest do
   use ExUnit.Case
-  doctest Authex
+  doctest Authex.Config
 
   alias Authex.Config
 

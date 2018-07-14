@@ -1,6 +1,6 @@
 defmodule Authex.Phoenix.PlugErrorHandlerTest do
   use ExUnit.Case
-  doctest Authex
+  doctest Authex.Phoenix.PlugErrorHandler
 
   alias Authex.Phoenix.PlugErrorHandler
   alias Phoenix.ConnTest

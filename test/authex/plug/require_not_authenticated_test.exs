@@ -1,6 +1,6 @@
 defmodule Authex.Plug.RequireNotAuthenticatedTest do
   use ExUnit.Case
-  doctest Authex
+  doctest Authex.Plug.RequireNotAuthenticated
 
   alias Plug.Conn
   alias Authex.{Plug, Plug.RequireNotAuthenticated}

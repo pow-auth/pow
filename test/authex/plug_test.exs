@@ -1,6 +1,6 @@
 defmodule Authex.PlugTest do
   use ExUnit.Case
-  doctest Authex
+  doctest Authex.Plug
 
   alias Plug.Conn
   alias Authex.{Plug,

@@ -1,6 +1,6 @@
 defmodule Authex.Phoenix.ViewHelpersTest do
   use Authex.Test.Phoenix.ConnCase
-  doctest Authex
+  doctest Authex.Phoenix.ViewHelpers
 
   alias Authex.Phoenix.ViewHelpers
   alias Authex.Test.Ecto.Users.User
