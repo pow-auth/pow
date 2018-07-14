@@ -2,38 +2,53 @@ defmodule Authex.Operations do
   @moduledoc """
   A module that handles struct operations (User).
   """
-  alias Authex.{Config, Ecto.UsersContext}
+  alias Authex.{Config, Ecto.Context}
+
+  @spec changeset(Config.t(), map()) :: map() | nil | no_return
+  def changeset(config, params) do
+    user_mod = Config.user_module(config)
+    changeset(config, struct(user_mod), params)
+  end
+
+  @spec changeset(Config.t(), map(), map()) :: map()
+  def changeset(config, user, params) do
+    user_mod = Config.user_module(config)
+    user_mod.changeset(user, params)
+  end
 
   @spec authenticate(Config.t(), map()) :: map() | nil | no_return
   def authenticate(config, params) do
-    module(config).authenticate(config, params)
-  end
-
-  @spec changeset(Config.t(), map()) :: map()
-  def changeset(config, params) do
-    module(config).changeset(config, params)
-  end
-  @spec changeset(Config.t(), map(), map()) :: map()
-  def changeset(config, user, params) do
-    module(config).changeset(user, config, params)
+    case context_module(config) do
+      Context -> Context.authenticate(config, params)
+      module  -> module.authenticate(params)
+    end
   end
 
   @spec create(Config.t(), map()) :: {:ok, map()} | {:error, map()} | no_return
   def create(config, params) do
-    module(config).create(config, params)
+    case context_module(config) do
+      Context -> Context.create(config, params)
+      module  -> module.create(params)
+    end
   end
 
   @spec update(Config.t(), map(), map()) :: {:ok, map()} | {:error, map()} | no_return
   def update(config, user, params) do
-    module(config).update(config, user, params)
+    case context_module(config) do
+      Context -> Context.update(config, user, params)
+      module  -> module.update(user, params)
+    end
   end
 
   @spec delete(Config.t(), map()) :: {:ok, map()} | {:error, map()} | no_return
   def delete(config, user) do
-    module(config).delete(config, user)
+    case context_module(config) do
+      Context -> Context.delete(config, user)
+      module  -> module.delete(user)
+    end
   end
 
-  defp module(config) do
-    Config.get(config, :users_context, UsersContext)
+  defp context_module(config) do
+    Config.get(config, :users_context, Context)
   end
 end

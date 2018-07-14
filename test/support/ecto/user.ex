@@ -9,4 +9,10 @@ defmodule Authex.Test.Ecto.Users.User do
 
     timestamps()
   end
+
+  def changeset(user_or_changeset, params) do
+    user_or_changeset
+    |> authex_changeset(params)
+    |> Ecto.Changeset.cast(params, [:custom])
+  end
 end

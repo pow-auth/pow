@@ -3,11 +3,11 @@ defmodule Authex.Phoenix.ViewHelpersTest do
   doctest Authex
 
   alias Authex.Phoenix.ViewHelpers
-  alias Authex.Test.UsersContextMock
+  alias Authex.Test.Ecto.Users.User
   alias Plug.Conn
 
   setup %{conn: conn} do
-    changeset   = UsersContextMock.changeset([], %{})
+    changeset   = User.changeset(%User{}, %{})
     action      = "/"
     conn =
       conn

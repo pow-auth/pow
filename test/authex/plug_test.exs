@@ -7,11 +7,11 @@ defmodule Authex.PlugTest do
                 Plug.Session,
                 Config,
                 Config.ConfigError}
-  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, UsersContextMock}
+  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, ContextMock}
 
   @default_config [
     current_user_assigns_key: :current_user,
-    users_context: UsersContextMock,
+    users_context: ContextMock,
     session_store: CredentialsCacheMock
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)

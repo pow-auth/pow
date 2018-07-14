@@ -1,33 +1,20 @@
 defmodule Authex.Test.Ecto.Users do
-  alias Authex.Ecto.UsersContext
-  alias Ecto.Changeset
+  alias Authex.Ecto.Context
   alias Authex.Test.Ecto.{Repo, Users.User}
 
-  use UsersContext,
+  use Context,
     repo: Repo,
     user: User
 
-  def changeset(user_or_changeset, config, params) do
-    user_or_changeset
-    |> authex_changeset(config, params)
-    |> Changeset.cast(params, [:custom])
-  end
+  def authenticate(:test_macro), do: :ok
+  def authenticate(params), do: authex_authenticate(params)
 
-  def authenticate(_config, :test_macro), do: :ok
-  def authenticate(config, params) do
-    authex_authenticate(config, params)
-  end
+  def create(:test_macro), do: :ok
+  def create(params), do: authex_create(params)
 
-  def create(config, params) do
-    authex_create(config, params)
-  end
+  def update(_user, :test_macro), do: :ok
+  def update(user, params), do: authex_update(user, params)
 
-  def update(config, user, params) do
-    authex_update(config, user, params)
-  end
-
-  def delete(_config, :test_macro), do: :ok
-  def delete(config, user) do
-    authex_delete(config, user)
-  end
+  def delete(:test_macro), do: :ok
+  def delete(user), do: authex_delete(user)
 end

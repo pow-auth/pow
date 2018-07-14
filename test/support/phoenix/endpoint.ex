@@ -23,7 +23,8 @@ defmodule Authex.Test.Phoenix.Endpoint do
     session_store: Authex.Test.CredentialsCacheMock,
     credentials_cache_name: "credentials",
     credentials_cache_ttl: :timer.hours(48),
-    users_context: Authex.Test.UsersContextMock
+    user: Authex.Test.Ecto.Users.User,
+    users_context: Authex.Test.ContextMock
 
   plug Authex.Test.Phoenix.Router
 end

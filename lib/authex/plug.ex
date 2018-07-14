@@ -59,7 +59,7 @@ defmodule Authex.Plug do
 
   @spec change_user(Conn.t(), map()) :: map()
   def change_user(conn, params \\ %{}) do
-    config   = fetch_config(conn)
+    config = fetch_config(conn)
 
     case current_user(conn) do
       nil  -> Operations.changeset(config, params)

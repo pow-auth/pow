@@ -109,7 +109,7 @@ This group will handle the plug connection. The configuration will be assigned t
 
 #### Authex.Ecto
 
-This group contains all modules related to the Ecto based user schema and context. By default, Authex will use the `Authex.Ecto.UsersContext` module for authenticating, creating, updating and deleting users. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
+This group contains all modules related to the Ecto based user schema and context. By default, Authex will use the `Authex.Ecto.Context` module for authenticating, creating, updating and deleting users. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
 
 #### Authex.Phoenix
 
