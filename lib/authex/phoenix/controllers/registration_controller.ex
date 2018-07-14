@@ -2,7 +2,7 @@ defmodule Authex.Phoenix.RegistrationController do
   @moduledoc false
   use Authex.Phoenix.Web, :controller
 
-  alias Authex.{Config, Plug}
+  alias Authex.Plug
   alias Authex.Phoenix.{Messages, PlugErrorHandler, RouterHelpers, ViewHelpers}
 
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
@@ -75,13 +75,11 @@ defmodule Authex.Phoenix.RegistrationController do
 
   defp render_new(conn, changeset) do
     action = RouterHelpers.helpers(conn).authex_registration_path(conn, :create)
-    login_field = conn |> Plug.fetch_config() |> Config.login_field()
-    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action, login_field: login_field)
+    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
   end
 
   defp render_edit(conn, changeset) do
     action = RouterHelpers.helpers(conn).authex_registration_path(conn, :update)
-    login_field = conn |> Plug.fetch_config() |> Config.login_field()
-    ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action, login_field: login_field)
+    ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action)
   end
 end

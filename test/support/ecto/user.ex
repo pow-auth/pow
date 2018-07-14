@@ -1,11 +1,11 @@
 defmodule Authex.Test.Ecto.Users.User do
   use Ecto.Schema
-  require Authex.Ecto.UserSchema
+  use Authex.Ecto.Schema
 
   schema "users" do
-    field :username, :string
+    field :custom, :string
 
-    Authex.Ecto.UserSchema.user_schema()
+    user_fields()
 
     timestamps()
   end

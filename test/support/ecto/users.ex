@@ -10,7 +10,7 @@ defmodule Authex.Test.Ecto.Users do
   def changeset(user_or_changeset, config, params) do
     user_or_changeset
     |> authex_changeset(config, params)
-    |> Changeset.cast(params, [:username])
+    |> Changeset.cast(params, [:custom])
   end
 
   def authenticate(_config, :test_macro), do: :ok

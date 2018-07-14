@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Schema do
   """
   use Mix.Task
 
-  alias Authex.Ecto.UserSchema
+  alias Authex.Ecto.Schema.Module
   alias Mix.Tasks.Authex.Ecto.Gen
   alias Mix.{Authex.Utils, Generator}
 
@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Schema do
     context_base = Mix.Authex.Context.context_base(context_app)
 
     base_name = "user.ex"
-    content   = UserSchema.schema_file(context_base, module: "Users.User")
+    content   = Module.gen(context_base, module: "Users.User")
 
     context_app
     |> Mix.Authex.Context.context_lib_path("users")

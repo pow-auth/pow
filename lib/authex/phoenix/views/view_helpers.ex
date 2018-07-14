@@ -54,7 +54,6 @@ defmodule Authex.Phoenix.ViewHelpers do
 
     view   = build_view_module(view_module, web_module)
     layout = build_layout(layout, web_module || base)
-    # raise conn
 
     conn
     |> Controller.put_view(view)
@@ -99,4 +98,10 @@ defmodule Authex.Phoenix.ViewHelpers do
 
   defp split_module(nil), do: nil
   defp split_module(module) when is_atom(module), do: Module.split(module)
+
+  @spec module_attribute(map(), any()) :: any()
+  def module_attribute(changeset, key) do
+    module = changeset.data.__struct__
+    apply(Authex.Ecto.Schema, key, [module])
+  end
 end

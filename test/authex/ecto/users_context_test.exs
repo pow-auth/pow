@@ -3,17 +3,22 @@ defmodule Authex.Ecto.UsersContextTest do
   doctest Authex.Ecto.UsersContext
 
   alias Authex.Ecto.UsersContext
-  alias Authex.Test.Ecto.{Users, Users.User, Repo}
+  alias Authex.Test.Ecto.{Users, Users.User, Users.UsernameUser, Repo}
   alias Ecto.Changeset
 
   @config [repo: Repo, user: User]
   @invalid_config [repo: Invalid, user: Invalid]
-  @username_config Keyword.put(@config, :login_field, :username)
+  @username_config [repo: Repo, user: UsernameUser]
 
   describe "changeset/2" do
     @valid_params %{
-      "username" => "john.doe",
       "email" => "any",
+      "password" => "secret",
+      "password_confirm" => "secret",
+      "custom" => "custom"
+    }
+    @valid_params_username %{
+      "username" => "john.doe",
       "password" => "secret",
       "password_confirm" => "secret"
     }
@@ -26,17 +31,19 @@ defmodule Authex.Ecto.UsersContextTest do
       refute changeset.valid?
       assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
 
-      changeset = UsersContext.changeset(@username_config, Map.delete(@valid_params, "username"))
+      changeset = UsersContext.changeset(@username_config, Map.delete(@valid_params_username, "username"))
       refute changeset.valid?
       assert changeset.errors[:username] == {"can't be blank", [validation: :required]}
 
-      changeset = UsersContext.changeset(@username_config, @valid_params)
+      changeset = UsersContext.changeset(@username_config, @valid_params_username)
       assert changeset.valid?
     end
 
     test "requires unique login field" do
-      {:ok, _user} = %User{} |> Changeset.cast(@valid_params, [:email, :username]) |> Repo.insert()
-      valid_params = Map.merge(@valid_params, %{"email" =>"other", "username" => "jane.doe"})
+      {:ok, _user} =
+        %User{}
+        |> Changeset.cast(@valid_params, [:email])
+        |> Repo.insert()
 
       assert {:error, changeset} =
         @config
@@ -44,36 +51,30 @@ defmodule Authex.Ecto.UsersContextTest do
         |> Repo.insert()
       assert changeset.errors[:email] == {"has already been taken", []}
 
-      assert {:ok, user} =
-        @config
-        |> UsersContext.changeset(valid_params)
+      {:ok, _user} =
+        %UsernameUser{}
+        |> Changeset.cast(@valid_params_username, [:username])
         |> Repo.insert()
-
-      {:ok, _user} = UsersContext.delete(@config, user)
 
       assert {:error, changeset} =
         @username_config
-        |> UsersContext.changeset(@valid_params)
+        |> UsersContext.changeset(@valid_params_username)
         |> Repo.insert()
       assert changeset.errors[:username] == {"has already been taken", []}
-
-      assert {:ok, _user} =
-        @username_config
-        |> UsersContext.changeset(valid_params)
-        |> Repo.insert()
     end
 
     test "requires password when no password_hash is nil" do
       params = Map.delete(@valid_params, "password")
-
       changeset = UsersContext.changeset(@config, params)
+
       refute changeset.valid?
       assert changeset.errors[:password] == {"can't be blank", [validation: :required]}
 
-      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt("secret")}
-      params = Map.put(@valid_params, "current_password", "secret")
+      password = "secret"
+      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt(password)}
+      params = Map.put(@valid_params, "current_password", password)
+      changeset = UsersContext.changeset(user, @config, params)
 
-      changeset = UsersContext.changeset(user, @username_config, params)
       assert changeset.valid?
     end
 
@@ -124,18 +125,27 @@ defmodule Authex.Ecto.UsersContextTest do
       changeset = Users.changeset(%User{}, [], @valid_params)
       assert changeset.valid?
       assert changeset.changes[:email]
-      assert changeset.changes[:username]
+      assert changeset.changes[:custom]
     end
   end
 
   describe "authenticate/2" do
-    @valid_params %{"email" => "any", "password" => "secret"}
+    @password "secret"
+    @valid_params %{"email" => "any", "password" => @password}
+    @valid_params_username %{"username" => "john.doe", "password" => @password}
 
     setup do
-      password_hash = Comeonin.Pbkdf2.hashpwsalt("secret")
-      changeset = Changeset.change(%User{}, username: "john.doe", email: "any", password_hash: password_hash)
+      password_hash = Comeonin.Pbkdf2.hashpwsalt(@password)
+      user =
+        %User{}
+        |> Changeset.change(email: "any", password_hash: password_hash)
+        |> Repo.insert!()
+      username_user =
+        %UsernameUser{}
+        |> Changeset.change(username: "john.doe", password_hash: password_hash)
+        |> Repo.insert!()
 
-      {:ok, %{user: Repo.insert!(changeset)}}
+      {:ok, %{user: user, username_user: username_user}}
     end
 
     test "requires user schema mod in config" do
@@ -150,19 +160,18 @@ defmodule Authex.Ecto.UsersContextTest do
       end
     end
 
-    test "authenticates", %{user: user} do
+    test "authenticates", %{user: user, username_user: username_user} do
       refute UsersContext.authenticate(@config, Map.put(@valid_params, "email", "other"))
       refute UsersContext.authenticate(@config, Map.put(@valid_params, "password", "invalid"))
       assert UsersContext.authenticate(@config, @valid_params) == user
 
-      refute UsersContext.authenticate(@username_config, @valid_params)
-      refute UsersContext.authenticate(@username_config, Map.put(@valid_params, "username", "jane.doe"))
-      assert UsersContext.authenticate(@username_config, Map.put(@valid_params, "username", "john.doe")) == user
+      refute UsersContext.authenticate(@username_config, Map.put(@valid_params_username, "username", "jane.doe"))
+      refute UsersContext.authenticate(@username_config, Map.put(@valid_params_username, "password", "invalid"))
+      assert UsersContext.authenticate(@username_config, @valid_params_username) == username_user
     end
 
     test "as `use UsersContext`", %{user: user} do
       assert Users.authenticate(@invalid_config, @valid_params) == user
-
       assert Users.authenticate([], :test_macro) == :ok
     end
   end
@@ -170,7 +179,7 @@ defmodule Authex.Ecto.UsersContextTest do
   describe "create/2" do
     @valid_params %{
       "email" => "any",
-      "username" => "john.doe",
+      "custom" => "custom",
       "password" => "secret",
       "password_confirm" => "secret"
     }
@@ -178,19 +187,19 @@ defmodule Authex.Ecto.UsersContextTest do
     test "creates" do
       assert {:error, _changeset} = UsersContext.create(@config, Map.delete(@valid_params, "password_confirm"))
       assert {:ok, user} = UsersContext.create(@config, @valid_params)
-      refute user.username
+      refute user.custom
     end
 
     test "as `use UsersContext`" do
       assert {:ok, user} = Users.create(@invalid_config, @valid_params)
-      assert user.username == "john.doe"
+      assert user.custom == "custom"
     end
   end
 
   describe "update/2" do
     @valid_params %{
       "email" => "new",
-      "username" => "john.doe",
+      "custom" => "custom",
       "password" => "new_secret",
       "password_confirm" => "new_secret",
       "current_password" => "secret"
@@ -207,12 +216,12 @@ defmodule Authex.Ecto.UsersContextTest do
       assert {:error, _changeset} = UsersContext.update(@config, user, Map.delete(@valid_params, "current_password"))
       assert {:ok, user} = UsersContext.update(@config, user, @valid_params)
       assert UsersContext.authenticate(@config, @valid_params).id == user.id
-      refute user.username
+      refute user.custom
     end
 
     test "as `use UsersContext`", %{user: user} do
       assert {:ok, user} = Users.update(@invalid_config, user, @valid_params)
-      assert user.username == "john.doe"
+      assert user.custom == "custom"
     end
   end
 

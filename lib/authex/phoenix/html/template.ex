@@ -61,6 +61,6 @@
       ~s(<%= Authex.Phoenix.HTML.ErrorHelpers.error_tag f, #{inspect_key(key)} %>)
     end
 
-    defp inspect_key({:module_attribute, key}), do: "@#{key}"
+    defp inspect_key({:module_attribute, key}), do: "Authex.Phoenix.ViewHelpers.module_attribute(@changeset, #{inspect(key)})"
     defp inspect_key(key), do: inspect(key)
 end

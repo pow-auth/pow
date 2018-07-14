@@ -8,7 +8,6 @@ defmodule Authex.Phoenix.ViewHelpersTest do
 
   setup %{conn: conn} do
     changeset   = UsersContextMock.changeset([], %{})
-    login_field = :email
     action      = "/"
     conn =
       conn
@@ -19,7 +18,6 @@ defmodule Authex.Phoenix.ViewHelpersTest do
       |> Conn.put_private(:phoenix_layout, {Authex.Phoenix.LayoutView, :app})
       |> Conn.put_private(:phoenix_router, Authex.Test.Phoenix.Router)
       |> Conn.assign(:changeset, changeset)
-      |> Conn.assign(:login_field, login_field)
       |> Conn.assign(:action, action)
 
     {:ok, %{conn: conn}}

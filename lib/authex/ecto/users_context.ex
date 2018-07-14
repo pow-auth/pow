@@ -34,7 +34,7 @@ defmodule Authex.Ecto.UsersContext do
     - `authex_delete/2`
   """
 
-  alias Authex.Ecto.UsersContext.Behaviour
+  alias Authex.Ecto.{Schema, UsersContext.Behaviour}
   alias Authex.Config
   alias Ecto.Changeset
 
@@ -105,7 +105,10 @@ defmodule Authex.Ecto.UsersContext do
   end
   @spec changeset(user() | Changeset.t(), Config.t(), map()) :: Changeset.t()
   def changeset(user_or_changeset, config, params) do
-    login_field = Config.login_field(config)
+    login_field =
+      config
+      |> user_schema_mod()
+      |> Schema.login_field()
 
     user_or_changeset
     |> Changeset.cast(params, [login_field, :current_password, :password, :password_confirm])
@@ -173,10 +176,10 @@ defmodule Authex.Ecto.UsersContext do
 
   @spec authenticate(Config.t(), map()) :: user() | nil
   def authenticate(config, params) do
-    login_field = Config.login_field(config)
+    user        = user_schema_mod(config)
+    login_field = Schema.login_field(user)
     login_value = params[Atom.to_string(login_field)]
     password    = params["password"]
-    user        = user_schema_mod(config)
 
     config
     |> get_by_login_field(user, login_field, login_value)

@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
   """
   use Mix.Task
 
-  alias Authex.Ecto.UserSchema
+  alias Authex.Ecto.Schema.Migration
   alias Mix.{Authex.Utils, Ecto, Generator}
 
   @doc false
@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
     name = "CreateUser"
     base_name = "#{Macro.underscore(name)}.exs"
     context_base = Mix.Authex.Context.context_base(Mix.Authex.Context.context_app())
-    content = UserSchema.migration_file(context_base, repo: repo)
+    content = Migration.gen(context_base, repo: repo)
 
     path
     |> maybe_create_directory()

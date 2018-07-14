@@ -12,11 +12,6 @@ defmodule Authex.Config do
     get(config, :current_user_assigns_key, :current_user)
   end
 
-  @spec login_field(t()) :: atom()
-  def login_field(config) do
-    get(config, :login_field, :email)
-  end
-
   @spec user_module(t()) :: atom()
   def user_module(config) do
     get(config, :user, nil) || raise_no_user_error()
