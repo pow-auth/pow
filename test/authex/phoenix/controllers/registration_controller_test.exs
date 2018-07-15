@@ -21,8 +21,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
         |> Plug.assign_current_user(%{id: 1}, [])
         |> get(Routes.authex_registration_path(conn, :new))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're already authenticated."
+      assert_authenticated_redirect(conn)
     end
   end
 
@@ -36,8 +35,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
         |> Plug.assign_current_user(%{id: 1}, [])
         |> post(Routes.authex_registration_path(conn, :create, @valid_params))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're already authenticated."
+      assert_authenticated_redirect(conn)
     end
 
     test "with valid params", %{conn: conn} do
@@ -76,8 +74,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     test "not signed in", %{conn: conn} do
       conn = get(conn, Routes.authex_registration_path(conn, :show))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're not authenticated."
+      assert_not_authenticated_redirect(conn)
     end
   end
 
@@ -98,8 +95,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     test "not signed in", %{conn: conn} do
       conn = get(conn, Routes.authex_registration_path(conn, :edit))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're not authenticated."
+      assert_not_authenticated_redirect(conn)
     end
   end
 
@@ -110,8 +106,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     test "not signed in", %{conn: conn} do
       conn = put(conn, Routes.authex_registration_path(conn, :update, @valid_params))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're not authenticated."
+      assert_not_authenticated_redirect(conn)
     end
 
     test "with valid params", %{conn: conn} do
@@ -149,8 +144,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     test "not signed in", %{conn: conn} do
       conn = delete(conn, Routes.authex_registration_path(conn, :delete))
 
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) == "You're not authenticated."
+      assert_not_authenticated_redirect(conn)
     end
 
     test "deletes and removes authenticated", %{conn: conn} do

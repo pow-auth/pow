@@ -1,12 +1,14 @@
 defmodule Authex.Test.Phoenix.ConnCase do
   use ExUnit.CaseTemplate
   alias Authex.Test.{EtsCacheMock,
+                     Phoenix.ControllerAssertions,
                      Phoenix.Endpoint,
                      Phoenix.Router}
 
   using do
     quote do
       use Phoenix.ConnTest
+      import ControllerAssertions
 
       alias Router.Helpers, as: Routes
 
