@@ -7,7 +7,7 @@ defmodule Authex.Ecto.Schema.ChangesetTest do
 
   describe "changeset/2" do
     @valid_params %{
-      "email" => "any",
+      "email" => "john.doe@example.com",
       "password" => "secret",
       "password_confirm" => "secret",
       "custom" => "custom"
@@ -31,6 +31,19 @@ defmodule Authex.Ecto.Schema.ChangesetTest do
       assert changeset.errors[:username] == {"can't be blank", [validation: :required]}
 
       changeset = UsernameUser.changeset(%UsernameUser{}, @valid_params_username)
+      assert changeset.valid?
+    end
+
+    test "validates login field as email" do
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "invalid"))
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
+
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "email", ".wooly@example.com"))
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
+
+      changeset = User.changeset(%User{}, @valid_params)
       assert changeset.valid?
     end
 

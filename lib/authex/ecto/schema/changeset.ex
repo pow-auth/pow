@@ -11,6 +11,7 @@ defmodule Authex.Ecto.Schema.Changeset do
 
     user_or_changeset
     |> Changeset.cast(params, [login_field, :current_password, :password, :password_confirm])
+    |> maybe_validate_email_format(login_field)
     |> maybe_validate_current_password(config)
     |> maybe_require_password()
     |> maybe_validate_password_confirm()
@@ -18,6 +19,11 @@ defmodule Authex.Ecto.Schema.Changeset do
     |> Changeset.validate_required([login_field, :password_hash])
     |> Changeset.unique_constraint(login_field)
   end
+
+  defp maybe_validate_email_format(changeset, :email) do
+    Changeset.validate_format(changeset, :email, email_regexp())
+  end
+  defp maybe_validate_email_format(changeset, _), do: changeset
 
   defp maybe_validate_current_password(%{data: %{password_hash: nil}} = changeset, _config),
     do: changeset
@@ -101,4 +107,7 @@ defmodule Authex.Ecto.Schema.Changeset do
   defp password_hash_methods(config) do
     Config.get(config, :password_hash_methods, {&pbkdf2_hash/1, &pbkdf2_verify/2})
   end
+
+  @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>
+  defp email_regexp(), do: @rfc_5332_regexp_no_ip
 end

@@ -11,14 +11,14 @@ defmodule Authex.Ecto.ContextTest do
 
   describe "authenticate/2" do
     @password "secret"
-    @valid_params %{"email" => "any", "password" => @password}
+    @valid_params %{"email" => "test@example.com", "password" => @password}
     @valid_params_username %{"username" => "john.doe", "password" => @password}
 
     setup do
       password_hash = Comeonin.Pbkdf2.hashpwsalt(@password)
       user =
         %User{}
-        |> Changeset.change(email: "any", password_hash: password_hash)
+        |> Changeset.change(email: "test@example.com", password_hash: password_hash)
         |> Repo.insert!()
       username_user =
         %UsernameUser{}
@@ -41,7 +41,7 @@ defmodule Authex.Ecto.ContextTest do
     end
 
     test "authenticates", %{user: user, username_user: username_user} do
-      refute Context.authenticate(@config, Map.put(@valid_params, "email", "other"))
+      refute Context.authenticate(@config, Map.put(@valid_params, "email", "other@example.com"))
       refute Context.authenticate(@config, Map.put(@valid_params, "password", "invalid"))
       assert Context.authenticate(@config, @valid_params) == user
 
@@ -58,7 +58,7 @@ defmodule Authex.Ecto.ContextTest do
 
   describe "create/2" do
     @valid_params %{
-      "email" => "any",
+      "email" => "test@example.com",
       "custom" => "custom",
       "password" => "secret",
       "password_confirm" => "secret"
@@ -80,7 +80,7 @@ defmodule Authex.Ecto.ContextTest do
 
   describe "update/2" do
     @valid_params %{
-      "email" => "new",
+      "email" => "new@example.com",
       "custom" => "custom",
       "password" => "new_secret",
       "password_confirm" => "new_secret",
@@ -89,7 +89,7 @@ defmodule Authex.Ecto.ContextTest do
 
     setup do
       password_hash = Comeonin.Pbkdf2.hashpwsalt("secret")
-      changeset = Changeset.change(%User{}, email: "any", password_hash: password_hash)
+      changeset = Changeset.change(%User{}, email: "test@exampe.com", password_hash: password_hash)
 
       {:ok, %{user: Repo.insert!(changeset)}}
     end
@@ -111,7 +111,7 @@ defmodule Authex.Ecto.ContextTest do
 
   describe "delete/2" do
     setup do
-      changeset = Changeset.change(%User{}, email: "any")
+      changeset = Changeset.change(%User{}, email: "test@example.com")
 
       {:ok, %{user: Repo.insert!(changeset)}}
     end
