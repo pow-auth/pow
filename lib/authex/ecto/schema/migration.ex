@@ -30,20 +30,13 @@ defmodule Authex.Ecto.Schema.Migration do
   end
 
   defp parse_options(base, config) do
-    attrs =
-      config
-      |> Fields.attrs()
-      |> Enum.reject(&is_virtual?/1)
-      |> Enum.map(&to_migration_attr/1)
+    attrs              = migration_attrs(config)
     repo               = Config.get(config, :repo, Module.concat([base, "Repo"]))
     table              = Config.get(config, :table, "users")
     binary_id          = config[:binary_id]
     migration_defaults = defaults(attrs)
     {assocs, attrs}    = partition_attrs(attrs)
-    indexes =
-      config
-      |> Fields.indexes()
-      |> Enum.map(&to_migration_index(table, &1))
+    indexes            = migration_indexes(config, table)
 
     %{
       repo: repo,
@@ -54,6 +47,13 @@ defmodule Authex.Ecto.Schema.Migration do
       assocs: assocs,
       indexes: indexes
     }
+  end
+
+  defp migration_attrs(config) do
+    config
+    |> Fields.attrs()
+    |> Enum.reject(&is_virtual?/1)
+    |> Enum.map(&to_migration_attr/1)
   end
 
   defp is_virtual?({_name, _type}), do: false
@@ -86,6 +86,12 @@ defmodule Authex.Ecto.Schema.Migration do
     attrs
     |> Enum.map(fn {key, value, _defaults} -> {key, value} end)
     |> Enum.split_with(fn _ -> false end)
+  end
+
+  defp migration_indexes(config, table) do
+    config
+    |> Fields.indexes()
+    |> Enum.map(&to_migration_index(table, &1))
   end
 
   defp to_migration_index(table, {key, true}),
