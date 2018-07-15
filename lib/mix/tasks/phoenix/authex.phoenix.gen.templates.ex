@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
   defp create_template_files(config) do
     apps         = [".", :authex]
     binding      = []
-    structure    = Mix.Phoenix.Utils.parse_structure(config)
+    structure    = Mix.Authex.Phoenix.Utils.parse_structure(config)
     context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]

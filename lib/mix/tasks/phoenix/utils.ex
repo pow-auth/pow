@@ -1,4 +1,4 @@
-defmodule Mix.Phoenix.Utils do
+defmodule Mix.Authex.Phoenix.Utils do
   @spec parse_structure(map()) :: map()
   def parse_structure(config) do
     context_app  = Map.get(config, :context_app, Mix.Authex.Utils.context_app())

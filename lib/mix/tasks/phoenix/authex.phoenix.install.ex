@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Install do
   defp maybe_run_gen_templates(config, _args), do: config
 
   defp print_shell_instructions(config) do
-    structure = Mix.Phoenix.Utils.parse_structure(config)
+    structure = Mix.Authex.Phoenix.Utils.parse_structure(config)
     mod       = structure[:context_base]
     web_mod   = structure[:web_module]
 
