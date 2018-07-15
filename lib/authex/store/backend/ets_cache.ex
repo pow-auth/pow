@@ -1,8 +1,8 @@
-defmodule Authex.Store.EtsCache do
+defmodule Authex.Store.Backend.EtsCache do
   @moduledoc """
-  GenServer based key value ETS store with auto expiration.
+  GenServer based key value ETS cache store with auto expiration.
   """
-  @behaviour Authex.Store.Behaviour
+  @behaviour Authex.Store.Base
 
   use GenServer
   alias Authex.Config
@@ -59,7 +59,7 @@ defmodule Authex.Store.EtsCache do
   end
 
   defp update_invalidators(config, invalidators, key) do
-    case Config.get(config, :ets_cache_ttl, nil) do
+    case Config.get(config, :ttl, nil) do
       nil ->
         invalidators
 
@@ -105,7 +105,7 @@ defmodule Authex.Store.EtsCache do
   end
 
   defp ets_key(config, key) do
-    namespace = Config.get(config, :ets_cache_namespace, "cache")
+    namespace = Config.get(config, :namespace, "cache")
 
     "#{namespace}:#{key}"
   end

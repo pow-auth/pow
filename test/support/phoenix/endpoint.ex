@@ -20,9 +20,7 @@ defmodule Authex.Test.Phoenix.Endpoint do
   plug Authex.Plug.Session,
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    session_store: Authex.Test.CredentialsCacheMock,
-    credentials_cache_name: "credentials",
-    credentials_cache_ttl: :timer.hours(48),
+    backend_session_store: Authex.Test.EtsCacheMock,
     user: Authex.Test.Ecto.Users.User,
     users_context: Authex.Test.ContextMock
 

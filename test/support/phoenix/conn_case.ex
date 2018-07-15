@@ -1,6 +1,6 @@
 defmodule Authex.Test.Phoenix.ConnCase do
   use ExUnit.CaseTemplate
-  alias Authex.Test.{CredentialsCacheMock,
+  alias Authex.Test.{EtsCacheMock,
                      Phoenix.Endpoint,
                      Phoenix.Router}
 
@@ -21,7 +21,7 @@ defmodule Authex.Test.Phoenix.ConnCase do
   end
 
   setup _tags do
-    CredentialsCacheMock.init()
+    EtsCacheMock.init()
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

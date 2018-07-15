@@ -5,18 +5,16 @@ defmodule Authex.Plug.SessionTest do
   alias Authex.{Plug,
                 Plug.Session,
                 Config}
-  alias Authex.Test.{ConnHelpers, CredentialsCacheMock}
+  alias Authex.Test.{ConnHelpers, EtsCacheMock}
 
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    session_store: CredentialsCacheMock,
-    credentials_cache_name: "credentials",
-    credentials_cache_ttl: :timer.hours(48)
+    session_store: EtsCacheMock
   ]
 
   setup do
-    CredentialsCacheMock.init()
+    EtsCacheMock.init()
     conn = :get |> ConnHelpers.conn("/") |> ConnHelpers.with_session()
 
     {:ok, %{conn: conn}}
@@ -38,7 +36,7 @@ defmodule Authex.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    CredentialsCacheMock.put(nil, "token", "cached")
+    EtsCacheMock.put(nil, "token", "cached")
 
     conn = conn
            |> ConnHelpers.put_session(@default_opts[:session_key], "token")
@@ -48,7 +46,7 @@ defmodule Authex.Plug.SessionTest do
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
-    CredentialsCacheMock.put(nil, "token", "cached")
+    EtsCacheMock.put(nil, "token", "cached")
 
     conn = conn
            |> ConnHelpers.put_session(@default_opts[:session_key], "invalid")
@@ -65,7 +63,7 @@ defmodule Authex.Plug.SessionTest do
 
     assert session_id = get_session_id(conn)
     assert is_binary(session_id)
-    assert CredentialsCacheMock.get(nil, session_id) == user
+    assert EtsCacheMock.get(nil, session_id) == user
     assert Plug.current_user(conn) == user
 
     conn = Session.do_create(conn, user)
@@ -73,8 +71,8 @@ defmodule Authex.Plug.SessionTest do
     assert is_binary(session_id)
 
     assert new_session_id != session_id
-    assert CredentialsCacheMock.get(nil, session_id) == :not_found
-    assert CredentialsCacheMock.get(nil, new_session_id) == user
+    assert EtsCacheMock.get(nil, session_id) == :not_found
+    assert EtsCacheMock.get(nil, new_session_id) == user
     assert Plug.current_user(conn) == user
   end
 
@@ -86,14 +84,14 @@ defmodule Authex.Plug.SessionTest do
 
     assert session_id = get_session_id(conn)
     assert is_binary(session_id)
-    assert CredentialsCacheMock.get(nil, session_id) == user
+    assert EtsCacheMock.get(nil, session_id) == user
     assert Plug.current_user(conn) == user
 
     conn = Session.do_delete(conn)
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
-    assert CredentialsCacheMock.get(nil, session_id) == :not_found
+    assert EtsCacheMock.get(nil, session_id) == :not_found
     assert is_nil(Plug.current_user(conn))
   end
 

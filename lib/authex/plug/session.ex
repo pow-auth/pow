@@ -14,9 +14,10 @@ defmodule Authex.Plug.Session do
       user: MyApp.User,
       current_user_assigns_key: :current_user,
       session_key: "auth",
-      session_store: Authex.Store.CredentialsCache,
-      credentials_cache_name: "credentials",
-      credentials_cache_ttl: :timer.hours(48),
+      session_store: {Authex.Store.CredentialsCache,
+                      ttl: :timer.hours(28),
+                      namespace: "credentials"},
+      backend_cache_store: Authex.Store.Backend.EtsCache,
       users_context: Authex.Ecto.Users
   """
   use Authex.Plug.Base
@@ -37,12 +38,12 @@ defmodule Authex.Plug.Session do
 
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, user, config) do
-    key           = UUID.uuid1()
-    session_key   = session_key(config)
-    store         = store(config)
+    key                   = UUID.uuid1()
+    session_key           = session_key(config)
+    {store, store_config} = store(config)
 
     delete(conn, config)
-    store.put(config, key, user)
+    store.put(store_config, key, user)
 
     conn
     |> Conn.put_session(session_key, key)
@@ -51,11 +52,11 @@ defmodule Authex.Plug.Session do
 
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
-    key         = Conn.get_session(conn, session_key(config))
-    store       = store(config)
-    session_key = session_key(config)
+    key                   = Conn.get_session(conn, session_key(config))
+    {store, store_config} = store(config)
+    session_key           = session_key(config)
 
-    store.delete(config, key)
+    store.delete(store_config, key)
 
     conn
     |> Conn.delete_session(session_key)
@@ -64,8 +65,9 @@ defmodule Authex.Plug.Session do
 
   defp get_session(conn, config) do
     key = Conn.get_session(conn, session_key(config))
+    {store, store_config} = store(config)
 
-    store(config).get(config, key)
+    store.get(store_config, key)
   end
 
   defp session_key(config) do
@@ -73,6 +75,15 @@ defmodule Authex.Plug.Session do
   end
 
   defp store(config) do
-    Config.get(config, :session_store, CredentialsCache)
+    case Config.get(config, :session_store, default_store(config)) do
+      {store, store_config} -> {store, store_config}
+      store                 -> {store, []}
+    end
+  end
+
+  defp default_store(config) do
+    backend = Config.get(config, :backend_cache_store, CredentialsCache)
+
+    {CredentialsCache, [backend: backend]}
   end
 end

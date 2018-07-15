@@ -7,12 +7,12 @@ defmodule Authex.PlugTest do
                 Plug.Session,
                 Config,
                 Config.ConfigError}
-  alias Authex.Test.{ConnHelpers, CredentialsCacheMock, ContextMock}
+  alias Authex.Test.{ConnHelpers, EtsCacheMock, ContextMock}
 
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
-    session_store: CredentialsCacheMock
+    backend_cache_store: EtsCacheMock
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
@@ -48,7 +48,7 @@ defmodule Authex.PlugTest do
   end
 
   test "authenticate_user/2" do
-    CredentialsCacheMock.init()
+    EtsCacheMock.init()
 
     conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
     refute conn.private[:plug_session]["auth"]
@@ -75,18 +75,18 @@ defmodule Authex.PlugTest do
   end
 
   test "clear_authenticated_user/1" do
-    CredentialsCacheMock.init()
+    EtsCacheMock.init()
 
     conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert %{id: 1} = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
-    assert %{id: 1} = CredentialsCacheMock.get(nil, session_id)
+    assert %{id: 1} = EtsCacheMock.get(nil, session_id)
 
     conn = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
-    assert CredentialsCacheMock.get(nil, session_id) == :not_found
+    assert EtsCacheMock.get(nil, session_id) == :not_found
   end
 
   defp conn(config \\ @default_config) do
