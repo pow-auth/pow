@@ -27,9 +27,7 @@ defmodule Authex.Phoenix.Web do
   @spec view :: Macro.t()
   def view do
     quote do
-      use Phoenix.View,
-        root: "priv/phoenix/templates",
-        namespace: Authex.Phoenix
+      use Authex.Phoenix.View
     end
   end
 

@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
   """
   use Mix.Task
 
-  alias Mix.{Authex.Utils, Generator, Phoenix}
+  alias Mix.{Authex.Utils, Generator}
 
   @switches [context_app: :string]
   @default_opts []
@@ -23,22 +23,20 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
     |> print_shell_instructions()
   end
 
-  @template_files [
+  @templates [
     {"registration", ~w(new edit show)},
     {"session", ~w(new)}
   ]
 
   defp create_template_files(config) do
-    apps         = [".", :authex]
-    binding      = []
     structure    = Mix.Authex.Phoenix.Utils.parse_structure(config)
     context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
 
-    Enum.each @template_files, fn {name, files} ->
+    Enum.each @templates, fn {name, actions} ->
       create_view_file(name, web_module, web_prefix)
-      create_templates(apps, binding, web_prefix, name, files)
+      create_templates(name, web_prefix, actions)
     end
 
     %{context_base: context_base, web_module: web_module}
@@ -56,20 +54,18 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
     Generator.create_file(path, content)
   end
 
-  defp create_templates(apps, binding, web_prefix, name, files) do
-    source_dir = "priv/phoenix/templates"
-    templates_path = Path.join([web_prefix, "templates", "authex", name])
-    mapping = Enum.map(files, &templates_mapping(&1, name, templates_path))
+  defp create_templates(name, web_prefix, actions) do
+    path = Path.join([web_prefix, "templates", "authex", name])
+    template_module = Module.concat([Authex.Phoenix, "#{Macro.camelize(name)}Template"])
 
-    Phoenix.copy_from(apps, source_dir, binding, mapping)
-  end
+    actions
+    |> Enum.map(&String.to_existing_atom/1)
+    |> Enum.each(fn action ->
+      content   = template_module.html(action)
+      file_path = Path.join(path, "#{action}.html.eex")
 
-  defp templates_mapping(file, source_path, dest_path) do
-    file   = "#{file}.html.eex"
-    source = Path.join(source_path, file)
-    dest   = Path.join(dest_path, file)
-
-    {:text, source, dest}
+      Generator.create_file(file_path, content)
+    end)
   end
 
   defp print_shell_instructions(%{context_base: mod, web_module: web_mod}) do

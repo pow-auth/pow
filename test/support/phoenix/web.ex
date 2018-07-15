@@ -12,7 +12,7 @@ defmodule Authex.Test.Phoenix.Web do
   def context_app_view do
     quote do
       use Phoenix.View,
-        root: "priv/phoenix/templates",
+        root: "test/support/phoenix/context_app/templates",
         namespace: Authex.Test.Phoenix.Authex
     end
   end
