@@ -157,7 +157,7 @@ defmodule MyApp.Users.User do
   schema "users" do
     field :custom, :string
 
-    user_fields()
+    authex_user_fields()
 
     timestamps()
   end

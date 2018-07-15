@@ -13,7 +13,7 @@ defmodule Authex.Ecto.Schema.Module do
       @primary_key {:id, :binary_id, autogenerate: true}
       @foreign_key_type :binary_id<% end %>
       schema <%= inspect schema.table %> do
-        user_fields()
+        authex_user_fields()
 
         timestamps()
       end

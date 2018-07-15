@@ -16,7 +16,7 @@ defmodule Authex.Ecto.Schema do
         schema "users" do
           field :custom_field, :string
 
-          user_fields()
+          authex_user_fields()
 
           timestamps()
         end
@@ -28,38 +28,43 @@ defmodule Authex.Ecto.Schema do
 
   Remember to add `user: MyApp.Users.User` to configuration.
   """
-  alias Authex.{Config, Ecto.Schema.Fields}
+  alias Authex.Config
 
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
 
   defmacro __using__(config) do
     quote do
-      alias Authex.Ecto.Schema.Changeset
-      import unquote(__MODULE__), only: [user_fields: 0]
       @behaviour unquote(__MODULE__)
 
       def changeset(user, attrs), do: authex_changeset(user, attrs)
       def verify_password(user, password), do: authex_verify_password(user, password)
 
-      def authex_changeset(user, attrs) do
-        Changeset.changeset(unquote(config), user, attrs)
-      end
-
-      def authex_verify_password(user, password) do
-        Changeset.verify_password(user, password, unquote(config))
-      end
-
       defoverridable unquote(__MODULE__)
 
-      @authex_fields Fields.attrs(unquote(config))
-      @authex_login_field unquote(__MODULE__).login_field(unquote(config))
-      def authex_login_field(), do: @authex_login_field
+      unquote(__MODULE__).authex_methods(unquote(config))
+      unquote(__MODULE__).register_fields(unquote(config))
+      unquote(__MODULE__).register_login_field(unquote(config))
     end
   end
 
-  @spec user_fields() :: Macro.t()
-  defmacro user_fields() do
+  @spec authex_methods(Config.t()) :: Macro.t()
+  defmacro authex_methods(config) do
+    quote do
+      import unquote(__MODULE__), only: [authex_user_fields: 0]
+
+      def authex_changeset(user, attrs) do
+        unquote(__MODULE__).Changeset.changeset(unquote(config), user, attrs)
+      end
+
+      def authex_verify_password(user, password) do
+        unquote(__MODULE__).Changeset.verify_password(user, password, unquote(config))
+      end
+    end
+  end
+
+  @spec authex_user_fields :: Macro.t()
+  defmacro authex_user_fields do
     quote do
       Enum.each(@authex_fields, fn
         {name, type} ->
@@ -68,6 +73,23 @@ defmodule Authex.Ecto.Schema do
         {name, type, defaults} ->
           field(name, type, defaults)
       end)
+    end
+  end
+
+  @spec register_fields(Config.t()) :: Macro.t()
+  defmacro register_fields(config) do
+    quote do
+      Module.register_attribute(__MODULE__, :authex_fields, accumulate: true)
+      for attr <- unquote(__MODULE__).Fields.attrs(unquote(config)),
+        do: Module.put_attribute(__MODULE__, :authex_fields, attr)
+    end
+  end
+
+  @spec register_login_field(Config.t()) :: Macro.t()
+  defmacro register_login_field(config) do
+    quote do
+      @authex_login_field unquote(__MODULE__).login_field(unquote(config))
+      def authex_login_field(), do: @authex_login_field
     end
   end
 

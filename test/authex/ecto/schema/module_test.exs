@@ -10,7 +10,7 @@ defmodule Authex.Ecto.Schema.ModuleTest do
     assert content =~ "defmodule Authex.Users.User do"
     assert content =~ "use Authex.Ecto.Schema"
     assert content =~ "schema \"users\" do"
-    assert content =~ "user_fields()"
+    assert content =~ "authex_user_fields()"
 
     content = Module.gen(Authex, login_field: :username)
     assert content =~ "use Authex.Ecto.Schema, login_field: :username"
