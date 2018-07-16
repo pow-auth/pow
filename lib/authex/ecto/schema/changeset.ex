@@ -10,11 +10,11 @@ defmodule Authex.Ecto.Schema.Changeset do
     login_field = Schema.login_field(config)
 
     user_or_changeset
-    |> Changeset.cast(params, [login_field, :current_password, :password, :password_confirm])
+    |> Changeset.cast(params, [login_field, :current_password, :password, :confirm_password])
     |> maybe_validate_email_format(login_field)
     |> maybe_validate_current_password(config)
     |> maybe_require_password()
-    |> maybe_validate_password_confirm()
+    |> maybe_validate_confirm_password()
     |> maybe_put_password_hash(config)
     |> Changeset.validate_required([login_field, :password_hash])
     |> Changeset.unique_constraint(login_field)
@@ -57,21 +57,21 @@ defmodule Authex.Ecto.Schema.Changeset do
   end
   defp maybe_require_password(changeset), do: changeset
 
-  defp maybe_validate_password_confirm(changeset) do
+  defp maybe_validate_confirm_password(changeset) do
     changeset
     |> Changeset.get_change(:password)
     |> case do
       nil      -> changeset
-      password -> validate_password_confirm(changeset, password)
+      password -> validate_confirm_password(changeset, password)
     end
   end
 
-  defp validate_password_confirm(changeset, password) do
-    password_confirm = Changeset.get_change(changeset, :password_confirm)
+  defp validate_confirm_password(changeset, password) do
+    confirm_password = Changeset.get_change(changeset, :confirm_password)
 
     case password do
-      ^password_confirm -> changeset
-      _                 -> Changeset.add_error(changeset, :password_confirm, "not same as password")
+      ^confirm_password -> changeset
+      _                 -> Changeset.add_error(changeset, :confirm_password, "not same as password")
     end
   end
 

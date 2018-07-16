@@ -61,11 +61,11 @@ defmodule Authex.Ecto.ContextTest do
       "email" => "test@example.com",
       "custom" => "custom",
       "password" => "secret",
-      "password_confirm" => "secret"
+      "confirm_password" => "secret"
     }
 
     test "creates" do
-      assert {:error, _changeset} = Context.create(@config, Map.delete(@valid_params, "password_confirm"))
+      assert {:error, _changeset} = Context.create(@config, Map.delete(@valid_params, "confirm_password"))
       assert {:ok, user} = Context.create(@config, @valid_params)
       assert user.custom == "custom"
     end
@@ -83,7 +83,7 @@ defmodule Authex.Ecto.ContextTest do
       "email" => "new@example.com",
       "custom" => "custom",
       "password" => "new_secret",
-      "password_confirm" => "new_secret",
+      "confirm_password" => "new_secret",
       "current_password" => "secret"
     }
 

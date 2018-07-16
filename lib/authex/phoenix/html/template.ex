@@ -35,7 +35,7 @@
       [
         input(:text, {:module_attribute, :login_field}),
         input(:password, :password),
-        input(:password, :password_confirm)
+        input(:password, :confirm_password)
       ]
     end
     defp inputs(:registration, :edit) do

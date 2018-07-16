@@ -9,13 +9,13 @@ defmodule Authex.Ecto.Schema.ChangesetTest do
     @valid_params %{
       "email" => "john.doe@example.com",
       "password" => "secret",
-      "password_confirm" => "secret",
+      "confirm_password" => "secret",
       "custom" => "custom"
     }
     @valid_params_username %{
       "username" => "john.doe",
       "password" => "secret",
-      "password_confirm" => "secret"
+      "confirm_password" => "secret"
     }
 
     test "requires login field" do
@@ -87,10 +87,10 @@ defmodule Authex.Ecto.Schema.ChangesetTest do
     end
 
     test "can confirm and hash password" do
-      changeset = User.changeset(%User{}, Map.put(@valid_params, "password_confirm", "invalid"))
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "confirm_password", "invalid"))
 
       refute changeset.valid?
-      assert changeset.errors[:password_confirm] == {"not same as password", []}
+      assert changeset.errors[:confirm_password] == {"not same as password", []}
       refute changeset.changes[:password_hash]
 
       changeset = User.changeset(%User{}, @valid_params)
