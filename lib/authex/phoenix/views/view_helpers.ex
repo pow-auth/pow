@@ -79,7 +79,7 @@ defmodule Authex.Phoenix.ViewHelpers do
     {view, template}
   end
 
-  defp build_module(["Authex", "Phoenix" | rest], base) do
+  defp build_module([_base, "Phoenix" | rest], base) do
     base
     |> Enum.concat(rest)
     |> Module.concat()
