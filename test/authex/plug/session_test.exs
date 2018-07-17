@@ -10,7 +10,7 @@ defmodule Authex.Plug.SessionTest do
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    session_store: EtsCacheMock
+    backend_cache_store: EtsCacheMock
   ]
 
   setup do
@@ -93,6 +93,23 @@ defmodule Authex.Plug.SessionTest do
     assert is_nil(new_session_id)
     assert EtsCacheMock.get(nil, session_id) == :not_found
     assert is_nil(Plug.current_user(conn))
+  end
+
+  describe "with EtsCache backend" do
+    test "stores through CredentialsCache", %{conn: conn} do
+      sesion_key = "auth"
+      config     = [session_key: sesion_key]
+      token      = "credentials_cache_test"
+      Authex.Store.CredentialsCache.put(config, token, "cached")
+
+      :timer.sleep(100)
+
+      conn = conn
+             |> ConnHelpers.put_session("auth", token)
+             |> Session.call(session_key: "auth")
+
+      assert conn.assigns[:current_user] == "cached"
+    end
   end
 
   def get_session_id(conn) do

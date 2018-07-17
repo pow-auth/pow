@@ -23,7 +23,7 @@ defmodule Authex.Plug.Session do
   use Authex.Plug.Base
 
   alias Plug.Conn
-  alias Authex.{Config, Plug, Store.CredentialsCache}
+  alias Authex.{Config, Plug, Store.CredentialsCache, Store.Backend.EtsCache}
 
   @spec fetch(Conn.t(), Config.t()) :: map() | nil
   def fetch(conn, config) do
@@ -82,7 +82,7 @@ defmodule Authex.Plug.Session do
   end
 
   defp default_store(config) do
-    backend = Config.get(config, :backend_cache_store, CredentialsCache)
+    backend = Config.get(config, :backend_cache_store, EtsCache)
 
     {CredentialsCache, [backend: backend]}
   end
