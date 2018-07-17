@@ -9,6 +9,8 @@ defmodule Authex.Phoenix.Template do
       use Authex.Phoenix.Template
 
       template :new, :html, "<%= content_tag(:span, "Template") %>"
+
+      template :edit, :html, {:form, [{:text, :custom}]}
     end
 
     MyApp.ResourceTemplate.render("new.html", assigns)
@@ -19,8 +21,16 @@ defmodule Authex.Phoenix.Template do
     end
   end
 
-  @spec template(atom(), atom(), binary()) :: Macro.t()
+  @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
+  defmacro template(action, :html, {:form, inputs}) do
+    content = Authex.Phoenix.HTML.FormTemplate.render(inputs)
+    render_html_template(action, content)
+  end
   defmacro template(action, :html, content) do
+    render_html_template(action, content)
+  end
+
+  defp render_html_template(action, content) do
     quoted = EEx.compile_string(content, engine: Phoenix.HTML.Engine, line: 1, trim: true)
 
     quote do

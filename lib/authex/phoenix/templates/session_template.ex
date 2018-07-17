@@ -1,7 +1,9 @@
 defmodule Authex.Phoenix.SessionTemplate do
   use Authex.Phoenix.Template
 
-  template :new, :html, """
-  <%= unquote(Authex.Phoenix.HTML.form(:session, :new)) %>
-  """
+  template :new, :html,
+    {:form, [
+      {:text, {:module_attribute, :login_field}},
+      {:password, :password}
+    ]}
 end

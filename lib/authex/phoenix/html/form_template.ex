@@ -1,6 +1,6 @@
 
-  defmodule Authex.Phoenix.HTML.Template do
-    @form_template EEx.compile_string """
+  defmodule Authex.Phoenix.HTML.FormTemplate do
+    @template EEx.compile_string """
   <%%= Phoenix.HTML.Form.form_for @changeset, @action, fn f -> %>
     <%%= if @changeset.action do %>
       <div class="alert alert-danger">
@@ -18,38 +18,17 @@
   <%% end %>
   """
 
-    @spec template(:form, atom(), atom()) :: Macro.t()
-    def template(:form, controller, action) do
-      inputs = inputs(controller, action)
-
-      unquote(@form_template)
+    @spec render(list()) :: Macro.t()
+    def render(inputs) do
+      inputs = for {type, key} <- inputs, do: input(type, key)
+      unquote(@template)
     end
 
-    defp inputs(:session, :new) do
-      [
-        input(:text, {:module_attribute, :login_field}),
-        input(:password, :password)
-      ]
-    end
-    defp inputs(:registration, :new) do
-      [
-        input(:text, {:module_attribute, :login_field}),
-        input(:password, :password),
-        input(:password, :confirm_password)
-      ]
-    end
-    defp inputs(:registration, :edit) do
-      input(:password, :current_password)
-      |> List.wrap()
-      |> Enum.concat(inputs(:registration, :new))
-    end
-
-
-    defp input(:text, key) do
+    @spec input(atom(), atom()) :: {binary(), binary(), binary()}
+    def input(:text, key) do
       {label(key), ~s(<%= Phoenix.HTML.Form.text_input f, #{inspect_key(key)} %>), error(key)}
     end
-
-    defp input(:password, key) do
+    def input(:password, key) do
       {label(key), ~s(<%= Phoenix.HTML.Form.password_input f, #{inspect_key(key)} %>), error(key)}
     end
 

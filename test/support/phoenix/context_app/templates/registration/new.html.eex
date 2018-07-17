@@ -1,1 +1,1 @@
-<%= unquote(Authex.Phoenix.HTML.form(:registration, :new)) %>
+<%= "new registration" %>
