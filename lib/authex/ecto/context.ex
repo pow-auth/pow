@@ -26,6 +26,7 @@ defmodule Authex.Ecto.Context do
     - `authex_create/1`
     - `authex_update/2`
     - `authex_delete/1`
+    - `authex_get_by/1`
   """
 
   alias Authex.Ecto.Schema
@@ -38,6 +39,7 @@ defmodule Authex.Ecto.Context do
   @callback create(map()) :: {:ok, user()} | {:error, Changeset.t()}
   @callback update(user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
   @callback delete(user()) :: {:ok, user()} | {:error, Changeset.t()}
+  @callback get_by(Keyword.t() | map()) :: user() | nil
 
   defmacro __using__(config) do
     quote do
@@ -47,6 +49,7 @@ defmodule Authex.Ecto.Context do
       def create(params), do: authex_create(params)
       def update(user, params), do: authex_update(user, params)
       def delete(user), do: authex_delete(user)
+      def get_by(clauses), do: authex_get_by(clauses)
 
       def authex_authenticate(params) do
         unquote(__MODULE__).authenticate(unquote(config), params)
@@ -64,6 +67,10 @@ defmodule Authex.Ecto.Context do
         unquote(__MODULE__).delete(unquote(config), user)
       end
 
+      def authex_get_by(clauses) do
+        unquote(__MODULE__).get_by(unquote(config), clauses)
+      end
+
       defoverridable unquote(__MODULE__)
     end
   end
@@ -76,13 +83,8 @@ defmodule Authex.Ecto.Context do
     password    = params["password"]
 
     config
-    |> get_by_login_field(user_mod, login_field, login_value)
+    |> get_by([{login_field, login_value}])
     |> maybe_verify_password(password)
-  end
-
-  defp get_by_login_field(_config, _user, _login_field, nil), do: nil
-  defp get_by_login_field(config, user, login_field, login_value) do
-    repo(config).get_by(user, [{login_field, login_value}])
   end
 
   defp maybe_verify_password(nil, _password),
@@ -116,11 +118,20 @@ defmodule Authex.Ecto.Context do
     repo(config).delete(user)
   end
 
-  defp repo(config) do
+  @spec get_by(Config.t(), Keyword.t() | map()) :: user() | nil
+  def get_by(config, clauses) do
+    user_mod = user_schema_mod(config)
+
+    repo(config).get_by(user_mod, clauses)
+  end
+
+  @spec repo(Config.t()) :: atom() | no_return
+  def repo(config) do
     Config.get(config, :repo, nil) || raise_no_repo_error()
   end
 
-  defp user_schema_mod(config) do
+  @spec user_schema_mod(Config.t()) :: atom() | no_return
+  def user_schema_mod(config) do
     Config.get(config, :user, nil) || raise_no_user_error()
   end
 

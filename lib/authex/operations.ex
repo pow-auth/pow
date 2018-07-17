@@ -48,6 +48,14 @@ defmodule Authex.Operations do
     end
   end
 
+  @spec get_by(Config.t(), Keyword.t() | map()) :: map() | nil | no_return
+  def get_by(config, user) do
+    case context_module(config) do
+      Context -> Context.get_by(config, user)
+      module  -> module.get_by(user)
+    end
+  end
+
   defp context_module(config) do
     Config.get(config, :users_context, Context)
   end

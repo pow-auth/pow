@@ -7,17 +7,37 @@ defmodule Authex.Ecto.Schema.Changeset do
 
   @spec changeset(Config.t(), Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   def changeset(config, user_or_changeset, params) do
+    user_or_changeset
+    |> login_field_changeset(params, config)
+    |> current_password_changeset(params, config)
+    |> password_changeset(params, config)
+  end
+
+  @spec login_field_changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
+  def login_field_changeset(changeset, params, config) do
     login_field = Schema.login_field(config)
 
-    user_or_changeset
-    |> Changeset.cast(params, [login_field, :current_password, :password, :confirm_password])
+    changeset
+    |> Changeset.cast(params, [login_field])
     |> maybe_validate_email_format(login_field)
-    |> maybe_validate_current_password(config)
+    |> Changeset.validate_required([login_field])
+    |> Changeset.unique_constraint(login_field)
+  end
+
+  @spec password_changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
+  def password_changeset(changeset, params, config) do
+    changeset
+    |> Changeset.cast(params, [:password, :confirm_password])
     |> maybe_require_password()
     |> maybe_validate_confirm_password()
     |> maybe_put_password_hash(config)
-    |> Changeset.validate_required([login_field, :password_hash])
-    |> Changeset.unique_constraint(login_field)
+    |> Changeset.validate_required([:password_hash])
+  end
+
+  def current_password_changeset(changeset, params, config) do
+    changeset
+    |> Changeset.cast(params, [:current_password])
+    |> maybe_validate_current_password(config)
   end
 
   defp maybe_validate_email_format(changeset, :email) do

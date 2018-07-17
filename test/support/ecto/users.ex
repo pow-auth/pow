@@ -17,4 +17,7 @@ defmodule Authex.Test.Ecto.Users do
 
   def delete(:test_macro), do: :ok
   def delete(user), do: authex_delete(user)
+
+  def get_by(:test_macro), do: :ok
+  def get_by(clauses), do: authex_get_by(clauses)
 end

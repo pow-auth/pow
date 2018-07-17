@@ -128,4 +128,25 @@ defmodule Authex.Ecto.ContextTest do
       assert Users.delete(:test_macro) == :ok
     end
   end
+
+  describe "get_by/2" do
+    @email "test@example.com"
+    setup do
+      changeset = Changeset.change(%User{}, email: @email)
+
+      {:ok, %{user: Repo.insert!(changeset)}}
+    end
+
+    test "get_by", %{user: user} do
+      get_by_user = Context.get_by(@config, email: @email)
+      assert get_by_user.id == user.id
+    end
+
+    test "as `use Authex.Ecto.Context`", %{user: user} do
+      get_by_user = Users.get_by(email: @email)
+      assert get_by_user.id == user.id
+
+      assert Users.get_by(:test_macro) == :ok
+    end
+  end
 end

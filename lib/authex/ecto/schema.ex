@@ -80,16 +80,17 @@ defmodule Authex.Ecto.Schema do
   defmacro register_fields(config) do
     quote do
       Module.register_attribute(__MODULE__, :authex_fields, accumulate: true)
-      for attr <- unquote(__MODULE__).Fields.attrs(unquote(config)),
-        do: Module.put_attribute(__MODULE__, :authex_fields, attr)
+      for attr <- unquote(__MODULE__).Fields.attrs(unquote(config)) do
+        Module.put_attribute(__MODULE__, :authex_fields, attr)
+      end
     end
   end
 
   @spec register_login_field(Config.t()) :: Macro.t()
   defmacro register_login_field(config) do
     quote do
-      @authex_login_field unquote(__MODULE__).login_field(unquote(config))
-      def authex_login_field(), do: @authex_login_field
+      @login_field unquote(__MODULE__).login_field(unquote(config))
+      def authex_login_field(), do: @login_field
     end
   end
 
