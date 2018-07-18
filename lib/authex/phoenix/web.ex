@@ -15,7 +15,6 @@ defmodule Authex.Phoenix.Web do
   below. Instead, define any helper function in modules
   and import those modules here.
   """
-
   @spec controller :: Macro.t()
   def controller do
     quote do

@@ -22,11 +22,8 @@ defmodule Authex.Phoenix.Template do
   end
 
   @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
-  defmacro template(action, :html, {:form, inputs}) do
-    content = Authex.Phoenix.HTML.FormTemplate.render(inputs)
-    render_html_template(action, content)
-  end
   defmacro template(action, :html, content) do
+    content = EEx.eval_string(content)
     render_html_template(action, content)
   end
 
