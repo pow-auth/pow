@@ -1,9 +1,9 @@
-defmodule Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplatesTest do
+defmodule Mix.Tasks.Authex.Extension.Phoenix.Gen.TemplatesTest do
   use Authex.Test.Mix.TestCase
 
-  alias Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplates
+  alias Mix.Tasks.Authex.Extension.Phoenix.Gen.Templates
 
-  @tmp_path Path.join(["tmp", inspect(ExtensionTemplates)])
+  @tmp_path Path.join(["tmp", inspect(Templates)])
   @options []
 
   @expected_template_files [
@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplatesTest do
 
   test "generates templates" do
     File.cd! @tmp_path, fn ->
-      ExtensionTemplates.run(@options)
+      Templates.run(@options)
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "authex_web", "templates", Macro.underscore(module)])
         expected_dirs  = Map.keys(expected_templates)
@@ -49,7 +49,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplatesTest do
 
   test "generates with :context_app" do
     File.cd! @tmp_path, fn ->
-      ExtensionTemplates.run(@options ++ ~w(--context-app test))
+      Templates.run(@options ++ ~w(--context-app test))
 
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])

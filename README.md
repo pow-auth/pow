@@ -148,7 +148,7 @@ end
 To install any migration files for extensions, run the following:
 
 ```bash
-mix authex.ecto.gen.extension_migrations --extension AuthexResetPassword
+mix authex.extension.ecto.gen.migrations --extension AuthexResetPassword
 ```
 
 That's it!
@@ -178,11 +178,11 @@ This contains the controllers, views and templates for Phoenix. Templates are no
 This module helps build extensions for Authex. There's two extension mix tasks to generate ecto migrations and phoenix templates.
 
 ```bash
-mix authex.ecto.gen.extension_migrations
+mix authex.extension.ecto.gen.migrations
 ```
 
 ```bash
-mix authex.phoenix.gen.extension_templates
+mix authex.extension.phoenix.gen.templates
 ```
 
 ### Authorization plug

@@ -1,10 +1,10 @@
-defmodule Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplates do
+defmodule Mix.Tasks.Authex.Extension.Phoenix.Gen.Templates do
   @shortdoc "Generates authex extension views and templates"
 
   @moduledoc """
   Generates authex extension templates for Phoenix.
 
-      mix authex.phoenix.gen.extension_templates
+      mix authex.extension.phoenix.gen.templates
   """
   use Mix.Task
 
@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.ExtensionTemplates do
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("authex.phoenix.gen.extension_templates")
+    Utils.no_umbrella!("authex.extension.phoenix.gen.templates")
 
     args
     |> Utils.parse_options(@switches, @default_opts)

@@ -1,10 +1,10 @@
-defmodule Mix.Tasks.Authex.Ecto.Gen.ExtensionMigrations do
+defmodule Mix.Tasks.Authex.Extension.Ecto.Gen.Migrations do
   @shortdoc "Generates user extension migration files"
 
   @moduledoc """
   Generates a migration files for extensions.
 
-      mix authex.ecto.gen.extension_migrations -r MyApp.Repo
+      mix authex.extension.ecto.gen.migrations -r MyApp.Repo
   """
   use Mix.Task
 
@@ -17,7 +17,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.ExtensionMigrations do
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("authex.ecto.gen.extension_migrations")
+    Utils.no_umbrella!("authex.extension.ecto.gen.migrations")
 
     args
     |> Utils.parse_options(@switches, @default_opts)
