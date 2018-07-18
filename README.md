@@ -187,8 +187,7 @@ By default, this will redirect the user to the front page if the user is already
 
 ## Extensions
 
-Authex is made so it's easy to extend the functionality with your own complimentary library. An example is [`authex_roles`]() that makes it possible to add roles to users.
+Authex is made so it's easy to extend the functionality with your own complimentary library. The following extensions are included in this library:
 
-In general extensions follow these requirements:
+* `Authex.Extension.EmailConfirmation`
 
-* Add
