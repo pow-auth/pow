@@ -30,7 +30,7 @@ defmodule Authex.Extension.Ecto.Schema.Migration do
   end
 
   def name(extension, table) do
-    "Add#{extension}To#{Macro.camelize(table)}"
+    "Add#{normalize_extension_name(extension)}To#{Macro.camelize(table)}"
   end
 
   defp parse_options(base, extension, config) do
@@ -44,6 +44,12 @@ defmodule Authex.Extension.Ecto.Schema.Migration do
   end
 
   defp migration_file(schema, extension) do
-    EEx.eval_string(unquote(@template), schema: schema, extension: extension)
+    EEx.eval_string(unquote(@template), schema: schema, extension: normalize_extension_name(extension))
+  end
+
+  defp normalize_extension_name(extension) do
+    extension
+    |> Module.split()
+    |> List.last()
   end
 end
