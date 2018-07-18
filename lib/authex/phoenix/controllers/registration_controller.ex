@@ -6,7 +6,7 @@ defmodule Authex.Phoenix.RegistrationController do
   alias Authex.Phoenix.{Messages, PlugErrorHandler, RouterHelpers, ViewHelpers}
 
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
-  plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:show, :edit, :update, :delete]
+  plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:edit, :update, :delete]
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
@@ -27,12 +27,6 @@ defmodule Authex.Phoenix.RegistrationController do
       {:error, changeset} ->
         render_new(conn, changeset)
     end
-  end
-
-  @spec show(Conn.t(), map()) :: Conn.t()
-  def show(conn, _params) do
-    user = Plug.current_user(conn)
-    ViewHelpers.render(conn, "show.html", user: user)
   end
 
   @spec edit(Conn.t(), map()) :: Conn.t()

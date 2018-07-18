@@ -7,7 +7,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
   @options []
 
   @expected_template_files %{
-    "registration" => ["edit.html.eex", "new.html.eex", "show.html.eex"],
+    "registration" => ["edit.html.eex", "new.html.eex"],
     "session" => ["new.html.eex"]
   }
   @expected_views @expected_template_files |> Map.keys()
@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
     :ok
   end
 
-  test "generates schema file" do
+  test "generates templates" do
     File.cd! @tmp_path, fn ->
       Templates.run(@options)
       templates_path = Path.join(["lib", "authex_web", "templates", "authex"])
@@ -40,7 +40,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
       assert view_content =~ "defmodule AuthexWeb.Authex.SessionView do"
       assert view_content =~ "use AuthexWeb, :view"
 
-      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "defmodule AuthexWeb.Endpoint"
       assert msg =~ "otp_app: :authex"
@@ -65,7 +65,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.TemplatesTest do
       assert view_content =~ "defmodule TestWeb.Authex.SessionView do"
       assert view_content =~ "use TestWeb, :view"
 
-      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "defmodule TestWeb.Endpoint"
       assert msg =~ "otp_app: :test"

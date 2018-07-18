@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Authex.Phoenix.Gen.Templates do
   end
 
   @templates [
-    {"registration", ~w(new edit show)},
+    {"registration", ~w(new edit)},
     {"session", ~w(new)}
   ]
 

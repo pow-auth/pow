@@ -27,7 +27,7 @@ defmodule Authex.Phoenix.RouterHelpers do
 
   @spec after_user_updated_path(Conn.t()) :: binary()
   def after_user_updated_path(conn) do
-    route(conn, :after_user_updated_path, helpers(conn).authex_registration_path(conn, :show))
+    route(conn, :after_user_updated_path, helpers(conn).authex_registration_path(conn, :edit))
   end
 
   @spec after_user_deleted_path(Conn.t()) :: binary()

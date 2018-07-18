@@ -33,7 +33,6 @@ defmodule Authex.Phoenix.ViewHelpers do
 
   * `registration/new.html.eex`
   * `registration/edit.html.eex`
-  * `registration/show.html.eex`
   * `session/new.html.eex`
   """
   alias Plug.Conn

@@ -60,24 +60,6 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     end
   end
 
-  describe "show/2" do
-    test "shows", %{conn: conn} do
-      conn =
-        conn
-        |> create_user_and_sign_in()
-        |> get(Routes.authex_registration_path(conn, :show))
-
-      assert html = html_response(conn, 200)
-      assert html =~ "id: 1"
-    end
-
-    test "not signed in", %{conn: conn} do
-      conn = get(conn, Routes.authex_registration_path(conn, :show))
-
-      assert_not_authenticated_redirect(conn)
-    end
-  end
-
   describe "edit/2" do
     test "shows", %{conn: conn} do
       conn =
@@ -115,7 +97,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
 
       conn = put(conn, Routes.authex_registration_path(conn, :update, @valid_params))
 
-      assert redirected_to(conn) == Routes.authex_registration_path(conn, :show)
+      assert redirected_to(conn) == Routes.authex_registration_path(conn, :edit)
       assert get_flash(conn, :info) == "User has been updated successfully."
       assert Plug.current_user(conn) == %{id: 1, updated: true}
       assert conn.private[:plug_session]["auth"] != session_id

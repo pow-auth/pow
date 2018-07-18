@@ -8,10 +8,6 @@ defmodule Authex.Phoenix.RegistrationTemplate do
       {:password, :confirm_password}
     ]}
 
-  template :show, :html, """
-  <%= inspect(@user) %>
-  """
-
   template :edit, :html,
     {:form, [
       {:password, :current_password},
