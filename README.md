@@ -42,6 +42,16 @@ LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
 
+Add user and repo to `authex.ex`:
+
+```elixir
+defmodule MyApp.Authex do
+  use Authex,
+    user: MyApp.Users.User,
+    repo: MyApp.Repo
+end
+```
+
 Set up `endpoint.ex` to enable session based authentication:
 
 ```elixir
