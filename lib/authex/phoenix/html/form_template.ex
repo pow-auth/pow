@@ -13,14 +13,16 @@
     <%= error %>
   <% end %>
     <div>
-      <%%= Phoenix.HTML.Form.submit "Submit" %>
+      <%%= Phoenix.HTML.Form.submit <%= inspect button_label %> %>
     </div>
   <%% end %>
   """
 
-    @spec render(list()) :: Macro.t()
-    def render(inputs) do
-      inputs = for {type, key} <- inputs, do: input(type, key)
+    @spec render(list(), Keyword.t()) :: Macro.t()
+    def render(inputs, opts \\ []) do
+      inputs       = for {type, key} <- inputs, do: input(type, key)
+      button_label = Keyword.get(opts, :button_label, "Submit")
+
       unquote(@template)
     end
 

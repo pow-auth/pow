@@ -18,5 +18,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordTemplate do
     {:password, :password},
     {:password, :confirm_password}
   ]) %>
+
+  <span><%%= Phoenix.HTML.Link.link "Sign in", to: Authex.Phoenix.RouterHelpers.helpers(@conn).authex_session_path(@conn, :new) %></span>
   """
 end

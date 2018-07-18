@@ -9,7 +9,10 @@ defmodule Authex.Phoenix.RegistrationTemplate do
     {:text, {:module_attribute, :login_field}},
     {:password, :password},
     {:password, :confirm_password}
-  ]) %>
+  ],
+  button_label: "Register") %>
+
+  <span><%%= Phoenix.HTML.Link.link "Sign in", to: Authex.Phoenix.RouterHelpers.helpers(@conn).authex_session_path(@conn, :new) %></span>
   """
 
   template :edit, :html,
@@ -21,6 +24,7 @@ defmodule Authex.Phoenix.RegistrationTemplate do
     {:text, {:module_attribute, :login_field}},
     {:password, :password},
     {:password, :confirm_password}
-  ]) %>
+  ],
+  button_label: "Update") %>
   """
 end
