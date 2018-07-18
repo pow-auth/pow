@@ -67,6 +67,7 @@ defmodule Authex.Phoenix.SessionControllerTest do
       conn = post conn, Routes.authex_session_path(conn, :create, @valid_params)
       assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
+      :timer.sleep(10)
 
       conn = delete(conn, Routes.authex_session_path(conn, :delete))
       assert redirected_to(conn) == Routes.authex_session_path(conn, :new)

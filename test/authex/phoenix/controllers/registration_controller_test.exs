@@ -157,6 +157,7 @@ defmodule Authex.Phoenix.RegistrationControllerTest do
     conn = post conn, Routes.authex_registration_path(conn, :create, @valid_params)
     assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]
+    :timer.sleep(10)
 
     conn
   end
