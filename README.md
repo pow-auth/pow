@@ -31,12 +31,13 @@ Run `mix deps.get` to install it.
 Install the necessary files:
 
 ```bash
-mix authex.phoenix.install
+mix authex.install
 ```
 
-This will add the following files to your phoenix app:
+This will add the following files to your app:
 
 ```bash
+LIB_PATH/authex.ex
 LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
@@ -54,9 +55,7 @@ defmodule MyAppWeb.Endpoint do
     key: "_my_project_demo_key",
     signing_salt: "secret"
 
-  plug Authex.Plug.Session,
-    repo: MyApp.Repo,
-    user: MyApp.Users.User
+  plug MyApp.Authex.Plug.Session
 
   # ...
 end
@@ -67,7 +66,7 @@ And add the Authex routes and plugs to `router.ex`:
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
-  user Authex.Phoenix.Router
+  use MyApp.Authex.Phoenix.Router
 
   # ...
 
