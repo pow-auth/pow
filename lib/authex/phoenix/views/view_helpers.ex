@@ -50,8 +50,9 @@ defmodule Authex.Phoenix.ViewHelpers do
       |> Plug.fetch_config()
       |> Config.get(:web_module, nil)
       |> split_module()
+    [authex_module | _rest] = Module.split(view_module)
 
-    view   = build_view_module(view_module, web_module)
+    view   = build_view_module(view_module, web_module, authex_module)
     layout = build_layout(layout, web_module || base)
 
     conn
@@ -60,9 +61,9 @@ defmodule Authex.Phoenix.ViewHelpers do
     |> Controller.render(template, assigns)
   end
 
-  defp build_view_module(module, nil), do: module
-  defp build_view_module(module, base) do
-    base = base ++ ["Authex"]
+  defp build_view_module(module, nil, _authex_module), do: module
+  defp build_view_module(module, base, authex_module) do
+    base = base ++ [authex_module]
 
     module
     |> split_module()

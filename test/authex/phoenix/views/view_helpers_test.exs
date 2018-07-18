@@ -1,3 +1,9 @@
+defmodule AuthexTest.Phoenix.TestView do
+  def render(_template, _opts), do: :ok
+end
+defmodule Authex.Test.Phoenix.AuthexTest.TestView do
+  def render(_template, _opts), do: :ok
+end
 defmodule Authex.Phoenix.ViewHelpersTest do
   use Authex.Test.Phoenix.ConnCase
   doctest Authex.Phoenix.ViewHelpers
@@ -39,6 +45,29 @@ defmodule Authex.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Authex.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == Authex.Test.Phoenix.Authex.SessionView
+    assert conn.private[:phoenix_layout] == {Authex.Test.Phoenix.LayoutView, :app}
+  end
+
+  test "render/3 in extension", %{conn: conn} do
+    conn =
+      conn
+      |> Conn.put_private(:phoenix_view, AuthexTest.Phoenix.TestView)
+      |> ViewHelpers.render(:new)
+
+    assert conn.private[:phoenix_endpoint] == Authex.Test.Phoenix.Endpoint
+    assert conn.private[:phoenix_view] == AuthexTest.Phoenix.TestView
+    assert conn.private[:phoenix_layout] == {Authex.Test.Phoenix.LayoutView, :app}
+  end
+
+  test "render/3 in extension with :web_module", %{conn: conn} do
+    conn =
+      conn
+      |> Conn.put_private(:phoenix_view, AuthexTest.Phoenix.TestView)
+      |> Conn.put_private(:authex_config, [web_module: Authex.Test.Phoenix])
+      |> ViewHelpers.render(:new)
+
+    assert conn.private[:phoenix_endpoint] == Authex.Test.Phoenix.Endpoint
+    assert conn.private[:phoenix_view] == Authex.Test.Phoenix.AuthexTest.TestView
     assert conn.private[:phoenix_layout] == {Authex.Test.Phoenix.LayoutView, :app}
   end
 end
