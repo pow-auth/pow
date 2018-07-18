@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
   use Mix.Task
 
   alias Authex.Ecto.Schema.Migration
-  alias Mix.{Authex.Utils, Ecto, Generator}
+  alias Mix.{Tasks.Authex.Ecto.MigrationUtils, Authex.Utils, Ecto}
 
   @doc false
   def run(args) do
@@ -26,43 +26,10 @@ defmodule Mix.Tasks.Authex.Ecto.Gen.Migration do
   end
 
   defp create_migration_files(repo) do
-    path =
-      repo
-      |> Ecto.source_repo_priv()
-      |> Path.join("migrations")
-    name = "CreateUser"
-    base_name = "#{Macro.underscore(name)}.exs"
-    context_base = Utils.context_base(Utils.context_app())
-    content = Migration.gen(context_base, repo: repo)
+    context_base    = Utils.context_base(Utils.context_app())
+    name            = Migration.name("users")
+    content         = Migration.gen(context_base, repo: repo)
 
-    path
-    |> maybe_create_directory()
-    |> ensure_unique(base_name, name)
-    |> Path.join("#{timestamp()}_#{base_name}")
-    |> Generator.create_file(content)
+    MigrationUtils.create_migration_files(repo, name, content)
   end
-
-  defp maybe_create_directory(path) do
-    Generator.create_directory(path)
-
-    path
-  end
-
-  defp ensure_unique(path, base_name, name) do
-    path
-    |> Path.join("*_#{base_name}")
-    |> Path.wildcard()
-    |> case do
-      [] -> path
-      _  -> Mix.raise("migration can't be created, there is already a migration file with name #{name}.")
-    end
-  end
-
-  defp timestamp do
-    {{y, m, d}, {hh, mm, ss}} = :calendar.universal_time()
-    "#{y}#{pad(m)}#{pad(d)}#{pad(hh)}#{pad(mm)}#{pad(ss)}"
-  end
-
-  defp pad(i) when i < 10, do: << ?0, ?0 + i >>
-  defp pad(i), do: to_string(i)
 end

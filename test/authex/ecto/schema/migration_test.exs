@@ -4,6 +4,10 @@ defmodule Authex.Ecto.Schema.MigrationTest do
 
   alias Authex.Ecto.Schema.Migration
 
+  test "name/1" do
+    assert Migration.name("users") == "CreateUsers"
+  end
+
   test "migration_file/1" do
     content = Migration.gen(Authex)
 

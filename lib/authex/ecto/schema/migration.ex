@@ -5,7 +5,7 @@ defmodule Authex.Ecto.Schema.Migration do
   alias Authex.{Config, Ecto.Schema.Fields}
 
   @template """
-    defmodule <%= inspect schema.repo %>.Migrations.Create<%= Macro.camelize(schema.table) %> do
+    defmodule <%= inspect schema.repo %>.Migrations.<%= schema.migration_name %> do
       use Ecto.Migration
 
       def change do
@@ -29,16 +29,29 @@ defmodule Authex.Ecto.Schema.Migration do
     |> migration_file()
   end
 
+  @spec name(binary()) :: binary()
+  def name(table), do: "Create#{Macro.camelize(table)}"
+
   defp parse_options(base, config) do
-    attrs              = migration_attrs(config)
-    repo               = Config.get(config, :repo, Module.concat([base, "Repo"]))
-    table              = Config.get(config, :table, "users")
-    binary_id          = config[:binary_id]
-    migration_defaults = defaults(attrs)
-    {assocs, attrs}    = partition_attrs(attrs)
-    indexes            = migration_indexes(config, table)
+    repo           = Config.get(config, :repo, Module.concat([base, "Repo"]))
+    table          = Config.get(config, :table, "users")
+    attrs          = Fields.attrs(config)
+    indexes        = Fields.indexes(config)
+    migration_name = name(table)
+
+    schema(repo, table, migration_name, attrs, indexes, binary_id: config[:binary_id])
+  end
+
+  @spec schema(atom(), binary(), binary(), list(), list(), Keyword.t()) :: map()
+  def schema(repo, table, migration_name, attrs, indexes, opts) do
+    migration_attrs    = migration_attrs(attrs)
+    binary_id          = opts[:binary_id]
+    migration_defaults = defaults(migration_attrs)
+    {assocs, attrs}    = partition_attrs(migration_attrs)
+    indexes            = migration_indexes(indexes, table)
 
     %{
+      migration_name: migration_name,
       repo: repo,
       table: table,
       binary_id: binary_id,
@@ -49,9 +62,8 @@ defmodule Authex.Ecto.Schema.Migration do
     }
   end
 
-  defp migration_attrs(config) do
-    config
-    |> Fields.attrs()
+  defp migration_attrs(attrs) do
+    attrs
     |> Enum.reject(&is_virtual?/1)
     |> Enum.map(&to_migration_attr/1)
   end
@@ -88,10 +100,8 @@ defmodule Authex.Ecto.Schema.Migration do
     |> Enum.split_with(fn _ -> false end)
   end
 
-  defp migration_indexes(config, table) do
-    config
-    |> Fields.indexes()
-    |> Enum.map(&to_migration_index(table, &1))
+  defp migration_indexes(indexes, table) do
+    Enum.map(indexes, &to_migration_index(table, &1))
   end
 
   defp to_migration_index(table, {key, true}),

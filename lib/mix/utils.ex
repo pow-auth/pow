@@ -15,11 +15,25 @@ defmodule Mix.Authex.Utils do
   @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: map()
   def parse_options(args, switches, default_opts) do
     {opts, _parsed, _invalid} = OptionParser.parse(args, switches: switches)
+    default_opts              = to_map(default_opts)
+    opts                      = to_map(opts)
 
     default_opts
-    |> Keyword.merge(opts)
-    |> Map.new()
+    |> Map.merge(opts)
     |> context_app_to_atom()
+  end
+
+  defp to_map(keyword) do
+    Enum.reduce(keyword, %{}, fn {key, value}, map ->
+      case Map.get(map, key, nil) do
+        nil ->
+          Map.put(map, key, value)
+
+        existing_value ->
+          value = List.wrap(existing_value) ++ [value]
+          Map.put(map, key, value)
+      end
+    end)
   end
 
   defp context_app_to_atom(%{context_app: context_app} = config),
