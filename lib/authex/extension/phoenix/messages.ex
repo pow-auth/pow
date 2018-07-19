@@ -10,8 +10,6 @@ defmodule Authex.Extension.Phoenix.Messages do
           extensions: [AuthexExtensionOne, AuthexExtensionTwo]
 
         def authex_extension_one(:a_message, _conn), do: "A message."
-
-        message_fallbacks()
       end
   """
   alias Authex.{Config, Extension}
@@ -21,11 +19,11 @@ defmodule Authex.Extension.Phoenix.Messages do
       extensions = unquote(__MODULE__).__messages_extensions___(unquote(config))
       Module.put_attribute(__MODULE__, :message_extensions, extensions)
 
-      import unquote(__MODULE__), only: [message_fallbacks: 0]
+      @before_compile unquote(__MODULE__)
     end
   end
 
-  defmacro message_fallbacks() do
+  defmacro __before_compile__(_env) do
     quote do
       for extension <- @message_extensions do
         method_name = unquote(__MODULE__).method_name(extension)

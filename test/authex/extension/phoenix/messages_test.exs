@@ -13,8 +13,6 @@ defmodule Authex.Extension.Phoenix.MessagesTest do
       extensions: [Authex.Extension.Phoenix.MessagesTest]
 
     def authex(:a, _conn), do: "Overridden"
-
-    message_fallbacks()
   end
 
   use ExUnit.Case

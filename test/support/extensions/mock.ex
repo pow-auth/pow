@@ -127,8 +127,6 @@ defmodule Authex.Test.ExtensionMocks do
     Module.create(Module.concat([base_module, Phoenix.Messages]),
     quote do
       use unquote(base_module).Authex.Phoenix.Messages
-
-      message_fallbacks()
     end, location)
 
     quote do
