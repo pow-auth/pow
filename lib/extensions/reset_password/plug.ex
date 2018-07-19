@@ -103,7 +103,7 @@ defmodule AuthexResetPassword.Plug do
   end
 
   defp store(config) do
-    backend = Config.get(config, :backend_cache_store, EtsCache)
+    backend = Config.get(config, :cache_store_backend, EtsCache)
 
     {ResetTokenCache, [backend: backend]}
   end

@@ -12,7 +12,7 @@ defmodule Authex.Test.ExtensionMocks do
         user: unquote(base_module).Users.User,
         repo: RepoMock,
         extensions: unquote(extensions),
-        backend_cache_store: Authex.Test.EtsCacheMock,
+        cache_store_backend: Authex.Test.EtsCacheMock,
         mailer: Authex.Test.Phoenix.MailerMock,
         messages_backend: unquote(base_module).Phoenix.Messages
     end, location)

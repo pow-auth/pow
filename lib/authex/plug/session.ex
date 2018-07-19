@@ -17,7 +17,7 @@ defmodule Authex.Plug.Session do
       session_store: {Authex.Store.CredentialsCache,
                       ttl: :timer.hours(28),
                       namespace: "credentials"},
-      backend_cache_store: Authex.Store.Backend.EtsCache,
+      cache_store_backend: Authex.Store.Backend.EtsCache,
       users_context: Authex.Ecto.Users
   """
   use Authex.Plug.Base
@@ -82,7 +82,7 @@ defmodule Authex.Plug.Session do
   end
 
   defp default_store(config) do
-    backend = Config.get(config, :backend_cache_store, EtsCache)
+    backend = Config.get(config, :cache_store_backend, EtsCache)
 
     {CredentialsCache, [backend: backend]}
   end

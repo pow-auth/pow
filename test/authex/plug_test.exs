@@ -12,7 +12,7 @@ defmodule Authex.PlugTest do
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
-    backend_cache_store: EtsCacheMock
+    cache_store_backend: EtsCacheMock
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 

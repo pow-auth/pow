@@ -10,7 +10,7 @@ defmodule Authex.Plug.SessionTest do
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    backend_cache_store: EtsCacheMock
+    cache_store_backend: EtsCacheMock
   ]
 
   setup do
