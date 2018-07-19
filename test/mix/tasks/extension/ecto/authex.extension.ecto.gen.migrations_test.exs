@@ -5,6 +5,10 @@ defmodule Mix.Tasks.Authex.Extension.Ecto.Gen.MigrationsTest do
     def attrs(_config) do
       [{:custom_string, :string, null: false}]
     end
+
+    def indexes(_config) do
+      [{:custom_string, true}]
+    end
   end
 
   use Authex.Test.Mix.TestCase
@@ -35,6 +39,9 @@ defmodule Mix.Tasks.Authex.Extension.Ecto.Gen.MigrationsTest do
 
       file = migrations_path |> Path.join(migration_file) |> File.read!()
       assert file =~ "defmodule #{inspect(Repo)}.Migrations.AddMigrationsTestToUsers do"
+      assert file =~ "alter table(:users)"
+      assert file =~ "add :custom_string, :string, null: false"
+      assert file =~ "create unique_index(:users, [:custom_string])"
     end
   end
 
