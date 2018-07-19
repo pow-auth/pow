@@ -14,6 +14,8 @@ defmodule Authex.Extension.Phoenix.Router.Base do
         end
       end
   """
+  alias Authex.Config
+
   @callback routes(Config.t()) :: Macro.t()
 
   defmacro __using__(_opts) do

@@ -3,7 +3,7 @@ defmodule Authex.Phoenix.RegistrationController do
   use Authex.Phoenix.Web, :controller
 
   alias Authex.Plug
-  alias Authex.Phoenix.{Messages, PlugErrorHandler, RouterHelpers, ViewHelpers}
+  alias Authex.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
 
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
   plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:edit, :update, :delete]
@@ -18,15 +18,7 @@ defmodule Authex.Phoenix.RegistrationController do
   def create(conn, %{"user" => user_params}) do
     conn
     |> Plug.create_user(user_params)
-    |> case do
-      {:ok, conn} ->
-        conn
-        |> put_flash(:info, Messages.user_has_been_created())
-        |> redirect(to: RouterHelpers.after_registration_path(conn))
-
-      {:error, changeset} ->
-        render_new(conn, changeset)
-    end
+    |> after_create(conn)
   end
 
   @spec edit(Conn.t(), map()) :: Conn.t()
@@ -39,41 +31,52 @@ defmodule Authex.Phoenix.RegistrationController do
   def update(conn, %{"user" => user_params}) do
     conn
     |> Plug.update_user(user_params)
-    |> case do
-      {:ok, conn} ->
-        conn
-        |> put_flash(:info, Messages.user_has_been_updated())
-        |> redirect(to: RouterHelpers.after_user_updated_path(conn))
-
-      {:error, changeset} ->
-        render_edit(conn, changeset)
-    end
+    |> after_update(conn)
   end
 
   @spec delete(Conn.t(), map()) :: Conn.t()
   def delete(conn, _params) do
     conn
     |> Plug.delete_user()
-    |> case do
-      {:ok, conn} ->
-        conn
-        |> put_flash(:info, Messages.user_has_been_deleted())
-        |> redirect(to: RouterHelpers.after_user_deleted_path(conn))
+    |> after_delete(conn)
+  end
 
-      {:error, _changeset} ->
-        conn
-        |> put_flash(:info, Messages.user_could_not_be_deleted())
-        |> redirect(to: RouterHelpers.helpers(conn).authex_registration_path(conn, :edit))
-    end
+  defp after_create({:ok, conn}, _conn) do
+    conn
+    |> put_flash(:info, Controller.messages(conn).message(:user_has_been_created, conn))
+    |> redirect(to: Controller.routes(conn).after_registration_path(conn))
+  end
+  defp after_create({:error, changeset}, conn) do
+    render_new(conn, changeset)
+  end
+
+  defp after_update({:ok, conn}, _conn) do
+    conn
+    |> put_flash(:info, Controller.messages(conn).message(:user_has_been_updated,conn))
+    |> redirect(to: Controller.routes(conn).after_user_updated_path(conn))
+  end
+  defp after_update({:error, changeset}, conn) do
+    render_edit(conn, changeset)
+  end
+
+  defp after_delete({:ok, conn}, _conn) do
+    conn
+    |> put_flash(:info, Controller.messages(conn).message(:user_has_been_deleted, conn))
+    |> redirect(to: Controller.routes(conn).after_user_deleted_path(conn))
+  end
+  defp after_delete({:error, _changeset}, conn) do
+    conn
+    |> put_flash(:info, Controller.messages(conn).message(:user_could_not_be_deleted, conn))
+    |> redirect(to: Controller.router_helpers(conn).authex_registration_path(conn, :edit))
   end
 
   defp render_new(conn, changeset) do
-    action = RouterHelpers.helpers(conn).authex_registration_path(conn, :create)
+    action = Controller.router_helpers(conn).authex_registration_path(conn, :create)
     ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
   end
 
   defp render_edit(conn, changeset) do
-    action = RouterHelpers.helpers(conn).authex_registration_path(conn, :update)
+    action = Controller.router_helpers(conn).authex_registration_path(conn, :update)
     ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action)
   end
 end

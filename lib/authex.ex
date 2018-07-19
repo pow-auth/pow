@@ -16,12 +16,14 @@ defmodule Authex do
 
     - `MyApp.Authex.Ecto.Schema`
     - `MyApp.Authex.Phoenix.Router`
+    - `MyApp.Authex.Phoenix.Messages`
     - `MyApp.Authex.Plug.Session`
   """
   defmacro __using__(config) do
     quote do
       unquote(__MODULE__).__create_ecto_schema_mod__(__MODULE__, unquote(config))
       unquote(__MODULE__).__create_phoenix_router_mod__(__MODULE__, unquote(config))
+      unquote(__MODULE__).__create_phoenix_messages_mod__(__MODULE__, unquote(config))
       unquote(__MODULE__).__create_plug_session_mod__(__MODULE__, unquote(config))
     end
   end
@@ -70,6 +72,26 @@ defmodule Authex do
           quote do
             Authex.Phoenix.Router.authex_routes()
             authex_extension_routes()
+          end
+        end
+      end
+      Module.create(name, quoted, Macro.Env.location(__ENV__))
+    end
+  end
+
+  defmacro __create_phoenix_messages_mod__(mod, config) do
+    quote do
+      config = unquote(config)
+      name   = unquote(mod).Phoenix.Messages
+      quoted = quote do
+        config = unquote(config)
+
+        defmacro __using__(_opts) do
+          config = unquote(config)
+          quote do
+            use Authex.Phoenix.Messages
+            use Authex.Extension.Phoenix.Messages,
+              unquote(config)
           end
         end
       end

@@ -1,10 +1,7 @@
 defmodule AuthexResetPassword.Phoenix.Messages do
-  @spec email_has_been_sent() :: binary()
-  def email_has_been_sent, do: "An email with reset instructions has been sent to you. Please check your inbox."
+  use Authex.Extension.Phoenix.Messages.Base
 
-  @spec invalid_token() :: binary()
-  def invalid_token, do: "The reset token has expired."
-
-  @spec password_has_been_reset() :: binary()
-  def password_has_been_reset, do: "The password has been updated."
+  def message(:email_has_been_sent, _conn), do: "An email with reset instructions has been sent to you. Please check your inbox."
+  def message(:invalid_token, _conn), do: "The reset token has expired."
+  def message(:password_has_been_reset, _conn), do: "The password has been updated."
 end

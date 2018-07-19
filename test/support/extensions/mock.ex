@@ -13,7 +13,8 @@ defmodule Authex.Test.ExtensionMocks do
         repo: RepoMock,
         extensions: unquote(extensions),
         backend_cache_store: Authex.Test.EtsCacheMock,
-        mailer: Authex.Test.Phoenix.MailerMock
+        mailer: Authex.Test.Phoenix.MailerMock,
+        messages_backend: unquote(base_module).Phoenix.Messages
     end, location)
 
     Module.create(Module.concat([base_module, Users.User]),
@@ -121,6 +122,13 @@ defmodule Authex.Test.ExtensionMocks do
       def render("500.html", _assigns), do: "500.html"
       def render("400.html", _assigns), do: "400.html"
       def render("404.html", _assigns), do: "404.html"
+    end, location)
+
+    Module.create(Module.concat([base_module, Phoenix.Messages]),
+    quote do
+      use unquote(base_module).Authex.Phoenix.Messages
+
+      message_fallbacks()
     end, location)
 
     quote do
