@@ -5,6 +5,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
   alias AuthexResetPassword.Plug
   alias AuthexResetPassword.Phoenix.{Messages, Mailer.ResetPasswordMailer}
   alias Authex.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
+  alias Authex.Extension.Phoenix.Controller, as: ExtensionController
 
   plug Authex.Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler]
 
@@ -34,7 +35,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
     end
 
     conn
-    |> put_flash(:info, Messages.msg(:email_has_been_sent, conn))
+    |> put_flash(:info, ExtensionController.message(Messages, :email_has_been_sent, conn))
     |> redirect(to: Controller.router_helpers(conn).authex_session_path(conn, :new))
   end
 
@@ -51,7 +52,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
     |> case do
       {:ok, conn} ->
         conn
-        |> put_flash(:info, Messages.msg(:password_has_been_reset, conn))
+        |> put_flash(:info, ExtensionController.message(Messages, :password_has_been_reset, conn))
         |> redirect(to: Controller.router_helpers(conn).authex_session_path(conn, :new))
 
       {:error, changeset} ->
@@ -68,7 +69,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
     case Plug.user_from_token(conn, token) do
       nil ->
         conn
-        |> put_flash(:error, Messages.msg(:invalid_token, conn))
+        |> put_flash(:error, ExtensionController.message(Messages, :invalid_token, conn))
         |> redirect(to: Controller.router_helpers(conn).authex_reset_password_reset_password_path(conn, :new))
         |> halt()
 

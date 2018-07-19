@@ -109,6 +109,7 @@ By default, Authex will only expose files that are absolutely necessary, but you
 Authex is made so it's easy to extend the functionality with your own complimentary library. The following extensions are included in this library:
 
 * `AuthexResetPassword`
+* `AuthexEmailConfirmation`
 
 Many extensions requires a mailer to have been set up. Let's create the mailer in `lib/my_app_web/mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
 
@@ -141,7 +142,7 @@ defmodule MyApp.Authex do
     user: MyApp.Users.User,
     repo: MyApp.Repo,
     backend_mailer: MyAppWeb.Mailer,
-    extensions: [AuthexResetPassword]
+    extensions: [AuthexResetPassword, AuthexEmailConfirmation]
 end
 ```
 

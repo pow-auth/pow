@@ -24,30 +24,32 @@ defmodule Authex.Phoenix.Routes do
     quote do
       @behaviour unquote(__MODULE__)
 
-      import unquote(__MODULE__)
+      def after_sign_out_path(conn),
+        do: unquote(__MODULE__).after_sign_out_path(conn)
+      def after_sign_in_path(conn),
+        do: unquote(__MODULE__).after_sign_in_path(conn)
+      def after_registration_path(conn),
+        do: unquote(__MODULE__).after_registration_path(conn)
+      def after_user_updated_path(conn),
+        do: unquote(__MODULE__).after_user_updated_path(conn)
+      def after_user_deleted_path(conn),
+        do: unquote(__MODULE__).after_user_deleted_path(conn)
 
       defoverridable unquote(__MODULE__)
     end
   end
 
-  @spec after_sign_out_path(Conn.t()) :: binary()
   def after_sign_out_path(conn) do
-    helpers(conn).authex_session_path(conn, :new)
+    Controller.router_helpers(conn).authex_session_path(conn, :new)
   end
 
-  @spec after_sign_in_path(Conn.t()) :: binary()
   def after_sign_in_path(_conn), do: "/"
 
-  @spec after_registration_path(Conn.t()) :: binary()
   def after_registration_path(conn), do: after_sign_in_path(conn)
 
-  @spec after_user_updated_path(Conn.t()) :: binary()
   def after_user_updated_path(conn) do
-    helpers(conn).authex_registration_path(conn, :edit)
+    Controller.router_helpers(conn).authex_registration_path(conn, :edit)
   end
 
-  @spec after_user_deleted_path(Conn.t()) :: binary()
   def after_user_deleted_path(conn), do: after_sign_out_path(conn)
-
-  defp helpers(conn), do: Controller.router_helpers(conn)
 end

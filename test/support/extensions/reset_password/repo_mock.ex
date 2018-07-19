@@ -1,5 +1,5 @@
 defmodule AuthexResetPassword.Test.RepoMock do
-  alias Authex.Test.Ecto.Users.User
+  alias AuthexResetPassword.Test.Users.User
 
   def get_by(_mod, [email: "test@example.com"]), do: %User{id: 1}
   def get_by(_mod, _test), do: nil

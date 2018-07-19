@@ -38,8 +38,8 @@ defmodule Authex.Plug do
 
   @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Conn.t()} | no_return
   def authenticate_user(conn, params) do
-    config   = fetch_config(conn)
-    mod      = config[:mod]
+    config = fetch_config(conn)
+    mod    = config[:mod]
 
     config
     |> Operations.authenticate(params)
@@ -67,34 +67,35 @@ defmodule Authex.Plug do
     end
   end
 
-  @spec create_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, map()} | no_return
+  @spec create_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def create_user(conn, params) do
-    config   = fetch_config(conn)
-    mod      = config[:mod]
+    config = fetch_config(conn)
+    mod    = config[:mod]
 
     config
     |> Operations.create(params)
     |> case do
-      {:ok, user}     -> {:ok, mod.do_create(conn, user)}
-      {:error, error} -> {:error, error}
+      {:ok, user}     -> {:ok, user, mod.do_create(conn, user)}
+      {:error, error} -> {:error, error, conn}
     end
   end
 
-  @spec update_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, map()} | no_return
+  @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def update_user(conn, params) do
     config   = fetch_config(conn)
     mod      = config[:mod]
     user     = current_user(conn)
+    conn     = Conn.put_private(conn, :user_before_update, user)
 
     config
     |> Operations.update(user, params)
     |> case do
-      {:ok, user}     -> {:ok, mod.do_create(conn, user)}
-      {:error, error} -> {:error, error}
+      {:ok, user}     -> {:ok, user, mod.do_create(conn, user)}
+      {:error, error} -> {:error, error, conn}
     end
   end
 
-  @spec delete_user(Conn.t()) :: {:ok, Conn.t()} | {:error, map()} | no_return
+  @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def delete_user(conn) do
     config   = fetch_config(conn)
     mod      = config[:mod]
@@ -103,8 +104,8 @@ defmodule Authex.Plug do
     config
     |> Operations.delete(user)
     |> case do
-      {:ok, _user}    -> {:ok, mod.do_delete(conn)}
-      {:error, error} -> {:error, error}
+      {:ok, user}     -> {:ok, user, mod.do_delete(conn)}
+      {:error, error} -> {:error, error, conn}
     end
   end
 

@@ -8,11 +8,13 @@ defmodule Authex.PlugTest do
                 Config,
                 Config.ConfigError}
   alias Authex.Test.{ConnHelpers, EtsCacheMock, ContextMock}
+  alias Authex.Test.Ecto.Users.User
 
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
-    cache_store_backend: EtsCacheMock
+    cache_store_backend: EtsCacheMock,
+    user: User
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
@@ -87,6 +89,59 @@ defmodule Authex.PlugTest do
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
     assert EtsCacheMock.get(nil, session_id) == :not_found
+  end
+
+  test "change_user/2" do
+    conn = conn()
+    assert %Ecto.Changeset{} = Plug.change_user(conn)
+
+    conn = Plug.assign_current_user(conn, %User{id: 1}, @default_config)
+    changeset = Plug.change_user(conn)
+    assert changeset.data.id == 1
+  end
+
+  test "create_user/2" do
+    EtsCacheMock.init()
+
+    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    assert {:error, _changeset, conn} = Plug.create_user(conn, %{})
+    refute Plug.current_user(conn)
+    refute conn.private[:plug_session]["auth"]
+
+    assert {:ok, user, conn} = Plug.create_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert Plug.current_user(conn) == user
+    assert conn.private[:plug_session]["auth"]
+  end
+
+  test "update_user/2" do
+    EtsCacheMock.init()
+
+    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    user        = Plug.current_user(conn)
+    session_id  = conn.private[:plug_session]["auth"]
+
+    assert {:error, _changeset, conn} = Plug.update_user(conn, %{})
+    assert Plug.current_user(conn)
+    assert conn.private[:plug_session]["auth"] == session_id
+    assert conn.private[:user_before_update] == user
+
+    assert {:ok, updated_user, conn} = Plug.update_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert Plug.current_user(conn) == updated_user
+    refute updated_user == user
+    assert conn.private[:user_before_update] == user
+    refute conn.private[:plug_session]["auth"] == session_id
+  end
+
+  test "delete_user/2" do
+    EtsCacheMock.init()
+
+    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+
+    assert {:ok, _user, conn} = Plug.delete_user(conn)
+    refute Plug.current_user(conn)
+    refute conn.private[:plug_session]["auth"]
   end
 
   defp conn(config \\ @default_config) do

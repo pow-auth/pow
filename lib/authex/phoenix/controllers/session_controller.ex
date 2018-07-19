@@ -16,34 +16,40 @@ defmodule Authex.Phoenix.SessionController do
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => user_params}) do
-    conn
-    |> Plug.authenticate_user(user_params)
+    config = Plug.fetch_config(conn)
+    res    = Plug.authenticate_user(conn, user_params)
+
+    res
+    |> Controller.callback(__MODULE__, :create, config)
     |> after_create(user_params)
   end
 
   @spec delete(Conn.t(), map()) :: Conn.t()
   def delete(conn, _params) do
-    conn
-    |> Plug.clear_authenticated_user()
+    config = Plug.fetch_config(conn)
+    res    = Plug.clear_authenticated_user(conn)
+
+    res
+    |> Controller.callback(__MODULE__, :delete, config)
     |> after_delete()
   end
 
   defp after_create({:ok, conn}, _params) do
     conn
-    |> put_flash(:info, Controller.messages(conn).message(:signed_in, conn))
+    |> put_flash(:info, Controller.messages(conn).signed_in(conn))
     |> redirect(to: Controller.routes(conn).after_sign_in_path(conn))
   end
   defp after_create({:error, conn}, params) do
     changeset = Plug.change_user(conn, params)
 
     conn
-    |> put_flash(:error, Controller.messages(conn).message(:invalid_credentials, conn))
+    |> put_flash(:error, Controller.messages(conn).invalid_credentials(conn))
     |> render_new(changeset)
   end
 
   defp after_delete(conn) do
     conn
-    |> put_flash(:info, Controller.messages(conn).message(:signed_out, conn))
+    |> put_flash(:info, Controller.messages(conn).signed_out(conn))
     |> redirect(to: Controller.routes(conn).after_sign_out_path(conn))
   end
 

@@ -18,14 +18,26 @@ defmodule Authex do
     - `MyApp.Authex.Phoenix.Router`
     - `MyApp.Authex.Phoenix.Messages`
     - `MyApp.Authex.Plug.Session`
+
+  For extensions integration, `Authex.Extension.Phoenix.ControllerCallbacks`
+  will also be automatically included in the configuration
+  unless `:controller_callbacks_backend` has already been set.
   """
+  alias Authex.Extension.Phoenix.ControllerCallbacks
+
   defmacro __using__(config) do
     quote do
-      unquote(__MODULE__).__create_ecto_schema_mod__(__MODULE__, unquote(config))
-      unquote(__MODULE__).__create_phoenix_router_mod__(__MODULE__, unquote(config))
-      unquote(__MODULE__).__create_phoenix_messages_mod__(__MODULE__, unquote(config))
-      unquote(__MODULE__).__create_plug_session_mod__(__MODULE__, unquote(config))
+      config = unquote(__MODULE__).__parse_config__(unquote(config))
+
+      unquote(__MODULE__).__create_ecto_schema_mod__(__MODULE__, config)
+      unquote(__MODULE__).__create_phoenix_router_mod__(__MODULE__, config)
+      unquote(__MODULE__).__create_phoenix_messages_mod__(__MODULE__, config)
+      unquote(__MODULE__).__create_plug_session_mod__(__MODULE__, config)
     end
+  end
+
+  def __parse_config__(config) do
+    Keyword.put_new(config, :controller_callbacks, ControllerCallbacks)
   end
 
   defmacro __create_ecto_schema_mod__(mod, config) do
@@ -47,6 +59,7 @@ defmodule Authex do
           end
         end
       end
+
       Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
@@ -75,6 +88,7 @@ defmodule Authex do
           end
         end
       end
+
       Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
@@ -95,6 +109,7 @@ defmodule Authex do
           end
         end
       end
+
       Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
@@ -111,6 +126,7 @@ defmodule Authex do
         def create(conn, _opts), do: unquote(mod).create(conn, unquote(config))
         def delete(conn, _opts), do: unquote(mod).delete(conn, unquote(config))
       end
+
       Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
