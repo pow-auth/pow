@@ -25,10 +25,14 @@ defmodule Pow.Phoenix.Messages do
     quote do
       @behaviour unquote(__MODULE__)
 
-      def signed_out(conn),
-        do: unquote(__MODULE__).signed_out(conn)
+      def user_not_authenticated(conn),
+        do: unquote(__MODULE__).user_not_authenticated(conn)
+      def user_already_authenticated(conn),
+        do: unquote(__MODULE__).user_already_authenticated(conn)
       def signed_in(conn),
         do: unquote(__MODULE__).signed_in(conn)
+      def signed_out(conn),
+        do: unquote(__MODULE__).signed_out(conn)
       def invalid_credentials(conn),
         do: unquote(__MODULE__).invalid_credentials(conn)
       def user_has_been_created(conn),
@@ -44,11 +48,13 @@ defmodule Pow.Phoenix.Messages do
     end
   end
 
-  def signed_out(_conn), do: "Signed out successfullly."
-  def signed_in(_conn), do: "User successfully signed in."
-  def invalid_credentials(_conn), do: "Could not sign in user. Please try again."
-  def user_has_been_created(_conn), do: "User has been created successfully."
-  def user_has_been_updated(_conn), do: "User has been updated successfully."
-  def user_has_been_deleted(_conn), do: "User has been deleted successfully."
-  def user_could_not_be_deleted(_conn), do: "User could not be deleted."
+  def user_not_authenticated(_conn), do: "You need to sign in to see this page."
+  def user_already_authenticated(_conn), do: "You're already signed in."
+  def signed_in(_conn), do: "Welcome! You've been signed in."
+  def signed_out(_conn), do: "You've been signed out. See you soon!"
+  def invalid_credentials(_conn), do: "The provided login details did not work. Please verify your credentials, and try again."
+  def user_has_been_created(_conn), do: "Welcome! Your account has been created."
+  def user_has_been_updated(_conn), do: "Your account has been updated."
+  def user_has_been_deleted(_conn), do: "Your account has been deleted. Sorry to see you go!"
+  def user_could_not_be_deleted(_conn), do: "Something went wrong. Your account could not be deleted."
 end

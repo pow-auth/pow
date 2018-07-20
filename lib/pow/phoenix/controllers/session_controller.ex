@@ -9,6 +9,8 @@ defmodule Pow.Phoenix.SessionController do
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
   plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:delete]
 
+  plug :assign_request_url when action in [:new, :create]
+
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
     changeset = Plug.change_user(conn)
@@ -54,8 +56,19 @@ defmodule Pow.Phoenix.SessionController do
     |> redirect(to: Controller.routes(conn).after_sign_out_path(conn))
   end
 
+  defp assign_request_url(%{params: %{"request_url" => request_url}} = conn, _opts) do
+    Conn.assign(conn, :request_url, request_url)
+  end
+  defp assign_request_url(conn, _opts), do: conn
+
   defp render_new(conn, changeset) do
-    action = Controller.router_helpers(conn).pow_registration_path(conn, :create)
-    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
+    ViewHelpers.render(conn, "new.html", changeset: changeset, action: create_path(conn))
+  end
+
+  defp create_path(%{assigns: %{request_url: request_url}} = conn) do
+    create_path(conn, request_url: request_url)
+  end
+  defp create_path(conn, params \\ []) do
+    Controller.router_helpers(conn).pow_registration_path(conn, :create, params)
   end
 end

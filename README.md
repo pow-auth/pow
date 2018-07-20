@@ -242,7 +242,7 @@ Enables session based authorization. The user struct will be collected from an E
 
 ### Pow.Plug.RequireAuthenticated
 
-By default, this will redirect the user to the log in page if the user hasn't been authenticated.
+By default, this will redirect the user to the log in page if the user hasn't been authenticated. Once the user has logged in, they'll be redirected back to the page that they requested.
 
 ### Pow.Plug.RequireNotAuthenticated
 

@@ -3,30 +3,33 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
   doctest Pow.Phoenix.PlugErrorHandler
 
   alias Phoenix.ConnTest
-  alias Pow.Phoenix.PlugErrorHandler
-  alias Pow.Test.ConnHelpers
+  alias Plug.Conn
+  alias Pow.Phoenix.{Messages, PlugErrorHandler}
+
+  @not_authenticated_message Messages.user_not_authenticated(nil)
+  @already_authenticated_message Messages.user_already_authenticated(nil)
 
   setup do
-    Application.put_env(:plug, :validate_header_keys_during_test, false)
-    conn = :get
-            |> ConnTest.build_conn("/")
-            |> ConnHelpers.with_session()
-            |> ConnTest.fetch_flash()
+    conn =
+      ConnTest.build_conn()
+      |> Conn.put_private(:pow_config, [])
+      |> Conn.put_private(:phoenix_flash, %{})
+      |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
 
-    {:ok, %{conn: conn}}
+    {:ok, conn: conn}
   end
 
   test "call/2 :not_autenticated", %{conn: conn} do
     conn = PlugErrorHandler.call(conn, :not_authenticated)
 
-    assert ConnTest.redirected_to(conn) == "/"
-    assert ConnTest.get_flash(conn, :error) == "You're not authenticated."
+    assert ConnTest.redirected_to(conn) == "/session/new?request_url=http%3A%2F%2Fwww.example.com%2F"
+    assert ConnTest.get_flash(conn, :error) == @not_authenticated_message
   end
 
   test "call/2 :already_authenticated", %{conn: conn} do
     conn = PlugErrorHandler.call(conn, :already_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/"
-    assert ConnTest.get_flash(conn, :error) == "You're already authenticated."
+    assert ConnTest.get_flash(conn, :error) == @already_authenticated_message
   end
 end
