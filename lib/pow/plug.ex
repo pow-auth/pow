@@ -33,7 +33,7 @@ defmodule Pow.Plug do
 
   @spec fetch_config(Conn.t()) :: Config.t() | no_return
   def fetch_config(%{private: private}) do
-    private[@private_config_key] || Config.raise_error(no_config_error())
+    private[@private_config_key] || no_config_error()
   end
 
   @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Conn.t()} | no_return
@@ -109,6 +109,8 @@ defmodule Pow.Plug do
     end
   end
 
-  defp no_config_error,
-    do: "Pow configuration not found. Please set the Pow.Plug.Session plug beforehand."
+  @spec no_config_error :: no_return
+  defp no_config_error do
+    Config.raise_error("Pow configuration not found. Please set the Pow.Plug.Session plug beforehand.")
+  end
 end
