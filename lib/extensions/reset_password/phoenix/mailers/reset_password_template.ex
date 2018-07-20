@@ -1,5 +1,5 @@
-defmodule AuthexResetPassword.Phoenix.Mailer.ResetPasswordTemplate do
-  use Authex.Phoenix.Mailer.Template
+defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordTemplate do
+  use Pow.Phoenix.Mailer.Template
 
   template :mail,
   "Reset password link",

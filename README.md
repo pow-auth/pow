@@ -1,6 +1,6 @@
-# Authex
+# Pow
 
-Authex is a highly flexible and extendable authentication solution for Phoenix and Plug based apps.
+Pow is a powerful, modular, and extendable authentication and user management solution for Phoenix and Plug based apps.
 
 ## Features
 
@@ -12,13 +12,13 @@ Authex is a highly flexible and extendable authentication solution for Phoenix a
 
 ## Installation
 
-Add Authex to your list of dependencies in `mix.exs`:
+Add Pow to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
     # ...
-    {:authex, "~> 0.1"}
+    {:pow, "~> 0.1"}
     # ...
   ]
 end
@@ -31,22 +31,22 @@ Run `mix deps.get` to install it.
 Install the necessary files:
 
 ```bash
-mix authex.install
+mix pow.install
 ```
 
 This will add the following files to your app:
 
 ```bash
-LIB_PATH/authex.ex
+LIB_PATH/pow.ex
 LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
 
-Add user and repo to `authex.ex`:
+Add user and repo to `pow.ex`:
 
 ```elixir
-defmodule MyApp.Authex do
-  use Authex,
+defmodule MyApp.Pow do
+  use Pow,
     user: MyApp.Users.User,
     repo: MyApp.Repo
 end
@@ -65,29 +65,29 @@ defmodule MyAppWeb.Endpoint do
     key: "_my_project_demo_key",
     signing_salt: "secret"
 
-  plug MyApp.Authex.Plug.Session
+  plug MyApp.Pow.Plug.Session
 
   # ...
 end
 ```
 
-And add the Authex routes and plugs to `router.ex`:
+And add the Pow routes and plugs to `router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
-  use MyApp.Authex.Phoenix.Router
+  use MyApp.Pow.Phoenix.Router
 
   # ...
 
   pipeline :protected do
-    plug Authex.Plug.RequireAuthenticated
+    plug Pow.Plug.RequireAuthenticated
   end
 
   scope "/" do
     pipe_through :browser
 
-    authex_routes()
+    pow_routes()
   end
 
   # ...
@@ -102,20 +102,20 @@ end
 
 That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
 
-By default, Authex will only expose files that are absolutely necessary, but you can expose other files such as views and templates using the `mix authex.phoenix.install` command.
+By default, Pow will only expose files that are absolutely necessary, but you can expose other files such as views and templates using the `mix pow.phoenix.install` command.
 
 ## Extensions
 
-Authex is made so it's easy to extend the functionality with your own complimentary library. The following extensions are included in this library:
+Pow is made so it's easy to extend the functionality with your own complimentary library. The following extensions are included in this library:
 
-* `AuthexResetPassword`
-* `AuthexEmailConfirmation`
+* `PowResetPassword`
+* `PowEmailConfirmation`
 
 Many extensions requires a mailer to have been set up. Let's create the mailer in `lib/my_app_web/mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
 
 ```elixir
 defmodule MyAppWeb.Mailer do
-  use Authex.Phoenix.Mailer
+  use Pow.Phoenix.Mailer
   use Swoosh.Mailer, otp_app: :my_app_web
   import Swoosh.Email
 
@@ -134,65 +134,65 @@ defmodule MyAppWeb.Mailer do
 end
 ```
 
-Update `lib/my_app/authex.ex` with the `:backend_mailer` key, and any extensions you wish to enable:
+Update `lib/my_app/pow.ex` with the `:backend_mailer` key, and any extensions you wish to enable:
 
 ```elixir
-defmodule MyApp.Authex do
-  use Authex,
+defmodule MyApp.Pow do
+  use Pow,
     user: MyApp.Users.User,
     repo: MyApp.Repo,
     backend_mailer: MyAppWeb.Mailer,
-    extensions: [AuthexResetPassword, AuthexEmailConfirmation]
+    extensions: [PowResetPassword, PowEmailConfirmation]
 end
 ```
 
 To install any migration files for extensions, run the following:
 
 ```bash
-mix authex.extension.ecto.gen.migrations --extension AuthexResetPassword
+mix pow.extension.ecto.gen.migrations --extension PowResetPassword
 ```
 
 That's it!
 
 ## Configuration
 
-Authex is build to be modular, and easy to configure. Configuration is primarily passed through method calls, and plug options and they will take priority over any environment configuration. This is ideal in case you've an umbrella app with multiple separate user domains.
+Pow is build to be modular, and easy to configure. Configuration is primarily passed through method calls, and plug options and they will take priority over any environment configuration. This is ideal in case you've an umbrella app with multiple separate user domains.
 
 ### Module groups
 
-Authex has three main groups of modules that each can used individually, or in conjunction with each other:
+Pow has three main groups of modules that each can used individually, or in conjunction with each other:
 
-#### Authex.Plug
+#### Pow.Plug
 
-This group will handle the plug connection. The configuration will be assigned to `conn.private[:authex_config]` and passed through the controller to the users context module.
+This group will handle the plug connection. The configuration will be assigned to `conn.private[:pow_config]` and passed through the controller to the users context module.
 
-#### Authex.Ecto
+#### Pow.Ecto
 
-This group contains all modules related to the Ecto based user schema and context. By default, Authex will use the `Authex.Ecto.Context` module for authenticating, creating, updating and deleting users. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
+This group contains all modules related to the Ecto based user schema and context. By default, Pow will use the `Pow.Ecto.Context` module for authenticating, creating, updating and deleting users. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
 
-#### Authex.Phoenix
+#### Pow.Phoenix
 
-This contains the controllers, views and templates for Phoenix. Templates are not generated by default, instead compiled default templates will be used. You can choose to generate these by running `mix authex.phoenix.install --templates`.
+This contains the controllers, views and templates for Phoenix. Templates are not generated by default, instead compiled default templates will be used. You can choose to generate these by running `mix pow.phoenix.install --templates`.
 
-### Authex.Extension
+### Pow.Extension
 
-This module helps build extensions for Authex. There's two extension mix tasks to generate ecto migrations and phoenix templates.
+This module helps build extensions for Pow. There's two extension mix tasks to generate ecto migrations and phoenix templates.
 
 ```bash
-mix authex.extension.ecto.gen.migrations
+mix pow.extension.ecto.gen.migrations
 ```
 
 ```bash
-mix authex.extension.phoenix.gen.templates
+mix pow.extension.phoenix.gen.templates
 ```
 
 ### Authorization plug
 
-Authex ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Guardian](https://github.com/ueberauth/guardian):
+Pow ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Guardian](https://github.com/ueberauth/guardian):
 
 ```elixir
-defmodule MyAppWeb.Authex.Plug do
-  use Authex.Plug.Base
+defmodule MyAppWeb.Pow.Plug do
+  use Pow.Plug.Base
 
   def fetch(conn, config) do
     MyApp.Guardian.Plug.current_resource(conn)
@@ -210,7 +210,7 @@ end
 defmodule MyAppWeb.Endpoint do
   # ...
 
-  plug MyAppWeb.Authex.Plug,
+  plug MyAppWeb.Pow.Plug,
     repo: MyApp.Repo,
     user: MyApp.Users.User
 end
@@ -218,24 +218,24 @@ end
 
 ### Changeset
 
-The user module has a fallback `changeset/2` method. If you need to add custom validations, you can use the  `authex_changeset/2` method like this:
+The user module has a fallback `changeset/2` method. If you need to add custom validations, you can use the  `pow_changeset/2` method like this:
 
 ```elixir
 defmodule MyApp.Users.User do
   use Ecto.Schema
-  use Authex.Ecto.Schema
+  use Pow.Ecto.Schema
 
   schema "users" do
     field :custom, :string
 
-    authex_user_fields()
+    pow_user_fields()
 
     timestamps()
   end
 
   def changeset(user_or_changeset, attrs) do
     user
-    |> authex_changeset(attrs)
+    |> pow_changeset(attrs)
     |> Ecto.Changeset.cast(attrs, [:custom])
     |> Ecto.Changeset.validate_required([:custom])
   end
@@ -244,16 +244,14 @@ end
 
 ## Plugs
 
-### Authex.Plug.Session
+### Pow.Plug.Session
 
 Enables session based authorization. The user struct will be collected from an ETS table through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes.
 
-### Authex.Plug.RequireAuthenticated
+### Pow.Plug.RequireAuthenticated
 
 By default, this will redirect the user to the log in page if the user hasn't been authenticated.
 
-### Authex.Plug.RequireNotAuthenticated
+### Pow.Plug.RequireNotAuthenticated
 
 By default, this will redirect the user to the front page if the user is already authenticated.
-
-

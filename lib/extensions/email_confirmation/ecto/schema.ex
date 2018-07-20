@@ -1,6 +1,6 @@
-defmodule AuthexEmailConfirmation.Ecto.Schema do
-  use Authex.Extension.Ecto.Schema.Base
-  alias Authex.Config
+defmodule PowEmailConfirmation.Ecto.Schema do
+  use Pow.Extension.Ecto.Schema.Base
+  alias Pow.Config
   alias Ecto.Changeset
 
   def validate!(config, login_field) do
@@ -39,6 +39,6 @@ defmodule AuthexEmailConfirmation.Ecto.Schema do
 
   @spec raise_login_field_not_email_error :: no_return
   defp raise_login_field_not_email_error() do
-    Config.raise_error("The `:login_field` has to be `:email` for AuthexEmailConfirmation to work")
+    Config.raise_error("The `:login_field` has to be `:email` for PowEmailConfirmation to work")
   end
 end

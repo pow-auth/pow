@@ -1,5 +1,5 @@
-require Authex.Ecto.Schema.Migration
+require Pow.Ecto.Schema.Migration
 
-Authex.Test.Ecto
-|> Authex.Ecto.Schema.Migration.gen()
+Pow.Test.Ecto
+|> Pow.Ecto.Schema.Migration.gen()
 |> Code.eval_string()

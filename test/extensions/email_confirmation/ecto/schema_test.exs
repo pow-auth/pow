@@ -1,8 +1,8 @@
-defmodule AuthexEmailConfirmation.Ecto.SchemaTest do
+defmodule PowEmailConfirmation.Ecto.SchemaTest do
   use ExUnit.Case
-  doctest AuthexEmailConfirmation.Ecto.Schema
+  doctest PowEmailConfirmation.Ecto.Schema
 
-  alias AuthexEmailConfirmation.Test.Users.User
+  alias PowEmailConfirmation.Test.Users.User
 
   test "user_schema/1" do
     user = %User{}

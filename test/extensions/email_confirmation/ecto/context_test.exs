@@ -1,9 +1,9 @@
-defmodule AuthexEmailConfirmation.Ecto.ContextTest do
-  use Authex.Test.Ecto.TestCase
-  doctest AuthexEmailConfirmation.Ecto.Context
+defmodule PowEmailConfirmation.Ecto.ContextTest do
+  use Pow.Test.Ecto.TestCase
+  doctest PowEmailConfirmation.Ecto.Context
 
-  alias AuthexEmailConfirmation.Ecto.Context
-  alias AuthexEmailConfirmation.Test.{RepoMock, Users.User}
+  alias PowEmailConfirmation.Ecto.Context
+  alias PowEmailConfirmation.Test.{RepoMock, Users.User}
 
   @config [repo: RepoMock, user: User]
 

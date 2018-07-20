@@ -1,6 +1,6 @@
-defmodule AuthexEmailConfirmation.Plug do
-  alias Authex.Plug
-  alias AuthexEmailConfirmation.Ecto.Context
+defmodule PowEmailConfirmation.Plug do
+  alias Pow.Plug
+  alias PowEmailConfirmation.Ecto.Context
 
   @spec confirm_email(Conn.t(), binary()) :: {:ok, Conn.t()} | {:error, Conn.t()} | no_return
   def confirm_email(conn, token) do

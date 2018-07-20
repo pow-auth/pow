@@ -1,3 +1,3 @@
-defmodule AuthexResetPassword.Phoenix.ResetPasswordView do
-  use Authex.Phoenix.Web, :view
+defmodule PowResetPassword.Phoenix.ResetPasswordView do
+  use Pow.Phoenix.Web, :view
 end

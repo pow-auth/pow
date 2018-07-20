@@ -1,5 +1,5 @@
-defmodule Authex.Test.Phoenix.MailerMock do
-  use Authex.Phoenix.Mailer
+defmodule Pow.Test.Phoenix.MailerMock do
+  use Pow.Phoenix.Mailer
 
   def cast(email), do: email
   def process(email) do

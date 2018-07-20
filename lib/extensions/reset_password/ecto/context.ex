@@ -1,7 +1,7 @@
-defmodule AuthexResetPassword.Ecto.Context do
-  use Authex.Extension.Ecto.Context.Base
+defmodule PowResetPassword.Ecto.Context do
+  use Pow.Extension.Ecto.Context.Base
 
-  alias Authex.Config
+  alias Pow.Config
   alias Ecto.Changeset
 
   @spec get_by_email(Config.t(), binary()) :: map() | nil
@@ -17,7 +17,7 @@ defmodule AuthexResetPassword.Ecto.Context do
     repo = repo(config)
 
     user
-    |> Authex.Ecto.Schema.Changeset.password_changeset(params, config)
+    |> Pow.Ecto.Schema.Changeset.password_changeset(params, config)
     |> repo.update()
   end
 end

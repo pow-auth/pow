@@ -1,4 +1,4 @@
-defmodule Authex.Test.Phoenix.ControllerAssertions do
+defmodule Pow.Test.Phoenix.ControllerAssertions do
   alias Phoenix.ConnTest
 
   @spec assert_authenticated_redirect(Plug.Conn.t()) :: no_return

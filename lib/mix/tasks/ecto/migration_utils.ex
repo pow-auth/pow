@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Authex.Ecto.MigrationUtils do
+defmodule Mix.Tasks.Pow.Ecto.MigrationUtils do
   alias Mix.{Ecto, Generator}
 
   @spec create_migration_files(atom(), binary(), binary()) :: any()

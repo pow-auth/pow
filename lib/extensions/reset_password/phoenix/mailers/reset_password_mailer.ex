@@ -1,6 +1,6 @@
-defmodule AuthexResetPassword.Phoenix.Mailer.ResetPasswordMailer do
-  alias Authex.Phoenix.Mailer.Mail
-  alias AuthexResetPassword.Phoenix.Mailer.ResetPasswordView
+defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordMailer do
+  alias Pow.Phoenix.Mailer.Mail
+  alias PowResetPassword.Phoenix.Mailer.ResetPasswordView
 
   @spec reset_password(map(), binary()) :: Mail.t()
   def reset_password(user, url) do

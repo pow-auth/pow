@@ -1,16 +1,16 @@
-defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacks do
-  use Authex.Extension.Phoenix.ControllerCallbacks.Base
+defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
+  use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
-  alias Authex.Phoenix.Controller
-  alias AuthexEmailConfirmation.Phoenix.Mailer
+  alias Pow.Phoenix.Controller
+  alias PowEmailConfirmation.Phoenix.Mailer
 
-  def callback(Authex.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
+  def callback(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
     send_confirmation_email(user, conn)
 
     {:ok, user, conn}
   end
 
-  def callback(Authex.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
+  def callback(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
     maybe_send_confirmation_email(user, conn)
 
     {:ok, user, conn}
@@ -30,9 +30,9 @@ defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacks do
 
   defp send_confirmation_email(user, conn) do
     token = user.email_confirmation_token
-    url   = Controller.router_helpers(conn).authex_email_confirmation_confirmation_path(conn, :show, token)
+    url   = Controller.router_helpers(conn).pow_email_confirmation_confirmation_path(conn, :show, token)
     email = Mailer.EmailConfirmationMailer.email_confirmation(user, url)
 
-    Authex.Phoenix.Mailer.deliver(conn, email)
+    Pow.Phoenix.Mailer.deliver(conn, email)
   end
 end

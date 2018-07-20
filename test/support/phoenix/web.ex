@@ -1,11 +1,11 @@
-defmodule Authex.Test.Phoenix.Web do
+defmodule Pow.Test.Phoenix.Web do
   @moduledoc false
 
   def view do
     quote do
       use Phoenix.View,
         root: "test/support/phoenix/templates",
-        namespace: Authex.Test.Phoenix
+        namespace: Pow.Test.Phoenix
     end
   end
 
@@ -13,7 +13,7 @@ defmodule Authex.Test.Phoenix.Web do
     quote do
       use Phoenix.View,
         root: "test/support/phoenix/context_app/templates",
-        namespace: Authex.Test.Phoenix.Authex
+        namespace: Pow.Test.Phoenix.Pow
     end
   end
 

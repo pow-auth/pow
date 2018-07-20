@@ -1,4 +1,4 @@
-defmodule Authex.Test.Ecto.Repo.Migrations.AddCustomToUser do
+defmodule Pow.Test.Ecto.Repo.Migrations.AddCustomToUser do
   use Ecto.Migration
 
   def change do

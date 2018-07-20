@@ -1,4 +1,4 @@
-defmodule Authex.Test.Mix.TestCase do
+defmodule Pow.Test.Mix.TestCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate

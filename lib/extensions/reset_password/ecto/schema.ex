@@ -1,6 +1,6 @@
-defmodule AuthexResetPassword.Ecto.Schema do
-  use Authex.Extension.Ecto.Schema.Base
-  alias Authex.Config
+defmodule PowResetPassword.Ecto.Schema do
+  use Pow.Extension.Ecto.Schema.Base
+  alias Pow.Config
 
   def validate!(config, login_field) do
     case login_field do
@@ -11,6 +11,6 @@ defmodule AuthexResetPassword.Ecto.Schema do
 
   @spec raise_login_field_not_email_error :: no_return
   defp raise_login_field_not_email_error() do
-    Config.raise_error("The `:login_field` has to be `:email` for AuthexResetPassword extension to work")
+    Config.raise_error("The `:login_field` has to be `:email` for PowResetPassword extension to work")
   end
 end

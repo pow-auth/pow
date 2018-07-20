@@ -1,4 +1,4 @@
-defmodule Mix.Authex.Utils do
+defmodule Mix.Pow.Utils do
   @moduledoc """
   Utilities module for mix tasks.
   """

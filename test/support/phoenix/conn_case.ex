@@ -1,6 +1,6 @@
-defmodule Authex.Test.Phoenix.ConnCase do
+defmodule Pow.Test.Phoenix.ConnCase do
   use ExUnit.CaseTemplate
-  alias Authex.Test.{EtsCacheMock,
+  alias Pow.Test.{EtsCacheMock,
                      Phoenix.ControllerAssertions,
                      Phoenix.Endpoint,
                      Phoenix.Router}

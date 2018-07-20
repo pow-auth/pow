@@ -1,4 +1,4 @@
-defmodule Authex.Test.EtsCacheMock do
+defmodule Pow.Test.EtsCacheMock do
   @tab __MODULE__
 
   def init(), do: :ets.new(@tab, [:set, :protected, :named_table])

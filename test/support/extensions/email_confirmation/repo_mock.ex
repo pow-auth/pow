@@ -1,5 +1,5 @@
-defmodule AuthexEmailConfirmation.Test.RepoMock do
-  alias AuthexEmailConfirmation.Test.Users.User
+defmodule PowEmailConfirmation.Test.RepoMock do
+  alias PowEmailConfirmation.Test.Users.User
 
   def get_by(_mod, [email_confirmation_token: "valid"]), do: %User{id: 1}
   def get_by(_mod, _test), do: nil

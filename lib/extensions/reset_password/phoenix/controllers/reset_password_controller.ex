@@ -1,20 +1,20 @@
-defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
+defmodule PowResetPassword.Phoenix.ResetPasswordController do
   @moduledoc false
-  use Authex.Phoenix.Web, :controller
+  use Pow.Phoenix.Web, :controller
 
-  alias AuthexResetPassword.Plug
-  alias AuthexResetPassword.Phoenix.{Messages, Mailer.ResetPasswordMailer}
-  alias Authex.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
-  alias Authex.Extension.Phoenix.Controller, as: ExtensionController
+  alias PowResetPassword.Plug
+  alias PowResetPassword.Phoenix.{Messages, Mailer.ResetPasswordMailer}
+  alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
+  alias Pow.Extension.Phoenix.Controller, as: ExtensionController
 
-  plug Authex.Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler]
+  plug Pow.Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler]
 
   plug :load_user_from_reset_token when action in [:edit, :update]
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
     changeset = Plug.change_user(conn)
-    action = Controller.router_helpers(conn).authex_registration_path(conn, :create)
+    action = Controller.router_helpers(conn).pow_registration_path(conn, :create)
 
     ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
   end
@@ -29,14 +29,14 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
       {:error, _any} -> nil
       {:ok, conn} ->
         token = Plug.reset_password_token(conn)
-        url = Controller.router_helpers(conn).authex_reset_password_reset_password_path(conn, :edit, token)
+        url = Controller.router_helpers(conn).pow_reset_password_reset_password_path(conn, :edit, token)
 
         deliver_email(conn, user, url)
     end
 
     conn
     |> put_flash(:info, ExtensionController.message(Messages, :email_has_been_sent, conn))
-    |> redirect(to: Controller.router_helpers(conn).authex_session_path(conn, :new))
+    |> redirect(to: Controller.router_helpers(conn).pow_session_path(conn, :new))
   end
 
   @spec edit(Conn.t(), map()) :: Conn.t()
@@ -53,7 +53,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
       {:ok, conn} ->
         conn
         |> put_flash(:info, ExtensionController.message(Messages, :password_has_been_reset, conn))
-        |> redirect(to: Controller.router_helpers(conn).authex_session_path(conn, :new))
+        |> redirect(to: Controller.router_helpers(conn).pow_session_path(conn, :new))
 
       {:error, changeset} ->
         render_edit(conn, changeset)
@@ -61,7 +61,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
   end
 
   defp render_edit(conn, changeset) do
-    action = Controller.router_helpers(conn).authex_registration_path(conn, :update)
+    action = Controller.router_helpers(conn).pow_registration_path(conn, :update)
     ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action)
   end
 
@@ -70,7 +70,7 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
       nil ->
         conn
         |> put_flash(:error, ExtensionController.message(Messages, :invalid_token, conn))
-        |> redirect(to: Controller.router_helpers(conn).authex_reset_password_reset_password_path(conn, :new))
+        |> redirect(to: Controller.router_helpers(conn).pow_reset_password_reset_password_path(conn, :new))
         |> halt()
 
       user ->
@@ -81,6 +81,6 @@ defmodule AuthexResetPassword.Phoenix.ResetPasswordController do
   defp deliver_email(conn, user, url) do
     email = ResetPasswordMailer.reset_password(user, url)
 
-    Authex.Phoenix.Mailer.deliver(conn, email)
+    Pow.Phoenix.Mailer.deliver(conn, email)
   end
 end

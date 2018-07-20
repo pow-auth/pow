@@ -1,5 +1,5 @@
-defmodule Authex.Test.ContextMock do
-  alias Authex.Test.Ecto.Users.User
+defmodule Pow.Test.ContextMock do
+  alias Pow.Test.Ecto.Users.User
 
   @valid_params %{"email" => "test@example.com", "password" => "secret"}
   @user %User{id: 1, password_hash: ""}

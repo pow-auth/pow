@@ -1,5 +1,5 @@
-defmodule Authex.Test.Phoenix.Endpoint do
-  use Phoenix.Endpoint, otp_app: :authex
+defmodule Pow.Test.Phoenix.Endpoint do
+  use Phoenix.Endpoint, otp_app: :pow
 
   plug Plug.RequestId
   plug Plug.Logger
@@ -17,12 +17,12 @@ defmodule Authex.Test.Phoenix.Endpoint do
     key: "_binaryid_key",
     signing_salt: "secret"
 
-  plug Authex.Plug.Session,
+  plug Pow.Plug.Session,
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    backend_session_store: Authex.Test.EtsCacheMock,
-    user: Authex.Test.Ecto.Users.User,
-    users_context: Authex.Test.ContextMock
+    backend_session_store: Pow.Test.EtsCacheMock,
+    user: Pow.Test.Ecto.Users.User,
+    users_context: Pow.Test.ContextMock
 
-  plug Authex.Test.Phoenix.Router
+  plug Pow.Test.Phoenix.Router
 end

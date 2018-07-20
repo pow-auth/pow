@@ -1,18 +1,18 @@
-defmodule Authex.Test.Ecto.Users.User do
+defmodule Pow.Test.Ecto.Users.User do
   use Ecto.Schema
-  use Authex.Ecto.Schema
+  use Pow.Ecto.Schema
 
   schema "users" do
     field :custom, :string
 
-    authex_user_fields()
+    pow_user_fields()
 
     timestamps()
   end
 
   def changeset(user_or_changeset, params) do
     user_or_changeset
-    |> authex_changeset(params)
+    |> pow_changeset(params)
     |> Ecto.Changeset.cast(params, [:custom])
   end
 end

@@ -1,11 +1,11 @@
-defmodule AuthexResetPassword.Plug do
+defmodule PowResetPassword.Plug do
   alias Plug.Conn
-  alias Authex.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache}
-  alias AuthexResetPassword.{Ecto.Context, Store.ResetTokenCache}
+  alias Pow.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache}
+  alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
 
   @spec change_user(Conn.t(), map()) :: map()
   def change_user(conn, params \\ %{}) do
-    config   = Authex.Plug.fetch_config(conn)
+    config   = Pow.Plug.fetch_config(conn)
     user =
       conn
       |> reset_password_user()
@@ -44,7 +44,7 @@ defmodule AuthexResetPassword.Plug do
     token = UUID.uuid1()
     {store, store_config} =
       conn
-      |> Authex.Plug.fetch_config()
+      |> Pow.Plug.fetch_config()
       |> store()
     conn = put_reset_password_token(conn, token)
 
@@ -58,7 +58,7 @@ defmodule AuthexResetPassword.Plug do
     email = Map.get(params, "email")
 
     conn
-    |> Authex.Plug.fetch_config()
+    |> Pow.Plug.fetch_config()
     |> Context.get_by_email(email)
   end
 
@@ -66,7 +66,7 @@ defmodule AuthexResetPassword.Plug do
   def user_from_token(conn, token) do
     {store, store_config} =
       conn
-      |> Authex.Plug.fetch_config()
+      |> Pow.Plug.fetch_config()
       |> store()
 
     store_config
@@ -80,7 +80,7 @@ defmodule AuthexResetPassword.Plug do
   @spec update_user_password(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Changeset.t()}
   def update_user_password(conn, params) do
     user   = reset_password_user(conn)
-    config = Authex.Plug.fetch_config(conn)
+    config = Pow.Plug.fetch_config(conn)
     token  = conn.params["id"]
 
     config
@@ -94,7 +94,7 @@ defmodule AuthexResetPassword.Plug do
   def expire_token(conn, token) do
     {store, store_config} =
       conn
-      |> Authex.Plug.fetch_config()
+      |> Pow.Plug.fetch_config()
       |> store()
 
     store.delete(store_config, token)

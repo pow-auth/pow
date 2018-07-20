@@ -1,6 +1,6 @@
-defmodule Authex.Test.Phoenix.Router do
+defmodule Pow.Test.Phoenix.Router do
   use Phoenix.Router
-  use Authex.Phoenix.Router
+  use Pow.Phoenix.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,6 +13,6 @@ defmodule Authex.Test.Phoenix.Router do
   scope "/" do
     pipe_through :browser
 
-    authex_routes()
+    pow_routes()
   end
 end

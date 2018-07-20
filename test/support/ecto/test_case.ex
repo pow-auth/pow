@@ -1,8 +1,8 @@
-defmodule Authex.Test.Ecto.TestCase do
+defmodule Pow.Test.Ecto.TestCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate
-  alias Authex.Test.Ecto.Repo
+  alias Pow.Test.Ecto.Repo
   alias Ecto.Adapters.SQL.Sandbox
 
   setup_all do
@@ -21,8 +21,8 @@ defmodule Authex.Test.Ecto.TestCase do
   end
 
   defp create_test_database() do
-    Mix.Task.run "ecto.drop", ~w(--quiet -r Authex.Test.Ecto.Repo)
-    Mix.Task.run "ecto.create", ~w(--quiet -r Authex.Test.Ecto.Repo)
-    Mix.Task.run "ecto.migrate", ~w(--quiet -r Authex.Test.Ecto.Repo)
+    Mix.Task.run "ecto.drop", ~w(--quiet -r Pow.Test.Ecto.Repo)
+    Mix.Task.run "ecto.create", ~w(--quiet -r Pow.Test.Ecto.Repo)
+    Mix.Task.run "ecto.migrate", ~w(--quiet -r Pow.Test.Ecto.Repo)
   end
 end

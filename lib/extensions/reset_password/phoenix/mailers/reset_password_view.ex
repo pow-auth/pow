@@ -1,3 +1,3 @@
-defmodule AuthexResetPassword.Phoenix.Mailer.ResetPasswordView do
-  use Authex.Phoenix.Mailer.View
+defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordView do
+  use Pow.Phoenix.Mailer.View
 end

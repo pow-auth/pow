@@ -1,13 +1,13 @@
-defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacksTest do
-  use AuthexEmailConfirmation.Test.Phoenix.ConnCase
-  alias Authex.Plug
-  alias AuthexEmailConfirmation.Test.Users.User
+defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
+  use PowEmailConfirmation.Test.Phoenix.ConnCase
+  alias Pow.Plug
+  alias PowEmailConfirmation.Test.Users.User
 
-  describe "Authex.Phoenix.RegistrationController.create/2" do
+  describe "Pow.Phoenix.RegistrationController.create/2" do
     @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret", "confirm_password" => "secret"}}
 
     test "with valid params", %{conn: conn} do
-      conn = post conn, Routes.authex_registration_path(conn, :create, @valid_params)
+      conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
       assert get_flash(conn, :info) == "User has been created successfully."
       assert %{id: 1, email_confirmation_token: token} = Plug.current_user(conn)
 
@@ -16,7 +16,7 @@ defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
   end
 
-  describe "Authex.Phoenix.RegistrationController.update/2" do
+  describe "Pow.Phoenix.RegistrationController.update/2" do
     @email_change_params %{"user" => %{"email" => "new@example.com", "current_password" => "secret"}}
     @params %{"user" => %{"email" => "test@example.com", "current_password" => "secret"}}
 
@@ -28,7 +28,7 @@ defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "with email change", %{conn: conn} do
-      conn = put conn, Routes.authex_registration_path(conn, :update, @email_change_params)
+      conn = put conn, Routes.pow_registration_path(conn, :update, @email_change_params)
       assert get_flash(conn, :info) == "User has been updated successfully."
       assert %{id: 1, email_confirmation_token: token} = Plug.current_user(conn)
       assert token != "token"
@@ -38,7 +38,7 @@ defmodule AuthexEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "without email change", %{conn: conn} do
-      conn = put conn, Routes.authex_registration_path(conn, :update, @params)
+      conn = put conn, Routes.pow_registration_path(conn, :update, @params)
       assert get_flash(conn, :info) == "User has been updated successfully."
       assert %{id: 1, email_confirmation_token: "token"} = Plug.current_user(conn)
 

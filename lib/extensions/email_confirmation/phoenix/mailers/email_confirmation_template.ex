@@ -1,5 +1,5 @@
-defmodule AuthexEmailConfirmation.Phoenix.Mailer.EmailConfirmationTemplate do
-  use Authex.Phoenix.Mailer.Template
+defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationTemplate do
+  use Pow.Phoenix.Mailer.Template
 
   template :mail,
   "Confirm your email address",

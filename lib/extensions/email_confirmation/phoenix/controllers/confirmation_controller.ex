@@ -1,10 +1,10 @@
-defmodule AuthexEmailConfirmation.Phoenix.ConfirmationController do
+defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   @moduledoc false
-  use Authex.Phoenix.Web, :controller
+  use Pow.Phoenix.Web, :controller
 
-  alias Authex.Extension.Phoenix.Controller, as: ExtensionController
-  alias Authex.Phoenix.Controller
-  alias AuthexEmailConfirmation.{Phoenix.Messages, Plug}
+  alias Pow.Extension.Phoenix.Controller, as: ExtensionController
+  alias Pow.Phoenix.Controller
+  alias PowEmailConfirmation.{Phoenix.Messages, Plug}
 
   @spec show(Conn.t(), map()) :: Conn.t()
   def show(conn, %{"id" => token}) do
@@ -12,12 +12,12 @@ defmodule AuthexEmailConfirmation.Phoenix.ConfirmationController do
       {:ok, conn} ->
         conn
         |> put_flash(:info, ExtensionController.message(Messages, :email_has_been_confirmed, conn))
-        |> redirect(to: Controller.router_helpers(conn).authex_registration_path(conn, :edit))
+        |> redirect(to: Controller.router_helpers(conn).pow_registration_path(conn, :edit))
 
       {:error, conn} ->
         conn
         |> put_flash(:error, ExtensionController.message(Messages, :email_confirmation_failed, conn))
-        |> redirect(to: Controller.router_helpers(conn).authex_registration_path(conn, :edit))
+        |> redirect(to: Controller.router_helpers(conn).pow_registration_path(conn, :edit))
     end
   end
 end

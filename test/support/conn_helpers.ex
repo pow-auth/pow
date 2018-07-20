@@ -1,4 +1,4 @@
-defmodule Authex.Test.ConnHelpers do
+defmodule Pow.Test.ConnHelpers do
   alias Plug.{Conn, Test}
 
   @spec conn(String.Chars.t(), binary(), Test.params()) :: Conn.t()

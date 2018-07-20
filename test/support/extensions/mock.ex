@@ -1,29 +1,29 @@
-defmodule Authex.Test.ExtensionMocks do
+defmodule Pow.Test.ExtensionMocks do
   defmacro __using__(opts) do
     base_module = __CALLER__.module
     extensions  = opts[:extensions] || []
     location    = Macro.Env.location(__ENV__)
 
-    Module.create(Module.concat([base_module, Authex]),
+    Module.create(Module.concat([base_module, Pow]),
     quote do
       alias unquote(base_module).RepoMock
 
-      use Authex,
+      use Pow,
         user: unquote(base_module).Users.User,
         repo: RepoMock,
         extensions: unquote(extensions),
-        cache_store_backend: Authex.Test.EtsCacheMock,
-        mailer: Authex.Test.Phoenix.MailerMock,
+        cache_store_backend: Pow.Test.EtsCacheMock,
+        mailer: Pow.Test.Phoenix.MailerMock,
         messages_backend: unquote(base_module).Phoenix.Messages
     end, location)
 
     Module.create(Module.concat([base_module, Users.User]),
     quote do
       use Ecto.Schema
-      use unquote(base_module).Authex.Ecto.Schema
+      use unquote(base_module).Pow.Ecto.Schema
 
       schema "users" do
-        authex_user_fields()
+        pow_user_fields()
 
         timestamps()
       end
@@ -32,7 +32,7 @@ defmodule Authex.Test.ExtensionMocks do
     Module.create(Module.concat([base_module, Phoenix.Router]),
     quote do
       use Phoenix.Router
-      use unquote(base_module).Authex.Phoenix.Router
+      use unquote(base_module).Pow.Phoenix.Router
 
       pipeline :browser do
         plug :accepts, ["html"]
@@ -45,7 +45,7 @@ defmodule Authex.Test.ExtensionMocks do
       scope "/" do
         pipe_through :browser
 
-        authex_routes()
+        pow_routes()
       end
     end, location)
 
@@ -54,11 +54,11 @@ defmodule Authex.Test.ExtensionMocks do
     endpoint_config = [
       render_errors: [view: error_view_module, accepts: ~w(html json)],
       secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)]
-    Application.put_env(:authex, endpoint_module, endpoint_config)
+    Application.put_env(:pow, endpoint_module, endpoint_config)
 
     Module.create(endpoint_module,
     quote do
-      use Phoenix.Endpoint, otp_app: :authex
+      use Phoenix.Endpoint, otp_app: :pow
 
       def init(_key, _config), do: {:ok, unquote(endpoint_config)}
 
@@ -78,7 +78,7 @@ defmodule Authex.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug unquote(base_module).Authex.Plug.Session
+      plug unquote(base_module).Pow.Plug.Session
 
       plug unquote(base_module).Phoenix.Router
     end, location)
@@ -86,7 +86,7 @@ defmodule Authex.Test.ExtensionMocks do
     Module.create(Module.concat([base_module, Phoenix.ConnCase]),
     quote do
       use ExUnit.CaseTemplate
-      alias Authex.Test.{EtsCacheMock, Phoenix.ControllerAssertions}
+      alias Pow.Test.{EtsCacheMock, Phoenix.ControllerAssertions}
       alias unquote(base_module).Phoenix.{Endpoint, Router}
 
       using do
@@ -114,7 +114,7 @@ defmodule Authex.Test.ExtensionMocks do
 
     Module.create(Module.concat([base_module, Phoenix.LayoutView]),
     quote do
-      use Authex.Test.Phoenix.Web, :view
+      use Pow.Test.Phoenix.Web, :view
     end, location)
 
     Module.create(Module.concat([base_module, Phoenix.ErrorView]),
@@ -126,7 +126,7 @@ defmodule Authex.Test.ExtensionMocks do
 
     Module.create(Module.concat([base_module, Phoenix.Messages]),
     quote do
-      use unquote(base_module).Authex.Phoenix.Messages
+      use unquote(base_module).Pow.Phoenix.Messages
     end, location)
 
     quote do

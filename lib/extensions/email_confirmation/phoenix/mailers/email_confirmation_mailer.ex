@@ -1,6 +1,6 @@
-defmodule AuthexEmailConfirmation.Phoenix.Mailer.EmailConfirmationMailer do
-  alias Authex.Phoenix.Mailer.Mail
-  alias AuthexEmailConfirmation.Phoenix.Mailer.EmailConfirmationView
+defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationMailer do
+  alias Pow.Phoenix.Mailer.Mail
+  alias PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationView
 
   @spec email_confirmation(map(), binary()) :: Mail.t()
   def email_confirmation(user, url) do

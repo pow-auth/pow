@@ -1,7 +1,7 @@
-defmodule AuthexEmailConfirmation.Ecto.Context do
-  use Authex.Extension.Ecto.Context.Base
+defmodule PowEmailConfirmation.Ecto.Context do
+  use Pow.Extension.Ecto.Context.Base
 
-  alias Authex.Config
+  alias Pow.Config
 
   @spec get_by_confirmation_token(Config.t(), binary()) :: map() | nil
   def get_by_confirmation_token(config, token) do

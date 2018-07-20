@@ -1,22 +1,35 @@
-defmodule Authex.MixProject do
+defmodule Pow.MixProject do
   use Mix.Project
+
+  @version "0.1.0-alpha"
 
   def project do
     [
-      app: :authex,
-      version: "0.1.0",
+      app: :pow,
+      version: @version,
       elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env() == :prod,
       compilers: [:phoenix] ++ Mix.compilers,
-      deps: deps()
+      deps: deps(),
+
+      # Hex
+     description: "Powerful user authentication solution",
+     package: package(),
+
+     # Docs
+     name: "Pow",
+     docs: [source_ref: "v#{@version}", main: "Pow",
+            canonical: "http://hexdocs.pm/pow",
+            source_url: "https://github.com/danschultzer/pow",
+            extras: ["README.md"]]
     ]
   end
 
   def application do
     [
       extra_applications: extra_applications(Mix.env),
-      mod: {Authex.Application, []}
+      mod: {Pow.Application, []}
     ]
   end
 
@@ -33,10 +46,20 @@ defmodule Authex.MixProject do
       {:plug, "~> 1.6", optional: true},
       {:phoenix_html, "~> 2.11", only: [:dev, :test]},
       {:phoenix_ecto, "~> 3.3", only: [:dev, :test]},
-      {:postgrex, ">= 0.0.0", only: [:test]}
+      {:postgrex, ">= 0.0.0", only: [:test]},
+      {:ex_doc, "~> 0.18", only: :dev, runtime: false}
     ]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp package do
+    [
+      maintainers: ["Dan Shultzer"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/danschultzer/pow"},
+      files: ~w(lib LICENSE mix.exs README.md)
+    ]
+  end
 end
