@@ -51,11 +51,7 @@ defmodule Pow.Extension.Phoenix.Messages do
 
   @spec method_name(atom(), atom()) :: atom()
   def method_name(extension, type) do
-    namespace =
-      extension
-      |> Module.split()
-      |> List.first()
-      |> Macro.underscore()
+    namespace = Extension.Config.underscore_extension(extension)
 
     String.to_atom("#{namespace}_#{type}")
   end

@@ -76,9 +76,6 @@ defmodule Pow.Extension.Phoenix.Router do
 
   @spec __scope_namespace__(atom()) :: binary()
   def __scope_namespace__(module) do
-    module
-    |> Module.split()
-    |> List.first()
-    |> Macro.underscore()
+    Extension.Config.underscore_extension(module)
   end
 end

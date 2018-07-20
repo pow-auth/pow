@@ -26,6 +26,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
 
   defmacro __before_compile__(_opts) do
     quote do
+      @spec callback(atom(), atom(), any(), Config.t()) :: any()
       def callback(_controller, _action, res, _config), do: res
     end
   end

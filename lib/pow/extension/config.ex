@@ -17,4 +17,12 @@ defmodule Pow.Extension.Config do
     |> Enum.filter(&Code.ensure_compiled?/1)
     |> Enum.reject(&is_nil/1)
   end
+
+  @spec underscore_extension(atom()) :: binary()
+  def underscore_extension(extension) do
+    extension
+    |> Module.split()
+    |> List.first()
+    |> Macro.underscore()
+  end
 end
