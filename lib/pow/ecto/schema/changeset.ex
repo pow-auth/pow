@@ -19,6 +19,7 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     changeset
     |> Changeset.cast(params, [login_field])
+    |> Changeset.update_change(login_field, &Schema.normalize_login_field_value/1)
     |> maybe_validate_email_format(login_field)
     |> Changeset.validate_required([login_field])
     |> Changeset.unique_constraint(login_field)

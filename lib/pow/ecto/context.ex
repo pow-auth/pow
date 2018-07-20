@@ -121,8 +121,18 @@ defmodule Pow.Ecto.Context do
   @spec get_by(Config.t(), Keyword.t() | map()) :: user() | nil
   def get_by(config, clauses) do
     user_mod = user_schema_mod(config)
+    clauses  = normalize_login_field_value(user_mod, clauses)
 
     repo(config).get_by(user_mod, clauses)
+  end
+
+  defp normalize_login_field_value(user_mod, clauses) do
+    login_field = Schema.login_field(user_mod)
+
+    Enum.map clauses, fn
+      {^login_field, value} -> {login_field, Schema.normalize_login_field_value(value)}
+      any -> any
+    end
   end
 
   @spec repo(Config.t()) :: atom() | no_return

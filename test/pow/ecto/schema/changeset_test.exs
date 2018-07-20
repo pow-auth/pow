@@ -47,6 +47,16 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
     end
 
+    test "uses case insensitive value for login field" do
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "Test@EXAMPLE.com"))
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :email) == "test@example.com"
+
+      changeset = UsernameUser.changeset(%UsernameUser{}, Map.put(@valid_params, "username", "uSerName"))
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :username) == "username"
+    end
+
     test "requires unique login field" do
       {:ok, _user} =
         %User{}

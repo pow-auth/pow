@@ -107,4 +107,7 @@ defmodule Pow.Ecto.Schema do
 
   @spec login_field(module()) :: atom()
   def login_field(module), do: module.pow_login_field()
+
+  @spec normalize_login_field_value(binary()) :: binary()
+  def normalize_login_field_value(value), do: String.downcase(value)
 end

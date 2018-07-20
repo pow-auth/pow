@@ -3,14 +3,11 @@ defmodule PowEmailConfirmation.Ecto.Context do
   use Pow.Extension.Ecto.Context.Base
 
   alias Pow.Config
+  alias Pow.Ecto.Context
 
   @spec get_by_confirmation_token(Config.t(), binary()) :: map() | nil
-  def get_by_confirmation_token(config, token) do
-    user_mod = user_schema_mod(config)
-    repo     = repo(config)
-
-    repo.get_by(user_mod, email_confirmation_token: token)
-  end
+  def get_by_confirmation_token(config, token),
+    do: Context.get_by(config, email_confirmation_token: token)
 
   @spec confirm_email(Config.t(), map()) :: {:ok, map()} | {:error, Changeset.t()}
   def confirm_email(config, user) do

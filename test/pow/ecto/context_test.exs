@@ -50,6 +50,11 @@ defmodule Pow.Ecto.ContextTest do
       assert Context.authenticate(@username_config, @valid_params_username) == username_user
     end
 
+    test "authenticates with case insensitive value for login field", %{user: user, username_user: username_user} do
+      assert Context.authenticate(@config, %{"email" => "TEST@example.COM", "password" => @password}) == user
+      assert Context.authenticate(@username_config, %{"username" => "JOHN.doE", "password" => @password}) == username_user
+    end
+
     test "as `use Pow.Ecto.Context`", %{user: user} do
       assert Users.authenticate(@valid_params) == user
       assert Users.authenticate(:test_macro) == :ok
@@ -131,15 +136,29 @@ defmodule Pow.Ecto.ContextTest do
 
   describe "get_by/2" do
     @email "test@example.com"
+    @username "john.doe"
+
     setup do
       changeset = Changeset.change(%User{}, email: @email)
+      changeset_username = Changeset.change(%UsernameUser{}, username: @username)
 
-      {:ok, %{user: Repo.insert!(changeset)}}
+      {:ok, %{user: Repo.insert!(changeset), username_user: Repo.insert!(changeset_username)}}
     end
 
-    test "get_by", %{user: user} do
+    test "retrieves", %{user: user, username_user: username_user} do
       get_by_user = Context.get_by(@config, email: @email)
       assert get_by_user.id == user.id
+
+      get_by_user = Context.get_by(@username_config, username: @username)
+      assert get_by_user.id == username_user.id
+    end
+
+    test "retrieves with case insensitive login field", %{user: user, username_user: username_user} do
+      get_by_user = Context.get_by(@config, email: "TEST@EXAMPLE.COM")
+      assert get_by_user.id == user.id
+
+      get_by_user = Context.get_by(@username_config, username: "JOHN.DOE")
+      assert get_by_user.id == username_user.id
     end
 
     test "as `use Pow.Ecto.Context`", %{user: user} do

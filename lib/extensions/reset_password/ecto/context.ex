@@ -4,14 +4,10 @@ defmodule PowResetPassword.Ecto.Context do
 
   alias Ecto.Changeset
   alias Pow.Config
+  alias Pow.Ecto.Context
 
   @spec get_by_email(Config.t(), binary()) :: map() | nil
-  def get_by_email(config, email) do
-    user_mod = user_schema_mod(config)
-    repo     = repo(config)
-
-    repo.get_by(user_mod, email: email)
-  end
+  def get_by_email(config, email), do: Context.get_by(config, email: email)
 
   @spec update_password(Config.t(), map(), map()) :: {:ok, map()} | {:error, Changeset.t()}
   def update_password(config, user, params) do
