@@ -248,6 +248,16 @@ By default, this will redirect the user to the log in page if the user hasn't be
 
 By default, this will redirect the user to the front page if the user is already authenticated.
 
+## Pow security practices
+
+* The `login_field` value is always treated as case insensitve
+* If the `login_field` is `:email`, it'll be validated based on RFC 5322 (excluding IP validation)
+* The `:password` has a minimum length of 10 characters
+* The `:password` has a maximum length of 4096 bytes [to prevent DOS attacks against Pbkdf2](https://github.com/riverrun/pbkdf2_elixir/blob/master/lib/pbkdf2.ex#L21)
+* The `:password_hash` is generated with `Pbpdf2`
+* The session value contains a UUID token that is used to pull credentials through a GenServer
+* The credentials are stored in an ETS key-value storage with auto expiration of 48 hours
+
 ## LICENSE
 
 (The MIT License)
