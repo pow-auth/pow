@@ -8,9 +8,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   """
   use Mix.Task
 
-  alias Mix.Pow.{Phoenix, Utils}
+  alias Mix.Pow.{Extension, Phoenix, Utils}
 
-  @switches [context_app: :string]
+  @switches [context_app: :string, extension: :keep]
   @default_opts []
 
   @doc false
@@ -32,8 +32,13 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
+    extensions   =
+      config
+      |> Extension.Utils.extensions()
+      |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
+      |> Enum.map(&({&1, @extension_templates[&1]}))
 
-    Enum.each @extension_templates, fn {module, templates} ->
+    Enum.each extensions, fn {module, templates} ->
       Enum.each templates, fn {name, actions} ->
         Phoenix.Utils.create_view_file(module, name, web_module, web_prefix)
         Phoenix.Utils.create_templates(module, name, web_prefix, actions)

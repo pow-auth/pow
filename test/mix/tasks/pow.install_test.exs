@@ -29,4 +29,17 @@ defmodule Mix.Tasks.Pow.InstallTest do
       assert File.ls!("lib/pow/users") == ["user.ex"]
     end
   end
+
+  test "handles extensions" do
+    File.cd! @tmp_path, fn ->
+      Install.run(@options ++ ~w(--extension PowResetPassword --extension PowEmailConfirmation))
+
+      path = Path.join(["lib", "pow"])
+      file = "pow.ex"
+
+      content = File.read!(Path.join(path, file))
+
+      assert content =~ "extensions: [PowResetPassword, PowEmailConfirmation]"
+    end
+  end
 end

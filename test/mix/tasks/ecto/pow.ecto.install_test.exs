@@ -26,4 +26,13 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
       assert [_one] = File.ls!("migrations")
     end
   end
+
+  test "generates with extensions" do
+    File.cd! @tmp_path, fn ->
+      Install.run(@options ++ ~w(--extension PowResetPassword --extension PowEmailConfirmation))
+
+      assert File.ls!("lib/pow/users") == ["user.ex"]
+      assert [_one, _two, _three] = File.ls!("migrations")
+    end
+  end
 end

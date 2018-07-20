@@ -9,11 +9,10 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   use Mix.Task
 
   alias Pow.Extension.Ecto.Schema.Migration
-  alias Mix.{Tasks.Pow.Ecto.MigrationUtils, Pow.Utils, Ecto}
+  alias Mix.{Ecto, Pow.Extension, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
 
   @switches [extension: :keep]
   @default_opts []
-  @default_extensions [PowResetPassword]
 
   @doc false
   def run(args) do
@@ -28,7 +27,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     args
     |> Ecto.parse_repo()
     |> Enum.map(&Ecto.ensure_repo(&1, args))
-    |> Enum.each(&create_extension_migration_files(&1, extensions(config)))
+    |> Enum.each(&create_extension_migration_files(&1, Extension.Utils.extensions(config)))
   end
 
   defp create_extension_migration_files(repo, extensions) do
@@ -42,12 +41,5 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     content = Migration.gen(extension, context_base, repo: repo)
 
     MigrationUtils.create_migration_files(repo, name, content)
-  end
-
-  @spec extensions(map()) :: [atom()]
-  def extensions(config) do
-    config
-    |> Map.get(:extension, @default_extensions)
-    |> List.wrap()
   end
 end

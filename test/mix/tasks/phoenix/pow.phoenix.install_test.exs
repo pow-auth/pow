@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       refute File.exists?(@views_path)
 
 
-      for _ <- 1..4, do: assert_received {:mix_shell, :info, [_msg]}
+      for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "plug Pow.Plug.Session"
       assert msg =~ "repo: Pow.Repo"
@@ -52,6 +52,21 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       assert [_one, _two] = File.ls!(@templates_path)
       assert File.exists?(@views_path)
       assert [_one, _two] = File.ls!(@views_path)
+    end
+  end
+
+  test "with extension templates" do
+    File.cd! @tmp_path, fn ->
+      Install.run(@options ++ ~w(--templates --extension PowResetPassword --extension PowEmailConfirmation))
+
+      assert File.ls!(@context_path) == ["user.ex"]
+      assert [_one, _two, _three] = File.ls!("migrations")
+      assert File.exists?(@templates_path)
+      reset_password_templates = Path.join(["lib", "pow_web", "templates", "pow_reset_password"])
+      assert [_one] = File.ls!(reset_password_templates)
+      reset_password_views = Path.join(["lib", "pow_web", "views", "pow_reset_password"])
+      assert File.exists?(reset_password_views)
+      assert [_one] = File.ls!(reset_password_views)
     end
   end
 end

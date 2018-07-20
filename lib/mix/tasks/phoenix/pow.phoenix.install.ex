@@ -11,10 +11,10 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.{Ecto, Phoenix.Gen}
+  alias Mix.Tasks.{Pow, Pow.Extension, Pow.Phoenix.Gen}
   alias Mix.Pow.Utils
 
-  @switches [migrations: :boolean, schema: :boolean, templates: :boolean]
+  @switches [migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]
 
   @doc false
@@ -23,13 +23,14 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
     args
     |> Utils.parse_options(@switches, @default_opts)
-    |> run_ecto_install(args)
+    |> run_pow_install(args)
     |> maybe_run_gen_templates(args)
+    |> maybe_run_extensions_gen_templates(args)
     |> print_shell_instructions()
   end
 
-  defp run_ecto_install(config, args) do
-    Ecto.Install.run(args)
+  defp run_pow_install(config, args) do
+    Pow.Install.run(args)
 
     config
   end
@@ -40,6 +41,13 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     config
   end
   defp maybe_run_gen_templates(config, _args), do: config
+
+  defp maybe_run_extensions_gen_templates(%{templates: true} = config, args) do
+    Extension.Phoenix.Gen.Templates.run(args)
+
+    config
+  end
+  defp maybe_run_extensions_gen_templates(config, _args), do: config
 
   defp print_shell_instructions(config) do
     structure = Mix.Pow.Phoenix.Utils.parse_structure(config)

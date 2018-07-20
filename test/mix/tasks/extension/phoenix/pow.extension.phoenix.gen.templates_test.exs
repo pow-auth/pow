@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates
 
   @tmp_path Path.join(["tmp", inspect(Templates)])
-  @options []
+  @options ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
 
   @expected_template_files [
     {PowResetPassword, %{

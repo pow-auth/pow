@@ -10,9 +10,9 @@ defmodule Mix.Tasks.Pow.Install do
 
   alias Mix.Tasks.Pow.Ecto
   alias Mix.Generator
-  alias Mix.Pow.Utils
+  alias Mix.Pow.{Extension, Utils}
 
-  @switches [context_app: :string]
+  @switches [context_app: :string, extension: :keep]
 
   @doc false
   def run(args) do
@@ -24,22 +24,21 @@ defmodule Mix.Tasks.Pow.Install do
     |> run_ecto_install(args)
   end
 
-  defp run_ecto_install(config, args) do
-    Ecto.Install.run(args)
-
-    config
-  end
-
   defp create_pow_module(config) do
     context_app  = Map.get(config, :context_app, Utils.context_app())
     context_base = Utils.context_base(context_app)
+    settings     = case Extension.Utils.extensions(config) do
+      []         -> ""
+      extensions -> ",
+    extensions: #{inspect(extensions)}"
+    end
 
     file_name = "pow.ex"
     content   = """
     defmodule #{context_base}.Pow do
       use Pow,
         user: #{context_base}.Users.User,
-        repo: #{context_base}.Repo
+        repo: #{context_base}.Repo#{settings}
     end
     """
 
@@ -47,6 +46,12 @@ defmodule Mix.Tasks.Pow.Install do
     |> Utils.context_lib_path("")
     |> Path.join(file_name)
     |> Generator.create_file(content)
+
+    config
+  end
+
+  defp run_ecto_install(config, args) do
+    Ecto.Install.run(args)
 
     config
   end
