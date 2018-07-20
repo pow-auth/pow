@@ -1,9 +1,18 @@
 defmodule Pow.Ecto.Schema.Changeset do
   @moduledoc """
   Handles changeset for pow user.
+
+  The following configuration options are used:
+    * `:password_min_length` defaults to 10
+    * `:password_max_length` defaults to 4096
+    * `:password_hash_methods` defaults to
+      `{&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1, &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2}`
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema}
+
+  @password_min_length 10
+  @password_max_length 4096
 
   @spec changeset(Config.t(), Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   def changeset(config, user_or_changeset, params) do
@@ -30,6 +39,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     changeset
     |> Changeset.cast(params, [:password, :confirm_password])
     |> maybe_require_password()
+    |> maybe_validate_password(config)
     |> maybe_validate_confirm_password()
     |> maybe_put_password_hash(config)
     |> Changeset.validate_required([:password_hash])
@@ -78,6 +88,22 @@ defmodule Pow.Ecto.Schema.Changeset do
     Changeset.validate_required(changeset, [:password])
   end
   defp maybe_require_password(changeset), do: changeset
+
+  defp maybe_validate_password(changeset, config) do
+    changeset
+    |> Changeset.get_change(:password)
+    |> case do
+      nil -> changeset
+      _   -> validate_password(changeset, config)
+    end
+  end
+
+  defp validate_password(changeset, config) do
+    password_min_length = Config.get(config, :password_min_length, @password_min_length)
+    password_max_length = Config.get(config, :password_max_length, @password_max_length)
+
+    Changeset.validate_length(changeset, :password, min: password_min_length, max: password_max_length)
+  end
 
   defp maybe_validate_confirm_password(changeset) do
     changeset

@@ -71,10 +71,11 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     assert Map.has_key?(user, :custom)
   end
 
+  @password "secret1234"
   @valid_params %{
     "email" => "john.doe@example.com",
-    "password" => "secret",
-    "confirm_password" => "secret",
+    "password" => @password,
+    "confirm_password" => @password,
     "custom" => "valid"
   }
 

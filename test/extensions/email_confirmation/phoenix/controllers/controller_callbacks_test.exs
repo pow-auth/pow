@@ -5,9 +5,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
   @user_created_message Messages.user_has_been_created(nil)
   @user_updated_message Messages.user_has_been_updated(nil)
+  @password "secret1234"
 
   describe "Pow.Phoenix.RegistrationController.create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret", "confirm_password" => "secret"}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "confirm_password" => @password}}
 
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
@@ -20,11 +21,11 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   end
 
   describe "Pow.Phoenix.RegistrationController.update/2" do
-    @email_change_params %{"user" => %{"email" => "new@example.com", "current_password" => "secret"}}
-    @params %{"user" => %{"email" => "test@example.com", "current_password" => "secret"}}
+    @email_change_params %{"user" => %{"email" => "new@example.com", "current_password" => @password}}
+    @params %{"user" => %{"email" => "test@example.com", "current_password" => @password}}
 
     setup %{conn: conn} do
-      user = %User{id: 1, email: "test@example.com", password_hash: Comeonin.Pbkdf2.hashpwsalt("secret"), email_confirmation_token: "token"}
+      user = %User{id: 1, email: "test@example.com", password_hash: Comeonin.Pbkdf2.hashpwsalt(@password), email_confirmation_token: "token"}
       conn = Plug.assign_current_user(conn, user, [])
 
       {:ok, conn: conn}

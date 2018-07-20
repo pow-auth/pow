@@ -10,7 +10,7 @@ defmodule Pow.Ecto.ContextTest do
   @username_config [repo: Repo, user: UsernameUser]
 
   describe "authenticate/2" do
-    @password "secret"
+    @password "secret1234"
     @valid_params %{"email" => "test@example.com", "password" => @password}
     @valid_params_username %{"username" => "john.doe", "password" => @password}
 
@@ -65,8 +65,8 @@ defmodule Pow.Ecto.ContextTest do
     @valid_params %{
       "email" => "test@example.com",
       "custom" => "custom",
-      "password" => "secret",
-      "confirm_password" => "secret"
+      "password" => @password,
+      "confirm_password" => @password
     }
 
     test "creates" do
@@ -87,13 +87,13 @@ defmodule Pow.Ecto.ContextTest do
     @valid_params %{
       "email" => "new@example.com",
       "custom" => "custom",
-      "password" => "new_secret",
-      "confirm_password" => "new_secret",
-      "current_password" => "secret"
+      "password" => "new_#{@password}",
+      "confirm_password" => "new_#{@password}",
+      "current_password" => @password
     }
 
     setup do
-      password_hash = Comeonin.Pbkdf2.hashpwsalt("secret")
+      password_hash = Comeonin.Pbkdf2.hashpwsalt(@password)
       changeset = Changeset.change(%User{}, email: "test@exampe.com", password_hash: password_hash)
 
       {:ok, %{user: Repo.insert!(changeset)}}

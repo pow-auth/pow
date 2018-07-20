@@ -8,14 +8,14 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
   describe "changeset/2" do
     @valid_params %{
       "email" => "john.doe@example.com",
-      "password" => "secret",
-      "confirm_password" => "secret",
+      "password" => "secret1234",
+      "confirm_password" => "secret1234",
       "custom" => "custom"
     }
     @valid_params_username %{
       "username" => "john.doe",
-      "password" => "secret",
-      "confirm_password" => "secret"
+      "password" => "secret1234",
+      "confirm_password" => "secret1234"
     }
 
     test "requires login field" do
@@ -96,6 +96,29 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
     end
 
+    test "validates length of password" do
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..9)))
+
+      refute changeset.valid?
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, min: 10]}
+
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..4096)))
+      refute changeset.valid?
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 4096, validation: :length, max: 4096]}
+    end
+
+    test "can use custom length requirements for password" do
+      config = [password_min_length: 5, password_max_length: 10]
+
+      changeset = Changeset.password_changeset(%User{}, %{"password" => "abcd"}, config)
+      refute changeset.valid?
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 5, validation: :length, min: 5]}
+
+      changeset = Changeset.password_changeset(%User{}, %{"password" => "abcdefghijk"}, config)
+      refute changeset.valid?
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 10, validation: :length, max: 10]}
+    end
+
     test "can confirm and hash password" do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "confirm_password", "invalid"))
 
@@ -107,7 +130,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
       assert changeset.valid?
       assert changeset.changes[:password_hash]
-      assert Comeonin.Pbkdf2.checkpw("secret", changeset.changes[:password_hash])
+      assert Comeonin.Pbkdf2.checkpw("secret1234", changeset.changes[:password_hash])
     end
 
     test "can use custom password hash methods" do
@@ -118,11 +141,11 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       changeset = Changeset.changeset(config, %User{}, @valid_params)
 
       assert changeset.valid?
-      assert changeset.changes[:password_hash] == "secret123"
+      assert changeset.changes[:password_hash] == "secret1234123"
     end
 
     test "requires current password when password_hash exists" do
-      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt("secret")}
+      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt("secret1234")}
 
       changeset = User.changeset(%User{}, @valid_params)
       assert changeset.valid?
@@ -135,7 +158,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       refute changeset.valid?
       assert changeset.errors[:current_password] == {"is invalid", []}
 
-      changeset = User.changeset(user, Map.put(@valid_params, "current_password", "secret"))
+      changeset = User.changeset(user, Map.put(@valid_params, "current_password", "secret1234"))
       assert changeset.valid?
     end
 

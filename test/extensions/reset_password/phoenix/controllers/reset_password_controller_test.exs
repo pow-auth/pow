@@ -6,6 +6,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
   alias PowResetPassword.Test.Users.User
 
   @user %User{id: 1}
+  @password "secret1234"
 
   describe "new/2" do
     test "shows", %{conn: conn} do
@@ -95,8 +96,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_token "valid"
     @invalid_token "invalid"
 
-    @valid_params %{"user" => %{"password" => "secret", "confirm_password" => "secret"}}
-    @invalid_params %{"user" => %{"password" => "secret", "confirm_password" => "invalid"}}
+    @valid_params %{"user" => %{"password" => @password, "confirm_password" => @password}}
+    @invalid_params %{"user" => %{"password" => @password, "confirm_password" => "invalid"}}
 
     setup %{conn: conn} do
       ResetTokenCache.put([backend: EtsCacheMock], @valid_token, @user)

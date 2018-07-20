@@ -11,7 +11,9 @@ defmodule Pow.Ecto.Schema do
         use Pow.Ecto.Schema,
           login_field: :email,
           password_hash_methods: {&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1,
-                                  &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2}
+                                  &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2},
+          password_min_length: 10,
+          password_max_length: 4096
 
         schema "users" do
           field :custom_field, :string
