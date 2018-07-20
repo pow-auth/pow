@@ -71,7 +71,7 @@ defmodule MyAppWeb.Endpoint do
 end
 ```
 
-And add the Pow routes and plugs to `router.ex`:
+Add Pow routes to `router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
