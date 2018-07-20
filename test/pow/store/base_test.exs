@@ -27,15 +27,17 @@ defmodule Pow.Store.BaseTest do
     default_config = []
     config         = [ttl: 100, namespace: "overridden_namespace"]
 
-    BaseMock.put(default_config, :test, :value)
-    BaseMock.put(config, :test, :value)
-
     assert BaseMock.get(default_config, :test) == :not_found
     assert BaseMock.get(config, :test) == :not_found
+
+    BaseMock.put(default_config, :test, :value)
+    BaseMock.put(config, :test, :value)
     :timer.sleep(50)
+
     assert BaseMock.get(default_config, :test) == :value
     assert BaseMock.get(config, :test) == :value
     :timer.sleep(50)
+
     assert BaseMock.get(default_config, :test) == :value
     assert BaseMock.get(config, :test) == :not_found
   end
