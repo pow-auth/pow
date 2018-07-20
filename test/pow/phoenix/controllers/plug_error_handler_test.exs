@@ -2,8 +2,8 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
   use ExUnit.Case
   doctest Pow.Phoenix.PlugErrorHandler
 
-  alias Pow.Phoenix.PlugErrorHandler
   alias Phoenix.ConnTest
+  alias Pow.Phoenix.PlugErrorHandler
   alias Pow.Test.ConnHelpers
 
   setup do

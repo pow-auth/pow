@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   """
   use Mix.Task
 
+  alias Mix.{Ecto, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
   alias Pow.Ecto.Schema.Migration
-  alias Mix.{Tasks.Pow.Ecto.MigrationUtils, Pow.Utils, Ecto}
 
   @doc false
   def run(args) do

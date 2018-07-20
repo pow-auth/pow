@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
+  @moduledoc false
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
   alias Pow.Phoenix.Controller

@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Ecto.Context do
+  @moduledoc false
   use Pow.Extension.Ecto.Context.Base
 
   alias Pow.Config

@@ -1,4 +1,5 @@
 defmodule Pow.Test.ContextMock do
+  @moduledoc false
   alias Pow.Test.Ecto.Users.User
 
   @valid_params %{"email" => "test@example.com", "password" => "secret"}

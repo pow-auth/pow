@@ -57,7 +57,7 @@ defmodule Mix.Pow.Utils do
     Mix.Project.config |> Keyword.fetch!(:app)
   end
 
-  defp otp_app() do
+  defp otp_app do
     Mix.Project.config()
     |> Keyword.fetch!(:app)
   end

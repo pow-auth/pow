@@ -8,9 +8,9 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   """
   use Mix.Task
 
-  alias Pow.Ecto.Schema.Module
+  alias Mix.{Generator, Pow.Utils}
   alias Mix.Tasks.Pow.Ecto.Gen
-  alias Mix.{Pow.Utils, Generator}
+  alias Pow.Ecto.Schema.Module
 
   @switches [migrations: :boolean, context_app: :string]
   @default_opts [migrations: true]

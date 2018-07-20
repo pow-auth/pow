@@ -2,8 +2,8 @@ defmodule Pow.Phoenix.PlugErrorHandler do
   @moduledoc """
   Used with Pow.Plug.RequireAuthenticated or Pow.Plug.RequireNotAuthenticated.
   """
-  alias Plug.Conn
   alias Phoenix.Controller
+  alias Plug.Conn
 
   @spec call(Conn.t(), atom()) :: Conn.t()
   def call(conn, :not_authenticated) do

@@ -13,6 +13,7 @@ defmodule Pow.Phoenix.Controller do
   - `:controller_callbacks`
     See `Pow.Extension.Phoenix.ControllerCallbacks` for more.
   """
+  alias Plug.Conn
   alias Pow.{Config, Phoenix.Messages, Phoenix.Routes, Plug}
 
   @spec messages(Conn.t()) :: atom()

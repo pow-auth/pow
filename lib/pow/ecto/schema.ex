@@ -37,26 +37,31 @@ defmodule Pow.Ecto.Schema do
     quote do
       @behaviour unquote(__MODULE__)
 
-      def changeset(user, attrs), do: pow_changeset(user, attrs)
+      @spec changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
+      def changeset(user_or_changeset, attrs), do: pow_changeset(user_or_changeset, attrs)
+
+      @spec verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def verify_password(user, password), do: pow_verify_password(user, password)
 
       defoverridable unquote(__MODULE__)
 
-      unquote(__MODULE__).pow_methods(unquote(config))
-      unquote(__MODULE__).register_fields(unquote(config))
-      unquote(__MODULE__).register_login_field(unquote(config))
+      unquote(__MODULE__).__pow_methods__(unquote(config))
+      unquote(__MODULE__).__register_fields__(unquote(config))
+      unquote(__MODULE__).__register_login_field__(unquote(config))
     end
   end
 
-  @spec pow_methods(Config.t()) :: Macro.t()
-  defmacro pow_methods(config) do
+  @spec __pow_methods__(Config.t()) :: Macro.t()
+  defmacro __pow_methods__(config) do
     quote do
       import unquote(__MODULE__), only: [pow_user_fields: 0]
 
-      def pow_changeset(user, attrs) do
-        unquote(__MODULE__).Changeset.changeset(unquote(config), user, attrs)
+      @spec pow_changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
+      def pow_changeset(user_or_changeset, attrs) do
+        unquote(__MODULE__).Changeset.changeset(unquote(config), user_or_changeset, attrs)
       end
 
+      @spec pow_verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def pow_verify_password(user, password) do
         unquote(__MODULE__).Changeset.verify_password(user, password, unquote(config))
       end
@@ -76,8 +81,8 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @spec register_fields(Config.t()) :: Macro.t()
-  defmacro register_fields(config) do
+  @spec __register_fields__(Config.t()) :: Macro.t()
+  defmacro __register_fields__(config) do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
       for attr <- unquote(__MODULE__).Fields.attrs(unquote(config)) do
@@ -86,16 +91,16 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @spec register_login_field(Config.t()) :: Macro.t()
-  defmacro register_login_field(config) do
+  @spec __register_login_field__(Config.t()) :: Macro.t()
+  defmacro __register_login_field__(config) do
     quote do
       @login_field unquote(__MODULE__).login_field(unquote(config))
-      def pow_login_field(), do: @login_field
+      def pow_login_field, do: @login_field
     end
   end
 
-  @spec login_field() :: atom()
-  def login_field(), do: :email
+  @spec login_field :: atom()
+  def login_field, do: :email
 
   @spec login_field(Keyword.t()) :: atom()
   def login_field(config) when is_list(config), do: Config.get(config, :login_field, login_field())

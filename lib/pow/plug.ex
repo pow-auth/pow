@@ -3,7 +3,7 @@ defmodule Pow.Plug do
   Authorization methods for Plug.
   """
   alias Plug.Conn
-  alias Pow.{Operations, Config}
+  alias Pow.{Config, Operations}
 
   @private_config_key :pow_config
 

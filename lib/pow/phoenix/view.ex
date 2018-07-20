@@ -1,4 +1,8 @@
 defmodule Pow.Phoenix.View do
+  @moduledoc """
+  View macros for Pow.Phoenix, that calls render
+  methods generated with Pow.Phoenix.Template.
+  """
   defmacro __using__(_opts) do
     quote do
       @template_module unquote(__MODULE__).__template_module__(__MODULE__)

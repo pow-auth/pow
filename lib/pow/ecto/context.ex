@@ -29,9 +29,9 @@ defmodule Pow.Ecto.Context do
     - `pow_get_by/1`
   """
 
-  alias Pow.Ecto.Schema
-  alias Pow.Config
   alias Ecto.Changeset
+  alias Pow.Config
+  alias Pow.Ecto.Schema
 
   @type user :: map()
 
@@ -135,13 +135,13 @@ defmodule Pow.Ecto.Context do
     Config.get(config, :user, nil) || raise_no_user_error()
   end
 
-  @spec raise_no_repo_error() :: no_return
-  defp raise_no_repo_error() do
+  @spec raise_no_repo_error :: no_return
+  defp raise_no_repo_error do
     Config.raise_error("No :repo configuration option found for users context module.")
   end
 
-  @spec raise_no_user_error() :: no_return
-  defp raise_no_user_error() do
+  @spec raise_no_user_error :: no_return
+  defp raise_no_user_error do
     Config.raise_error("No :user configuration option found for user schema module.")
   end
 end

@@ -11,8 +11,8 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   """
   use Mix.Task
 
-  alias Mix.Tasks.{Pow, Pow.Extension, Pow.Phoenix.Gen}
   alias Mix.Pow.Utils
+  alias Mix.Tasks.{Pow, Pow.Extension, Pow.Phoenix.Gen}
 
   @switches [migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]

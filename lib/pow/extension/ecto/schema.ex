@@ -25,18 +25,18 @@ defmodule Pow.Extension.Ecto.Schema do
         end
       end
   """
-  alias Pow.{Config, Extension}
   alias Ecto.Changeset
+  alias Pow.{Config, Extension}
 
   defmacro __using__(config) do
     quote do
-      unquote(__MODULE__).register_extension_fields(unquote(config))
-      unquote(__MODULE__).pow_extension_methods(unquote(config))
+      unquote(__MODULE__).__register_extension_fields__(unquote(config))
+      unquote(__MODULE__).__pow_extension_methods__(unquote(config))
     end
   end
 
-  @spec register_extension_fields(Config.t()) :: Macro.t()
-  defmacro register_extension_fields(config) do
+  @spec __register_extension_fields__(Config.t()) :: Macro.t()
+  defmacro __register_extension_fields__(config) do
     quote do
       login_field = Module.get_attribute(__MODULE__, :login_field)
       for attr <- unquote(__MODULE__).attrs(unquote(config), login_field) do
@@ -45,9 +45,10 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
-  @spec pow_extension_methods(Config.t()) :: Macro.t()
-  defmacro pow_extension_methods(config) do
+  @spec __pow_extension_methods__(Config.t()) :: Macro.t()
+  defmacro __pow_extension_methods__(config) do
     quote do
+      @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
       def pow_extension_changeset(changeset, attrs) do
         unquote(__MODULE__).changeset(changeset, attrs, unquote(config))
       end

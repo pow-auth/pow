@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Test.RepoMock do
+  @moduledoc false
   alias PowEmailConfirmation.Test.Users.User
 
   def get_by(_mod, [email_confirmation_token: "valid"]), do: %User{id: 1}

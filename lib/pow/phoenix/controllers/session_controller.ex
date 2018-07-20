@@ -2,8 +2,9 @@ defmodule Pow.Phoenix.SessionController do
   @moduledoc false
   use Pow.Phoenix.Web, :controller
 
-  alias Pow.Plug
+  alias Plug.Conn
   alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
+  alias Pow.Plug
 
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
   plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:delete]

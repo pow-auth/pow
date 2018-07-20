@@ -2,10 +2,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   @moduledoc false
   use Pow.Phoenix.Web, :controller
 
-  alias PowResetPassword.Plug
-  alias PowResetPassword.Phoenix.{Messages, Mailer.ResetPasswordMailer}
-  alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
   alias Pow.Extension.Phoenix.Controller, as: ExtensionController
+  alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
+  alias PowResetPassword.Phoenix.{Mailer.ResetPasswordMailer, Messages}
+  alias PowResetPassword.Plug
 
   plug Pow.Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler]
 

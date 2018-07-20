@@ -1,4 +1,5 @@
 defmodule Pow.Test.Phoenix.Endpoint do
+  @moduledoc false
   use Phoenix.Endpoint, otp_app: :pow
 
   plug Plug.RequestId

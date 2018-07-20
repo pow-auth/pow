@@ -1,4 +1,5 @@
 defmodule Pow.Test.Ecto.Users.UsernameUser do
+  @moduledoc false
   use Ecto.Schema
   use Pow.Ecto.Schema, login_field: :username
 

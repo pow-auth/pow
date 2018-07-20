@@ -1,4 +1,5 @@
 defmodule PowResetPassword.Test.RepoMock do
+  @moduledoc false
   alias PowResetPassword.Test.Users.User
 
   def get_by(_mod, [email: "test@example.com"]), do: %User{id: 1}

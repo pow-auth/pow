@@ -38,7 +38,7 @@ defmodule Pow.Extension.Phoenix.Router do
     end
   end
 
-  defmacro pow_extension_routes() do
+  defmacro pow_extension_routes do
     config = Module.concat(__CALLER__.module, RoutesConfig).config()
 
     for router_module <- __MODULE__.__router_extensions__(config) do

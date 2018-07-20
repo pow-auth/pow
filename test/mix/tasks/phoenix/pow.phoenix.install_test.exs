@@ -30,7 +30,6 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       refute File.exists?(@templates_path)
       refute File.exists?(@views_path)
 
-
       for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "plug Pow.Plug.Session"

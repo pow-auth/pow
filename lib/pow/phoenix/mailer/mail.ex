@@ -1,4 +1,5 @@
 defmodule Pow.Phoenix.Mailer.Mail do
+  @moduledoc false
   @type t :: %__MODULE__{}
 
   defstruct [:user, :subject, :text, :html]

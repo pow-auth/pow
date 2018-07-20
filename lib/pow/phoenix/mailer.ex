@@ -43,8 +43,8 @@ defmodule Pow.Phoenix.Mailer do
     |> mailer.process()
   end
 
-  @spec raise_no_mailer_set() :: no_return
-  defp raise_no_mailer_set() do
+  @spec raise_no_mailer_set :: no_return
+  defp raise_no_mailer_set do
     Pow.Config.raise_error("No :mailer configuration option found for plug.")
   end
 end

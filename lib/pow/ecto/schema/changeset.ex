@@ -2,8 +2,8 @@ defmodule Pow.Ecto.Schema.Changeset do
   @moduledoc """
   Handles changeset for pow user.
   """
-  alias Pow.{Config, Ecto.Schema}
   alias Ecto.Changeset
+  alias Pow.{Config, Ecto.Schema}
 
   @spec changeset(Config.t(), Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   def changeset(config, user_or_changeset, params) do
@@ -13,7 +13,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> password_changeset(params, config)
   end
 
-  @spec login_field_changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
+  @spec login_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
   def login_field_changeset(changeset, params, config) do
     login_field = Schema.login_field(config)
 
@@ -24,7 +24,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> Changeset.unique_constraint(login_field)
   end
 
-  @spec password_changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
+  @spec password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
   def password_changeset(changeset, params, config) do
     changeset
     |> Changeset.cast(params, [:password, :confirm_password])
@@ -34,6 +34,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> Changeset.validate_required([:password_hash])
   end
 
+  @spec current_password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
   def current_password_changeset(changeset, params, config) do
     changeset
     |> Changeset.cast(params, [:current_password])
@@ -129,5 +130,5 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>
-  defp email_regexp(), do: @rfc_5332_regexp_no_ip
+  defp email_regexp, do: @rfc_5332_regexp_no_ip
 end

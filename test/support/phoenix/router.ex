@@ -1,4 +1,5 @@
 defmodule Pow.Test.Phoenix.Router do
+  @moduledoc false
   use Phoenix.Router
   use Pow.Phoenix.Router
 

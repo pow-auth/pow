@@ -1,4 +1,5 @@
 defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
+  @moduledoc false
   use Pow.Phoenix.Template
 
   template :new, :html,

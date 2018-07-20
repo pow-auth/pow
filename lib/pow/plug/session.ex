@@ -23,7 +23,7 @@ defmodule Pow.Plug.Session do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Plug, Store.CredentialsCache, Store.Backend.EtsCache}
+  alias Pow.{Config, Plug, Store.Backend.EtsCache, Store.CredentialsCache}
 
   @spec fetch(Conn.t(), Config.t()) :: map() | nil
   def fetch(conn, config) do

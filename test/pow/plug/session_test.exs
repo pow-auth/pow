@@ -2,9 +2,7 @@ defmodule Pow.Plug.SessionTest do
   use ExUnit.Case
   doctest Pow.Plug.Session
 
-  alias Pow.{Plug,
-                Plug.Session,
-                Config}
+  alias Pow.{Config, Plug, Plug.Session}
   alias Pow.Test.{ConnHelpers, EtsCacheMock}
 
   @default_opts [

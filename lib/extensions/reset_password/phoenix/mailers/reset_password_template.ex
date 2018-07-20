@@ -1,4 +1,5 @@
 defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordTemplate do
+  @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
   template :mail,

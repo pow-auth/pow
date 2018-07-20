@@ -37,7 +37,7 @@ defmodule Pow.Phoenix.Router do
         pow_routes()
       end
   """
-  defmacro pow_routes() do
+  defmacro pow_routes do
     quote location: :keep do
       scope "/", Pow.Phoenix, as: "pow" do
         resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]

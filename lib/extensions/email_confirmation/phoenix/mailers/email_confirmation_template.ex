@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationTemplate do
+  @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
   template :mail,

@@ -3,7 +3,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
   doctest Pow.Ecto.Schema.Changeset
 
   alias Pow.Ecto.Schema.Changeset
-  alias Pow.Test.Ecto.{Users.User, Users.UsernameUser, Repo}
+  alias Pow.Test.Ecto.{Repo, Users.User, Users.UsernameUser}
 
   describe "changeset/2" do
     @valid_params %{

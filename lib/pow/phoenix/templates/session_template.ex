@@ -1,4 +1,5 @@
 defmodule Pow.Phoenix.SessionTemplate do
+  @moduledoc false
   use Pow.Phoenix.Template
 
   template :new, :html,

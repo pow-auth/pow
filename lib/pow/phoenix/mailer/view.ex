@@ -1,4 +1,8 @@
 defmodule Pow.Phoenix.Mailer.View do
+  @moduledoc """
+  View macros for Pow.Phoenix.Mailer, that calls render
+  methods generated with Pow.Phoenix.Mailer.Template.
+  """
   defmacro __using__(_opts) do
     quote do
       @template_module Pow.Phoenix.View.__template_module__(__MODULE__)

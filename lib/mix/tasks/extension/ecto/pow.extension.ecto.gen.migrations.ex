@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   """
   use Mix.Task
 
-  alias Pow.Extension.Ecto.Schema.Migration
   alias Mix.{Ecto, Pow.Extension, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
+  alias Pow.Extension.Ecto.Schema.Migration
 
   @switches [extension: :keep]
   @default_opts []

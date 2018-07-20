@@ -17,7 +17,6 @@ defmodule Pow.Phoenix.MailerTest do
     {:ok, conn: conn, email: email}
   end
 
-
   test "Mail.new/3", %{email: email} do
     assert email == %Pow.Phoenix.Mailer.Mail{user: %{email: "test@example.com"}, text: :text, html: :html, subject: :subject}
   end

@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationMailer do
+  @moduledoc false
   alias Pow.Phoenix.Mailer.Mail
   alias PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationView
 

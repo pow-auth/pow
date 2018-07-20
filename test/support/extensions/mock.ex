@@ -1,4 +1,5 @@
 defmodule Pow.Test.ExtensionMocks do
+  @moduledoc false
   defmacro __using__(opts) do
     base_module = __CALLER__.module
     extensions  = opts[:extensions] || []

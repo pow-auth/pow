@@ -1,4 +1,5 @@
 defmodule Pow.Test.Phoenix.MailerMock do
+  @moduledoc false
   use Pow.Phoenix.Mailer
 
   def cast(email), do: email

@@ -17,8 +17,8 @@ defmodule Pow.Extension.Ecto.Schema.Base do
         end
       end
   """
-  alias Pow.Config
   alias Ecto.Changeset
+  alias Pow.Config
 
   @callback validate!(Config.t(), atom()) :: Config.t() | no_return
   @callback attrs(Config.t()) :: [tuple()]

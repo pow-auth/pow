@@ -8,9 +8,9 @@ defmodule Pow.Phoenix.ViewHelpersTest do
   use Pow.Test.Phoenix.ConnCase
   doctest Pow.Phoenix.ViewHelpers
 
+  alias Plug.Conn
   alias Pow.Phoenix.ViewHelpers
   alias Pow.Test.Ecto.Users.User
-  alias Plug.Conn
 
   setup %{conn: conn} do
     changeset   = User.changeset(%User{}, %{})

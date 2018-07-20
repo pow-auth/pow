@@ -1,4 +1,5 @@
 defmodule PowResetPassword.Plug do
+  @moduledoc false
   alias Plug.Conn
   alias Pow.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache}
   alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}

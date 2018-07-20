@@ -100,7 +100,7 @@ defmodule Pow.Store.Backend.EtsCache do
     :ets.delete(@ets_cache_tab, ets_key(config, key))
   end
 
-  defp table_init() do
+  defp table_init do
     :ets.new(@ets_cache_tab, [:set, :protected, :named_table])
   end
 

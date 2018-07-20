@@ -1,9 +1,9 @@
 defmodule Pow.Test.Ecto.TestCase do
   @moduledoc false
-
   use ExUnit.CaseTemplate
-  alias Pow.Test.Ecto.Repo
+
   alias Ecto.Adapters.SQL.Sandbox
+  alias Pow.Test.Ecto.Repo
 
   setup_all do
     create_test_database()
@@ -20,7 +20,7 @@ defmodule Pow.Test.Ecto.TestCase do
     :ok
   end
 
-  defp create_test_database() do
+  defp create_test_database do
     Mix.Task.run "ecto.drop", ~w(--quiet -r Pow.Test.Ecto.Repo)
     Mix.Task.run "ecto.create", ~w(--quiet -r Pow.Test.Ecto.Repo)
     Mix.Task.run "ecto.migrate", ~w(--quiet -r Pow.Test.Ecto.Repo)

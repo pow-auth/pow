@@ -1,4 +1,5 @@
 defmodule Pow.Test.Ecto.Users do
+  @moduledoc false
   alias Pow.Ecto.Context
   alias Pow.Test.Ecto.{Repo, Users.User}
 

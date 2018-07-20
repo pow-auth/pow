@@ -35,9 +35,9 @@ defmodule Pow.Phoenix.ViewHelpers do
   * `registration/edit.html.eex`
   * `session/new.html.eex`
   """
-  alias Plug.Conn
-  alias Pow.{Plug, Config}
   alias Phoenix.Controller
+  alias Plug.Conn
+  alias Pow.{Config, Plug}
 
   @spec render(Conn.t(), binary() | atom(), Keyword.t() | map() | binary() | atom()) :: Conn.t()
   def render(conn, template, assigns \\ []) do

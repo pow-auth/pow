@@ -51,8 +51,9 @@ defmodule Pow do
             use Pow.Ecto.Schema, unquote(config)
             use Pow.Extension.Ecto.Schema, unquote(config)
 
-            def changeset(user, attrs) do
-              user
+            @spec changeset(Ecto.Schema.t() | Ecto.Changeset.t(), map()) :: Ecto.Changeset.t()
+            def changeset(user_or_changeset, attrs) do
+              user_or_changeset
               |> pow_changeset(attrs)
               |> pow_extension_changeset(attrs)
             end
@@ -131,6 +132,6 @@ defmodule Pow do
     end
   end
 
-  @spec config() :: Keyword.t()
-  def config(), do: Application.get_env(:pow, Pow, [])
+  @spec config :: Keyword.t()
+  def config, do: Application.get_env(:pow, Pow, [])
 end

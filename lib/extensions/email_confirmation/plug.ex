@@ -1,4 +1,5 @@
 defmodule PowEmailConfirmation.Plug do
+  @moduledoc false
   alias Pow.Plug
   alias PowEmailConfirmation.Ecto.Context
 

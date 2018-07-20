@@ -1,8 +1,9 @@
 defmodule PowResetPassword.Ecto.Context do
+  @moduledoc false
   use Pow.Extension.Ecto.Context.Base
 
-  alias Pow.Config
   alias Ecto.Changeset
+  alias Pow.Config
 
   @spec get_by_email(Config.t(), binary()) :: map() | nil
   def get_by_email(config, email) do

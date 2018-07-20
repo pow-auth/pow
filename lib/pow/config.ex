@@ -31,8 +31,8 @@ defmodule Pow.Config do
     Keyword.get(Pow.config(), key, default)
   end
 
-  @spec raise_no_user_error() :: no_return
-  defp raise_no_user_error() do
+  @spec raise_no_user_error :: no_return
+  defp raise_no_user_error do
     raise_error("No :user configuration option found for user schema module.")
   end
 

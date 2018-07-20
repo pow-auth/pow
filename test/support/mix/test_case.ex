@@ -1,6 +1,5 @@
 defmodule Pow.Test.Mix.TestCase do
   @moduledoc false
-
   use ExUnit.CaseTemplate
 
   setup_all do
@@ -9,5 +8,5 @@ defmodule Pow.Test.Mix.TestCase do
     :ok
   end
 
-  defp clear_tmp_files(), do: File.rm_rf!("tmp")
+  defp clear_tmp_files, do: File.rm_rf!("tmp")
 end

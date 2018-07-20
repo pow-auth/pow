@@ -1,7 +1,8 @@
 defmodule Pow.Test.EtsCacheMock do
+  @moduledoc false
   @tab __MODULE__
 
-  def init(), do: :ets.new(@tab, [:set, :protected, :named_table])
+  def init, do: :ets.new(@tab, [:set, :protected, :named_table])
 
   def get(_config, key) do
     @tab

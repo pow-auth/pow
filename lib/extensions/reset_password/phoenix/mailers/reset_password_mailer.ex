@@ -1,4 +1,5 @@
 defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordMailer do
+  @moduledoc false
   alias Pow.Phoenix.Mailer.Mail
   alias PowResetPassword.Phoenix.Mailer.ResetPasswordView
 

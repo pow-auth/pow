@@ -3,12 +3,9 @@ defmodule Pow.PlugTest do
   doctest Pow.Plug
 
   alias Plug.Conn
-  alias Pow.{Plug,
-                Plug.Session,
-                Config,
-                Config.ConfigError}
-  alias Pow.Test.{ConnHelpers, EtsCacheMock, ContextMock}
-  alias Pow.Test.Ecto.Users.User
+  alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
+  alias Pow.Test.{ConnHelpers, ContextMock,
+                  Ecto.Users.User, EtsCacheMock}
 
   @default_config [
     current_user_assigns_key: :current_user,
@@ -16,7 +13,9 @@ defmodule Pow.PlugTest do
     cache_store_backend: EtsCacheMock,
     user: User
   ]
-  @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
+  @admin_config Config.put(@default_config,
+                           :current_user_assigns_key,
+                           :current_admin_user)
 
   test "current_user/1" do
     assert_raise ConfigError, "Pow configuration not found. Please set the Pow.Plug.Session plug beforehand.", fn ->

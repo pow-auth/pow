@@ -2,9 +2,9 @@ defmodule Pow.Ecto.ContextTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Ecto.Context
 
-  alias Pow.Ecto.Context
-  alias Pow.Test.Ecto.{Users, Users.User, Users.UsernameUser, Repo}
   alias Ecto.Changeset
+  alias Pow.Ecto.Context
+  alias Pow.Test.Ecto.{Repo, Users, Users.User, Users.UsernameUser}
 
   @config [repo: Repo, user: User]
   @username_config [repo: Repo, user: UsernameUser]

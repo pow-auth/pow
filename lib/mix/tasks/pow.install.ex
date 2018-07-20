@@ -8,9 +8,9 @@ defmodule Mix.Tasks.Pow.Install do
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.Ecto
   alias Mix.Generator
   alias Mix.Pow.{Extension, Utils}
+  alias Mix.Tasks.Pow.Ecto
 
   @switches [context_app: :string, extension: :keep]
 

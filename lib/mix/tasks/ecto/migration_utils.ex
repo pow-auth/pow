@@ -1,4 +1,7 @@
 defmodule Mix.Tasks.Pow.Ecto.MigrationUtils do
+  @moduledoc """
+  Utilities module for ecto migrations in mix tasks.
+  """
   alias Mix.{Ecto, Generator}
 
   @spec create_migration_files(atom(), binary(), binary()) :: any()

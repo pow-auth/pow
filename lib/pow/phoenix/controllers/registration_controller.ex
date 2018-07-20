@@ -3,8 +3,8 @@ defmodule Pow.Phoenix.RegistrationController do
   use Pow.Phoenix.Web, :controller
 
   alias Plug.Conn
-  alias Pow.Plug
   alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
+  alias Pow.Plug
 
   plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
   plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:edit, :update, :delete]

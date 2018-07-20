@@ -12,8 +12,8 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.{Ecto.Gen, Extension}
   alias Mix.Pow.Utils
+  alias Mix.Tasks.Pow.{Ecto.Gen, Extension}
 
   @switches [migrations: :boolean, schema: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true]

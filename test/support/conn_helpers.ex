@@ -1,4 +1,5 @@
 defmodule Pow.Test.ConnHelpers do
+  @moduledoc false
   alias Plug.{Conn, Test}
 
   @spec conn(String.Chars.t(), binary(), Test.params()) :: Conn.t()

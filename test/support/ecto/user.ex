@@ -1,4 +1,5 @@
 defmodule Pow.Test.Ecto.Users.User do
+  @moduledoc false
   use Ecto.Schema
   use Pow.Ecto.Schema
 

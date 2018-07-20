@@ -2,7 +2,7 @@ defmodule Pow.Store.Backend.EtsCacheTest do
   use ExUnit.Case
   doctest Pow.Store.Backend.EtsCache
 
-  alias Pow.{Store.Backend.EtsCache, Config}
+  alias Pow.{Config, Store.Backend.EtsCache}
 
   @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
 
