@@ -1,5 +1,7 @@
 # Pow
 
+[![Build Status](https://travis-ci.org/danschultzer/pow.svg?branch=master)](https://travis-ci.org/danschultzer/pow) [![hex.pm](http://img.shields.io/hexpm/v/pow.svg?style=flat)](https://hex.pm/packages/pow)
+
 Pow is a powerful, modular, and extendable authentication and user management solution for Phoenix and Plug based apps.
 
 ## Features
