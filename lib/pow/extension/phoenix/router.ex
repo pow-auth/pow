@@ -63,11 +63,7 @@ defmodule Pow.Extension.Phoenix.Router do
 
   @spec __router_extensions__(Config.t()) :: [atom()]
   def __router_extensions__(config) do
-    config
-    |> Extension.Config.extensions()
-    |> Enum.map(&Module.concat([&1, "Phoenix", "Router"]))
-    |> Enum.filter(&Code.ensure_compiled?/1)
-    |> Enum.reject(&is_nil/1)
+    Extension.Config.discover_modules(config, ["Phoenix", "Router"])
   end
 
   @spec __phoenix_module__(atom()) :: atom()

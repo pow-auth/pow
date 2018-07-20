@@ -24,11 +24,7 @@ defmodule Pow.Extension.Phoenix.Messages do
 
   @spec __messages_extensions__(Config.t()) :: [atom()]
   def __messages_extensions__(config) do
-    config
-    |> Extension.Config.extensions()
-    |> Enum.map(&Module.concat([&1, "Phoenix", "Messages"]))
-    |> Enum.filter(&Code.ensure_compiled?/1)
-    |> Enum.reject(&is_nil/1)
+    Extension.Config.discover_modules(config, ["Phoenix", "Messages"])
   end
 
   defmacro __define_message_methods__(extension) do

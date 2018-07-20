@@ -85,19 +85,7 @@ defmodule Pow.Extension.Ecto.Schema do
   defp reduce(config, method), do: reduce(config, [], method)
   defp reduce(config, acc, method) do
     config
-    |> Extension.Config.extensions()
-    |> Enum.map(&to_schema_extension/1)
+    |> Extension.Config.discover_modules(["Ecto", "Schema"])
     |> Enum.reduce(acc, method)
-  end
-
-  defp to_schema_extension(extension) do
-    module = Module.concat([extension, "Ecto", "Schema"])
-
-    module
-    |> Code.ensure_compiled?()
-    |> case do
-      true -> module
-      false -> nil
-    end
   end
 end

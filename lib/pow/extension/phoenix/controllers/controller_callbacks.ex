@@ -13,8 +13,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
 
   defp reduce(config, acc, method) do
     config
-    |> Extension.Config.extensions()
-    |> Enum.map(&Module.concat([&1, "Phoenix", "ControllerCallbacks"]))
+    |> Extension.Config.discover_modules(["Phoenix", "ControllerCallbacks"])
     |> Enum.reduce(acc, method)
   end
 end
