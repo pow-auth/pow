@@ -1,0 +1,12 @@
+language: elixir
+elixir:
+  - 1.6
+otp_release:
+  - 20.0
+env:
+  - MIX_ENV=test
+script:
+  - mix deps.compile
+  - mix test
+after_script:
+  - mix credo
