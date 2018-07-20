@@ -25,15 +25,10 @@ defmodule Mix.Tasks.Authex.Extension.Ecto.Gen.Migrations do
   end
 
   defp create_migrations_files(config, args) do
-    extensions =
-      config
-      |> Map.get(:extension, @default_extensions)
-      |> List.wrap()
-
     args
     |> Ecto.parse_repo()
     |> Enum.map(&Ecto.ensure_repo(&1, args))
-    |> Enum.each(&create_extension_migration_files(&1, extensions))
+    |> Enum.each(&create_extension_migration_files(&1, extensions(config)))
   end
 
   defp create_extension_migration_files(repo, extensions) do
@@ -47,5 +42,12 @@ defmodule Mix.Tasks.Authex.Extension.Ecto.Gen.Migrations do
     content = Migration.gen(extension, context_base, repo: repo)
 
     MigrationUtils.create_migration_files(repo, name, content)
+  end
+
+  @spec extensions(map()) :: [atom()]
+  def extensions(config) do
+    config
+    |> Map.get(:extension, @default_extensions)
+    |> List.wrap()
   end
 end
