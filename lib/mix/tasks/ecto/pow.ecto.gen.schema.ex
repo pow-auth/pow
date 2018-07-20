@@ -12,8 +12,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   alias Mix.Tasks.Pow.Ecto.Gen
   alias Pow.Ecto.Schema.Module
 
-  @switches [migrations: :boolean, context_app: :string]
-  @default_opts [migrations: true]
+  @switches [migrations: :boolean, context_app: :string, binary_id: :boolean]
+  @default_opts [migrations: true, binary_id: false]
 
   @doc false
   def run(args) do
@@ -32,12 +32,12 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   end
   defp maybe_run_gen_migration(config, _args), do: config
 
-  defp create_schema_file(config) do
+  defp create_schema_file(%{binary_id: binary_id} = config) do
     context_app  = Map.get(config, :context_app, Utils.context_app())
     context_base = Utils.context_base(context_app)
 
     base_name = "user.ex"
-    content   = Module.gen(context_base, module: "Users.User")
+    content   = Module.gen(context_base, module: "Users.User", binary_id: binary_id)
 
     context_app
     |> Utils.context_lib_path("users")

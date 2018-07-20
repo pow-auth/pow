@@ -4,6 +4,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
   alias Mix.Tasks.Pow.Ecto.Gen.Schema
 
   @tmp_path Path.join(["tmp", inspect(Schema)])
+  @expected_file Path.join(["lib", "pow", "users", "user.ex"])
   @options  ["--no-migrations"]
 
   setup do
@@ -17,13 +18,9 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     File.cd! @tmp_path, fn ->
       Schema.run(@options)
 
-      path = Path.join(["lib", "pow", "users"])
-      file = "user.ex"
+      assert File.exists?(@expected_file)
 
-      assert File.ls!(path) == [file]
-
-      content = File.read!(Path.join(path, file))
-
+      content = File.read!(@expected_file)
       assert content =~ "defmodule Pow.Users.User do"
     end
   end
@@ -32,8 +29,19 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     File.cd! @tmp_path, fn ->
       Schema.run(@options ++ ~w(--context-app pow))
 
-      path = Path.join(["lib", "pow", "users"])
-      assert File.ls!(path) == ["user.ex"]
+      assert File.exists?(@expected_file)
+    end
+  end
+
+  test "generates with :binary_id" do
+    File.cd! @tmp_path, fn ->
+      Schema.run(@options ++ ~w(--binary-id))
+
+      assert File.exists?(@expected_file)
+      file = File.read!(@expected_file)
+
+      assert file =~ "@primary_key {:id, :binary_id, autogenerate: true}"
+      assert file =~ "@foreign_key_type :binary_id"
     end
   end
 

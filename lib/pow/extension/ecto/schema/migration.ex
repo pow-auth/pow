@@ -36,11 +36,12 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
   defp parse_options(base, extension, config) do
     repo           = Config.get(config, :repo, Module.concat([base, "Repo"]))
     table          = Config.get(config, :table, "users")
-    attrs          = Schema.attrs([extensions: [extension]], :email)
-    indexes        = Schema.indexes(extensions: [extension])
+    config         = Config.put(config, :extensions, [extension])
+    attrs          = Schema.attrs(config, :email)
+    indexes        = Schema.indexes(config)
     migration_name = name(extension, table)
 
-    Migration.schema(repo, table, migration_name, attrs, indexes, binary_id: config[:binary_id])
+    Migration.schema(repo, table, migration_name, attrs, indexes, config)
   end
 
   defp migration_file(schema, extension) do

@@ -11,8 +11,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   alias Mix.{Ecto, Pow.Extension, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
   alias Pow.Extension.Ecto.Schema.Migration
 
-  @switches [extension: :keep]
-  @default_opts []
+  @switches [binary_id: :boolean, extension: :keep]
+  @default_opts [binary_id: false]
 
   @doc false
   def run(args) do
@@ -27,18 +27,21 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     args
     |> Ecto.parse_repo()
     |> Enum.map(&Ecto.ensure_repo(&1, args))
-    |> Enum.each(&create_extension_migration_files(&1, Extension.Utils.extensions(config)))
+    |> Enum.map(&Map.put(config, :repo, &1))
+    |> Enum.each(&create_extension_migration_files/1)
   end
 
-  defp create_extension_migration_files(repo, extensions) do
+  defp create_extension_migration_files(config) do
+    extensions   = Extension.Utils.extensions(config)
     context_base = Utils.context_base(Utils.context_app())
+
     for extension <- extensions,
-      do: create_migration_files(repo, extension, context_base)
+      do: create_migration_files(config, extension, context_base)
   end
 
-  defp create_migration_files(repo, extension, context_base) do
+  defp create_migration_files(%{repo: repo, binary_id: binary_id}, extension, context_base) do
     name    = Migration.name(extension, "users")
-    content = Migration.gen(extension, context_base, repo: repo)
+    content = Migration.gen(extension, context_base, repo: repo, binary_id: binary_id)
 
     MigrationUtils.create_migration_files(repo, name, content)
   end

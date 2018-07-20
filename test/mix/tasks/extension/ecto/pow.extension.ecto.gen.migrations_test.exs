@@ -2,8 +2,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
   defmodule Ecto.Schema do
     use Pow.Extension.Ecto.Schema.Base
 
-    def attrs(_config) do
-      [{:custom_string, :string, null: false}]
+    def attrs(config) do
+      [{:custom_string, :string, null: !!config[:binary_id]}]
     end
 
     def indexes(_config) do
@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
   end
 
   @tmp_path Path.join(["tmp", inspect(Migrations)])
+  @migrations_path Path.join([@tmp_path, "migrations"])
   @options  ["-r", inspect(Repo), "--extension", __MODULE__]
 
   setup do
@@ -33,15 +34,24 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
   test "generates migrations" do
     File.cd! @tmp_path, fn ->
       Migrations.run(@options)
-      migrations_path = Path.join([@tmp_path, "migrations"])
-      assert [migration_file] = File.ls!(migrations_path)
+      assert [migration_file] = File.ls!(@migrations_path)
       assert String.match?(migration_file, ~r/^\d{14}_add_migrations_test_to_users\.exs$/)
 
-      file = migrations_path |> Path.join(migration_file) |> File.read!()
+      file = @migrations_path |> Path.join(migration_file) |> File.read!()
       assert file =~ "defmodule #{inspect(Repo)}.Migrations.AddMigrationsTestToUsers do"
       assert file =~ "alter table(:users)"
       assert file =~ "add :custom_string, :string, null: false"
       assert file =~ "create unique_index(:users, [:custom_string])"
+    end
+  end
+
+  test "generates with :binary_id" do
+    File.cd! @tmp_path, fn ->
+      Migrations.run(@options ++ ~w(--binary-id))
+      assert [migration_file] = File.ls!(@migrations_path)
+
+      file = @migrations_path |> Path.join(migration_file) |> File.read!()
+      assert file =~ "add :custom_string, :string, null: true"
     end
   end
 
