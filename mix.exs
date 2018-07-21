@@ -14,15 +14,12 @@ defmodule Pow.MixProject do
       deps: deps(),
 
       # Hex
-     description: "Powerful user authentication solution",
-     package: package(),
+      description: "Powerful user authentication solution",
+      package: package(),
 
-     # Docs
-     name: "Pow",
-     docs: [source_ref: "v#{@version}", main: "Pow",
-            canonical: "http://hexdocs.pm/pow",
-            source_url: "https://github.com/danschultzer/pow",
-            extras: ["README.md"]]
+      # Docs
+      name: "Pow",
+      docs: docs()
     ]
   end
 
@@ -61,6 +58,27 @@ defmodule Pow.MixProject do
       licenses: ["MIT"],
       links: %{github: "https://github.com/danschultzer/pow"},
       files: ~w(lib LICENSE mix.exs README.md)
+    ]
+  end
+
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      main: "Pow",
+      canonical: "http://hexdocs.pm/pow",
+      source_url: "https://github.com/danschultzer/pow",
+      extras: ["README.md"],
+      groups_for_modules: [
+        "Plug": ~r/^Pow.Plug/,
+        "Ecto": ~r/^Pow.Ecto/,
+        "Phoenix": ~r/^Pow.Phoenix/,
+        "Plug extension": ~r/^Pow.Extension.Plug/,
+        "Ecto extension": ~r/^Pow.Extension.Ecto/,
+        "Phoenix extension": ~r/^Pow.Extension.Phoenix/,
+        "Store handling": ~r/^Pow.Store/,
+        "Mix helpers": ~r/^Mix.Pow/,
+        "Extensions": [PowEmailConfirmation, PowResetPassword]
+      ]
     ]
   end
 end
