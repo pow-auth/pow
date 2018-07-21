@@ -1,6 +1,11 @@
 defmodule Pow.Store.Backend.EtsCache do
   @moduledoc """
   GenServer based key value ETS cache store with auto expiration.
+
+  The following configuration options can be used:
+
+    * `:ttl` integer value for ttl of records
+    * `:namespace` string value to use for namespacing keys
   """
   @behaviour Pow.Store.Base
 

@@ -1,6 +1,14 @@
 defmodule Pow.Store.Base do
   @moduledoc """
   Used to set up API for key-value cache store.
+
+  ## Usage
+
+      defmodule MyApp.CredentialsStore do
+          use Pow.Store.Base,
+            ttl: :timer.minutes(30),
+            namespace: "credentials"
+      end
   """
   alias Pow.{Config, Store.Backend.EtsCache}
 
