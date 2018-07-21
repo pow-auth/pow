@@ -1,6 +1,6 @@
 defmodule Pow.Config do
   @moduledoc """
-  A module that handles configurations.
+  Methods to parse and modify configurations.
   """
   @type t :: Keyword.t()
   defmodule ConfigError do

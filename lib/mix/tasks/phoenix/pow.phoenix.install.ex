@@ -1,13 +1,20 @@
 defmodule Mix.Tasks.Pow.Phoenix.Install do
-  @shortdoc "Generates user schema module, migrations file, templates and views"
+  @shortdoc "Generates user schema module, migration files, templates and views"
 
   @moduledoc """
-  Generates a user schema module and migrations file by default
+  Generates a user schema module and migration files.
 
       mix pow.phoenix.install -r MyApp.Repo
 
-  If you wish to generate templates and views you should add
-  `--templates` as argument.
+  With `--templates` flag, `Mix.Tasks.Pow.Phoenix.Gen.Templates` and
+  `Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates` will be called.
+
+  ## Arguments
+
+    * `--templates` generate templates and views
+    * `--no-migrations` don't generate migration files
+    * `--no-schema` don't generate schema file
+    * `--extension` extension to generatetemplates and views for
   """
   use Mix.Task
 

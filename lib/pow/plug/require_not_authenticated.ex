@@ -2,13 +2,13 @@ defmodule Pow.Plug.RequireNotAuthenticated do
   @moduledoc """
   This plug ensures that a user hasn't already been authenticated.
 
-  Example:
-
-    plug Pow.Plug.RequireAuthenticated,
-      error_handler: MyAppWeb.Pow.ErrorHandler
-
   You can see `Pow.Phoenix.PlugErrorHandler` for an example of the error
   handler module.
+
+  ## Example
+
+      plug Pow.Plug.RequireAuthenticated,
+        error_handler: MyAppWeb.Pow.ErrorHandler
   """
   alias Plug.Conn
   alias Pow.{Config, Plug}

@@ -1,19 +1,19 @@
 defmodule Pow.Phoenix.Template do
   @moduledoc """
-  Module that can builds templates for Phoenix views using
-  EEx with Phoenix.HTML.Engine.
+  Module that can builds templates for Phoenix views using EEx with
+  `Phoenix.HTML.Engine`.
 
-  Example:
+  ## Example
 
-    defmodule MyApp.ResourceTemplate do
-      use Pow.Phoenix.Template
+      defmodule MyApp.ResourceTemplate do
+        use Pow.Phoenix.Template
 
-      template :new, :html, "<%= content_tag(:span, "Template") %>"
+        template :new, :html, "<%= content_tag(:span, "Template") %>"
 
-      template :edit, :html, {:form, [{:text, :custom}]}
-    end
+        template :edit, :html, {:form, [{:text, :custom}]}
+      end
 
-    MyApp.ResourceTemplate.render("new.html", assigns)
+      MyApp.ResourceTemplate.render("new.html", assigns)
   """
   defmacro __using__(_opts) do
     quote do

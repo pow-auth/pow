@@ -22,11 +22,12 @@ defmodule Pow.Ecto.Context do
   Remember to update configuration with `users_context: MyApp.Users`.
 
   The following Pow methods can be accessed:
-    - `pow_authenticate/1`
-    - `pow_create/1`
-    - `pow_update/2`
-    - `pow_delete/1`
-    - `pow_get_by/1`
+
+    * `pow_authenticate/1`
+    * `pow_create/1`
+    * `pow_update/2`
+    * `pow_delete/1`
+    * `pow_get_by/1`
   """
 
   alias Ecto.Changeset

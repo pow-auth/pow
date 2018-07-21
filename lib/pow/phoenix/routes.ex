@@ -2,26 +2,25 @@ defmodule Pow.Phoenix.Routes do
   @moduledoc """
   Module that handles routes.
 
-  The `user_not_authenticated_path` method  will put a `:request_url`
-  param into the path that can be used to redirect users back the the
-  page they first attempted to visit. The `after_sign_in_path` method
-  will look for a `:request_url` assigns key, and redirect to this
-  value if it exists.
+  The `user_not_authenticated_path` method  will put a `:request_url` param
+  into the path that can be used to redirect users back the the page they first
+  attempted to visit. The `after_sign_in_path` method will look for a
+  `:request_url` assigns key, and redirect to this value if it exists.
 
-  If the `:request_url` param is available to the `:new` or `:create`
-  actions in `Pow.Phoenix.SessionController`, the controller will
-  automatically assign a `:request_url` key. If there's a
-  `:request_url` assigns key, the `pow_session_path(conn, :create)`
-  will be generated with a `:request_url` param.
+  If the `:request_url` param is available to the `:new` or `:create` actions
+  in `Pow.Phoenix.SessionController`, the controller will automatically assign
+  a `:request_url` key. If there's a `:request_url` assigns key, the
+  `pow_session_path(conn, :create)` will be generated with a `:request_url`
+  param.
 
   ## Usage
 
-    defmodule MyAppWeb.Pow.Routes do
-      use Pow.Phoenix.Routes
-      alias MyAppWeb.Router.Helpers, as: Routes
+      defmodule MyAppWeb.Pow.Routes do
+        use Pow.Phoenix.Routes
+        alias MyAppWeb.Router.Helpers, as: Routes
 
-      def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
-    end
+        def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
+      end
   """
   alias Plug.Conn
   alias Pow.Phoenix.Controller

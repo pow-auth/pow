@@ -2,11 +2,17 @@ defmodule Pow.Ecto.Schema.Changeset do
   @moduledoc """
   Handles changeset for pow user.
 
-  The following configuration options are used:
-    * `:password_min_length` defaults to 10
-    * `:password_max_length` defaults to 4096
-    * `:password_hash_methods` defaults to
-      `{&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1, &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2}`
+  ## Configuration options
+
+    * `:password_min_length` minimum password length, defaults to 10
+    * `:password_max_length` maximum password length, defaults to 4096
+    * `:password_hash_methods` what password hash and verify method to use,
+      defaults to:
+
+      ```elixir
+      {&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1,
+       &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2}
+      ```
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema}

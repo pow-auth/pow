@@ -1,6 +1,6 @@
 defmodule Pow.Operations do
   @moduledoc """
-  A module that handles struct operations (User).
+  Operation methods that glues operation calls to context module.
   """
   alias Pow.{Config, Ecto.Context}
 

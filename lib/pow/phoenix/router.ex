@@ -30,9 +30,11 @@ defmodule Pow.Phoenix.Router do
 
   @doc """
   Pow router macro.
+
   Use this macro to define the Pow routes.
 
-  ## Examples:
+  ## Example
+
       scope "/" do
         pow_routes()
       end

@@ -5,9 +5,9 @@ defmodule Pow.Store.Base do
   ## Usage
 
       defmodule MyApp.CredentialsStore do
-          use Pow.Store.Base,
-            ttl: :timer.minutes(30),
-            namespace: "credentials"
+        use Pow.Store.Base,
+          ttl: :timer.minutes(30),
+          namespace: "credentials"
       end
   """
   alias Pow.{Config, Store.Backend.EtsCache}

@@ -6,25 +6,25 @@ defmodule Pow.Plug.Base do
 
   ## Example
 
-    defmodule MyAppWeb.Pow.CustomPlug do
-      use Pow.Plug.Base
+      defmodule MyAppWeb.Pow.CustomPlug do
+        use Pow.Plug.Base
 
-      def fetch(conn, _config) do
-        user = fetch_user_from_cookie(conn)
+        def fetch(conn, _config) do
+          user = fetch_user_from_cookie(conn)
 
-        {conn, user}
+          {conn, user}
+        end
+
+        def create(conn, user, _config) do
+          conn = update_cookie(conn, user)
+
+          {conn, user}
+        end
+
+        def delete(conn, _config) do
+          delete_cookie(conn)
+        end
       end
-
-      def create(conn, user, _config) do
-        conn = update_cookie(conn, user)
-
-        {conn, user}
-      end
-
-      def delete(conn, _config) do
-        delete_cookie(conn)
-      end
-    end
   """
   alias Plug.Conn
   alias Pow.{Config, Plug}

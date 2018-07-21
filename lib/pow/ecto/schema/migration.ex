@@ -1,6 +1,11 @@
 defmodule Pow.Ecto.Schema.Migration do
   @moduledoc """
   Generates schema migration content.
+
+  ## Configuration options
+
+    * `:repo` the ecto repo to use, defaults to context base repo
+    * `:table` the ecto table name
   """
   alias Pow.{Config, Ecto.Schema.Fields}
 

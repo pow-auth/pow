@@ -5,6 +5,10 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   Generates pow templates for Phoenix.
 
       mix pow.phoenix.gen.templates
+
+  ## Arguments
+
+  * `--context-app MyApp` app to use for path and module names
   """
   use Mix.Task
 

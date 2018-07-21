@@ -4,22 +4,22 @@ defmodule Pow.Plug.Session do
 
   ## Example
 
-    plug Plug.Session,
-      store: :cookie,
-      key: "_my_app_demo_key",
-      signing_salt: "secret"
+      plug Plug.Session,
+        store: :cookie,
+        key: "_my_app_demo_key",
+        signing_salt: "secret"
 
-    plug Pow.Plug.Session,
-      repo: MyApp.Repo,
-      user: MyApp.User,
-      current_user_assigns_key: :current_user,
-      session_key: "auth",
-      session_store: {Pow.Store.CredentialsCache,
-                      ttl: :timer.minutes(30),
-                      namespace: "credentials"},
-      session_ttl_renewal: :timer.minutes(15),
-      cache_store_backend: Pow.Store.Backend.EtsCache,
-      users_context: Pow.Ecto.Users
+      plug Pow.Plug.Session,
+        repo: MyApp.Repo,
+        user: MyApp.User,
+        current_user_assigns_key: :current_user,
+        session_key: "auth",
+        session_store: {Pow.Store.CredentialsCache,
+                        ttl: :timer.minutes(30),
+                        namespace: "credentials"},
+        session_ttl_renewal: :timer.minutes(15),
+        cache_store_backend: Pow.Store.Backend.EtsCache,
+        users_context: Pow.Ecto.Users
 
   ## Configuration options
 

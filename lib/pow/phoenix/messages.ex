@@ -10,8 +10,8 @@ defmodule Pow.Phoenix.Messages do
         def signed_out(_conn), do: "Signed out successfullly."
       end
 
-    Remember to add `messages_backend:  MyAppWeb.Pow.Messages` to
-    your configuration.
+    Remember to add `messages_backend: MyAppWeb.Pow.Messages` to your
+    configuration.
   """
   @callback signed_out(Conn.t()) :: binary()
   @callback signed_in(Conn.t()) :: binary()

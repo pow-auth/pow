@@ -2,16 +2,16 @@ defmodule Pow.Phoenix.Controller do
   @moduledoc """
   Used with Pow Phoenix controllers to handle messages, routes and callbacks.
 
-  The following configuration settings are handled here:
+  ## Configuration options
 
-  - `:messages_backend`
-    See `Pow.Phoenix.Messages` for more.
+    * `:messages_backend`
+      See `Pow.Phoenix.Messages` for more.
 
-  - `:routes_backend`
-    See `Pow.Phoenix.Routes` for more.
+    * `:routes_backend`
+      See `Pow.Phoenix.Routes` for more.
 
-  - `:controller_callbacks`
-    See `Pow.Extension.Phoenix.ControllerCallbacks` for more.
+    * `:controller_callbacks`
+      See `Pow.Extension.Phoenix.ControllerCallbacks` for more.
   """
   alias Plug.Conn
   alias Pow.{Config, Phoenix.Messages, Phoenix.Routes, Plug}

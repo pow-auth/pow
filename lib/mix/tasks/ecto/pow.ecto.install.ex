@@ -7,8 +7,9 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
       mix pow.ecto.install -r MyApp.Repo
 
   This generator will add the following files to `lib/`:
-  * a schema in lib/my_app/users/user.ex for `users` table
-  * a migration file in priv/repo/migrations for `users` table
+
+    * a schema in `lib/my_app/users/user.ex` for `users` table
+    * a migration file in `priv/repo/migrations` for `users` table
   """
   use Mix.Task
 

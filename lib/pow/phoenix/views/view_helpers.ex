@@ -2,38 +2,38 @@ defmodule Pow.Phoenix.ViewHelpers do
   @moduledoc """
   Module that renders views.
 
-  By default, the controller views and templates in this library
-  will be used, and the layout view will be based on the module
-  namespace of the Endpoint module.
+  By default, the controller views and templates in this library will be used,
+  and the layout view will be based on the module namespace of the Endpoint
+  module.
 
-  By setting the `:web_module` key in config, the controller
-  and layout views can be used from this context app.
+  By setting the `:web_module` key in config, the controller and layout views
+  can be used from this context app.
 
   So if you set up your endpoint like this:
 
-    defmodule MyAppWeb.Endpoint do
-      plug Pow.Plug.Session
-    end
+      defmodule MyAppWeb.Endpoint do
+        plug Pow.Plug.Session
+      end
 
-  Only `MyAppWeb.LayoutView` will be used from your app.
-  However, if you set up the endpoint with a `:web_module` key:
+  Only `MyAppWeb.LayoutView` will be used from your app. However, if you set up
+  the endpoint with a `:web_module` key:
 
-    defmodule MyAppWeb.Endpoint do
-      plug Pow.Plug.Session, web_module: MyAppWeb
-    end
+      defmodule MyAppWeb.Endpoint do
+        plug Pow.Plug.Session, web_module: MyAppWeb
+      end
 
   The following modules are will be used from your app:
 
-  * `MyAppWeb.LayoutView`
-  * `MyAppWeb.Pow.RegistrationView`
-  * `MyAppWeb.Pow.SessionView`
+    * `MyAppWeb.LayoutView`
+    * `MyAppWeb.Pow.RegistrationView`
+    * `MyAppWeb.Pow.SessionView`
 
   And also the following templates has to exist in
   `lib/my_project_web/templates/pow`:
 
-  * `registration/new.html.eex`
-  * `registration/edit.html.eex`
-  * `session/new.html.eex`
+    * `registration/new.html.eex`
+    * `registration/edit.html.eex`
+    * `session/new.html.eex`
   """
   alias Phoenix.Controller
   alias Plug.Conn

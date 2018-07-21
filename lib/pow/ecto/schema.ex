@@ -28,7 +28,7 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
-  Remember to add `user: MyApp.Users.User` to configuration.
+  Remember to add `user: MyApp.Users.User` to your configuration.
   """
   alias Pow.Config
 

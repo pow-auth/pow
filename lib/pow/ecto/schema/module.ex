@@ -1,6 +1,10 @@
 defmodule Pow.Ecto.Schema.Module do
   @moduledoc """
   Generates schema module content.
+
+  ## Configuration options
+
+    * `:table` the ecto table name
   """
   alias Pow.Config
 
