@@ -21,39 +21,42 @@ defmodule Pow.Store.Base do
       @behaviour unquote(__MODULE__)
 
       @spec put(Config.t(), binary(), any()) :: :ok
-      def put(config, key, value) do
-        store = store(config)
-        config = parse_config(config)
-
-        store.put(config, key, value)
-      end
+      def put(config, key, value),
+        do: unquote(__MODULE__).put(config, backend_config(config), key, value)
 
       @spec delete(Config.t(), binary()) :: :ok
-      def delete(config, key) do
-        store = store(config)
-        config = parse_config(config)
-
-        store.delete(config, key)
-      end
+      def delete(config, key),
+        do: unquote(__MODULE__).delete(config, backend_config(config), key)
 
       @spec get(Config.t(), binary()) :: any() | :not_found
-      def get(config, key) do
-        store = store(config)
-        config = parse_config(config)
+      def get(config, key),
+        do: unquote(__MODULE__).get(config, backend_config(config), key)
 
-        store.get(config, key)
+      defp backend_config(config) do
+        [ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
+        namespace: Config.get(config, :namespace, unquote(defaults[:namespace]))]
       end
 
-      defp parse_config(config) do
-        [
-          ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
-          namespace: Config.get(config, :namespace, unquote(defaults[:namespace]))
-        ]
-      end
-
-      defp store(config) do
-        Config.get(config, :backend, EtsCache)
-      end
+      defoverridable unquote(__MODULE__)
     end
+  end
+
+  @spec put(Config.t(), Config.t(), binary(), any()) :: :ok
+  def put(config, backend_config, key, value) do
+    store(config).put(backend_config, key, value)
+  end
+
+  @spec delete(Config.t(), Config.t(), binary()) :: :ok
+  def delete(config, backend_config, key) do
+    store(config).delete(backend_config, key)
+  end
+
+  @spec get(Config.t(), Config.t(), binary()) :: any() | :not_found
+  def get(config, backend_config, key) do
+    store(config).get(backend_config, key)
+  end
+
+  defp store(config) do
+    Config.get(config, :backend, EtsCache)
   end
 end

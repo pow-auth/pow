@@ -2,7 +2,11 @@ defmodule Pow.Store.Backend.EtsCache do
   @moduledoc """
   GenServer based key value ETS cache store with auto expiration.
 
-  The following configuration options can be used:
+  This module is not recommended for production, but mostly used as an example
+  for how to build a cache. All data is stored in-memory, so cached values are
+  not shared between machines.
+
+  ## Configuration options
 
     * `:ttl` integer value for ttl of records
     * `:namespace` string value to use for namespacing keys

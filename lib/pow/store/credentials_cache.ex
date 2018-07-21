@@ -3,6 +3,6 @@ defmodule Pow.Store.CredentialsCache do
   Default module for credentials session storage.
   """
   use Pow.Store.Base,
-    ttl: :timer.hours(48),
+    ttl: :timer.minutes(30),
     namespace: "credentials"
 end

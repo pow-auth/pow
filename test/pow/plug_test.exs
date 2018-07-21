@@ -82,7 +82,7 @@ defmodule Pow.PlugTest do
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert %{id: 1} = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
-    assert %{id: 1} = EtsCacheMock.get(nil, session_id)
+    assert {%{id: 1}, _timestamp} = EtsCacheMock.get(nil, session_id)
 
     conn = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)

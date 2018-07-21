@@ -187,15 +187,19 @@ defmodule MyAppWeb.Pow.Plug do
   use Pow.Plug.Base
 
   def fetch(conn, config) do
-    MyApp.Guardian.Plug.current_resource(conn)
+    user = MyApp.Guardian.Plug.current_resource(conn)
+
+    {conn, user}
   end
 
   def create(conn, user, config) do
-    MyApp.Guardian.Plug.sign_in(conn, user)
+    conn = MyApp.Guardian.Plug.sign_in(conn, user)
+
+    {conn, user}
   end
 
   def delete(conn, config) do
-    MyApp.Guardian.Plug.sign_out(conn)
+    MyApp.Guardian.Plug.signout(conn)
   end
 end
 
@@ -256,7 +260,11 @@ By default, this will redirect the user to the front page if the user is already
 * The `:password` has a maximum length of 4096 bytes [to prevent DOS attacks against Pbkdf2](https://github.com/riverrun/pbkdf2_elixir/blob/master/lib/pbkdf2.ex#L21)
 * The `:password_hash` is generated with `Pbpdf2`
 * The session value contains a UUID token that is used to pull credentials through a GenServer
-* The credentials are stored in an ETS key-value storage with auto expiration of 48 hours
+* The credentials are stored in an ETS key-value storage with ttl of 30 minutes
+* The credentials and session will be reset every 15 minutes if activity is detected
+* The credentials and session are reset after user updates
+
+Some of the above is based on [https://www.owasp.org/](OWASP) recommendations.
 
 ## LICENSE
 

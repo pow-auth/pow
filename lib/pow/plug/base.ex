@@ -1,35 +1,38 @@
 defmodule Pow.Plug.Base do
   @moduledoc """
-  This plug macro will set the :pow_config key, and attempt to fetch and assign
-  a user in the connection, if it has not already been assigned.
+  This plug macro will set the `:pow_config` key, and attempt to fetch and
+  assign a user in the connection if it has not already been assigned. The
+  user will be assigned automatically in any of the operations.
 
-  You can use this to build your own pow plug:
+  ## Example
 
-  defmodule MyAppWeb.Pow.Plug do
-    use Pow.Plug.Base
+    defmodule MyAppWeb.Pow.CustomPlug do
+      use Pow.Plug.Base
 
-    def fetch(conn, config) do
-      # Fetch user from conn
+      def fetch(conn, _config) do
+        user = fetch_user_from_cookie(conn)
+
+        {conn, user}
+      end
+
+      def create(conn, user, _config) do
+        conn = update_cookie(conn, user)
+
+        {conn, user}
+      end
+
+      def delete(conn, _config) do
+        delete_cookie(conn)
+      end
     end
-
-    def create(conn, user, config) do
-      # Create new user auth in conn
-    end
-
-    def delete(conn, config) do
-      # Delete user auth from conn
-    end
-
-    The user will be assigned automatically in any of the operations.
-  end
   """
   alias Plug.Conn
-  alias Pow.Config
+  alias Pow.{Config, Plug}
 
   @callback init(Config.t()) :: Config.t()
   @callback call(Conn.t(), Config.t()) :: Conn.t()
-  @callback fetch(Conn.t(), Config.t()) :: map() | nil
-  @callback create(Conn.t(), map(), Config.t()) :: Conn.t()
+  @callback fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
+  @callback create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   @callback delete(Conn.t(), Config.t()) :: Conn.t()
 
   defmacro __using__(_opts) do
@@ -53,10 +56,9 @@ defmodule Pow.Plug.Base do
       def do_fetch(conn) do
         config = fetch_config(conn)
 
-        case fetch(conn, config) do
-          nil  -> conn
-          user -> assign_user(conn, user, config)
-        end
+        conn
+        |> fetch(config)
+        |> assign_current_user(config)
       end
 
       @spec do_create(Conn.t(), map()) :: Conn.t()
@@ -65,7 +67,7 @@ defmodule Pow.Plug.Base do
 
         conn
         |> create(user, config)
-        |> assign_user(user, config)
+        |> assign_current_user(config)
       end
 
       @spec do_delete(Conn.t()) :: Conn.t()
@@ -74,17 +76,17 @@ defmodule Pow.Plug.Base do
 
         conn
         |> delete(config)
-        |> assign_user(nil, config)
+        |> remove_current_user(config)
       end
 
       defp maybe_fetch_user(nil, conn), do: do_fetch(conn)
       defp maybe_fetch_user(_user, conn), do: conn
 
-      defp fetch_config(conn),
-        do: Pow.Plug.fetch_config(conn)
+      defp fetch_config(conn), do: Plug.fetch_config(conn)
 
-      defp assign_user(conn, user, config),
-        do: Pow.Plug.assign_current_user(conn, user, config)
+      defp assign_current_user({conn, user}, config), do: Plug.assign_current_user(conn, user, config)
+
+      defp remove_current_user(conn, config), do: Plug.assign_current_user(conn, nil, config)
 
       defoverridable Base
     end
