@@ -1,4 +1,4 @@
-defmodule Mix.Pow.Extension.Utils do
+defmodule Mix.Pow.Extension do
   @moduledoc """
   Utilities module for mix extension tasks.
   """

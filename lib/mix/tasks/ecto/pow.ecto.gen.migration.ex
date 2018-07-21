@@ -8,18 +8,18 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   """
   use Mix.Task
 
-  alias Mix.{Ecto, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
-  alias Pow.Ecto.Schema.Migration
+  alias Pow.Ecto.Schema.Migration, as: SchemaMigration
+  alias Mix.{Ecto, Pow, Pow.Ecto.Migration}
 
   @switches [binary_id: :boolean]
   @default_opts [binary_id: false]
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.ecto.gen.migration")
+    Pow.no_umbrella!("pow.ecto.gen.migration")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> create_migrations_files(args)
   end
 
@@ -32,10 +32,10 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   end
 
   defp create_migration_files(%{repo: repo, binary_id: binary_id}) do
-    context_base    = Utils.context_base(Utils.context_app())
-    name            = Migration.name("users")
-    content         = Migration.gen(context_base, repo: repo, binary_id: binary_id)
+    context_base    = Pow.context_base(Pow.context_app())
+    name            = SchemaMigration.name("users")
+    content         = SchemaMigration.gen(context_base, repo: repo, binary_id: binary_id)
 
-    MigrationUtils.create_migration_files(repo, name, content)
+    Migration.create_migration_files(repo, name, content)
   end
 end

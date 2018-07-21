@@ -8,18 +8,18 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   """
   use Mix.Task
 
-  alias Mix.{Ecto, Pow.Extension, Pow.Utils, Tasks.Pow.Ecto.MigrationUtils}
-  alias Pow.Extension.Ecto.Schema.Migration
+  alias Pow.Extension.Ecto.Schema.Migration, as: SchemaMigration
+  alias Mix.{Ecto, Pow, Pow.Ecto.Migration, Pow.Extension}
 
   @switches [binary_id: :boolean, extension: :keep]
   @default_opts [binary_id: false]
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.extension.ecto.gen.migrations")
+    Pow.no_umbrella!("pow.extension.ecto.gen.migrations")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> create_migrations_files(args)
   end
 
@@ -32,17 +32,17 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   end
 
   defp create_extension_migration_files(config) do
-    extensions   = Extension.Utils.extensions(config)
-    context_base = Utils.context_base(Utils.context_app())
+    extensions   = Extension.extensions(config)
+    context_base = Pow.context_base(Pow.context_app())
 
     for extension <- extensions,
       do: create_migration_files(config, extension, context_base)
   end
 
   defp create_migration_files(%{repo: repo, binary_id: binary_id}, extension, context_base) do
-    name    = Migration.name(extension, "users")
-    content = Migration.gen(extension, context_base, repo: repo, binary_id: binary_id)
+    name    = SchemaMigration.name(extension, "users")
+    content = SchemaMigration.gen(extension, context_base, repo: repo, binary_id: binary_id)
 
-    MigrationUtils.create_migration_files(repo, name, content)
+    Migration.create_migration_files(repo, name, content)
   end
 end

@@ -1,11 +1,12 @@
-defmodule Mix.Pow.Utils do
+defmodule Mix.Pow do
   @moduledoc """
   Utilities module for mix tasks.
   """
+  alias Mix.Project
 
   @spec no_umbrella!(binary()) :: :ok | no_return
   def no_umbrella!(task) do
-    if Mix.Project.umbrella? do
+    if Project.umbrella? do
       Mix.raise "mix #{task} can only be run inside an application directory"
     end
 
@@ -54,7 +55,6 @@ defmodule Mix.Pow.Utils do
       {app, _path} -> app
       app          -> app
     end
-    Mix.Project.config |> Keyword.fetch!(:app)
   end
 
   defp otp_app do

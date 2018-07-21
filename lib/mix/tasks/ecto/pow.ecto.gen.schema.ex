@@ -8,39 +8,39 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   """
   use Mix.Task
 
-  alias Mix.{Generator, Pow.Utils}
-  alias Mix.Tasks.Pow.Ecto.Gen
-  alias Pow.Ecto.Schema.Module
+  alias Mix.Tasks.Pow.Ecto.Gen.Migration, as: MigrationTask
+  alias Pow.Ecto.Schema.Module, as: SchemaModule
+  alias Mix.{Generator, Pow}
 
   @switches [migrations: :boolean, context_app: :string, binary_id: :boolean]
   @default_opts [migrations: true, binary_id: false]
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.ecto.gen.schema")
+    Pow.no_umbrella!("pow.ecto.gen.schema")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> maybe_run_gen_migration(args)
     |> create_schema_file()
   end
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do
-    Gen.Migration.run(args)
+    MigrationTask.run(args)
 
     config
   end
   defp maybe_run_gen_migration(config, _args), do: config
 
   defp create_schema_file(%{binary_id: binary_id} = config) do
-    context_app  = Map.get(config, :context_app, Utils.context_app())
-    context_base = Utils.context_base(context_app)
+    context_app  = Map.get(config, :context_app, Pow.context_app())
+    context_base = Pow.context_base(context_app)
 
     base_name = "user.ex"
-    content   = Module.gen(context_base, module: "Users.User", binary_id: binary_id)
+    content   = SchemaModule.gen(context_base, module: "Users.User", binary_id: binary_id)
 
     context_app
-    |> Utils.context_lib_path("users")
+    |> Pow.context_lib_path("users")
     |> maybe_create_directory()
     |> Path.join(base_name)
     |> ensure_unique()

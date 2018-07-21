@@ -8,17 +8,17 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   """
   use Mix.Task
 
-  alias Mix.Pow.{Extension, Phoenix, Utils}
+  alias Mix.{Pow, Pow.Extension, Pow.Phoenix}
 
   @switches [context_app: :string, extension: :keep]
   @default_opts []
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.extension.phoenix.gen.templates")
+    Pow.no_umbrella!("pow.extension.phoenix.gen.templates")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> create_template_files()
   end
 
@@ -28,20 +28,20 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     ]}
   ]
   defp create_template_files(config) do
-    structure    = Phoenix.Utils.parse_structure(config)
+    structure    = Phoenix.parse_structure(config)
     context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
     extensions   =
       config
-      |> Extension.Utils.extensions()
+      |> Extension.extensions()
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
       |> Enum.map(&({&1, @extension_templates[&1]}))
 
     Enum.each extensions, fn {module, templates} ->
       Enum.each templates, fn {name, actions} ->
-        Phoenix.Utils.create_view_file(module, name, web_module, web_prefix)
-        Phoenix.Utils.create_templates(module, name, web_prefix, actions)
+        Phoenix.create_view_file(module, name, web_module, web_prefix)
+        Phoenix.create_templates(module, name, web_prefix, actions)
       end
     end
 

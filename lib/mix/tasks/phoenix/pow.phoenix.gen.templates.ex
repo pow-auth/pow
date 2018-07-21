@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
-  @shortdoc "Generates pow views and templates"
+  @shortdoc "Generates Pow views and templates"
 
   @moduledoc """
   Generates pow templates for Phoenix.
@@ -8,21 +8,21 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
 
   ## Arguments
 
-  * `--context-app MyApp` app to use for path and module names
+    * `--context-app MyApp` app to use for path and module names
   """
   use Mix.Task
 
-  alias Mix.Pow.{Phoenix, Utils}
+  alias Mix.{Pow, Pow.Phoenix}
 
   @switches [context_app: :string]
   @default_opts []
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.phoenix.gen.templates")
+    Pow.no_umbrella!("pow.phoenix.gen.templates")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> create_template_files()
     |> print_shell_instructions()
   end
@@ -33,14 +33,14 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   ]
 
   defp create_template_files(config) do
-    structure    = Phoenix.Utils.parse_structure(config)
+    structure    = Phoenix.parse_structure(config)
     context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
 
     Enum.each @templates, fn {name, actions} ->
-      Phoenix.Utils.create_view_file(Pow, name, web_module, web_prefix)
-      Phoenix.Utils.create_templates(Pow, name, web_prefix, actions)
+      Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix)
+      Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
     end
 
     %{context_base: context_base, web_module: web_module}

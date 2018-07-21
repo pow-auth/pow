@@ -9,25 +9,25 @@ defmodule Mix.Tasks.Pow.Install do
   use Mix.Task
 
   alias Mix.Generator
-  alias Mix.Pow.{Extension, Utils}
+  alias Mix.{Pow, Pow.Extension}
   alias Mix.Tasks.Pow.Ecto
 
   @switches [context_app: :string, extension: :keep]
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.install")
+    Pow.no_umbrella!("pow.install")
 
     args
-    |> Utils.parse_options(@switches, [])
+    |> Pow.parse_options(@switches, [])
     |> create_pow_module()
     |> run_ecto_install(args)
   end
 
   defp create_pow_module(config) do
-    context_app  = Map.get(config, :context_app, Utils.context_app())
-    context_base = Utils.context_base(context_app)
-    settings     = case Extension.Utils.extensions(config) do
+    context_app  = Map.get(config, :context_app, Pow.context_app())
+    context_base = Pow.context_base(context_app)
+    settings     = case Extension.extensions(config) do
       []         -> ""
       extensions -> ",
     extensions: #{inspect(extensions)}"
@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Pow.Install do
     """
 
     context_app
-    |> Utils.context_lib_path("")
+    |> Pow.context_lib_path("")
     |> Path.join(file_name)
     |> Generator.create_file(content)
 

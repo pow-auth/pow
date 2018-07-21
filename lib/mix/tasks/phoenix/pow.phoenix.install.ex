@@ -18,18 +18,20 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   """
   use Mix.Task
 
-  alias Mix.Pow.Utils
-  alias Mix.Tasks.{Pow, Pow.Extension, Pow.Phoenix.Gen}
+  alias Mix.Tasks.Pow.Install, as: PowInstallTask
+  alias Mix.Tasks.Pow.Phoenix.Gen.Templates, as: PhoenixTemplatesTask
+  alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
+  alias Mix.{Pow, Pow.Phoenix}
 
   @switches [migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]
 
   @doc false
   def run(args) do
-    Utils.no_umbrella!("pow.phoenix.install")
+    Pow.no_umbrella!("pow.phoenix.install")
 
     args
-    |> Utils.parse_options(@switches, @default_opts)
+    |> Pow.parse_options(@switches, @default_opts)
     |> run_pow_install(args)
     |> maybe_run_gen_templates(args)
     |> maybe_run_extensions_gen_templates(args)
@@ -37,27 +39,27 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   end
 
   defp run_pow_install(config, args) do
-    Pow.Install.run(args)
+    PowInstallTask.run(args)
 
     config
   end
 
   defp maybe_run_gen_templates(%{templates: true} = config, args) do
-    Gen.Templates.run(args)
+    PhoenixTemplatesTask.run(args)
 
     config
   end
   defp maybe_run_gen_templates(config, _args), do: config
 
   defp maybe_run_extensions_gen_templates(%{templates: true} = config, args) do
-    Extension.Phoenix.Gen.Templates.run(args)
+    PhoenixExtensionTemplatesTask.run(args)
 
     config
   end
   defp maybe_run_extensions_gen_templates(config, _args), do: config
 
   defp print_shell_instructions(config) do
-    structure = Mix.Pow.Phoenix.Utils.parse_structure(config)
+    structure = Phoenix.parse_structure(config)
     mod       = structure[:context_base]
     web_mod   = structure[:web_module]
 

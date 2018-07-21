@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Pow.Ecto.MigrationUtils do
+defmodule Mix.Pow.Ecto.Migration do
   @moduledoc """
   Utilities module for ecto migrations in mix tasks.
   """

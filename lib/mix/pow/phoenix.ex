@@ -1,13 +1,14 @@
-defmodule Mix.Pow.Phoenix.Utils do
+defmodule Mix.Pow.Phoenix do
   @moduledoc """
   Utilities module for mix phoenix tasks.
   """
   alias Mix.Generator
+  alias Mix.Pow
 
   @spec parse_structure(map()) :: map()
   def parse_structure(config) do
-    context_app  = Map.get(config, :context_app, Mix.Pow.Utils.context_app())
-    context_base = Mix.Pow.Utils.context_base(context_app)
+    context_app  = Map.get(config, :context_app, Pow.context_app())
+    context_base = Pow.context_base(context_app)
     web_prefix   = web_path(context_app)
     web_module   = web_module(context_base, web_prefix)
 
