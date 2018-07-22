@@ -28,6 +28,12 @@ defmodule Pow.Ecto.Context do
     * `pow_update/2`
     * `pow_delete/1`
     * `pow_get_by/1`
+
+
+  ## Configuration options
+
+    * `:repo` the ecto repo module
+    * `:user` the user schema module
   """
 
   alias Ecto.Changeset

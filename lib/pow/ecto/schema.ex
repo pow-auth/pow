@@ -29,6 +29,11 @@ defmodule Pow.Ecto.Schema do
       end
 
   Remember to add `user: MyApp.Users.User` to your configuration.
+
+  ## Configuration options
+
+    * `:login_field` the field to use for user id, defaults to :email, and will
+      be validated as an email
   """
   alias Pow.Config
 
