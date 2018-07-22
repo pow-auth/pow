@@ -8,11 +8,12 @@ defmodule Pow.Phoenix.Mailer do
       defmodule MyAppWeb.Mailer do
         use Pow.Phoenix.Mailer
         use Swoosh.Mailer, otp_app: :my_app
+        import Swoosh.Email
 
         def cast(email) do
-          new()
+          %Swoosh.Email{}
           |> from({"My App", "myapp@example.com"})
-          |> to({"", user.email})
+          |> to({"", email.user.email})
           |> subject(email.subject)
           |> text_body(email.text)
           |> html_body(email.html)

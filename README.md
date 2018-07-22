@@ -112,8 +112,8 @@ defmodule MyAppWeb.Mailer do
   import Swoosh.Email
 
   def cast(%{user: user, subject: subject, text: text, html: html}) do
-    new()
-    |> to({"", user.email})
+    %Swoosh.Email{}
+    |> to({"", email.user.email})
     |> from({"My App", "myapp@example.com"})
     |> subject(subject)
     |> html_body(html)
