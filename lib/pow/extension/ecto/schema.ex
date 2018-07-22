@@ -43,7 +43,7 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec __register_extension_fields__(Config.t()) :: Macro.t()
   defmacro __register_extension_fields__(config) do
     quote do
-      extension_attrs = unquote(__MODULE__).attrs( unquote(config))
+      extension_attrs = unquote(__MODULE__).attrs(unquote(config))
 
       for attr <- extension_attrs do
         Module.put_attribute(__MODULE__, :pow_fields, attr)

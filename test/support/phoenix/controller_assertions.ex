@@ -2,7 +2,7 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
   @moduledoc false
   alias Phoenix.ConnTest
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, Routes, Messages}
+  alias Pow.Phoenix.{Controller, Messages, Routes}
 
   @spec assert_authenticated_redirect(Plug.Conn.t()) :: no_return
   defmacro assert_authenticated_redirect(conn) do

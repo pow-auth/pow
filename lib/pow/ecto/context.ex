@@ -29,7 +29,6 @@ defmodule Pow.Ecto.Context do
     * `pow_delete/1`
     * `pow_get_by/1`
 
-
   ## Configuration options
 
     * `:repo` the ecto repo module

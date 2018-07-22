@@ -23,7 +23,7 @@ defmodule Pow.Plug.SessionTest do
 
   test "call/2 sets mod in :pow_config", %{conn: conn} do
     opts = Session.init(@default_opts)
-    conn = Session.call(conn,opts)
+    conn = Session.call(conn, opts)
 
     assert is_nil(conn.assigns[:current_user])
     assert conn.private[:pow_config] == Config.put(@default_opts, :mod, Session)

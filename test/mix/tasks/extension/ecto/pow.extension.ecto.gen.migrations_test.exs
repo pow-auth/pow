@@ -3,7 +3,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     use Pow.Extension.Ecto.Schema.Base
 
     def attrs(config) do
-      [{:custom_string, :string, null: !!config[:binary_id]}]
+      [{:custom_string, :string, null: config[:binary_id] == true}]
     end
 
     def indexes(_config) do
