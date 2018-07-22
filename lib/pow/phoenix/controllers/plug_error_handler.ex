@@ -1,6 +1,7 @@
 defmodule Pow.Phoenix.PlugErrorHandler do
   @moduledoc """
-  Used with Pow.Plug.RequireAuthenticated or Pow.Plug.RequireNotAuthenticated.
+  Used with `Pow.Plug.RequireAuthenticated` and
+  `Pow.Plug.RequireNotAuthenticated`.
   """
   alias Phoenix.Controller
   alias Plug.Conn

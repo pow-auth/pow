@@ -73,7 +73,8 @@ defmodule MyAppWeb.Router do
   # ...
 
   pipeline :protected do
-    plug Pow.Plug.RequireAuthenticated
+    plug Pow.Plug.RequireAuthenticated,
+      error_handler: Pow.Phoenix.PlugErrorHandler
   end
 
   scope "/" do
@@ -246,11 +247,11 @@ Enables session based authorization. The user struct will be collected from an E
 
 ### Pow.Plug.RequireAuthenticated
 
-By default, this will redirect the user to the log in page if the user hasn't been authenticated. Once the user has logged in, they'll be redirected back to the page that they requested.
+Will halt connection if no current user is not found in assigns. Expects an `:error_handler` option.
 
 ### Pow.Plug.RequireNotAuthenticated
 
-By default, this will redirect the user to the front page if the user is already authenticated.
+Will halt connection if a current user is found in assigns. Expects an `:error_handler` option.
 
 ## Pow security practices
 
