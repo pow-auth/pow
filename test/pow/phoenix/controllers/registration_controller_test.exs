@@ -12,6 +12,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = get(conn, Routes.pow_registration_path(conn, :new))
 
       assert html = html_response(conn, 200)
+      assert html =~ Routes.pow_registration_path(conn, :create)
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
       assert html =~ "<label for=\"user_password\">Password</label>"

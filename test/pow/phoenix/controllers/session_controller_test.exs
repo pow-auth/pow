@@ -20,18 +20,19 @@ defmodule Pow.Phoenix.SessionControllerTest do
       conn = get(conn, Routes.pow_session_path(conn, :new))
 
       assert html = html_response(conn, 200)
+      assert html =~ Routes.pow_session_path(conn, :create)
+      refute html =~ "request_url="
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      refute html =~ "request_url"
     end
 
     test "with request_url", %{conn: conn} do
       conn = get(conn, Routes.pow_session_path(conn, :new, request_url: "/example"))
 
       assert html = html_response(conn, 200)
-      assert html =~ "?request_url=%2Fexample"
+      assert html =~ Routes.pow_session_path(conn, :create, request_url: "/example")
     end
   end
 

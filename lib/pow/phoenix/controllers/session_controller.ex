@@ -69,6 +69,6 @@ defmodule Pow.Phoenix.SessionController do
     create_path(conn, request_url: request_url)
   end
   defp create_path(conn, params \\ []) do
-    Controller.router_helpers(conn).pow_registration_path(conn, :create, params)
+    Controller.router_helpers(conn).pow_session_path(conn, :create, params)
   end
 end
