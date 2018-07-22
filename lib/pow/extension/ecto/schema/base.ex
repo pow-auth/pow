@@ -20,7 +20,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
   alias Ecto.Changeset
   alias Pow.Config
 
-  @callback validate!(Config.t(), atom()) :: Config.t() | no_return
+  @callback validate!(Config.t(), atom()) :: :ok | no_return
   @callback attrs(Config.t()) :: [tuple()]
   @callback indexes(Config.t()) :: [tuple()]
   @callback changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
@@ -29,7 +29,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
-      def validate!(config, _user_id_field), do: config
+      def validate!(_config, _module), do: :ok
       def attrs(_config), do: []
       def changeset(changeset, _attrs, _config), do: changeset
       def indexes(_config), do: []

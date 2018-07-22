@@ -2,9 +2,9 @@ defmodule Pow.Test.Extension.Ecto.Schema.Ecto.Schema do
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
 
-  def validate!(config, user_id_field) do
-    case user_id_field do
-      :email -> config
+  def validate!(_config, module) do
+    case module.pow_user_id_field() do
+      :email -> :ok
       _      -> raise "User ID field error"
     end
   end
@@ -64,6 +64,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Ecto.Schema
 
+  alias Pow.Extension.Ecto.Schema
   alias Pow.Test.Extension.Ecto.Schema.User
 
   test "has defined fields" do
@@ -90,5 +91,11 @@ defmodule Pow.Extension.Ecto.SchemaTest do
 
   test "validates attributes" do
     assert unquote(module_raised_with) == "User ID field error"
+  end
+
+  test "require_schema_field!/3" do
+    assert_raise Schema.SchemaError, "A `:missing_field` schema field should be defined in Pow.Test.Extension.Ecto.Schema.User to use CustomExtension", fn ->
+      Schema.require_schema_field!(User, :missing_field, CustomExtension)
+    end
   end
 end

@@ -37,7 +37,7 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     repo           = Config.get(config, :repo, Module.concat([base, "Repo"]))
     table          = Config.get(config, :table, "users")
     config         = Config.put(config, :extensions, [extension])
-    attrs          = Schema.attrs(config, :email)
+    attrs          = Schema.attrs(config)
     indexes        = Schema.indexes(config)
     migration_name = name(extension, table)
 
