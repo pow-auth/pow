@@ -18,7 +18,7 @@ defmodule Pow.Ecto.Schema.MigrationTest do
     refute content =~ ":current_password"
     assert content =~ "create unique_index(:users, [:email])"
 
-    content = Migration.gen(Pow, login_field: :username)
+    content = Migration.gen(Pow, user_id_field: :username)
     assert content =~ "add :username, :string, null: false"
     assert content =~ "create unique_index(:users, [:username])"
 

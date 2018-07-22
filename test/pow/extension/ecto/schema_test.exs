@@ -2,10 +2,10 @@ defmodule Pow.Test.Extension.Ecto.Schema.Ecto.Schema do
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
 
-  def validate!(config, login_field) do
-    case login_field do
+  def validate!(config, user_id_field) do
+    case user_id_field do
       :email -> config
-      _      -> raise "Login field error"
+      _      -> raise "User ID field error"
     end
   end
 
@@ -46,7 +46,7 @@ module_raised_with = try do
   defmodule Pow.Test.Extension.Ecto.Schema.InvalidUser do
     use Ecto.Schema
     use Pow.Ecto.Schema,
-      login_field: :username
+    user_id_field: :username
     use Pow.Extension.Ecto.Schema,
       extensions: [Pow.Test.Extension.Ecto.Schema]
 
@@ -89,6 +89,6 @@ defmodule Pow.Extension.Ecto.SchemaTest do
   end
 
   test "validates attributes" do
-    assert unquote(module_raised_with) == "Login field error"
+    assert unquote(module_raised_with) == "User ID field error"
   end
 end

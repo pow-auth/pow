@@ -7,7 +7,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
   <h2>Register</h2>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
-    {:text, {:module_attribute, :login_field}},
+    {:text, {:module_attribute, :user_id_field}},
     {:password, :password},
     {:password, :confirm_password}
   ],
@@ -22,7 +22,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:password, :current_password},
-    {:text, {:module_attribute, :login_field}},
+    {:text, {:module_attribute, :user_id_field}},
     {:password, :password},
     {:password, :confirm_password}
   ],

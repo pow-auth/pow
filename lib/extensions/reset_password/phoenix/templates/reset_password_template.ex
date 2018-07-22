@@ -7,7 +7,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
   <h2>Reset password</h2>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
-    {:text, {:module_attribute, :login_field}}
+    {:text, {:module_attribute, :user_id_field}}
   ]) %>
   """
 

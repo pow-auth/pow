@@ -38,8 +38,8 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec __register_extension_fields__(Config.t()) :: Macro.t()
   defmacro __register_extension_fields__(config) do
     quote do
-      login_field = Module.get_attribute(__MODULE__, :login_field)
-      for attr <- unquote(__MODULE__).attrs(unquote(config), login_field) do
+      user_id_field = Module.get_attribute(__MODULE__, :user_id_field)
+      for attr <- unquote(__MODULE__).attrs(unquote(config), user_id_field) do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
       end
     end
@@ -56,11 +56,11 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   @spec attrs(Config.t(), atom()) :: [tuple]
-  def attrs(config, login_field) do
+  def attrs(config, user_id_field) do
     reduce(config, fn extension, attrs ->
       extension_attrs =
         config
-        |> extension.validate!(login_field)
+        |> extension.validate!(user_id_field)
         |> extension.attrs()
 
       Enum.concat(attrs, extension_attrs)

@@ -13,16 +13,16 @@ defmodule Pow.Ecto.Schema.Fields do
 
   @spec attrs(Config.t()) :: [tuple()]
   def attrs(config) do
-    login_field = Schema.login_field(config)
+    user_id_field = Schema.user_id_field(config)
 
-    [{login_field, :string, null: false}]
+    [{user_id_field, :string, null: false}]
     |> Enum.concat(@attrs)
   end
 
   @spec indexes(Config.t()) :: [tuple()]
   def indexes(config) do
-    login_field = Schema.login_field(config)
+    user_id_field = Schema.user_id_field(config)
 
-    [{login_field, true}]
+    [{user_id_field, true}]
   end
 end

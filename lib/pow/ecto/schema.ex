@@ -9,7 +9,7 @@ defmodule Pow.Ecto.Schema do
       defmodule MyApp.Users.User do
         use Ecto.Schema
         use Pow.Ecto.Schema,
-          login_field: :email,
+          user_id_field: :email,
           password_hash_methods: {&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1,
                                   &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2},
           password_min_length: 10,
@@ -32,7 +32,7 @@ defmodule Pow.Ecto.Schema do
 
   ## Configuration options
 
-    * `:login_field` the field to use for user id, defaults to :email, and will
+    * `:user_id_field` the field to use for user id, defaults to :email, and will
       be validated as an email
   """
   alias Pow.Config
@@ -54,7 +54,7 @@ defmodule Pow.Ecto.Schema do
 
       unquote(__MODULE__).__pow_methods__(unquote(config))
       unquote(__MODULE__).__register_fields__(unquote(config))
-      unquote(__MODULE__).__register_login_field__(unquote(config))
+      unquote(__MODULE__).__register_user_id_field__(unquote(config))
     end
   end
 
@@ -98,23 +98,23 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @spec __register_login_field__(Config.t()) :: Macro.t()
-  defmacro __register_login_field__(config) do
+  @spec __register_user_id_field__(Config.t()) :: Macro.t()
+  defmacro __register_user_id_field__(config) do
     quote do
-      @login_field unquote(__MODULE__).login_field(unquote(config))
-      def pow_login_field, do: @login_field
+      @user_id_field unquote(__MODULE__).user_id_field(unquote(config))
+      def pow_user_id_field, do: @user_id_field
     end
   end
 
-  @spec login_field :: atom()
-  def login_field, do: :email
+  @spec user_id_field :: atom()
+  def user_id_field, do: :email
 
-  @spec login_field(Keyword.t()) :: atom()
-  def login_field(config) when is_list(config), do: Config.get(config, :login_field, login_field())
+  @spec user_id_field(Keyword.t()) :: atom()
+  def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, user_id_field())
 
-  @spec login_field(module()) :: atom()
-  def login_field(module), do: module.pow_login_field()
+  @spec user_id_field(module()) :: atom()
+  def user_id_field(module), do: module.pow_user_id_field()
 
-  @spec normalize_login_field_value(binary()) :: binary()
-  def normalize_login_field_value(value), do: String.downcase(value)
+  @spec normalize_user_id_field_value(binary()) :: binary()
+  def normalize_user_id_field_value(value), do: String.downcase(value)
 end

@@ -18,7 +18,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       "confirm_password" => "secret1234"
     }
 
-    test "requires login field" do
+    test "requires user id" do
       changeset = User.changeset(%User{}, @valid_params)
       assert changeset.valid?
 
@@ -34,7 +34,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
     end
 
-    test "validates login field as email" do
+    test "validates user id as email" do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "invalid"))
       refute changeset.valid?
       assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
@@ -47,7 +47,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
     end
 
-    test "uses case insensitive value for login field" do
+    test "uses case insensitive value for user id" do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "Test@EXAMPLE.com"))
       assert changeset.valid?
       assert Ecto.Changeset.get_field(changeset, :email) == "test@example.com"
@@ -57,7 +57,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert Ecto.Changeset.get_field(changeset, :username) == "username"
     end
 
-    test "requires unique login field" do
+    test "requires unique user id" do
       {:ok, _user} =
         %User{}
         |> Ecto.Changeset.cast(@valid_params, [:email])

@@ -12,8 +12,8 @@ defmodule Pow.Ecto.Schema.ModuleTest do
     assert content =~ "schema \"users\" do"
     assert content =~ "pow_user_fields()"
 
-    content = Module.gen(Pow, login_field: :username)
-    assert content =~ "use Pow.Ecto.Schema, login_field: :username"
+    content = Module.gen(Pow, user_id_field: :username)
+    assert content =~ "use Pow.Ecto.Schema, user_id_field: :username"
 
     content = Module.gen(Test)
     assert content =~ "defmodule Test.Users.User do"

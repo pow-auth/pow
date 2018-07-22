@@ -85,12 +85,12 @@ defmodule Pow.Ecto.Context do
   @spec authenticate(Config.t(), map()) :: user() | nil
   def authenticate(config, params) do
     user_mod    = user_schema_mod(config)
-    login_field = Schema.login_field(user_mod)
-    login_value = params[Atom.to_string(login_field)]
+    user_id_field = Schema.user_id_field(user_mod)
+    login_value = params[Atom.to_string(user_id_field)]
     password    = params["password"]
 
     config
-    |> get_by([{login_field, login_value}])
+    |> get_by([{user_id_field, login_value}])
     |> maybe_verify_password(password)
   end
 
@@ -128,16 +128,16 @@ defmodule Pow.Ecto.Context do
   @spec get_by(Config.t(), Keyword.t() | map()) :: user() | nil
   def get_by(config, clauses) do
     user_mod = user_schema_mod(config)
-    clauses  = normalize_login_field_value(user_mod, clauses)
+    clauses  = normalize_user_id_field_value(user_mod, clauses)
 
     repo(config).get_by(user_mod, clauses)
   end
 
-  defp normalize_login_field_value(user_mod, clauses) do
-    login_field = Schema.login_field(user_mod)
+  defp normalize_user_id_field_value(user_mod, clauses) do
+    user_id_field = Schema.user_id_field(user_mod)
 
     Enum.map clauses, fn
-      {^login_field, value} -> {login_field, Schema.normalize_login_field_value(value)}
+      {^user_id_field, value} -> {user_id_field, Schema.normalize_user_id_field_value(value)}
       any -> any
     end
   end

@@ -7,7 +7,7 @@ defmodule Pow.Phoenix.SessionTemplate do
   <h2>Sign in</h2>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
-    {:text, {:module_attribute, :login_field}},
+    {:text, {:module_attribute, :user_id_field}},
     {:password, :password}
   ],
   button_label: "Sign in") %>

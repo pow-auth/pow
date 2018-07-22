@@ -23,21 +23,21 @@ defmodule Pow.Ecto.Schema.Changeset do
   @spec changeset(Config.t(), Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   def changeset(config, user_or_changeset, params) do
     user_or_changeset
-    |> login_field_changeset(params, config)
+    |> user_id_field_changeset(params, config)
     |> current_password_changeset(params, config)
     |> password_changeset(params, config)
   end
 
-  @spec login_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def login_field_changeset(changeset, params, config) do
-    login_field = Schema.login_field(config)
+  @spec user_id_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
+  def user_id_field_changeset(changeset, params, config) do
+    user_id_field = Schema.user_id_field(config)
 
     changeset
-    |> Changeset.cast(params, [login_field])
-    |> Changeset.update_change(login_field, &Schema.normalize_login_field_value/1)
-    |> maybe_validate_email_format(login_field)
-    |> Changeset.validate_required([login_field])
-    |> Changeset.unique_constraint(login_field)
+    |> Changeset.cast(params, [user_id_field])
+    |> Changeset.update_change(user_id_field, &Schema.normalize_user_id_field_value/1)
+    |> maybe_validate_email_format(user_id_field)
+    |> Changeset.validate_required([user_id_field])
+    |> Changeset.unique_constraint(user_id_field)
   end
 
   @spec password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()

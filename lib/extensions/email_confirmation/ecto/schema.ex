@@ -4,10 +4,10 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   alias Ecto.Changeset
   alias Pow.{Config, UUID}
 
-  def validate!(config, login_field) do
-    case login_field do
+  def validate!(config, user_id_field) do
+    case user_id_field do
       :email -> config
-      _      -> raise_login_field_not_email_error()
+      _      -> raise_user_id_field_not_email_error()
     end
   end
 
@@ -38,8 +38,8 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     end
   end
 
-  @spec raise_login_field_not_email_error :: no_return
-  defp raise_login_field_not_email_error do
-    Config.raise_error("The `:login_field` has to be `:email` for PowEmailConfirmation to work")
+  @spec raise_user_id_field_not_email_error :: no_return
+  defp raise_user_id_field_not_email_error do
+    Config.raise_error("The `:user_id_field` has to be `:email` for PowEmailConfirmation to work")
   end
 end

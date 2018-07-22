@@ -29,7 +29,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
-      def validate!(config, _login_field), do: config
+      def validate!(config, _user_id_field), do: config
       def attrs(_config), do: []
       def changeset(changeset, _attrs, _config), do: changeset
       def indexes(_config), do: []

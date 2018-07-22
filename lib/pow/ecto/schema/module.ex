@@ -11,7 +11,7 @@ defmodule Pow.Ecto.Schema.Module do
   @template """
     defmodule <%= inspect schema.module %> do
       use Ecto.Schema
-      use Pow.Ecto.Schema<%= if schema.login_field do %>, login_field: <%= inspect(schema.login_field) %><% end %>
+      use Pow.Ecto.Schema<%= if schema.user_id_field do %>, user_id_field: <%= inspect(schema.user_id_field) %><% end %>
 
     <%= if schema.binary_id do %>
       @primary_key {:id, :binary_id, autogenerate: true}
@@ -32,16 +32,16 @@ defmodule Pow.Ecto.Schema.Module do
   end
 
   defp parse_options(base, config) do
-    module      = Module.concat([base, "Users", "User"])
-    table       = Config.get(config, :table, "users")
-    binary_id   = config[:binary_id]
-    login_field = config[:login_field]
+    module        = Module.concat([base, "Users", "User"])
+    table         = Config.get(config, :table, "users")
+    binary_id     = config[:binary_id]
+    user_id_field = config[:user_id_field]
 
     %{
       module: module,
       table: table,
       binary_id: binary_id,
-      login_field: login_field
+      user_id_field: user_id_field
     }
   end
 
