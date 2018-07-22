@@ -122,7 +122,7 @@ defmodule Pow do
       config = unquote(config)
       quoted = quote do
         def init(_opts), do: unquote(mod).init(unquote(config))
-        def call(conn, _opts), do: unquote(mod).call(conn, unquote(config))
+        def call(conn, opts), do: unquote(mod).call(conn, opts)
         def fetch(conn, _opts), do: unquote(mod).fetch(conn, unquote(config))
         def create(conn, _opts), do: unquote(mod).create(conn, unquote(config))
         def delete(conn, _opts), do: unquote(mod).delete(conn, unquote(config))

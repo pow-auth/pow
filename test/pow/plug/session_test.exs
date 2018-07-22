@@ -13,23 +13,28 @@ defmodule Pow.Plug.SessionTest do
 
   setup do
     EtsCacheMock.init()
-    conn = :get |> ConnHelpers.conn("/") |> ConnHelpers.with_session()
+    conn =
+      :get
+      |> ConnHelpers.conn("/")
+      |> ConnHelpers.with_session()
 
     {:ok, %{conn: conn}}
   end
 
   test "call/2 sets mod in :pow_config", %{conn: conn} do
-    conn = Session.call(conn, @default_opts)
+    opts = Session.init(@default_opts)
+    conn = Session.call(conn,opts)
 
     assert is_nil(conn.assigns[:current_user])
     assert conn.private[:pow_config] == Config.put(@default_opts, :mod, Session)
   end
 
   test "call/2 with assigned current_user", %{conn: conn} do
+    opts = Session.init(@default_opts)
     conn =
       conn
       |> Plug.assign_current_user("assigned", @default_opts)
-      |> Session.call(@default_opts)
+      |> Session.call(opts)
 
     assert conn.assigns[:current_user] == "assigned"
   end
@@ -37,10 +42,11 @@ defmodule Pow.Plug.SessionTest do
   test "call/2 with stored current_user", %{conn: conn} do
     EtsCacheMock.put(nil, "token", {"cached", :os.system_time(:millisecond)})
 
+    opts = Session.init(@default_opts)
     conn =
       conn
       |> ConnHelpers.put_session(@default_opts[:session_key], "token")
-      |> Session.call(@default_opts)
+      |> Session.call(opts)
 
     assert conn.assigns[:current_user] == "cached"
   end
@@ -48,10 +54,11 @@ defmodule Pow.Plug.SessionTest do
   test "call/2 with non existing cached key", %{conn: conn} do
     EtsCacheMock.put(nil, "token", "cached")
 
+    opts = Session.init(@default_opts)
     conn =
       conn
       |> ConnHelpers.put_session(@default_opts[:session_key], "invalid")
-      |> Session.call(@default_opts)
+      |> Session.call(opts)
 
     assert is_nil(conn.assigns[:current_user])
   end
@@ -61,29 +68,31 @@ defmodule Pow.Plug.SessionTest do
     config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
     timestamp       = :os.system_time(:millisecond)
     stale_timestamp = timestamp - ttl - 1
-    conn            = ConnHelpers.put_session(conn, config[:session_key], "token")
+    init_conn       = ConnHelpers.put_session(conn, config[:session_key], "token")
 
     EtsCacheMock.put(nil, "token", {"cached", timestamp})
 
-    fetched_conn = Session.call(conn, config)
-    session_id = get_session_id(fetched_conn)
+    opts = Session.init(config)
+    conn = Session.call(init_conn, opts)
+    session_id = get_session_id(conn)
 
-    assert fetched_conn.assigns[:current_user] == "cached"
+    assert conn.assigns[:current_user] == "cached"
 
     EtsCacheMock.put(nil, "token", {"cached", stale_timestamp})
 
-    fetched_conn = Session.call(conn, config)
+    conn = Session.call(init_conn, opts)
 
-    assert fetched_conn.assigns[:current_user] == "cached"
-    assert new_session_id = get_session_id(fetched_conn)
+    assert conn.assigns[:current_user] == "cached"
+    assert new_session_id = get_session_id(conn)
     assert new_session_id != session_id
   end
 
   test "create/2 creates new session id", %{conn: conn} do
     user = %{id: 1}
+    opts = Session.init(@default_opts)
     conn =
       conn
-      |> Session.call(@default_opts)
+      |> Session.call(opts)
       |> Session.do_create(user)
 
     session_id = get_session_id(conn)
@@ -106,9 +115,10 @@ defmodule Pow.Plug.SessionTest do
 
   test "delete/1 removes session id", %{conn: conn} do
     user = %{id: 1}
+    opts = Session.init(@default_opts)
     conn =
       conn
-      |> Session.call(@default_opts)
+      |> Session.call(opts)
       |> Session.do_create(user)
 
     session_id = get_session_id(conn)
@@ -136,10 +146,11 @@ defmodule Pow.Plug.SessionTest do
 
       :timer.sleep(100)
 
+      opts = Session.init(session_key: "auth")
       conn =
         conn
         |> ConnHelpers.put_session("auth", token)
-        |> Session.call(session_key: "auth")
+        |> Session.call(opts)
 
       assert conn.assigns[:current_user] == "cached"
     end

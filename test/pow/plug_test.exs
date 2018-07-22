@@ -51,7 +51,12 @@ defmodule Pow.PlugTest do
   test "authenticate_user/2" do
     EtsCacheMock.init()
 
-    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    opts = Session.init(@default_config)
+    conn =
+      conn()
+      |> ConnHelpers.with_session()
+      |> Session.call(opts)
+
     refute conn.private[:plug_session]["auth"]
     refute Plug.current_user(conn)
 
@@ -78,7 +83,12 @@ defmodule Pow.PlugTest do
   test "clear_authenticated_user/1" do
     EtsCacheMock.init()
 
-    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    opts = Session.init(@default_config)
+    conn =
+      conn()
+      |> ConnHelpers.with_session()
+      |> Session.call(opts)
+
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert %{id: 1} = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
@@ -102,7 +112,12 @@ defmodule Pow.PlugTest do
   test "create_user/2" do
     EtsCacheMock.init()
 
-    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    opts = Session.init(@default_config)
+    conn =
+      conn()
+      |> ConnHelpers.with_session()
+      |> Session.call(opts)
+
     assert {:error, _changeset, conn} = Plug.create_user(conn, %{})
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
@@ -115,7 +130,12 @@ defmodule Pow.PlugTest do
   test "update_user/2" do
     EtsCacheMock.init()
 
-    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    opts = Session.init(@default_config)
+    conn =
+      conn()
+      |> ConnHelpers.with_session()
+      |> Session.call(opts)
+
     {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     user        = Plug.current_user(conn)
     session_id  = conn.private[:plug_session]["auth"]
@@ -135,7 +155,12 @@ defmodule Pow.PlugTest do
   test "delete_user/2" do
     EtsCacheMock.init()
 
-    conn = conn() |> ConnHelpers.with_session() |> Session.call(@default_config)
+    opts = Session.init(@default_config)
+    conn =
+      conn()
+      |> ConnHelpers.with_session()
+      |> Session.call(opts)
+
     {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
 
     assert {:ok, _user, conn} = Plug.delete_user(conn)
