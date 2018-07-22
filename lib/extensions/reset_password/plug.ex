@@ -1,7 +1,7 @@
 defmodule PowResetPassword.Plug do
   @moduledoc false
   alias Plug.Conn
-  alias Pow.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache}
+  alias Pow.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
 
   @spec change_user(Conn.t(), map()) :: map()
@@ -42,7 +42,7 @@ defmodule PowResetPassword.Plug do
     {:error, %{changeset | action: :update}}
   end
   def create_reset_token(conn, user) do
-    token = UUID.uuid1()
+    token = UUID.generate()
     {store, store_config} =
       conn
       |> Pow.Plug.fetch_config()

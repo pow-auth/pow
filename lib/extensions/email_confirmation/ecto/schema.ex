@@ -2,7 +2,7 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   @moduledoc false
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
-  alias Pow.Config
+  alias Pow.{Config, UUID}
 
   def validate!(config, login_field) do
     case login_field do
@@ -34,7 +34,7 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     |> Changeset.get_field(:email)
     |> case do
       ^current_email -> changeset
-      _new_email -> Changeset.put_change(changeset, :email_confirmation_token, UUID.uuid1())
+      _new_email -> Changeset.put_change(changeset, :email_confirmation_token, UUID.generate())
     end
   end
 

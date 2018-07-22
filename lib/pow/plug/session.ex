@@ -31,7 +31,7 @@ defmodule Pow.Plug.Session do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Store.Backend.EtsCache, Store.CredentialsCache}
+  alias Pow.{Config, Store.Backend.EtsCache, Store.CredentialsCache, UUID}
 
   @session_ttl_renewal :timer.minutes(15)
 
@@ -45,7 +45,7 @@ defmodule Pow.Plug.Session do
 
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
-    key                   = UUID.uuid1()
+    key                   = UUID.generate()
     session_key           = session_key(config)
     {store, store_config} = store(config)
     value                 = session_value(user)
