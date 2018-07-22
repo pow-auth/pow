@@ -40,7 +40,7 @@ defmodule Pow.MixProject do
       {:pbkdf2_elixir, "~> 0.12"},
       {:ecto, "~> 2.2", optional: true},
       {:phoenix, "~> 1.3", optional: true},
-      {:plug, "~> 1.6", optional: true},
+      {:plug, "~> 1.6 or ~> 1.5", optional: true},
       {:phoenix_html, "~> 2.11", only: [:dev, :test]},
       {:phoenix_ecto, "~> 3.3", only: [:dev, :test]},
       {:postgrex, ">= 0.0.0", only: [:test]},
