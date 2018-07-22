@@ -13,28 +13,26 @@ defmodule Pow.Plug.RequireNotAuthenticated do
   alias Plug.Conn
   alias Pow.{Config, Plug}
 
-  @spec init(Config.t()) :: Config.t()
-  def init(config), do: config
-
-  @spec call(Conn.t(), Config.t()) :: Conn.t()
-  def call(conn, config) do
-    conn
-    |> Plug.current_user()
-    |> maybe_halt(conn, config)
+  @spec init(Config.t()) :: atom() | no_return
+  def init(config) do
+    Config.get(config, :error_handler, nil) || raise_no_error_handler()
   end
 
-  defp maybe_halt(nil, conn, _config), do: conn
-  defp maybe_halt(_user, conn, config) do
-    handler = Config.get(config, :error_handler, nil)
+  @spec call(Conn.t(), atom()) :: Conn.t()
+  def call(conn, handler) do
+    conn
+    |> Plug.current_user()
+    |> maybe_halt(conn, handler)
+  end
 
-    case handler do
-      nil ->
-        Conn.halt(conn)
+  defp maybe_halt(nil, conn, _handler), do: conn
+  defp maybe_halt(_user, conn, handler) do
+    conn
+    |> handler.call(:already_authenticated)
+    |> Conn.halt()
+  end
 
-      handler ->
-        conn
-        |> handler.call(:already_authenticated)
-        |> Conn.halt()
-    end
+  defp raise_no_error_handler do
+    Config.raise_error("No :error_handler configuration option provided. It's required to set this when using #{inspect __MODULE__}.")
   end
 end

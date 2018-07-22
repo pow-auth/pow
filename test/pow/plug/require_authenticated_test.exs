@@ -3,7 +3,7 @@ defmodule Pow.Plug.RequireAuthenticatedTest do
   doctest Pow.Plug.RequireAuthenticated
 
   alias Plug.Conn
-  alias Pow.{Plug, Plug.RequireAuthenticated}
+  alias Pow.{Config.ConfigError, Plug, Plug.RequireAuthenticated}
   alias Pow.Test.ConnHelpers
 
   setup do
@@ -22,17 +22,25 @@ defmodule Pow.Plug.RequireAuthenticatedTest do
 
   @default_config [error_handler: __MODULE__.ErrorHandler]
 
+  test "init/1 requires error handler" do
+    assert_raise ConfigError, "No :error_handler configuration option provided. It's required to set this when using Pow.Plug.RequireAuthenticated.", fn ->
+      RequireAuthenticated.init([])
+    end
+  end
+
   test "call/2", %{conn: conn} do
-    conn = RequireAuthenticated.call(conn, @default_config)
+    opts = RequireAuthenticated.init(@default_config)
+    conn = RequireAuthenticated.call(conn, opts)
 
     assert conn.private[:not_authenticated]
     assert conn.halted
   end
 
   test "call/2 with assigned user", %{conn: conn} do
+    opts = RequireAuthenticated.init(@default_config)
     conn = conn
            |> Plug.assign_current_user("user", [])
-           |> RequireAuthenticated.call(@default_config)
+           |> RequireAuthenticated.call(opts)
 
     refute conn.private[:not_authenticated]
     refute conn.halted
