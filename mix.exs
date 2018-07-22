@@ -36,7 +36,7 @@ defmodule Pow.MixProject do
   defp deps do
     [
       {:uuid, "~> 1.0"},
-      {:comeonin, "~> 4.1"},
+      {:comeonin, ">= 3.0.0 and < 4.2.0"},
       {:pbkdf2_elixir, "~> 0.12"},
       {:ecto, "~> 2.2", optional: true},
       {:phoenix, "~> 1.3", optional: true},
