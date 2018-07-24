@@ -44,11 +44,9 @@ defmodule Pow.Phoenix do
       config = unquote(config)
       name   = unquote(mod).Phoenix.Router
       quoted = quote do
-        config = unquote(config)
-
-        defmacro __using__(_opts) do
+        defmacro __using__(config) do
           name   = unquote(name)
-          config = unquote(config)
+          config = Keyword.merge(unquote(config), config)
           quote do
             require Pow.Phoenix.Router
             use Pow.Extension.Phoenix.Router, unquote(config)
@@ -73,14 +71,11 @@ defmodule Pow.Phoenix do
       config = unquote(config)
       name   = unquote(mod).Phoenix.Messages
       quoted = quote do
-        config = unquote(config)
-
-        defmacro __using__(_opts) do
-          config = unquote(config)
+        defmacro __using__(config) do
+          config = Keyword.merge(unquote(config), config)
           quote do
             use Pow.Phoenix.Messages
-            use Pow.Extension.Phoenix.Messages,
-              unquote(config)
+            use Pow.Extension.Phoenix.Messages, unquote(config)
           end
         end
       end

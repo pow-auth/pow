@@ -26,8 +26,8 @@ defmodule Pow do
       config = unquote(config)
       name   = unquote(mod).Ecto.Schema
       quoted = quote do
-        defmacro __using__(_opts) do
-          config = unquote(config)
+        defmacro __using__(config) do
+          config = Keyword.merge(unquote(config), config)
           quote do
             use Pow.Ecto.Schema, unquote(config)
             use Pow.Extension.Ecto.Schema, unquote(config)
