@@ -21,18 +21,18 @@ defmodule Pow.Phoenix.SessionControllerTest do
 
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_session_path(conn, :create)
-      refute html =~ "request_url="
+      refute html =~ "request_path="
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
     end
 
-    test "with request_url", %{conn: conn} do
-      conn = get(conn, Routes.pow_session_path(conn, :new, request_url: "/example"))
+    test "with request_path", %{conn: conn} do
+      conn = get(conn, Routes.pow_session_path(conn, :new, request_path: "/example"))
 
       assert html = html_response(conn, 200)
-      assert html =~ Routes.pow_session_path(conn, :create, request_url: "/example")
+      assert html =~ Routes.pow_session_path(conn, :create, request_path: "/example")
     end
   end
 
@@ -65,22 +65,22 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
-      refute html =~ "request_url"
+      refute html =~ "request_path"
     end
 
-    test "with valid params and request_url", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@valid_params, "request_url", "/custom-url"))
+    test "with valid params and request_path", %{conn: conn} do
+      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@valid_params, "request_path", "/custom-url"))
       assert redirected_to(conn) == "/custom-url"
       assert get_flash(conn, :info) == @user_signed_in_message
       assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
-    test "with invalid params and request_url", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@invalid_params, "request_url", "/custom-url"))
+    test "with invalid params and request_path", %{conn: conn} do
+      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@invalid_params, "request_path", "/custom-url"))
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == @invalid_credentials_message
-      assert html =~ "?request_url=%2Fcustom-url"
+      assert html =~ "?request_path=%2Fcustom-url"
     end
   end
 

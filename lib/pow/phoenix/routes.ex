@@ -2,15 +2,15 @@ defmodule Pow.Phoenix.Routes do
   @moduledoc """
   Module that handles routes.
 
-  The `user_not_authenticated_path` method  will put a `:request_url` param
+  The `user_not_authenticated_path` method  will put a `:request_path` param
   into the path that can be used to redirect users back the the page they first
   attempted to visit. The `after_sign_in_path` method will look for a
-  `:request_url` assigns key, and redirect to this value if it exists.
+  `:request_path` assigns key, and redirect to this value if it exists.
 
-  If the `:request_url` param is available to the `:new` or `:create` actions
+  If the `:request_path` param is available to the `:new` or `:create` actions
   in `Pow.Phoenix.SessionController`, the controller will automatically assign
-  a `:request_url` key. If there's a `:request_url` assigns key, the
-  `pow_session_path(conn, :create)` will be generated with a `:request_url`
+  a `:request_path` key. If there's a `:request_path` assigns key, the
+  `pow_session_path(conn, :create)` will be generated with a `:request_path`
   param.
 
   ## Usage
@@ -57,7 +57,7 @@ defmodule Pow.Phoenix.Routes do
   end
 
   def user_not_authenticated_path(conn) do
-    Controller.router_helpers(conn).pow_session_path(conn, :new, request_url: Conn.request_url(conn))
+    Controller.router_helpers(conn).pow_session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
   end
 
   def user_already_authenticated_path(conn), do: after_sign_in_path(conn)
@@ -66,7 +66,7 @@ defmodule Pow.Phoenix.Routes do
     Controller.router_helpers(conn).pow_session_path(conn, :new)
   end
 
-  def after_sign_in_path(%{assigns: %{request_url: request_url}}) when is_binary(request_url), do: request_url
+  def after_sign_in_path(%{assigns: %{request_path: request_path}}) when is_binary(request_path), do: request_path
   def after_sign_in_path(_params), do: "/"
 
   def after_registration_path(conn), do: after_sign_in_path(conn)

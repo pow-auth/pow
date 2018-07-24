@@ -7,7 +7,7 @@ defmodule Pow.Phoenix.SessionController do
 
   plug :require_not_authenticated when action in [:new, :create]
   plug :require_authenticated when action in [:delete]
-  plug :assign_request_url when action in [:new, :create]
+  plug :assign_request_path when action in [:new, :create]
   plug :assign_create_path when action in [:new, :create]
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
@@ -50,17 +50,17 @@ defmodule Pow.Phoenix.SessionController do
     |> redirect(to: routes(conn).after_sign_out_path(conn))
   end
 
-  defp assign_request_url(%{params: %{"request_url" => request_url}} = conn, _opts) do
-    Conn.assign(conn, :request_url, request_url)
+  defp assign_request_path(%{params: %{"request_path" => request_path}} = conn, _opts) do
+    Conn.assign(conn, :request_path, request_path)
   end
-  defp assign_request_url(conn, _opts), do: conn
+  defp assign_request_path(conn, _opts), do: conn
 
   defp assign_create_path(conn, _opts) do
     Conn.assign(conn, :action, create_path(conn))
   end
 
-  defp create_path(%{assigns: %{request_url: request_url}} = conn) do
-    create_path(conn, request_url: request_url)
+  defp create_path(%{assigns: %{request_path: request_path}} = conn) do
+    create_path(conn, request_path: request_path)
   end
   defp create_path(conn, params \\ []) do
     router_helpers(conn).pow_session_path(conn, :create, params)

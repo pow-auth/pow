@@ -15,6 +15,7 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
       |> Conn.put_private(:pow_config, [])
       |> Conn.put_private(:phoenix_flash, %{})
       |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
+      |> Conn.fetch_query_params()
 
     {:ok, conn: conn}
   end
@@ -22,7 +23,7 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
   test "call/2 :not_autenticated", %{conn: conn} do
     conn = PlugErrorHandler.call(conn, :not_authenticated)
 
-    assert ConnTest.redirected_to(conn) == "/session/new?request_url=http%3A%2F%2Fwww.example.com%2F"
+    assert ConnTest.redirected_to(conn) == "/session/new?request_path=%2F"
     assert ConnTest.get_flash(conn, :error) == @not_authenticated_message
   end
 
