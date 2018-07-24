@@ -1,5 +1,5 @@
 defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
-  use PowEmailConfirmation.Test.Phoenix.ConnCase
+  use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
   describe "show/2" do
     @valid_token "valid"

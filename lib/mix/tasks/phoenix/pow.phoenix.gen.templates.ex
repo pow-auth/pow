@@ -46,25 +46,24 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     %{context_base: context_base, web_module: web_module}
   end
 
-  defp print_shell_instructions(%{context_base: mod, web_module: web_mod}) do
+  defp print_shell_instructions(%{context_base: context_base, web_module: web_base}) do
     Mix.shell.info """
-    All Pow templates and views has been generated.
+    Pow Phoenix templates and views has been generated.
 
-    Please update set `web_module: #{inspect web_mod}` in your configuration,
-    like so:
+    Please set `web_module: #{inspect web_base}` in your configuration.
 
-    defmodule #{inspect web_mod}.Endpoint do
-      use #{inspect web_mod}.Endpoint, otp_app: :#{Macro.underscore(mod)}
+        defmodule #{inspect web_base}.Endpoint do
+          use #{inspect web_base}.Endpoint, otp_app: :#{Macro.underscore(context_base)}
 
-      # ...
+          # ...
 
-      plug Pow.Plug.Session,
-        repo: #{mod}.Repo,
-        user: #{mod}.Users.User,
-        web_module: #{inspect web_mod}
+          plug #{inspect web_base}.Pow.Plug.Session,
+            repo: #{inspect context_base}.Repo,
+            user: #{inspect context_base}.Users.User,
+            web_module: #{inspect web_base}
 
-      # ...
-    end
+          # ...
+        end
     """
   end
 end

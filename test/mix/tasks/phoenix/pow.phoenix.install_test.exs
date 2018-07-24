@@ -10,9 +10,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
   @tmp_path Path.join(["tmp", inspect(Install)])
   @options  ["-r", inspect(Repo)]
-  @context_path Path.join(["lib", "pow", "users"])
-  @templates_path Path.join(["lib", "pow_web", "templates", "pow"])
-  @views_path Path.join(["lib", "pow_web", "views", "pow"])
+  @web_path Path.join(["lib", "pow_web"])
+  @templates_path Path.join([@web_path, "templates", "pow"])
+  @views_path Path.join([@web_path, "views", "pow"])
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -25,18 +25,24 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options)
 
-      assert File.ls!(@context_path) == ["user.ex"]
-      assert [_one] = File.ls!("migrations")
+      content = File.read!("lib/pow_web/pow.ex")
+
+      assert content =~ "defmodule PowWeb.Pow do"
+      assert content =~ "use Pow.Phoenix,"
+      assert content =~ "user: Pow.Users.User,"
+      assert content =~ "repo: Pow.Repo,"
+      assert content =~ "extensions: []"
+
       refute File.exists?(@templates_path)
       refute File.exists?(@views_path)
 
-      for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
+      assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "plug Pow.Plug.Session"
+      assert msg =~ "plug PowWeb.Pow.Plug.Session"
       assert msg =~ "repo: Pow.Repo"
       assert msg =~ "user: Pow.Users.User"
 
-      assert msg =~ "use Pow.Phoenix.Router"
+      assert msg =~ "use PowWeb.Pow.Phoenix.Router"
       assert msg =~ "pow_routes()"
     end
   end
@@ -45,8 +51,6 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options ++ ~w(--templates))
 
-      assert File.ls!(@context_path) == ["user.ex"]
-      assert [_one] = File.ls!("migrations")
       assert File.exists?(@templates_path)
       assert [_one, _two] = File.ls!(@templates_path)
       assert File.exists?(@views_path)
@@ -58,8 +62,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options ++ ~w(--templates --extension PowResetPassword --extension PowEmailConfirmation))
 
-      assert File.ls!(@context_path) == ["user.ex"]
-      assert [_one, _two, _three] = File.ls!("migrations")
+      content = File.read!("lib/pow_web/pow.ex")
+      assert content =~ "extensions: [PowResetPassword, PowEmailConfirmation]"
+
       assert File.exists?(@templates_path)
       reset_password_templates = Path.join(["lib", "pow_web", "templates", "pow_reset_password"])
       assert [_one] = File.ls!(reset_password_templates)

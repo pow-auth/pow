@@ -1,5 +1,5 @@
 defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
-  use PowResetPassword.Test.Phoenix.ConnCase
+  use PowResetPassword.TestWeb.Phoenix.ConnCase
 
   alias Pow.Test.EtsCacheMock
   alias PowResetPassword.Store.ResetTokenCache

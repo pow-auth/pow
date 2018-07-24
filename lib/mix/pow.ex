@@ -62,11 +62,18 @@ defmodule Mix.Pow do
     |> Keyword.fetch!(:app)
   end
 
-  @spec context_base(atom()) :: binary()
+  @spec context_base(atom()) :: atom()
   def context_base(app) do
     case Application.get_env(app, :namespace, app) do
-      ^app -> app |> to_string() |> Macro.camelize()
-      mod  -> mod |> inspect()
+      ^app ->
+        app
+        |> to_string()
+        |> Macro.camelize()
+        |> List.wrap()
+        |> Module.concat()
+
+      mod ->
+        mod
     end
   end
 

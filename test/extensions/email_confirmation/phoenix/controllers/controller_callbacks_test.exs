@@ -1,5 +1,5 @@
 defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
-  use PowEmailConfirmation.Test.Phoenix.ConnCase
+  use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
   alias Pow.{Phoenix.Messages, Plug}
   alias PowEmailConfirmation.Test.Users.User
 

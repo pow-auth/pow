@@ -1,44 +1,48 @@
 defmodule Mix.Tasks.Pow.Install do
-  @shortdoc "Generates pow module, user schema module, migrations file"
+  @shortdoc "Installs Pow"
 
   @moduledoc """
-  Generates a user schema module and migrations file by default
+  Will generate pow module files, a user schema module, migrations file.
 
       mix pow.install -r MyApp.Repo
+
+  ## Arguments
+
+    * `--templates` generate templates and views
+    * `--no-migrations` don't generate migration files
+    * `--no-schema` don't generate schema file
+    * `--extension` extension to generatetemplates and views for
   """
   use Mix.Task
 
   alias Mix.Generator
   alias Mix.{Pow, Pow.Extension}
-  alias Mix.Tasks.Pow.Ecto
+  alias Mix.Tasks.Pow.{Ecto, Phoenix}
 
   @switches [context_app: :string, extension: :keep]
+  @default_opts []
 
   @doc false
   def run(args) do
     Pow.no_umbrella!("pow.install")
 
     args
-    |> Pow.parse_options(@switches, [])
-    |> create_pow_module()
+    |> Pow.parse_options(@switches, @default_opts)
+    |> gen_context_module()
     |> run_ecto_install(args)
+    |> run_phoenix_install(args)
   end
 
-  defp create_pow_module(config) do
+  defp gen_context_module(config) do
     context_app  = Map.get(config, :context_app, Pow.context_app())
     context_base = Pow.context_base(context_app)
-    settings     = case Extension.extensions(config) do
-      []         -> ""
-      extensions -> ",
-    extensions: #{inspect(extensions)}"
-    end
+    extensions   = Extension.extensions(config)
 
     file_name = "pow.ex"
     content   = """
-    defmodule #{context_base}.Pow do
-      use Pow,
-        user: #{context_base}.Users.User,
-        repo: #{context_base}.Repo#{settings}
+    defmodule #{inspect context_base}.Pow do
+      use Pow, :context,
+        extensions: #{inspect(extensions)}
     end
     """
 
@@ -52,6 +56,12 @@ defmodule Mix.Tasks.Pow.Install do
 
   defp run_ecto_install(config, args) do
     Ecto.Install.run(args)
+
+    config
+  end
+
+  defp run_phoenix_install(config, args) do
+    Phoenix.Install.run(args)
 
     config
   end

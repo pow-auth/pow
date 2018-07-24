@@ -12,16 +12,13 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   ## Arguments
 
     * `--templates` generate templates and views
-    * `--no-migrations` don't generate migration files
-    * `--no-schema` don't generate schema file
     * `--extension` extension to generatetemplates and views for
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.Install, as: PowInstallTask
   alias Mix.Tasks.Pow.Phoenix.Gen.Templates, as: PhoenixTemplatesTask
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
-  alias Mix.{Pow, Pow.Phoenix}
+  alias Mix.{Generator, Pow, Pow.Phoenix}
 
   @switches [migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]
@@ -32,14 +29,34 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
-    |> run_pow_install(args)
+    |> parse_structure()
+    |> gen_pow_module()
     |> maybe_run_gen_templates(args)
     |> maybe_run_extensions_gen_templates(args)
     |> print_shell_instructions()
   end
 
-  defp run_pow_install(config, args) do
-    PowInstallTask.run(args)
+  defp parse_structure(config) do
+    Map.put(config, :structure, Phoenix.parse_structure(config))
+  end
+
+  defp gen_pow_module(%{structure: structure} = config) do
+    context_base = structure[:context_base]
+    web_base     = structure[:web_module]
+    path         = structure[:web_prefix]
+    extensions   = Mix.Pow.Extension.extensions(config)
+    content      = """
+    defmodule #{inspect web_base}.Pow do
+      use Pow.Phoenix,
+        user: #{inspect context_base}.Users.User,
+        repo: #{inspect context_base}.Repo,
+        extensions: #{inspect(extensions)}
+    end
+    """
+
+    path
+    |> Path.join("pow.ex")
+    |> Generator.create_file(content)
 
     config
   end
@@ -58,20 +75,20 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   end
   defp maybe_run_extensions_gen_templates(config, _args), do: config
 
-  defp print_shell_instructions(config) do
-    structure = Phoenix.parse_structure(config)
-    mod       = structure[:context_base]
-    web_mod   = structure[:web_module]
+  defp print_shell_instructions(%{structure: structure}) do
+    context_base = structure[:context_base]
+    web_base     = structure[:web_module]
+    web_prefix   = structure[:web_prefix]
 
     Mix.shell.info """
-    Pow has been installed in your phoenix app! There's
-    two files you'll need to configure first before you can
-    use Pow.
+    Pow has been installed in your phoenix app!
 
-    First, the endpoint.ex file needs to have the `Pow.Plug`:
+    There's two files you'll need to configure first before you can use Pow.
 
-    defmodule #{inspect web_mod}.Endpoint do
-      use Phoenix.Endpoint, otp_app: :#{Macro.underscore(mod)}
+    First, the #{web_prefix}/endpoint.ex file needs to have the `#{inspect web_base}.Pow.Plug.Session`:
+
+    defmodule #{inspect web_base}.Endpoint do
+      use Phoenix.Endpoint, otp_app: :#{Macro.underscore(context_base)}
 
       # ...
 
@@ -80,18 +97,18 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
         key: "_my_project_demo_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session,
-        repo: #{mod}.Repo,
-        user: #{mod}.Users.User
+      plug #{inspect web_base}.Pow.Plug.Session,
+        repo: #{inspect context_base}.Repo,
+        user: #{inspect context_base}.Users.User
 
       # ...
     end
 
     Next, your router.ex should include the Pow routes:
 
-    defmodule #{inspect web_mod}.Router do
-      use #{inspect web_mod}, :router
-      use Pow.Phoenix.Router
+    defmodule #{inspect web_base}.Router do
+      use #{inspect web_base}, :router
+      use #{inspect web_base}.Pow.Phoenix.Router
 
       # ...
 
@@ -103,8 +120,6 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
       # ...
     end
-
-    Remember to run the migrations with `mix ecto.setup`. Happy coding!
     """
   end
 end
