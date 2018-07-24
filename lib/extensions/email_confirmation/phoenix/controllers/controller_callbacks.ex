@@ -2,25 +2,31 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   @moduledoc false
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
-  alias Pow.Phoenix.Controller
+  alias Plug.Conn
+  alias Pow.{Phoenix.Controller, Plug}
   alias PowEmailConfirmation.Phoenix.Mailer
 
-  def callback(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
+  def before_process(Pow.Phoenix.RegistrationController, :update, conn, _config) do
+    user = Plug.current_user(conn)
+
+    Conn.put_private(conn, :pow_user_before_update, user)
+  end
+
+  def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
     send_confirmation_email(user, conn)
 
     {:ok, user, conn}
   end
-
-  def callback(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
+  def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
     maybe_send_confirmation_email(user, conn)
 
     {:ok, user, conn}
   end
 
   defp maybe_send_confirmation_email(user, conn) do
-    case should_send_email?(user, conn.private[:user_before_update]) do
+    case should_send_email?(user, conn.private[:pow_user_before_update]) do
       true  -> send_confirmation_email(user, conn)
-      false -> nil
+      false -> {:ok, user, conn}
     end
   end
 
@@ -35,5 +41,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     email = Mailer.EmailConfirmationMailer.email_confirmation(user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
+
+    {:ok, user, conn}
   end
 end

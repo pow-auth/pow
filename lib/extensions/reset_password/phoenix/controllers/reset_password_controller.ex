@@ -1,76 +1,84 @@
 defmodule PowResetPassword.Phoenix.ResetPasswordController do
   @moduledoc false
-  use Pow.Phoenix.Web, :controller
+  use Pow.Extension.Phoenix.Controller.Base,
+    messages_backend_fallback: PowResetPassword.Phoenix.Messages
 
-  alias Pow.Extension.Phoenix.Controller, as: ExtensionController
-  alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
-  alias PowResetPassword.Phoenix.{Mailer.ResetPasswordMailer, Messages}
-  alias PowResetPassword.Plug
+  alias Plug.Conn
+  alias Pow.Phoenix.Mailer
+  alias PowResetPassword.{Phoenix.Mailer.ResetPasswordMailer, Plug}
 
-  plug Pow.Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler]
-
+  plug :require_not_authenticated
   plug :load_user_from_reset_token when action in [:edit, :update]
+  plug :assign_create_path when action in [:new, :create]
+  plug :assign_update_path when action in [:edit, :update]
 
-  @spec new(Conn.t(), map()) :: Conn.t()
-  def new(conn, _params) do
-    changeset = Plug.change_user(conn)
-    action = Controller.router_helpers(conn).pow_registration_path(conn, :create)
-
-    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
+  @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
+  def process_new(conn, _params) do
+    {:ok, Plug.change_user(conn), conn}
   end
 
-  @spec create(Conn.t(), map()) :: Conn.t()
-  def create(conn, %{"user" => user_params}) do
-    user = Plug.load_user(conn, user_params)
-
+  @spec respond_new({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_new({:ok, changeset, conn}) do
     conn
-    |> Plug.create_reset_token(user)
-    |> case do
-      {:error, _any} -> nil
-      {:ok, conn} ->
-        token = Plug.reset_password_token(conn)
-        url = Controller.router_helpers(conn).pow_reset_password_reset_password_path(conn, :edit, token)
+    |> assign(:changeset, changeset)
+    |> render("new.html")
+  end
 
-        deliver_email(conn, user, url)
-    end
+  @spec process_create(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  def process_create(conn, %{"user" => user_params}) do
+    Plug.create_reset_token(conn, user_params)
+  end
 
+  @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
+  def respond_create({:ok, %{token: token, user: user}, conn}) do
+    url = router_helpers(conn).pow_reset_password_reset_password_path(conn, :edit, token)
+    deliver_email(conn, user, url)
+
+    default_respond_create(conn)
+  end
+  def respond_create({:error, _any, conn}), do: default_respond_create(conn)
+
+  defp default_respond_create(conn) do
     conn
-    |> put_flash(:info, ExtensionController.message(Messages, :email_has_been_sent, conn))
-    |> redirect(to: Controller.router_helpers(conn).pow_session_path(conn, :new))
+    |> put_flash(:info, messages(conn).email_has_been_sent(conn))
+    |> redirect(to: router_helpers(conn).pow_session_path(conn, :new))
   end
 
-  @spec edit(Conn.t(), map()) :: Conn.t()
-  def edit(conn, _params) do
-    changeset = Plug.change_user(conn)
-    render_edit(conn, changeset)
+  @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}
+  def process_edit(conn, _params) do
+    {:ok, Plug.change_user(conn), conn}
   end
 
-  @spec update(Conn.t(), map()) :: Conn.t()
-  def update(conn, %{"user" => user_params}) do
+  @spec respond_edit({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_edit({:ok, changeset, conn}) do
     conn
-    |> Plug.update_user_password(user_params)
-    |> case do
-      {:ok, conn} ->
-        conn
-        |> put_flash(:info, ExtensionController.message(Messages, :password_has_been_reset, conn))
-        |> redirect(to: Controller.router_helpers(conn).pow_session_path(conn, :new))
-
-      {:error, changeset} ->
-        render_edit(conn, changeset)
-    end
+    |> assign(:changeset, changeset)
+    |> render("edit.html")
   end
 
-  defp render_edit(conn, changeset) do
-    action = Controller.router_helpers(conn).pow_registration_path(conn, :update)
-    ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action)
+  @spec process_update(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  def process_update(conn, %{"user" => user_params}) do
+    Plug.update_user_password(conn, user_params)
+  end
+
+  @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_update({:ok, _user, conn}) do
+    conn
+    |> put_flash(:info, messages(conn).password_has_been_reset(conn))
+    |> redirect(to: router_helpers(conn).pow_session_path(conn, :new))
+  end
+  def respond_update({:error, changeset, conn}) do
+    conn
+    |> assign(:changeset, changeset)
+    |> render("edit.html")
   end
 
   defp load_user_from_reset_token(%{params: %{"id" => token}} = conn, _opts) do
     case Plug.user_from_token(conn, token) do
       nil ->
         conn
-        |> put_flash(:error, ExtensionController.message(Messages, :invalid_token, conn))
-        |> redirect(to: Controller.router_helpers(conn).pow_reset_password_reset_password_path(conn, :new))
+        |> put_flash(:error, messages(conn).invalid_token(conn))
+        |> redirect(to: router_helpers(conn).pow_reset_password_reset_password_path(conn, :new))
         |> halt()
 
       user ->
@@ -81,6 +89,17 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   defp deliver_email(conn, user, url) do
     email = ResetPasswordMailer.reset_password(user, url)
 
-    Pow.Phoenix.Mailer.deliver(conn, email)
+    Mailer.deliver(conn, email)
+  end
+
+  defp assign_create_path(conn, _opts) do
+    path = router_helpers(conn).pow_reset_password_reset_password_path(conn, :create)
+    Conn.assign(conn, :action, path)
+  end
+
+  defp assign_update_path(conn, _opts) do
+    token = conn.params["id"]
+    path  = router_helpers(conn).pow_reset_password_reset_password_path(conn, :update, token)
+    Conn.assign(conn, :action, path)
   end
 end

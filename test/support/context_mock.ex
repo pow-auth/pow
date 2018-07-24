@@ -14,6 +14,6 @@ defmodule Pow.Test.ContextMock do
   def update(%{id: 1}, @valid_params), do: {:ok, %{id: 1, updated: true}}
   def update(user, params), do: {:error, %{User.changeset(user, params) | action: :update}}
 
-  def delete(%{id: 1}), do: {:ok, %{id: 1}}
+  def delete(%{id: 1}), do: {:ok, %{id: 1, deleted: true}}
   def delete(_user), do: {:error, %{User.changeset(%User{}, %{}) | action: :delete}}
 end

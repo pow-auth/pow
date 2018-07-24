@@ -36,31 +36,27 @@ defmodule PowResetPassword.Plug do
     conn.private[:reset_password_token]
   end
 
-  @spec create_reset_token(Conn.t(), map() | nil) :: {:ok, Conn.t()} | {:error, map()} | no_return
-  def create_reset_token(conn, nil) do
-    changeset = change_user(conn)
-    {:error, %{changeset | action: :update}}
+  @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  def create_reset_token(conn, params) do
+    email  = Map.get(params, "email")
+    config = Pow.Plug.fetch_config(conn)
+    user   = Context.get_by_email(config, email)
+
+    maybe_create_reset_token(conn, user, config)
   end
-  def create_reset_token(conn, user) do
+
+  defp maybe_create_reset_token(conn, nil, _config) do
+    changeset = change_user(conn)
+    {:error, %{changeset | action: :update}, conn}
+  end
+  defp maybe_create_reset_token(conn, user, config) do
     token = UUID.generate()
-    {store, store_config} =
-      conn
-      |> Pow.Plug.fetch_config()
-      |> store()
+    {store, store_config} = store(config)
     conn = put_reset_password_token(conn, token)
 
     store.put(store_config, token, user)
 
-    {:ok, conn}
-  end
-
-  @spec load_user(Conn.t(), map()) :: Conn.t() | nil
-  def load_user(conn, params) do
-    email = Map.get(params, "email")
-
-    conn
-    |> Pow.Plug.fetch_config()
-    |> Context.get_by_email(email)
+    {:ok, %{token: token, user: user}, conn}
   end
 
   @spec user_from_token(Conn.t(), binary()) :: map() | nil
@@ -78,7 +74,7 @@ defmodule PowResetPassword.Plug do
     end
   end
 
-  @spec update_user_password(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Changeset.t()}
+  @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, Changeset.t(), Conn.t()}
   def update_user_password(conn, params) do
     user   = reset_password_user(conn)
     config = Pow.Plug.fetch_config(conn)
@@ -86,21 +82,21 @@ defmodule PowResetPassword.Plug do
 
     config
     |> Context.update_password(user, params)
-    |> case do
-      {:ok, _user}        -> {:ok, expire_token(conn, token)}
-      {:error, changeset} -> {:error, changeset}
-    end
+    |> maybe_expire_token(conn, token, config)
   end
 
-  def expire_token(conn, token) do
-    {store, store_config} =
-      conn
-      |> Pow.Plug.fetch_config()
-      |> store()
+  defp maybe_expire_token({:ok, user}, conn, token, config) do
+    expire_token(token, config)
 
+    {:ok, user, conn}
+  end
+  defp maybe_expire_token({:error, changeset}, conn, _token, _config) do
+    {:error, changeset, conn}
+  end
+
+  defp expire_token(token, config) do
+    {store, store_config} = store(config)
     store.delete(store_config, token)
-
-    conn
   end
 
   defp store(config) do

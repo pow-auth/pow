@@ -39,8 +39,8 @@ defmodule Pow.Phoenix.ViewHelpers do
   alias Plug.Conn
   alias Pow.{Config, Plug}
 
-  @spec render(Conn.t(), binary() | atom(), Keyword.t() | map() | binary() | atom()) :: Conn.t()
-  def render(conn, template, assigns \\ []) do
+  @spec layout(Conn.t()) :: Conn.t()
+  def layout(conn) do
     endpoint_module = Controller.endpoint_module(conn)
     view_module     = Controller.view_module(conn)
     layout          = Controller.layout(conn)
@@ -58,7 +58,6 @@ defmodule Pow.Phoenix.ViewHelpers do
     conn
     |> Controller.put_view(view)
     |> Controller.put_layout(layout)
-    |> Controller.render(template, assigns)
   end
 
   defp build_view_module(module, nil, _pow_module), do: module

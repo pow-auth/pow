@@ -1,92 +1,97 @@
 defmodule Pow.Phoenix.RegistrationController do
   @moduledoc false
-  use Pow.Phoenix.Web, :controller
+  use Pow.Phoenix.Controller
 
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, PlugErrorHandler, ViewHelpers}
   alias Pow.Plug
 
-  plug Plug.RequireNotAuthenticated, [error_handler: PlugErrorHandler] when action in [:new, :create]
-  plug Plug.RequireAuthenticated, [error_handler: PlugErrorHandler] when action in [:edit, :update, :delete]
+  plug :require_not_authenticated when action in [:new, :create]
+  plug :require_authenticated when action in [:edit, :update, :delete]
+  plug :assign_create_path when action in [:new, :create]
+  plug :assign_update_path when action in [:edit, :update]
 
-  @spec new(Conn.t(), map()) :: Conn.t()
-  def new(conn, _params) do
-    changeset = Plug.change_user(conn)
-    render_new(conn, changeset)
+  @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
+  def process_new(conn, _params) do
+    {:ok, Plug.change_user(conn), conn}
   end
 
-  @spec create(Conn.t(), map()) :: Conn.t()
-  def create(conn, %{"user" => user_params}) do
-    config = Plug.fetch_config(conn)
-    res    = Plug.create_user(conn, user_params)
-
-    res
-    |> Controller.callback(__MODULE__, :create, config)
-    |> after_create()
-  end
-
-  @spec edit(Conn.t(), map()) :: Conn.t()
-  def edit(conn, _params) do
-    changeset = Plug.change_user(conn)
-    render_edit(conn, changeset)
-  end
-
-  @spec update(Conn.t(), map()) :: Conn.t()
-  def update(conn, %{"user" => user_params}) do
-    config = Plug.fetch_config(conn)
-    res    = Plug.update_user(conn, user_params)
-
-    res
-    |> Controller.callback(__MODULE__, :update, config)
-    |> after_update()
-  end
-
-  @spec delete(Conn.t(), map()) :: Conn.t()
-  def delete(conn, _params) do
-    config = Plug.fetch_config(conn)
-    res    = Plug.delete_user(conn)
-
-    res
-    |> Controller.callback(__MODULE__, :delete, config)
-    |> after_delete()
-  end
-
-  defp after_create({:ok, _user, conn}) do
+  @spec respond_new({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_new({:ok, changeset, conn}) do
     conn
-    |> put_flash(:info, Controller.messages(conn).user_has_been_created(conn))
-    |> redirect(to: Controller.routes(conn).after_registration_path(conn))
-  end
-  defp after_create({:error, changeset, conn}) do
-    render_new(conn, changeset)
+    |> assign(:changeset, changeset)
+    |> render("new.html")
   end
 
-  defp after_update({:ok, _user, conn}) do
+  @spec process_create(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  def process_create(conn, %{"user" => user_params}) do
+    Plug.create_user(conn, user_params)
+  end
+
+  @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
+  def respond_create({:ok, _user, conn}) do
     conn
-    |> put_flash(:info, Controller.messages(conn).user_has_been_updated(conn))
-    |> redirect(to: Controller.routes(conn).after_user_updated_path(conn))
+    |> put_flash(:info, messages(conn).user_has_been_created(conn))
+    |> redirect(to: routes(conn).after_registration_path(conn))
   end
-  defp after_update({:error, changeset, conn}) do
-    render_edit(conn, changeset)
-  end
-
-  defp after_delete({:ok, _user, conn}) do
+  def respond_create({:error, changeset, conn}) do
     conn
-    |> put_flash(:info, Controller.messages(conn).user_has_been_deleted(conn))
-    |> redirect(to: Controller.routes(conn).after_user_deleted_path(conn))
+    |> assign(:changeset, changeset)
+    |> render("new.html")
   end
-  defp after_delete({:error, _changeset, conn}) do
+
+  @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}
+  def process_edit(conn, _params) do
+    {:ok, Plug.change_user(conn), conn}
+  end
+
+  @spec respond_edit({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_edit({:ok, changeset, conn}) do
     conn
-    |> put_flash(:info, Controller.messages(conn).user_could_not_be_deleted(conn))
-    |> redirect(to: Controller.router_helpers(conn).pow_registration_path(conn, :edit))
+    |> assign(:changeset, changeset)
+    |> render("edit.html")
   end
 
-  defp render_new(conn, changeset) do
-    action = Controller.router_helpers(conn).pow_registration_path(conn, :create)
-    ViewHelpers.render(conn, "new.html", changeset: changeset, action: action)
+  @spec process_update(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  def process_update(conn, %{"user" => user_params}) do
+    Plug.update_user(conn, user_params)
   end
 
-  defp render_edit(conn, changeset) do
-    action = Controller.router_helpers(conn).pow_registration_path(conn, :update)
-    ViewHelpers.render(conn, "edit.html", changeset: changeset, action: action)
+  @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
+  def respond_update({:ok, _user, conn}) do
+    conn
+    |> put_flash(:info, messages(conn).user_has_been_updated(conn))
+    |> redirect(to: routes(conn).after_user_updated_path(conn))
+  end
+  def respond_update({:error, changeset, conn}) do
+    conn
+    |> assign(:changeset, changeset)
+    |> render("edit.html")
+  end
+
+  @spec process_delete(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  def process_delete(conn, _params) do
+    Plug.delete_user(conn)
+  end
+
+  @spec respond_delete({:ok | :error, map(), Conn.t()}) :: Conn.t()
+  def respond_delete({:ok, _user, conn}) do
+    conn
+    |> put_flash(:info, messages(conn).user_has_been_deleted(conn))
+    |> redirect(to: routes(conn).after_user_deleted_path(conn))
+  end
+  def respond_delete({:error, _changeset, conn}) do
+    conn
+    |> put_flash(:info, messages(conn).user_could_not_be_deleted(conn))
+    |> redirect(to: router_helpers(conn).pow_registration_path(conn, :edit))
+  end
+
+  defp assign_create_path(conn, _opts) do
+    path = router_helpers(conn).pow_registration_path(conn, :create)
+    Conn.assign(conn, :action, path)
+  end
+
+  defp assign_update_path(conn, _opts) do
+    path = router_helpers(conn).pow_registration_path(conn, :update)
+    Conn.assign(conn, :action, path)
   end
 end

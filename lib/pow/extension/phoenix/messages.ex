@@ -11,6 +11,8 @@ defmodule Pow.Extension.Phoenix.Messages do
 
         def pow_extension_one_a_message(_conn), do: "A message."
       end
+
+    Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.
   """
   alias Pow.{Config, Extension}
 
@@ -30,11 +32,14 @@ defmodule Pow.Extension.Phoenix.Messages do
   defmacro __define_message_methods__(extension) do
     quote do
       extension = unquote(extension)
+      methods   = extension.__info__(:functions)
 
-      for {fallback_method, 1} <- extension.__info__(:functions) do
+      for {fallback_method, 1} <- methods do
         method_name = unquote(__MODULE__).method_name(extension, fallback_method)
         unquote(__MODULE__).__define_message_method__(extension, method_name, fallback_method)
       end
+
+      unquote(__MODULE__).__define_fallback_module__(extension, methods)
     end
   end
 
@@ -46,6 +51,24 @@ defmodule Pow.Extension.Phoenix.Messages do
       end
 
       defoverridable [{method_name, 1}]
+    end
+  end
+
+  defmacro __define_fallback_module__(extension, methods) do
+    quote do
+      name   = Module.concat([__MODULE__, unquote(extension)])
+      quoted = for {method, 1} <- unquote(methods) do
+        method_name = unquote(__MODULE__).method_name(unquote(extension), method)
+
+        quote do
+          @spec unquote(method)(Conn.t()) :: binary()
+          def unquote(method)(conn) do
+            unquote(__MODULE__).unquote(method_name)(conn)
+          end
+        end
+      end
+
+      Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
 

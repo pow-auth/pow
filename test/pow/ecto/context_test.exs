@@ -101,9 +101,9 @@ defmodule Pow.Ecto.ContextTest do
 
     test "updates", %{user: user} do
       assert {:error, _changeset} = Context.update(@config, user, Map.delete(@valid_params, "current_password"))
-      assert {:ok, user} = Context.update(@config, user, @valid_params)
-      assert Context.authenticate(@config, @valid_params).id == user.id
-      assert user.custom == "custom"
+      assert {:ok, updated_user} = Context.update(@config, user, @valid_params)
+      assert Context.authenticate(@config, @valid_params) == %{updated_user | confirm_password: nil, current_password: nil, password: nil}
+      assert updated_user.custom == "custom"
     end
 
     test "as `use Pow.Ecto.Context`", %{user: user} do

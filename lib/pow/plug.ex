@@ -36,25 +36,24 @@ defmodule Pow.Plug do
     private[@private_config_key] || no_config_error()
   end
 
-  @spec authenticate_user(Conn.t(), map()) :: {:ok, Conn.t()} | {:error, Conn.t()} | no_return
+  @spec authenticate_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def authenticate_user(conn, params) do
     config = fetch_config(conn)
-    mod    = config[:mod]
 
     config
     |> Operations.authenticate(params)
     |> case do
-      nil  -> {:error, conn}
-      user -> {:ok, mod.do_create(conn, user)}
+      nil  -> {:error, change_user(conn, params)}
+      user -> {:ok, user}
     end
+    |> maybe_create_auth(conn, config)
   end
 
-  @spec clear_authenticated_user(Conn.t()) :: Conn.t()
+  @spec clear_authenticated_user(Conn.t()) :: {:ok, Conn.t()} | no_return
   def clear_authenticated_user(conn) do
     config = fetch_config(conn)
-    mod    = config[:mod]
 
-    mod.do_delete(conn)
+    {:ok, get_mod(config).do_delete(conn)}
   end
 
   @spec change_user(Conn.t(), map()) :: map()
@@ -70,44 +69,43 @@ defmodule Pow.Plug do
   @spec create_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def create_user(conn, params) do
     config = fetch_config(conn)
-    mod    = config[:mod]
 
     config
     |> Operations.create(params)
-    |> case do
-      {:ok, user}     -> {:ok, user, mod.do_create(conn, user)}
-      {:error, error} -> {:error, error, conn}
-    end
+    |> maybe_create_auth(conn, config)
   end
 
   @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def update_user(conn, params) do
     config   = fetch_config(conn)
-    mod      = config[:mod]
     user     = current_user(conn)
-    conn     = Conn.put_private(conn, :user_before_update, user)
 
     config
     |> Operations.update(user, params)
-    |> case do
-      {:ok, user}     -> {:ok, user, mod.do_create(conn, user)}
-      {:error, error} -> {:error, error, conn}
-    end
+    |> maybe_create_auth(conn, config)
   end
 
   @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def delete_user(conn) do
     config   = fetch_config(conn)
-    mod      = config[:mod]
     user     = current_user(conn)
 
     config
     |> Operations.delete(user)
     |> case do
-      {:ok, user}     -> {:ok, user, mod.do_delete(conn)}
-      {:error, error} -> {:error, error, conn}
+      {:ok, user}         -> {:ok, user, get_mod(config).do_delete(conn)}
+      {:error, changeset} -> {:error, changeset, conn}
     end
   end
+
+  defp maybe_create_auth({:ok, user}, conn, config) do
+    {:ok, user, get_mod(config).do_create(conn, user)}
+  end
+  defp maybe_create_auth({:error, changeset}, conn, _config) do
+    {:error, changeset, conn}
+  end
+
+  defp get_mod(config), do: config[:mod]
 
   @spec no_config_error :: no_return
   defp no_config_error do
