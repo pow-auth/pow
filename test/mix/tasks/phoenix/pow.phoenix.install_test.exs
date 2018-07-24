@@ -73,4 +73,17 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       assert [_one] = File.ls!(reset_password_views)
     end
   end
+
+  test "with :context_app" do
+    File.cd! @tmp_path, fn ->
+      Install.run(@options ++ ~w(--context-app test))
+
+      content = File.read!("lib/test_web/pow.ex")
+
+      assert content =~ "defmodule TestWeb.Pow do"
+      assert content =~ "use Pow.Phoenix,"
+      assert content =~ "user: Test.Users.User,"
+      assert content =~ "repo: Test.Repo,"
+    end
+  end
 end

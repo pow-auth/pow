@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
   alias Mix.{Generator, Pow, Pow.Phoenix}
 
-  @switches [migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
+  @switches [context_app: :string, migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]
 
   @doc false
