@@ -131,7 +131,4 @@ defmodule Pow do
       Module.create(name, quoted, Macro.Env.location(__ENV__))
     end
   end
-
-  @spec config :: Keyword.t()
-  def config, do: Application.get_env(:pow, Pow, [])
 end

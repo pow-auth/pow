@@ -28,7 +28,9 @@ defmodule Pow.Config do
   end
 
   defp get_global(key, default) do
-    Keyword.get(Pow.config(), key, default)
+    :pow
+    |> Application.get_env(Pow, [])
+    |> Keyword.get(key, default)
   end
 
   @spec raise_no_user_error :: no_return
