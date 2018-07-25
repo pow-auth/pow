@@ -2,9 +2,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
   @moduledoc """
   GenServer based key value Mnesia cache store with auto expiration.
 
-  ## Configuration options
+  ## Initialization options
 
     * `:nodes` list of nodes to use, defaults to [node()]
+
+  ## Configuration options
+
     * `:ttl` integer value for ttl of records
     * `:namespace` string value to use for namespacing keys
   """

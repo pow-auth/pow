@@ -266,7 +266,33 @@ You can add methods for `before_process` (before the action happens) and `before
 
 ### Pow.Plug.Session
 
-Enables session based authorization. The user struct will be collected from an ETS table through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by `Pow.Plug`).
+Enables session based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by `Pow.Plug`).
+
+#### Cache store
+
+By default `Pow.Store.EtsCache` is started automatically and can be used in development and test environment.
+
+For production environment a distributed, persistent cache store should be used. Pow makes this easy with `Pow.Store.MnesiaCache`. As an example, to start MnesiaCache in your Phoenix app, you just have to set up your `application.ex`:
+
+```elixir
+defmodule MyAppWeb.Application do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec
+
+    children = [
+      supervisor(MyAppWeb.Endpoint, []),
+      worker(Pow.Store.MnesiaCache, [nodes: nodes()])
+    ]
+
+    opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  # ...
+end
+```
 
 ### Pow.Plug.RequireAuthenticated
 
