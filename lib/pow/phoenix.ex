@@ -90,7 +90,11 @@ defmodule Pow.Phoenix do
       mod    = Pow.Plug.Session
       config = unquote(config)
       quoted = quote do
-        def init(_opts), do: unquote(mod).init(unquote(config))
+        def init(config) do
+          unquote(config)
+          |> Keyword.merge(config)
+          |> unquote(mod).init()
+        end
         def call(conn, opts), do: unquote(mod).call(conn, opts)
         def fetch(conn, _opts), do: unquote(mod).fetch(conn, unquote(config))
         def create(conn, _opts), do: unquote(mod).create(conn, unquote(config))
