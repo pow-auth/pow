@@ -77,16 +77,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp update_invalidators(config, invalidators, key) do
-    case Config.get(config, :ttl, nil) do
-      nil ->
-        invalidators
+    invalidators = clear_invalidator(invalidators, key)
+    invalidator = trigger_ttl(config, key, ttl(config))
 
-      ttl ->
-        invalidators = clear_invalidator(invalidators, key)
-        invalidator = trigger_ttl(config, key, ttl)
-
-        Map.put(invalidators, key, invalidator)
-    end
+    Map.put(invalidators, key, invalidator)
   end
 
   defp clear_invalidator(invalidators, key) do
@@ -147,7 +141,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp mnesia_value(config, value) do
-    {value, expire(Config.get(config, :ttl, nil))}
+    {value, expire(ttl(config))}
   end
 
   defp init_invalidators(config) do
@@ -181,4 +175,11 @@ defmodule Pow.Store.Backend.MnesiaCache do
   defp expire(ttl), do: timestamp() + ttl
 
   defp timestamp, do: :os.system_time(:millisecond)
+
+  defp ttl(config) do
+    Config.get(config, :ttl, nil) || raise_ttl_error()
+  end
+
+  @spec raise_ttl_error :: no_return
+  defp raise_ttl_error, do: Config.raise_error("`:ttl` configuration option is required for #{__MODULE__}")
 end
