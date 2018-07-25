@@ -11,3 +11,5 @@ config :pow, Pow.Test.Ecto.Repo,
   priv: "test/support/ecto/priv"
 
 config :pbkdf2_elixir, rounds: 1
+
+config :mnesia, dir: 'tmp/mnesia'
