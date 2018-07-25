@@ -4,7 +4,7 @@ defmodule Pow.Extension.Ecto.Schema do
 
   ## Usage
 
-  Configure `lib/my_project/user/user.ex` the following way:
+  Configure `lib/my_project/users/user.ex` the following way:
 
       defmodule MyApp.Users.User do
         use Ecto.Schema

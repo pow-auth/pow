@@ -6,7 +6,7 @@ defmodule Pow.Ecto.Context do
 
   This module will be used by pow by default. If you
   wish to have control over context methods, you can
-  do configure `lib/my_project/user/users.ex`
+  do configure `lib/my_project/users/users.ex`
   the following way:
 
       defmodule MyApp.Users do
