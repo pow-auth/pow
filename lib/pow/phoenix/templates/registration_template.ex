@@ -4,7 +4,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
 
   template :new, :html,
   """
-  <h2>Register</h2>
+  <h1>Register</h1>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:text, {:module_attribute, :user_id_field}},
@@ -18,7 +18,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
 
   template :edit, :html,
   """
-  <h2>Edit profile</h2>
+  <h1>Edit profile</h1>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:password, :current_password},

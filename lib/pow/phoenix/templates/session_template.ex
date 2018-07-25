@@ -4,7 +4,7 @@ defmodule Pow.Phoenix.SessionTemplate do
 
   template :new, :html,
   """
-  <h2>Sign in</h2>
+  <h1>Sign in</h1>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:text, {:module_attribute, :user_id_field}},
