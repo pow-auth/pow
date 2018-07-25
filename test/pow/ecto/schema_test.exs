@@ -15,4 +15,9 @@ defmodule Pow.Ecto.SchemaTest do
     assert Map.has_key?(user, :username)
     refute Map.has_key?(user, :email)
   end
+
+  test "changeset/2" do
+    changeset = User.changeset(%User{}, %{custom: "custom"})
+    assert changeset.changes.custom == "custom"
+  end
 end

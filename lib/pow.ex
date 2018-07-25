@@ -38,6 +38,8 @@ defmodule Pow do
               |> pow_changeset(attrs)
               |> pow_extension_changeset(attrs)
             end
+
+            defoverridable [changeset: 2]
           end
         end
       end
