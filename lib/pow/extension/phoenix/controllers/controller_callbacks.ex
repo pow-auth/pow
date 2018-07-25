@@ -6,9 +6,9 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
 
   ## Usage
 
-    use Pow.Plug.Session,
-      controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
-      extensions: [PowExtensionA, PowExtensionB]
+      use Pow.Plug.Session,
+        controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
+        extensions: [PowExtensionA, PowExtensionB]
   """
   alias Pow.{Config, Extension}
 

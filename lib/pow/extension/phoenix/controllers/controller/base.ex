@@ -1,6 +1,15 @@
 defmodule Pow.Extension.Phoenix.Controller.Base do
   @moduledoc """
   Used with Pow Extension Phoenix controllers to handle messages and routes.
+
+  ## Usage
+
+      defmodule MyPowExtension.Phoenix.CustomController do
+        use Pow.Extension.Phoenix.Controller.Base,
+          messages_backend_fallback: MyPowExtension.Phoenix.Messages
+
+        # ...
+      end
   """
   alias Pow.{Config, Phoenix.Controller}
 
