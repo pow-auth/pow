@@ -1,4 +1,6 @@
 defmodule Pow.Test.Extension.Phoenix.Router.Phoenix.Router do
+  use Pow.Extension.Phoenix.Router.Base
+
   def routes(_config) do
     quote location: :keep do
       resources "/test", TestController, only: [:new, :create, :edit, :update]

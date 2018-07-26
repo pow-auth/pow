@@ -42,13 +42,12 @@ defmodule Pow.Extension.Phoenix.Router do
     config = Module.concat(__CALLER__.module, RoutesConfig).config()
 
     for router_module <- __MODULE__.__router_extensions__(config) do
-      phoenix_module = __MODULE__.__phoenix_module__(router_module)
-      namespace      = __MODULE__.__scope_namespace__(phoenix_module)
+      namespace      = __MODULE__.__scope_namespace__(router_module)
+      router_method  = :"#{namespace}_routes"
 
       quote do
-        scope "/", unquote(phoenix_module), as: unquote(namespace) do
-          unquote(router_module.routes(config))
-        end
+        require unquote(router_module)
+        unquote(router_module).unquote(router_method)(unquote(config))
       end
     end
   end
@@ -64,14 +63,6 @@ defmodule Pow.Extension.Phoenix.Router do
   @spec __router_extensions__(Config.t()) :: [atom()]
   def __router_extensions__(config) do
     Extension.Config.discover_modules(config, ["Phoenix", "Router"])
-  end
-
-  @spec __phoenix_module__(atom()) :: atom()
-  def __phoenix_module__(module) do
-    module
-    |> Module.split()
-    |> Enum.drop(-1)
-    |> Module.concat()
   end
 
   @spec __scope_namespace__(atom()) :: binary()
