@@ -21,6 +21,8 @@ defmodule Pow.Phoenix.Routes do
 
         def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
       end
+
+    Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
   """
   alias Plug.Conn
   alias Pow.Phoenix.Controller
@@ -38,9 +40,9 @@ defmodule Pow.Phoenix.Routes do
       @behaviour unquote(__MODULE__)
 
       def user_not_authenticated_path(conn),
-        do: unquote(__MODULE__).not_authenticated_path(conn)
+        do: unquote(__MODULE__).user_not_authenticated_path(conn)
       def user_already_authenticated_path(conn),
-        do: unquote(__MODULE__).already_authenticated_path(conn)
+        do: unquote(__MODULE__).user_already_authenticated_path(conn)
       def after_sign_out_path(conn),
         do: unquote(__MODULE__).after_sign_out_path(conn)
       def after_sign_in_path(conn),
