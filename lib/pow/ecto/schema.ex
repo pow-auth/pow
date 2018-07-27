@@ -36,6 +36,7 @@ defmodule Pow.Ecto.Schema do
       be validated as an email
   """
   alias Pow.Config
+  alias Ecto.Changeset
 
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
@@ -111,6 +112,12 @@ defmodule Pow.Ecto.Schema do
 
   @spec user_id_field(Keyword.t()) :: atom()
   def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, user_id_field())
+
+  @spec user_id_field(Changeset.t()) :: atom()
+  def user_id_field(%Changeset{data: data}), do: user_id_field(data.__struct__)
+
+  @spec user_id_field(map()) :: atom()
+  def user_id_field(map) when is_map(map), do: user_id_field(map.__struct__)
 
   @spec user_id_field(module()) :: atom()
   def user_id_field(module), do: module.pow_user_id_field()

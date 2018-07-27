@@ -29,8 +29,8 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   @spec user_id_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def user_id_field_changeset(changeset, params, config) do
-    user_id_field = Schema.user_id_field(config)
+  def user_id_field_changeset(changeset, params, _config) do
+    user_id_field = Schema.user_id_field(changeset)
 
     changeset
     |> Changeset.cast(params, [user_id_field])
