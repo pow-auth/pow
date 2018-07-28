@@ -45,6 +45,6 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
     ~s(<%= Pow.Phoenix.HTML.ErrorHelpers.error_tag f, #{inspect_key(key)} %>)
   end
 
-  defp inspect_key({:module_attribute, key}), do: "Pow.Phoenix.ViewHelpers.module_attribute(@changeset, #{inspect(key)})"
+  defp inspect_key({:changeset, :pow_user_id_field}), do: "@changeset.data.__struct__.pow_user_id_field()"
   defp inspect_key(key), do: inspect(key)
 end
