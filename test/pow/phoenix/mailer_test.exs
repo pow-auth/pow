@@ -28,7 +28,7 @@ defmodule Pow.Phoenix.MailerTest do
 
     res =
       conn
-      |> Plug.Conn.put_private(:pow_config, [mailer: Pow.Phoenix.MailerTest.Mailer])
+      |> Plug.Conn.put_private(:pow_config, [mailer_backend: Pow.Phoenix.MailerTest.Mailer])
       |> Mailer.deliver(email)
 
     assert res == {:process, email}

@@ -37,15 +37,15 @@ defmodule Pow.Phoenix.Mailer do
   @spec deliver(Conn.t(), Mail.t()) :: any()
   def deliver(conn, email) do
     config = Pow.Plug.fetch_config(conn)
-    mailer = Pow.Config.get(config, :mailer, nil) || raise_no_mailer_set()
+    mailer = Pow.Config.get(config, :mailer_backend, nil) || raise_no_mailer_backend_set()
 
     email
     |> mailer.cast()
     |> mailer.process()
   end
 
-  @spec raise_no_mailer_set :: no_return
-  defp raise_no_mailer_set do
-    Pow.Config.raise_error("No :mailer configuration option found for plug.")
+  @spec raise_no_mailer_backend_set :: no_return
+  defp raise_no_mailer_backend_set do
+    Pow.Config.raise_error("No :mailer_backend configuration option found for plug.")
   end
 end

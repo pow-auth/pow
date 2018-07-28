@@ -9,7 +9,7 @@ defmodule Pow.Test.ExtensionMocks do
         user: Module.concat([unquote(context_module), Users.User]),
         repo: Module.concat([unquote(context_module), RepoMock]),
         cache_store_backend: Pow.Test.EtsCacheMock,
-        mailer: Pow.Test.Phoenix.MailerMock,
+        mailer_backend: Pow.Test.Phoenix.MailerMock,
         messages_backend: Module.concat([unquote(web_module), Phoenix.Messages]),
         extensions: unquote(opts)[:extensions] || [],
         controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks)

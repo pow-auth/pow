@@ -192,14 +192,14 @@ defmodule MyAppWeb.Mailer do
 end
 ```
 
-Update `config/config.ex` with `:backend_mailer` key:
+Update `config/config.ex` with `:mailer_backend` key:
 
 ```elixir
 config :my_app_web, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
   extensions: [PowResetPassword, PowEmailConfirmation],
-  backend_mailer: MyAppWeb.Mailer
+  mailer_backend: MyAppWeb.Mailer
 ```
 
 That's it!
