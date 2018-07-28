@@ -2,6 +2,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
   @moduledoc """
   GenServer based key value Mnesia cache store with auto expiration.
 
+  When the MnesiaCache starts, it'll initialize invalidators for all stored
+  keys using the `expire` value. If the `expire` datetime is past, it'll
+  send call the invalidator immediately.
+
   ## Initialization options
 
     * `:nodes` list of nodes to use, defaults to [node()]
@@ -24,61 +28,54 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   @spec put(Config.t(), binary(), any()) :: :ok
   def put(config, key, value) do
-    key   = mnesia_key(config, key)
-    value = mnesia_value(config, value)
-
     GenServer.cast(__MODULE__, {:cache, config, key, value})
   end
 
   @spec delete(Config.t(), binary()) :: :ok
   def delete(config, key) do
-    key = mnesia_key(config, key)
-
     GenServer.cast(__MODULE__, {:delete, config, key})
   end
 
   @spec get(Config.t(), binary()) :: any() | :not_found
   def get(config, key) do
-    key = mnesia_key(config, key)
-
-    table_get(key)
+    table_get(config, key)
   end
 
   @spec init(Config.t()) :: {:ok, map()}
   def init(config) do
     table_init(config)
-    invalidators = init_invalidators(config)
 
-    {:ok, %{invalidators: invalidators}}
+    {:ok, %{invalidators: init_invalidators(config)}}
   end
 
   @spec handle_cast({:cache, Config.t(), binary(), any()}, map()) :: {:noreply, map()}
   def handle_cast({:cache, config, key, value}, %{invalidators: invalidators} = state) do
     invalidators = update_invalidators(config, invalidators, key)
-    table_update(key, value)
+    table_update(config, key, value)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
   @spec handle_cast({:delete, Config.t(), binary()}, map()) :: {:noreply, map()}
-  def handle_cast({:delete, _config, key}, %{invalidators: invalidators} = state) do
+  def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)
-    table_delete(key)
+    table_delete(config, key)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
   @spec handle_info({:invalidate, Config.t(), binary()}, map()) :: {:noreply, map()}
-  def handle_info({:invalidate, _config, key}, %{invalidators: invalidators} = state) do
+  def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)
-    table_delete(key)
+
+    table_delete(config, key)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
   defp update_invalidators(config, invalidators, key) do
     invalidators = clear_invalidator(invalidators, key)
-    invalidator = trigger_ttl(config, key, ttl(config))
+    invalidator  = trigger_ttl(config, key, ttl(config))
 
     Map.put(invalidators, key, invalidator)
   end
@@ -92,11 +89,13 @@ defmodule Pow.Store.Backend.MnesiaCache do
     Map.drop(invalidators, [key])
   end
 
-  defp table_get(key) do
-    {@mnesia_cache_tab, key}
+  defp table_get(config, key) do
+    mnesia_key = mnesia_key(config, key)
+
+    {@mnesia_cache_tab, mnesia_key}
     |> :mnesia.dirty_read()
     |> case do
-      [{@mnesia_cache_tab, ^key, {value, _expire}} | _rest] ->
+      [{@mnesia_cache_tab, ^mnesia_key, {_key, value, _config, _expire}} | _rest] ->
         value
 
       [] ->
@@ -104,15 +103,20 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp table_update(key, value) do
+  defp table_update(config, key, value) do
+    mnesia_key = mnesia_key(config, key)
+    value      = mnesia_value(config, key, value)
+
     :mnesia.transaction(fn ->
-      :mnesia.write({@mnesia_cache_tab, key, value})
+      :mnesia.write({@mnesia_cache_tab, mnesia_key, value})
     end)
   end
 
-  defp table_delete(key) do
+  defp table_delete(config, key) do
+    mnesia_key = mnesia_key(config, key)
+
     :mnesia.transaction(fn ->
-      :mnesia.delete({@mnesia_cache_tab, key})
+      :mnesia.delete({@mnesia_cache_tab, mnesia_key})
     end)
   end
 
@@ -140,8 +144,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
     "#{namespace}:#{key}"
   end
 
-  defp mnesia_value(config, value) do
-    {value, expire(ttl(config))}
+  defp mnesia_value(config, key, value) do
+    {key, value, config, expire(ttl(config))}
   end
 
   defp init_invalidators(config) do
@@ -152,16 +156,17 @@ defmodule Pow.Store.Backend.MnesiaCache do
     |> Enum.into(%{})
   end
 
-  defp init_invalidator(config, key) do
+  defp init_invalidator(_config, key) do
     {@mnesia_cache_tab, key}
     |> :mnesia.dirty_read()
     |> case do
-      [{@mnesia_cache_tab, ^key, {_value, nil}} | _rest] ->
+      [{@mnesia_cache_tab, ^key, {_key_id, _value, _config, nil}} | _rest] ->
         nil
 
-      [{@mnesia_cache_tab, ^key, {_value, expire}} | _rest] ->
+      [{@mnesia_cache_tab, ^key, {key_id, _value, config, expire}} | _rest] ->
         ttl = Enum.max([expire - timestamp(), 0])
-        {key, trigger_ttl(config, key, ttl)}
+
+        {key, trigger_ttl(config, key_id, ttl)}
 
       [] -> nil
     end

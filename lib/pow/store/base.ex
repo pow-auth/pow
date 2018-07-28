@@ -33,8 +33,10 @@ defmodule Pow.Store.Base do
         do: unquote(__MODULE__).get(config, backend_config(config), key)
 
       defp backend_config(config) do
-        [ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
-        namespace: Config.get(config, :namespace, unquote(defaults[:namespace]))]
+        [
+          ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
+          namespace: Config.get(config, :namespace, unquote(defaults[:namespace]))
+        ]
       end
 
       defoverridable unquote(__MODULE__)
