@@ -1,19 +1,18 @@
 defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
-  @shortdoc "Generates user schema and migration file"
+  @shortdoc "Generates user schema"
 
   @moduledoc """
-  Generates a user schema and migration file.
+  Generates a user schema.
 
       mix pow.ecto.gen.schema -r MyApp.Repo
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.Ecto.Gen.Migration, as: MigrationTask
   alias Pow.Ecto.Schema.Module, as: SchemaModule
   alias Mix.{Generator, Pow}
 
-  @switches [migrations: :boolean, context_app: :string, binary_id: :boolean]
-  @default_opts [migrations: true, binary_id: false]
+  @switches [context_app: :string, binary_id: :boolean]
+  @default_opts [binary_id: false]
 
   @doc false
   def run(args) do
@@ -21,16 +20,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
-    |> maybe_run_gen_migration(args)
     |> create_schema_file()
   end
-
-  defp maybe_run_gen_migration(%{migrations: true} = config, args) do
-    MigrationTask.run(args)
-
-    config
-  end
-  defp maybe_run_gen_migration(config, _args), do: config
 
   defp create_schema_file(%{binary_id: binary_id} = config) do
     context_app  = Map.get(config, :context_app, Pow.context_app())

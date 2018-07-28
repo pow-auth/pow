@@ -5,7 +5,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
 
   @tmp_path Path.join(["tmp", inspect(Schema)])
   @expected_file Path.join(["lib", "pow", "users", "user.ex"])
-  @options  ["--no-migrations"]
+  @options  []
 
   setup do
     File.rm_rf!(@tmp_path)
