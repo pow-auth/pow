@@ -24,7 +24,7 @@ defmodule Pow.Ecto.Schema.Module do
     end
     """
 
-  @spec gen(binary(), Config.t()) :: binary()
+  @spec gen(atom(), Config.t()) :: binary()
   def gen(context_base, config \\ []) do
     context_base
     |> parse_options(config)

@@ -111,16 +111,10 @@ defmodule Pow.Ecto.Schema do
   @spec user_id_field :: atom()
   def user_id_field, do: :email
 
-  @spec user_id_field(Keyword.t()) :: atom()
+  @spec user_id_field(Config.t() | Changeset.t() | map() | atom()) :: atom()
   def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, user_id_field())
-
-  @spec user_id_field(Changeset.t()) :: atom()
   def user_id_field(%Changeset{data: data}), do: user_id_field(data.__struct__)
-
-  @spec user_id_field(map()) :: atom()
   def user_id_field(map) when is_map(map), do: user_id_field(map.__struct__)
-
-  @spec user_id_field(module()) :: atom()
   def user_id_field(module), do: module.pow_user_id_field()
 
   @spec normalize_user_id_field_value(binary()) :: binary()

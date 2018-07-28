@@ -15,11 +15,13 @@ defmodule Pow.Phoenix.View do
 
   @spec __template_module__(atom()) :: atom()
   def __template_module__(view_module) do
-    [name | rest] = view_module
+    [name | rest] =
+      view_module
       |> Module.split()
       |> Enum.reverse()
 
-    name = name
+    name =
+      name
       |> String.trim_trailing("View")
       |> Kernel.<>("Template")
 
