@@ -22,7 +22,7 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     end
     """
 
-  @spec gen(atom(), binary(), Config.t()) :: binary()
+  @spec gen(atom(), atom(), Config.t()) :: binary()
   def gen(extension, context_base, config \\ []) do
     context_base
     |> parse_options(extension, config)
@@ -33,15 +33,15 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     "Add#{normalize_extension_name(extension)}To#{Macro.camelize(table)}"
   end
 
-  defp parse_options(base, extension, config) do
-    repo           = Config.get(config, :repo, Module.concat([base, "Repo"]))
+  defp parse_options(context_base, extension, config) do
+    repo           = Config.get(config, :repo, Module.concat([context_base, "Repo"]))
     table          = Config.get(config, :table, "users")
     config         = Config.put(config, :extensions, [extension])
     attrs          = Schema.attrs(config)
     indexes        = Schema.indexes(config)
     migration_name = name(extension, table)
 
-    Migration.schema(repo, table, migration_name, attrs, indexes, config)
+    Migration.schema(context_base, repo, table, migration_name, attrs, indexes, config)
   end
 
   defp migration_file(schema, extension) do
