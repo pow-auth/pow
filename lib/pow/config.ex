@@ -19,7 +19,7 @@ defmodule Pow.Config do
 
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default) do
-    Keyword.get(config, key, get_global(key, default))
+    Keyword.get(config, key, get_env_config(config, key, default))
   end
 
   @spec put(t(), atom(), any()) :: t()
@@ -27,10 +27,22 @@ defmodule Pow.Config do
     Keyword.put(config, key, value)
   end
 
-  defp get_global(key, default) do
-    :pow
-    |> Application.get_env(Pow, [])
+  @spec merge(t(), t()) :: t()
+  def merge(l_config, r_config) do
+    Keyword.merge(l_config, r_config)
+  end
+
+  defp get_env_config(config, key, default) do
+    config
+    |> env_config()
     |> Keyword.get(key, default)
+  end
+
+  defp env_config(config) do
+    case Keyword.get(config, :otp_app, nil) do
+      nil     -> Application.get_all_env(:pow)
+      otp_app -> Application.get_env(otp_app, :pow, [])
+    end
   end
 
   @spec raise_no_user_error :: no_return

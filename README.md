@@ -39,13 +39,19 @@ mix pow.install
 This will add the following files to your app:
 
 ```bash
-LIB_PATH/pow.ex
 LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
-WEB_PATH/pow.ex
 ```
 
-Set up `endpoint.ex` to enable session based authentication:
+Update `config/config.ex` with the following:
+
+```elixir
+config :my_app, :pow,
+  user: MyApp.Users.User,
+  repo: MyApp.Repo
+```
+
+Set up `WEB_PATH/endpoint.ex` to enable session based authentication:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
@@ -58,18 +64,18 @@ defmodule MyAppWeb.Endpoint do
     key: "_my_project_demo_key",
     signing_salt: "secret"
 
-  plug MyAppWeb.Pow.Plug.Session
+  plug Pow.Plug.Session, otp_app: :my_app
 
   # ...
 end
 ```
 
-Add Pow routes to `router.ex`:
+Add Pow routes to `WEB_PATH/router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
-  use MyAppWeb.Pow.Phoenix.Router
+  use Pow.Phoenix.Router
 
   # ...
 
@@ -105,7 +111,63 @@ Pow is made so it's easy to extend the functionality with your own complimentary
 * `PowResetPassword`
 * `PowEmailConfirmation`
 
-Many extensions requires a mailer to have been set up. Let's create the mailer in `lib/my_app_web/mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
+### Add extensions support
+
+To keep it easy to understand and configure Pow, you'll have to enable the extensions yourself.
+
+First, install extension migrations by running `mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation`.
+
+Update `config/config.ex` with the `:extensions` key:
+
+```elixir
+config :my_app, :pow,
+  user: MyApp.Users.User,
+  repo: MyApp.Repo,
+  extensions: [PowResetPassword, PowEmailConfirmation]
+```
+
+Update `LIB_PATH/users/user.ex` with the following:
+
+```elixir
+defmodule MyApp.Users.User do
+  use Ecto.Schema
+  use Pow.Ecto.Schema, otp_app: :my_app
+  use Pow.Extension.Ecto.Schema
+
+  # ...
+
+  def changeset(user_or_changeset, attrs) do
+    user_or_changeset
+    |> pow_changeset(attrs)
+    |> pow_extensions_changeset(attrs)
+  end
+end
+```
+
+Add Pow extension routes to `WEB_PATH/router.ex`:
+
+```elixir
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
+  use Pow.Phoenix.Router
+  use Pow.Extension.Phoenix.Router, otp_app: :my_app
+
+  # ...
+
+  scope "/" do
+    pipe_through :browser
+
+    pow_routes()
+    pow_extension_routes()
+  end
+
+  # ...
+end
+```
+
+### Mailer support
+
+Many extensions requires a mailer to have been set up. Let's create the mailer in `WEB_PATH/mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
 
 ```elixir
 defmodule MyAppWeb.Mailer do
@@ -128,22 +190,14 @@ defmodule MyAppWeb.Mailer do
 end
 ```
 
-Update `lib/my_app/pow.ex` with the `:backend_mailer` key, and any extensions you wish to enable:
+Update `config/config.ex` with `:backend_mailer` key:
 
 ```elixir
-defmodule MyApp.Pow do
-  use Pow,
-    user: MyApp.Users.User,
-    repo: MyApp.Repo,
-    backend_mailer: MyAppWeb.Mailer,
-    extensions: [PowResetPassword, PowEmailConfirmation]
-end
-```
-
-To install any migration files for extensions, run the following:
-
-```bash
-mix pow.extension.ecto.gen.migrations --extension PowResetPassword
+config :my_app, :pow,
+  user: MyApp.Users.User,
+  repo: MyApp.Repo,
+  extensions: [PowResetPassword, PowEmailConfirmation],
+  backend_mailer: MyAppWeb.Mailer
 ```
 
 That's it!

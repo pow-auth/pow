@@ -51,6 +51,8 @@ defmodule Pow.Ecto.Context do
     quote do
       @behaviour unquote(__MODULE__)
 
+      @pow_config unquote(config)
+
       def authenticate(params), do: pow_authenticate(params)
       def create(params), do: pow_create(params)
       def update(user, params), do: pow_update(user, params)
@@ -58,23 +60,23 @@ defmodule Pow.Ecto.Context do
       def get_by(clauses), do: pow_get_by(clauses)
 
       def pow_authenticate(params) do
-        unquote(__MODULE__).authenticate(unquote(config), params)
+        unquote(__MODULE__).authenticate(@pow_config, params)
       end
 
       def pow_create(params) do
-        unquote(__MODULE__).create(unquote(config), params)
+        unquote(__MODULE__).create(@pow_config, params)
       end
 
       def pow_update(user, params) do
-        unquote(__MODULE__).update(unquote(config), user, params)
+        unquote(__MODULE__).update(@pow_config, user, params)
       end
 
       def pow_delete(user) do
-        unquote(__MODULE__).delete(unquote(config), user)
+        unquote(__MODULE__).delete(@pow_config, user)
       end
 
       def pow_get_by(clauses) do
-        unquote(__MODULE__).get_by(unquote(config), clauses)
+        unquote(__MODULE__).get_by(@pow_config, clauses)
       end
 
       defoverridable unquote(__MODULE__)

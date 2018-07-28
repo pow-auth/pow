@@ -31,33 +31,24 @@ defmodule Pow.Extension.Phoenix.Router do
   alias Pow.Extension
 
   defmacro __using__(config \\ []) do
-    build_config_module(__CALLER__.module, config)
+    build_router_methods_module(__CALLER__.module, config)
 
     quote do
+      @pow_extension_config unquote(config)
+
       import unquote(__MODULE__), only: [pow_extension_routes: 0]
     end
   end
 
   defmacro pow_extension_routes do
-    config = Module.concat(__CALLER__.module, RoutesConfig).config()
+    router_methods = Module.concat(__CALLER__.module, RouterMethods).methods()
 
-    for router_module <- __MODULE__.__router_extensions__(config) do
-      namespace      = __MODULE__.__scope_namespace__(router_module)
-      router_method  = :"#{namespace}_routes"
-
+    for {router_module, router_method} <- router_methods do
       quote do
         require unquote(router_module)
-        unquote(router_module).unquote(router_method)(unquote(config))
+        unquote(router_module).unquote(router_method)(@pow_extension_config)
       end
     end
-  end
-
-  def build_config_module(module, config) do
-    module = Module.concat(module, RoutesConfig)
-
-    Module.create(module, quote do
-      def config, do: unquote(config)
-    end, __ENV__)
   end
 
   @spec __router_extensions__(Config.t()) :: [atom()]
@@ -68,5 +59,21 @@ defmodule Pow.Extension.Phoenix.Router do
   @spec __scope_namespace__(atom()) :: binary()
   def __scope_namespace__(module) do
     Extension.Config.underscore_extension(module)
+  end
+
+  @spec build_router_methods_module(module(), Config.t()) :: {:module, module(), binary(), term()}
+  def build_router_methods_module(module, config) do
+    module = Module.concat(module, RouterMethods)
+
+    Module.create(module, quote do
+      def methods do
+        for router_module <- unquote(__MODULE__).__router_extensions__(unquote(config)) do
+          namespace      = unquote(__MODULE__).__scope_namespace__(router_module)
+          router_method  = :"#{namespace}_routes"
+
+          {router_module, router_method}
+        end
+      end
+    end, __ENV__)
   end
 end

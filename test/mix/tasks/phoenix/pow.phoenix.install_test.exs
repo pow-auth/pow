@@ -25,24 +25,13 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options)
 
-      content = File.read!("lib/pow_web/pow.ex")
-
-      assert content =~ "defmodule PowWeb.Pow do"
-      assert content =~ "use Pow.Phoenix,"
-      assert content =~ "user: Pow.Users.User,"
-      assert content =~ "repo: Pow.Repo,"
-      assert content =~ "extensions: []"
-
       refute File.exists?(@templates_path)
       refute File.exists?(@views_path)
 
-      assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "plug PowWeb.Pow.Plug.Session"
-      assert msg =~ "repo: Pow.Repo"
-      assert msg =~ "user: Pow.Users.User"
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
 
-      assert msg =~ "use PowWeb.Pow.Phoenix.Router"
+      assert msg =~ "use Pow.Phoenix.Router"
       assert msg =~ "pow_routes()"
     end
   end
@@ -62,9 +51,6 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options ++ ~w(--templates --extension PowResetPassword --extension PowEmailConfirmation))
 
-      content = File.read!("lib/pow_web/pow.ex")
-      assert content =~ "extensions: [PowResetPassword, PowEmailConfirmation]"
-
       assert File.exists?(@templates_path)
       reset_password_templates = Path.join(["lib", "pow_web", "templates", "pow_reset_password"])
       assert [_one] = File.ls!(reset_password_templates)
@@ -78,12 +64,8 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd! @tmp_path, fn ->
       Install.run(@options ++ ~w(--context-app test))
 
-      content = File.read!("lib/test_web/pow.ex")
-
-      assert content =~ "defmodule TestWeb.Pow do"
-      assert content =~ "use Pow.Phoenix,"
-      assert content =~ "user: Test.Users.User,"
-      assert content =~ "repo: Test.Repo,"
+      assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :test"
     end
   end
 end

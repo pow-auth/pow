@@ -34,16 +34,19 @@ defmodule Pow.Extension.Ecto.Schema do
 
   defmacro __using__(config) do
     quote do
-      unquote(__MODULE__).__register_extension_fields__(unquote(config))
-      unquote(__MODULE__).__pow_extension_methods__(unquote(config))
-      unquote(__MODULE__).__register_after_compile_validation__(unquote(config))
+      @pow_extension_config Config.merge(@pow_config, unquote(config))
+
+      unquote(__MODULE__).__register_extension_fields__()
+      unquote(__MODULE__).__pow_extension_methods__()
+      unquote(__MODULE__).__register_after_compile_validation__()
     end
   end
 
-  @spec __register_extension_fields__(Config.t()) :: Macro.t()
-  defmacro __register_extension_fields__(config) do
+  @spec __register_extension_fields__() :: Macro.t()
+  defmacro __register_extension_fields__() do
     quote do
-      extension_attrs = unquote(__MODULE__).attrs(unquote(config))
+      config = Module.get_attribute(__MODULE__, :pow_extension_config)
+      extension_attrs = unquote(__MODULE__).attrs(config)
 
       for attr <- extension_attrs do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
@@ -51,13 +54,24 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
-  @spec __pow_extension_methods__(Config.t()) :: Macro.t()
-  defmacro __pow_extension_methods__(config) do
+  @spec __pow_extension_methods__() :: Macro.t()
+  defmacro __pow_extension_methods__() do
     quote do
       @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
       def pow_extension_changeset(changeset, attrs) do
-        unquote(__MODULE__).changeset(changeset, attrs, unquote(config))
+        unquote(__MODULE__).changeset(changeset, attrs, @pow_extension_config)
       end
+    end
+  end
+
+  @spec __register_after_compile_validation__() :: Macro.t()
+  defmacro __register_after_compile_validation__() do
+    quote do
+      def validate_after_compilation!(env, _bytecode) do
+        unquote(__MODULE__).validate!(@pow_extension_config, __MODULE__)
+      end
+
+      @after_compile {__MODULE__, :validate_after_compilation!}
     end
   end
 
@@ -90,16 +104,6 @@ defmodule Pow.Extension.Ecto.Schema do
     |> Enum.reduce(changeset, fn extension, changeset ->
       extension.changeset(changeset, attrs, config)
     end)
-  end
-
-  defmacro __register_after_compile_validation__(config) do
-    quote do
-      def validate_after_compilation!(env, _bytecode) do
-        unquote(__MODULE__).validate!(unquote(config), __MODULE__)
-      end
-
-      @after_compile {__MODULE__, :validate_after_compilation!}
-    end
   end
 
   @spec validate!(Config.t(), atom()) :: :ok | no_return

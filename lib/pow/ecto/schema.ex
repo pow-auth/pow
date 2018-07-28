@@ -44,6 +44,7 @@ defmodule Pow.Ecto.Schema do
   defmacro __using__(config) do
     quote do
       @behaviour unquote(__MODULE__)
+      @pow_config unquote(config)
 
       @spec changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
       def changeset(user_or_changeset, attrs), do: pow_changeset(user_or_changeset, attrs)
@@ -53,25 +54,25 @@ defmodule Pow.Ecto.Schema do
 
       defoverridable unquote(__MODULE__)
 
-      unquote(__MODULE__).__pow_methods__(unquote(config))
-      unquote(__MODULE__).__register_fields__(unquote(config))
-      unquote(__MODULE__).__register_user_id_field__(unquote(config))
+      unquote(__MODULE__).__pow_methods__()
+      unquote(__MODULE__).__register_fields__()
+      unquote(__MODULE__).__register_user_id_field__()
     end
   end
 
-  @spec __pow_methods__(Config.t()) :: Macro.t()
-  defmacro __pow_methods__(config) do
+  @spec __pow_methods__() :: Macro.t()
+  defmacro __pow_methods__() do
     quote do
       import unquote(__MODULE__), only: [pow_user_fields: 0]
 
       @spec pow_changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
       def pow_changeset(user_or_changeset, attrs) do
-        unquote(__MODULE__).Changeset.changeset(unquote(config), user_or_changeset, attrs)
+        unquote(__MODULE__).Changeset.changeset(@pow_config, user_or_changeset, attrs)
       end
 
       @spec pow_verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def pow_verify_password(user, password) do
-        unquote(__MODULE__).Changeset.verify_password(user, password, unquote(config))
+        unquote(__MODULE__).Changeset.verify_password(user, password, @pow_config)
       end
     end
   end
@@ -89,20 +90,20 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @spec __register_fields__(Config.t()) :: Macro.t()
-  defmacro __register_fields__(config) do
+  @spec __register_fields__() :: Macro.t()
+  defmacro __register_fields__() do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
-      for attr <- unquote(__MODULE__).Fields.attrs(unquote(config)) do
+      for attr <- unquote(__MODULE__).Fields.attrs(@pow_config) do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
       end
     end
   end
 
-  @spec __register_user_id_field__(Config.t()) :: Macro.t()
-  defmacro __register_user_id_field__(config) do
+  @spec __register_user_id_field__() :: Macro.t()
+  defmacro __register_user_id_field__() do
     quote do
-      @user_id_field unquote(__MODULE__).user_id_field(unquote(config))
+      @user_id_field unquote(__MODULE__).user_id_field(@pow_config)
       def pow_user_id_field, do: @user_id_field
     end
   end

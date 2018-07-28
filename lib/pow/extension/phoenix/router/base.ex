@@ -7,7 +7,7 @@ defmodule Pow.Extension.Phoenix.Router.Base do
       defmodule MyPowExtension.Phoenix.Router do
         use Pow.Extension.Phoenix.Router.Base
 
-        def routes(_config) do
+        defmacro routes(_config) do
           quote location: :keep do
             resources "/reset-password", TestController, only: [:new]
           end
@@ -16,7 +16,7 @@ defmodule Pow.Extension.Phoenix.Router.Base do
   """
   alias Pow.Config
 
-  @callback routes(Config.t()) :: Macro.t()
+  @macrocallback routes(Config.t()) :: Macro.t()
 
   defmacro __using__(_opts) do
     extension      = __MODULE__.__extension__(__CALLER__.module)
@@ -30,11 +30,12 @@ defmodule Pow.Extension.Phoenix.Router.Base do
       defmacro unquote(routes_method)(config) do
         phoenix_module = unquote(phoenix_module)
         namespace      = unquote(namespace)
-        quoted         = __MODULE__.routes(config)
 
         quote location: :keep do
+          require unquote(__MODULE__)
+
           scope "/", unquote(phoenix_module), as: unquote(namespace) do
-            unquote(quoted)
+            unquote(__MODULE__).routes(unquote(config))
           end
         end
       end
