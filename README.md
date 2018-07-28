@@ -46,7 +46,7 @@ PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 Update `config/config.ex` with the following:
 
 ```elixir
-config :my_app, :pow,
+config :my_app_web, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo
 ```
@@ -55,7 +55,7 @@ Set up `WEB_PATH/endpoint.ex` to enable session based authentication:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :my_app
+  use Phoenix.Endpoint, otp_app: :my_app_web
 
   # ...
 
@@ -64,7 +64,7 @@ defmodule MyAppWeb.Endpoint do
     key: "_my_project_demo_key",
     signing_salt: "secret"
 
-  plug Pow.Plug.Session, otp_app: :my_app
+  plug Pow.Plug.Session, otp_app: :my_app_web
 
   # ...
 end
@@ -117,22 +117,24 @@ To keep it easy to understand and configure Pow, you'll have to enable the exten
 
 First, install extension migrations by running `mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation`.
 
-Update `config/config.ex` with the `:extensions` key:
+Update `config/config.ex` with the `:extensions`and `:controller_callbacks` key:
 
 ```elixir
-config :my_app, :pow,
+config :my_app_web, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
-  extensions: [PowResetPassword, PowEmailConfirmation]
+  extensions: [PowResetPassword, PowEmailConfirmation],
+  controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks
 ```
 
-Update `LIB_PATH/users/user.ex` with the following:
+Update `LIB_PATH/users/user.ex` with the extensions:
 
 ```elixir
 defmodule MyApp.Users.User do
   use Ecto.Schema
-  use Pow.Ecto.Schema, otp_app: :my_app
-  use Pow.Extension.Ecto.Schema
+  use Pow.Ecto.Schema
+  use Pow.Extension.Ecto.Schema,
+    extensions: [PowResetPassword, PowEmailConfirmation]
 
   # ...
 
@@ -150,7 +152,7 @@ Add Pow extension routes to `WEB_PATH/router.ex`:
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use Pow.Phoenix.Router
-  use Pow.Extension.Phoenix.Router, otp_app: :my_app
+  use Pow.Extension.Phoenix.Router, otp_app: :my_app_web
 
   # ...
 
@@ -193,7 +195,7 @@ end
 Update `config/config.ex` with `:backend_mailer` key:
 
 ```elixir
-config :my_app, :pow,
+config :my_app_web, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
   extensions: [PowResetPassword, PowEmailConfirmation],
@@ -206,7 +208,7 @@ That's it!
 
 Pow is build to be modular, and easy to configure. Configuration is primarily passed through method calls, and plug options and they will take priority over any environment configuration. This is ideal in case you've an umbrella app with multiple separate user domains.
 
-The most easy way to use Pow with Phoenix is to create a Pow.Phoenix module. This will keep a persistent fallback Pow configuration that you configure in one place. This is automatically generated when you run `mix pow.install`.
+The easiest way to use Pow with Phoenix is to use a `:otp_app` in method calls, and set the app environment configuration. This will keep a persistent fallback configuration that you configure in one place.
 
 ### Module groups
 
