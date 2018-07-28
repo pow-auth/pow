@@ -43,7 +43,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @valid_params)
       assert_received {:mail_mock, mail}
-      mail.html =~ "/reset-password/#{conn.private[:reset_password_token]}"
+      assert mail.html =~ "http://localhost/reset-password/#{conn.private[:reset_password_token]}"
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "An email with reset instructions has been sent to you. Please check your inbox."
     end

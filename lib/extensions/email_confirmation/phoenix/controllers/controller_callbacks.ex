@@ -35,9 +35,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp should_send_email?(%{email_confirmed_at: nil, email_confirmation_token: new_token}, %{email_confirmation_token: old_token}),
     do: new_token != old_token
 
-  defp send_confirmation_email(user, conn) do
+  @spec send_confirmation_email(map(), Conn.t()) :: {:ok, map(), Conn.t()}
+  def send_confirmation_email(user, conn) do
     token = user.email_confirmation_token
-    url   = Controller.router_helpers(conn).pow_email_confirmation_confirmation_path(conn, :show, token)
+    url   = Controller.router_helpers(conn).pow_email_confirmation_confirmation_url(conn, :show, token)
     email = Mailer.EmailConfirmationMailer.email_confirmation(user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)

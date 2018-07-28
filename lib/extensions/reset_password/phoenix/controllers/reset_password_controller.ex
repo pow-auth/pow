@@ -31,7 +31,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_create({:ok, %{token: token, user: user}, conn}) do
-    url = router_helpers(conn).pow_reset_password_reset_password_path(conn, :edit, token)
+    url = router_helpers(conn).pow_reset_password_reset_password_url(conn, :edit, token)
     deliver_email(conn, user, url)
 
     default_respond_create(conn)

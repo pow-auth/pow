@@ -16,7 +16,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert %{id: 1, email_confirmation_token: token} = Plug.current_user(conn)
 
       assert_received {:mail_mock, mail}
-      mail.html =~ "/reset-password/#{token}"
+      assert mail.html =~ "http://localhost/confirm-email/#{token}"
     end
   end
 
@@ -38,7 +38,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert token != "token"
 
       assert_received {:mail_mock, mail}
-      mail.html =~ "/reset-password/#{token}"
+      assert mail.html =~ "http://localhost/confirm-email/#{token}"
     end
 
     test "without email change", %{conn: conn} do
