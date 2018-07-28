@@ -5,7 +5,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
   defstruct [:user, :subject, :text, :html]
 
   @spec new(map(), binary(), binary(), binary()) :: %__MODULE__{}
-  def new(user, text, html, subject) do
+  def new(user, subject, text, html) do
     struct(__MODULE__,
       user: user,
       subject: subject,

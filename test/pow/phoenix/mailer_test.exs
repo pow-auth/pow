@@ -12,7 +12,7 @@ defmodule Pow.Phoenix.MailerTest do
   alias Pow.Phoenix.Mailer
 
   setup %{conn: conn} do
-    email = Mailer.Mail.new(%{email: "test@example.com"}, :text, :html, :subject)
+    email = Mailer.Mail.new(%{email: "test@example.com"}, :subject, :text, :html)
 
     {:ok, conn: conn, email: email}
   end
