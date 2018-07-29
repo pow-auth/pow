@@ -4,7 +4,7 @@ defmodule Pow.Test.Phoenix.LayoutView do
 end
 defmodule Pow.Test.Phoenix.Pow.SessionView do
   @moduledoc false
-  use Pow.Test.Phoenix.Web, :context_app_view
+  use Pow.Test.Phoenix.Web, :web_module_view
 end
 defmodule Pow.Test.Phoenix.ErrorView do
   @moduledoc false
