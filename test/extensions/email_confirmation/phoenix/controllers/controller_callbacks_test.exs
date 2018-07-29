@@ -38,7 +38,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert token != "token"
 
       assert_received {:mail_mock, mail}
-      assert mail.html =~ "http://localhost/confirm-email/#{token}"
+      assert mail.subject == "Confirm your email address"
+      assert mail.text =~ "\nhttp://localhost/confirm-email/#{token}\n"
+      assert mail.html =~ "<a href=\"http://localhost/confirm-email/#{token}\">"
     end
 
     test "without email change", %{conn: conn} do

@@ -9,6 +9,6 @@ defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationMailer do
     text = EmailConfirmationView.render("mail.text", url: url)
     html = EmailConfirmationView.render("mail.html", url: url)
 
-    Mail.new(user, subject, html, text)
+    Mail.new(user, subject, text, html)
   end
 end

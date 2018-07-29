@@ -9,6 +9,6 @@ defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordMailer do
     text = ResetPasswordView.render("mail.text", url: url)
     html = ResetPasswordView.render("mail.html", url: url)
 
-    Mail.new(user, subject, html, text)
+    Mail.new(user, subject, text, html)
   end
 end
