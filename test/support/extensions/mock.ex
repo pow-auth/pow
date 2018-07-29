@@ -96,9 +96,10 @@ defmodule Pow.Test.ExtensionMocks do
       end
 
       setup_all _opts do
-        {:ok, _pid} = Endpoint.start_link()
-
-        :ok
+        case Endpoint.start_link() do
+          {:ok, _pid} -> :ok
+          {:error, {:already_started, _pid}} -> :ok
+        end
       end
 
       setup _tags do
