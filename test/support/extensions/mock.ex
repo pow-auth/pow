@@ -70,6 +70,10 @@ defmodule Pow.Test.ExtensionMocks do
 
       plug Pow.Plug.Session, otp_app: unquote(context_module)
 
+      if Code.ensure_compiled?(unquote(opts[:plug])) do
+        plug unquote(opts[:plug])
+      end
+
       plug unquote(web_module).Phoenix.Router
     end
     Module.create(module, quoted, Macro.Env.location(__ENV__))

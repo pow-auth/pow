@@ -14,7 +14,7 @@ config :pbkdf2_elixir, rounds: 1
 
 config :mnesia, dir: 'tmp/mnesia'
 
-for extension <- [PowEmailConfirmation, PowResetPassword] do
+for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] do
   context_module = Module.concat([extension, Test])
   web_module = Module.concat([extension, TestWeb])
 

@@ -108,12 +108,15 @@ By default, Pow will only expose files that are absolutely necessary. If you wis
 
 Pow is made so it's easy to extend the functionality with your own complimentary library. The following extensions are included in this library:
 
-* `PowResetPassword`
-* `PowEmailConfirmation`
+* PowResetPassword
+* PowEmailConfirmation
+* [PowPersistentSession](lib/extensions/persistent_session/README.md)
 
 ### Add extensions support
 
 To keep it easy to understand and configure Pow, you'll have to enable the extensions yourself.
+
+Let's install the `PowResetPassword` and `PowEmailConfirmation` extensions.
 
 First, install extension migrations by running `mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation`.
 
