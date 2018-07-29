@@ -4,7 +4,7 @@ This extension will permit reissuing sessions, by setting a cookie with a 30 day
 
 ## Installation
 
-Follow the instructions for extensions in [../../../README.md](README.md), and set `PowPersistentSession` in the `:extensions` list.
+Follow the instructions for extensions in [README.md](../../../README.md), and set `PowPersistentSession` in the `:extensions` list.
 
 Add the following plug after the pow session plug in your `endpoint.ex`:
 
@@ -22,7 +22,7 @@ end
 
 ### Configuration
 
-By default, persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex`:
+By default, persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex` (you may need to generate the templates first):
 
 ```elixir
 <%= label f, :persistent_session, "Remember me" %>

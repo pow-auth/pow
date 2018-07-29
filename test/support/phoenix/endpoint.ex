@@ -21,7 +21,7 @@ defmodule Pow.Test.Phoenix.Endpoint do
   plug Pow.Plug.Session,
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    backend_session_store: Pow.Test.EtsCacheMock,
+    cache_store_backend: Pow.Test.EtsCacheMock,
     user: Pow.Test.Ecto.Users.User,
     users_context: Pow.Test.ContextMock
 

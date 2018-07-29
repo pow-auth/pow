@@ -2,8 +2,8 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   @moduledoc false
   alias PowEmailConfirmation.Test.Users.User
 
-  def get_by(_mod, [email_confirmation_token: "valid"]), do: %User{id: 1}
-  def get_by(_mod, _test), do: nil
+  def get_by(User, [email_confirmation_token: "valid"]), do: %User{id: 1}
+  def get_by(User, [email_confirmation_token: "invalid"]), do: nil
 
   def update(%{valid?: true} = changeset), do: {:ok, Ecto.Changeset.apply_changes(changeset)}
 
