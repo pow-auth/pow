@@ -9,7 +9,9 @@ defmodule Pow.Extension.Phoenix.Messages do
         use Pow.Extension.Phoenix.Messages,
           extensions: [PowExtensionOne, PowExtensionTwo]
 
-        def pow_extension_one_a_message(_conn), do: "A message."
+        import MyAppWeb.Gettext
+
+        def pow_extension_one_a_message(_conn), do: gettext("A message.")
       end
 
     Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.

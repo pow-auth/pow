@@ -322,6 +322,28 @@ end
 
 You can add methods for `before_process` (before the action happens) and `before_respond` (before parsing the results from the action).
 
+### I18n
+
+All templates can be generated and modified to use your Gettext module.
+
+For flash messages, you can create the following module:
+
+```elixir
+defmodule MyAppWeb.Pow.Messages do
+  use Pow.Phoenix.Messages
+  use Pow.Extension.Phoenix.Messages,
+    extensions: [ResetPassword]
+
+  import MyAppWeb.Gettext
+
+  def user_not_authenticated(_conn), do: gettext("You need to sign in to see this page.")
+
+  def pow_reset_password_email_has_been_sent(_conn), do: gettext("An email with reset instructions has been sent to you. Please check your inbox.")
+end
+```
+
+Add `messages_backend: MyAppWeb.Pow.Messages` to your configuration. You can find the all messages in `Pow.Phoenix.Messages` and `[Pow Extension].Phoenix.Messages`.
+
 ## Plugs
 
 ### Pow.Plug.Session

@@ -6,13 +6,16 @@ defmodule Pow.Phoenix.Messages do
 
       defmodule MyAppWeb.Pow.Messages do
         use Pow.Phoenix.Messages
+        import MyAppWeb.Gettext
 
-        def signed_out(_conn), do: "Signed out successfullly."
+        def signed_out(_conn), do: gettext("Signed out successfullly.")
       end
 
     Remember to add `messages_backend: MyAppWeb.Pow.Messages` to your
     configuration.
   """
+  alias Plug.Conn
+
   @callback signed_out(Conn.t()) :: binary()
   @callback signed_in(Conn.t()) :: binary()
   @callback invalid_credentials(Conn.t()) :: binary()
