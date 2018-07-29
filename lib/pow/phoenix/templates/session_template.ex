@@ -12,6 +12,6 @@ defmodule Pow.Phoenix.SessionTemplate do
   ],
   button_label: "Sign in") %>
 
-  <span><%%= Phoenix.HTML.Link.link "Register", to: Pow.Phoenix.Controller.router_helpers(@conn).pow_registration_path(@conn, :new) %></span>
+  <span><%%= link "Register", to: Pow.Phoenix.Controller.router_helpers(@conn).pow_registration_path(@conn, :new) %></span>
   """
 end

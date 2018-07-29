@@ -18,6 +18,9 @@ defmodule Pow.Phoenix.Template do
   defmacro __using__(_opts) do
     quote do
       import unquote(__MODULE__)
+
+      import Pow.Phoenix.HTML.ErrorHelpers, only: [error_tag: 2]
+      import Phoenix.HTML.{Form, Link}
     end
   end
 

@@ -4,7 +4,7 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
   Module that can build form templates for Phoenix.
   """
   @template EEx.compile_string """
-  <%%= Phoenix.HTML.Form.form_for @changeset, @action, fn f -> %>
+  <%%= form_for @changeset, @action, fn f -> %>
     <%%= if @changeset.action do %>
       <div class="alert alert-danger">
         <p>Oops, something went wrong! Please check the errors below.</p>
@@ -16,7 +16,7 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
     <%= error %>
   <% end %>
     <div>
-      <%%= Phoenix.HTML.Form.submit <%= inspect button_label %> %>
+      <%%= submit <%= inspect button_label %> %>
     </div>
   <%% end %>
   """
@@ -31,18 +31,18 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
 
   @spec input(atom(), atom()) :: {binary(), binary(), binary()}
   def input(:text, key) do
-    {label(key), ~s(<%= Phoenix.HTML.Form.text_input f, #{inspect_key(key)} %>), error(key)}
+    {label(key), ~s(<%= text_input f, #{inspect_key(key)} %>), error(key)}
   end
   def input(:password, key) do
-    {label(key), ~s(<%= Phoenix.HTML.Form.password_input f, #{inspect_key(key)} %>), error(key)}
+    {label(key), ~s(<%= password_input f, #{inspect_key(key)} %>), error(key)}
   end
 
   defp label(key) do
-    ~s(<%= Phoenix.HTML.Form.label f, #{inspect_key(key)} %>)
+    ~s(<%= label f, #{inspect_key(key)} %>)
   end
 
   defp error(key) do
-    ~s(<%= Pow.Phoenix.HTML.ErrorHelpers.error_tag f, #{inspect_key(key)} %>)
+    ~s(<%= error_tag f, #{inspect_key(key)} %>)
   end
 
   defp inspect_key({:changeset, :pow_user_id_field}), do: "@changeset.data.__struct__.pow_user_id_field()"

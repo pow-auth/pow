@@ -16,6 +16,7 @@ defmodule Pow.Phoenix.Mailer.Template do
   defmacro __using__(_opts) do
     quote do
       import unquote(__MODULE__)
+      import Phoenix.HTML.{Link, Tag}
     end
   end
 
