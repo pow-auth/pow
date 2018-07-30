@@ -9,12 +9,12 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
 
   describe "confirm_email/2" do
     test "doesn't confirm when already confirmed" do
-      user = %User{}
+      user = %User{id: 1}
       assert {:ok, user} = Context.confirm_email(@config, user)
       assert user.email_confirmed_at
 
       previously_confirmed_at = DateTime.from_iso8601("2018-01-01 00:00:00")
-      user = %User{email_confirmed_at: previously_confirmed_at}
+      user = %User{id: 1, email_confirmed_at: previously_confirmed_at}
 
       assert {:ok, user} = Context.confirm_email(@config, user)
       assert user.email_confirmed_at == previously_confirmed_at

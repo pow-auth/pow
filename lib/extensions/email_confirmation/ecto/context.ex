@@ -16,17 +16,10 @@ defmodule PowEmailConfirmation.Ecto.Context do
   Updates `email_confirmed_at` if it hasn't already been set.
   """
   @spec confirm_email(Config.t(), map()) :: {:ok, map()} | {:error, Changeset.t()}
-  def confirm_email(config, user) do
-    repo = repo(config)
-
-    case user.email_confirmed_at do
-      nil ->
-        user
-        |> Ecto.Changeset.change(email_confirmed_at: DateTime.utc_now())
-        |> repo.update()
-
-      _email_confirmed_at ->
-        {:ok, user}
-    end
+  def confirm_email(config, %{email_confirmed_at: nil} = user) do
+    user
+    |> Ecto.Changeset.change(email_confirmed_at: DateTime.utc_now())
+    |> Context.do_update(config)
   end
+  def confirm_email(_config, user), do: {:ok, user}
 end

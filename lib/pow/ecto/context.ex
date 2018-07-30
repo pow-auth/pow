@@ -114,11 +114,7 @@ defmodule Pow.Ecto.Context do
     user_mod
     |> struct()
     |> user_mod.changeset(params)
-    |> repo(config).insert()
-    |> case do
-      {:error, changeset} -> {:error, changeset}
-      {:ok, user}         -> {:ok, reload_user(config, user)}
-    end
+    |> do_insert(config)
   end
 
   @doc """
@@ -128,11 +124,7 @@ defmodule Pow.Ecto.Context do
   def update(config, user, params) do
     user
     |> user.__struct__.changeset(params)
-    |> repo(config).update()
-    |> case do
-      {:error, changeset} -> {:error, changeset}
-      {:ok, user}         -> {:ok, reload_user(config, user)}
-    end
+    |> do_update(config)
   end
 
   @spec delete(Config.t(), user()) :: {:ok, user()} | {:error, Changeset.t()}
@@ -157,10 +149,28 @@ defmodule Pow.Ecto.Context do
     end
   end
 
-  defp reload_user(config, user) do
+  @spec do_insert(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
+  def do_insert(changeset, config) do
+    changeset
+    |> repo(config).insert()
+    |> reload_after_write(config)
+  end
+
+
+  @spec do_update(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
+  def do_update(changeset, config) do
+    changeset
+    |> repo(config).update()
+    |> reload_after_write(config)
+  end
+
+  defp reload_after_write({:error, changeset}, _config), do: {:error, changeset}
+  defp reload_after_write({:ok, user}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    repo(config).get!(user.__struct__, user.id)
+    user = repo(config).get!(user.__struct__, user.id)
+
+    {:ok, user}
   end
 
   @spec repo(Config.t()) :: atom() | no_return
