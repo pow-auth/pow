@@ -17,13 +17,6 @@ defmodule Pow.Test.Phoenix.ConnCase do
     end
   end
 
-  setup_all _opts do
-    case Endpoint.start_link() do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, _pid}} -> :ok
-    end
-  end
-
   setup _tags do
     EtsCacheMock.init()
     {:ok, conn: Phoenix.ConnTest.build_conn()}
