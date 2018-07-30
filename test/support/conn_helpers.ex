@@ -1,19 +1,43 @@
+defmodule Plug.ProcessStore do
+  @behaviour Plug.Session.Store
+
+  def init(_opts) do
+    nil
+  end
+
+  def get(_conn, sid, nil) do
+    {sid, Process.get({:session, sid}) || %{}}
+  end
+
+  def delete(_conn, sid, nil) do
+    Process.delete({:session, sid})
+    :ok
+  end
+
+  def put(conn, nil, data, nil) do
+    sid = Base.encode64(:crypto.strong_rand_bytes(96))
+    put(conn, sid, data, nil)
+  end
+
+  def put(_conn, sid, data, nil) do
+    Process.put({:session, sid}, data)
+    sid
+  end
+end
+
 defmodule Pow.Test.ConnHelpers do
   @moduledoc false
-  alias Plug.{Conn, Test}
+  alias Plug.{Conn, ProcessStore, Session, Test}
 
   @spec conn(String.Chars.t(), binary(), Test.params()) :: Conn.t()
   def conn(method, path, params_or_body \\ nil) do
     Test.conn(method, path, params_or_body)
   end
 
-  @spec with_session(Conn.t(), Map.t()) :: Conn.t()
-  def with_session(conn, opts \\ %{}) do
-    Test.init_test_session(conn, opts)
-  end
+  @spec init_session(Conn.t()) :: Conn.t()
+  def init_session(conn) do
+    opts = Session.init(store: ProcessStore, key: "foobar")
 
-  @spec put_session(Conn.t(), String.t() | atom(), any()) :: Conn.t()
-  def put_session(conn, key, value) do
-    Conn.put_session(conn, key, value)
+    Session.call(conn, opts)
   end
 end

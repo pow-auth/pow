@@ -37,14 +37,18 @@ defmodule Pow.Plug.Session do
 
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
-    conn
-    |> Conn.fetch_session()
-    |> get_session(config)
+    conn                  = Conn.fetch_session(conn)
+    key                   = Conn.get_session(conn, session_key(config))
+    {store, store_config} = store(config)
+
+    store_config
+    |> store.get(key)
     |> handled_fetched_value(conn, config)
   end
 
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
+    conn                  = Conn.fetch_session(conn)
     key                   = UUID.generate()
     session_key           = session_key(config)
     {store, store_config} = store(config)
@@ -63,6 +67,7 @@ defmodule Pow.Plug.Session do
 
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
+    conn                  = Conn.fetch_session(conn)
     key                   = Conn.get_session(conn, session_key(config))
     {store, store_config} = store(config)
     session_key           = session_key(config)
@@ -70,13 +75,6 @@ defmodule Pow.Plug.Session do
     store.delete(store_config, key)
 
     Conn.delete_session(conn, session_key)
-  end
-
-  defp get_session(conn, config) do
-    key = Conn.get_session(conn, session_key(config))
-    {store, store_config} = store(config)
-
-    store.get(store_config, key)
   end
 
   defp handled_fetched_value(:not_found, conn, _config), do: {conn, nil}
@@ -100,7 +98,7 @@ defmodule Pow.Plug.Session do
     Config.get(config, :session_key, "auth")
   end
 
-  def session_value(user), do: {user, timestamp()}
+  defp session_value(user), do: {user, timestamp()}
 
   defp store(config) do
     case Config.get(config, :session_store, default_store(config)) do

@@ -2,6 +2,7 @@ defmodule Pow.Plug.SessionTest do
   use ExUnit.Case
   doctest Pow.Plug.Session
 
+  alias Plug.Conn
   alias Pow.{Config, Plug, Plug.Session, Store.CredentialsCache}
   alias Pow.Test.{ConnHelpers, EtsCacheMock}
 
@@ -16,7 +17,7 @@ defmodule Pow.Plug.SessionTest do
     conn =
       :get
       |> ConnHelpers.conn("/")
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
 
     {:ok, %{conn: conn}}
   end
@@ -45,7 +46,8 @@ defmodule Pow.Plug.SessionTest do
     opts = Session.init(@default_opts)
     conn =
       conn
-      |> ConnHelpers.put_session(@default_opts[:session_key], "token")
+      |> Conn.fetch_session()
+      |> Conn.put_session(@default_opts[:session_key], "token")
       |> Session.call(opts)
 
     assert conn.assigns[:current_user] == "cached"
@@ -57,7 +59,8 @@ defmodule Pow.Plug.SessionTest do
     opts = Session.init(@default_opts)
     conn =
       conn
-      |> ConnHelpers.put_session(@default_opts[:session_key], "invalid")
+      |> Conn.fetch_session()
+      |> Conn.put_session(@default_opts[:session_key], "invalid")
       |> Session.call(opts)
 
     assert is_nil(conn.assigns[:current_user])
@@ -68,7 +71,10 @@ defmodule Pow.Plug.SessionTest do
     config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
     timestamp       = :os.system_time(:millisecond)
     stale_timestamp = timestamp - ttl - 1
-    init_conn       = ConnHelpers.put_session(conn, config[:session_key], "token")
+    init_conn       =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], "token")
 
     EtsCacheMock.put(nil, "token", {"cached", timestamp})
 
@@ -149,7 +155,8 @@ defmodule Pow.Plug.SessionTest do
       opts = Session.init(session_key: "auth")
       conn =
         conn
-        |> ConnHelpers.put_session("auth", token)
+        |> Conn.fetch_session()
+        |> Conn.put_session("auth", token)
         |> Session.call(opts)
 
       assert conn.assigns[:current_user] == "cached"

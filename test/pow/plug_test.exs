@@ -54,7 +54,7 @@ defmodule Pow.PlugTest do
     opts = Session.init(@default_config)
     conn =
       conn()
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call(opts)
 
     refute conn.private[:plug_session]["auth"]
@@ -91,7 +91,7 @@ defmodule Pow.PlugTest do
     opts = Session.init(@default_config)
     conn =
       conn()
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call(opts)
 
     assert {:ok, user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
@@ -121,7 +121,7 @@ defmodule Pow.PlugTest do
     opts = Session.init(@default_config)
     conn =
       conn()
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call(opts)
 
     assert {:error, _changeset, conn} = Plug.create_user(conn, %{})
@@ -139,7 +139,7 @@ defmodule Pow.PlugTest do
     opts = Session.init(@default_config)
     conn =
       conn()
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call(opts)
 
     {:ok, user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
@@ -161,7 +161,7 @@ defmodule Pow.PlugTest do
     opts = Session.init(@default_config)
     conn =
       conn()
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call(opts)
 
     {:ok, _user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})

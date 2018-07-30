@@ -14,7 +14,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       :get
       |> ConnHelpers.conn("/")
-      |> ConnHelpers.with_session()
+      |> ConnHelpers.init_session()
       |> Session.call([otp_app: PowPersistentSession.Test])
 
     {:ok, %{conn: conn}}
