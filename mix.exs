@@ -1,7 +1,7 @@
 defmodule Pow.MixProject do
   use Mix.Project
 
-  @version "0.1.0-alpha"
+  @version "0.1.0-alpha.1"
 
   def project do
     [
@@ -36,15 +36,15 @@ defmodule Pow.MixProject do
   defp deps do
     [
       {:comeonin, ">= 3.0.0 and < 4.2.0"},
-      {:pbkdf2_elixir, "~> 0.12"},
-      {:ecto, "~> 2.2", optional: true},
-      {:phoenix, "~> 1.3", optional: true},
+      {:pbkdf2_elixir, "~> 0.12.0"},
+      {:ecto, "~> 2.2.0", optional: true},
+      {:phoenix, "~> 1.3.0", optional: true},
       {:plug, ">= 1.5.0 and < 1.7.0", optional: true},
 
-      {:phoenix_html, "~> 2.11", only: [:dev, :test]},
-      {:phoenix_ecto, "~> 3.3", only: [:dev, :test]},
+      {:phoenix_html, "~> 2.11.0", only: [:dev, :test]},
+      {:phoenix_ecto, "~> 3.3.0", only: [:dev, :test]},
 
-      {:ex_doc, "~> 0.18", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:credo, "~> 0.9.3", only: :dev},
 
       {:postgrex, ">= 0.0.0", only: [:test]},
@@ -69,7 +69,11 @@ defmodule Pow.MixProject do
       main: "Pow",
       canonical: "http://hexdocs.pm/pow",
       source_url: "https://github.com/danschultzer/pow",
-      extras: ["README.md"],
+      extras: [
+        "README.md": [filename: "Pow", title: "Pow"],
+        "lib/extensions/email_confirmation/README.md": [filename: "PowEmailConfirmation", title: "PowEmailConfirmation"],
+        "lib/extensions/persistent_session/README.md": [filename: "PowPersistentSession", title: "PowPersistentSession"],
+        "lib/extensions/reset_password/README.md": [filename: "PowResetPassword", title: "PowResetPassword"]],
       groups_for_modules: [
         "Plug": ~r/^Pow.Plug/,
         "Ecto": ~r/^Pow.Ecto/,
@@ -79,7 +83,10 @@ defmodule Pow.MixProject do
         "Phoenix extension": ~r/^Pow.Extension.Phoenix/,
         "Store handling": ~r/^Pow.Store/,
         "Mix helpers": ~r/^Mix.Pow/,
-        "Extensions": [PowEmailConfirmation, PowResetPassword]
+        "Extensions": ~r/^(PowEmailConfirmation|PowPersistentSession|PowResetPassword)/
+      ],
+      groups_for_extras: [
+        "Extensions": Path.wildcard("lib/extensions/*/README.md"),
       ]
     ]
   end
