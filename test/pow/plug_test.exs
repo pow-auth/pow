@@ -150,6 +150,7 @@ defmodule Pow.PlugTest do
     assert conn.private[:plug_session]["auth"] == session_id
 
     assert {:ok, updated_user, conn} = Plug.update_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert updated_user.id == :updated
     assert Plug.current_user(conn) == updated_user
     refute updated_user == user
     refute conn.private[:plug_session]["auth"] == session_id
@@ -167,7 +168,7 @@ defmodule Pow.PlugTest do
     {:ok, _user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
 
     assert {:ok, user, conn} = Plug.delete_user(conn)
-    assert user.deleted
+    assert user.id == :deleted
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
   end

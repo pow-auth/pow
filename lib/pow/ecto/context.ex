@@ -104,6 +104,9 @@ defmodule Pow.Ecto.Context do
     end
   end
 
+  @doc """
+  Creates a new user. User struct will be fetched from repo.
+  """
   @spec create(Config.t(), map()) :: {:ok, user()} | {:error, Changeset.t()}
   def create(config, params) do
     user_mod = user_schema_mod(config)
@@ -112,13 +115,24 @@ defmodule Pow.Ecto.Context do
     |> struct()
     |> user_mod.changeset(params)
     |> repo(config).insert()
+    |> case do
+      {:error, changeset} -> {:error, changeset}
+      {:ok, user}         -> {:ok, reload_user(config, user)}
+    end
   end
 
+  @doc """
+  updates a new user. User struct will be fetched from repo.
+  """
   @spec update(Config.t(), user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
   def update(config, user, params) do
     user
     |> user.__struct__.changeset(params)
     |> repo(config).update()
+    |> case do
+      {:error, changeset} -> {:error, changeset}
+      {:ok, user}         -> {:ok, reload_user(config, user)}
+    end
   end
 
   @spec delete(Config.t(), user()) :: {:ok, user()} | {:error, Changeset.t()}
@@ -141,6 +155,12 @@ defmodule Pow.Ecto.Context do
       {^user_id_field, value} -> {user_id_field, Schema.normalize_user_id_field_value(value)}
       any -> any
     end
+  end
+
+  defp reload_user(config, user) do
+    # When ecto updates/inserts, has_many :through associations are set to nil.
+    # So we'll just reload when writes happen.
+    repo(config).get!(user.__struct__, user.id)
   end
 
   @spec repo(Config.t()) :: atom() | no_return

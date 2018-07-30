@@ -75,7 +75,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_email\">Email</label>"
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<label for=\"user_current_password\">Current password</label>"
       assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
     end
@@ -105,7 +105,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
       assert get_flash(conn, :info) == @user_updated_message
-      assert Plug.current_user(conn) == %{id: 1, updated: true}
+      assert user = Plug.current_user(conn)
+      assert user.id == :updated
       assert conn.private[:plug_session]["auth"] != session_id
     end
 
