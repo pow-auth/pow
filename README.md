@@ -407,7 +407,7 @@ defmodule MyAppWeb.Application do
 
     children = [
       supervisor(MyAppWeb.Endpoint, []),
-      worker(Pow.Store.MnesiaCache, [nodes: nodes()])
+      worker(Pow.Store.Backend.MnesiaCache, [[nodes: [node()]]])
     ]
 
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
@@ -417,6 +417,8 @@ defmodule MyAppWeb.Application do
   # ...
 end
 ```
+
+Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
 ### Pow.Plug.RequireAuthenticated
 
