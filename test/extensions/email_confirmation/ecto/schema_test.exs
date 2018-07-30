@@ -11,19 +11,26 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
     assert Map.has_key?(user, :email_confirmed_at)
   end
 
-  test "changeset/2" do
+  test "changeset/2 with no email" do
     changeset = User.changeset(%User{}, %{email: "test@example.com"})
     assert Ecto.Changeset.get_change(changeset, :email_confirmation_token)
     refute Ecto.Changeset.get_change(changeset, :email_confirmed_at)
+    refute changeset.errors[:email_confirmation_token]
+  end
 
-    user = Ecto.Changeset.apply_changes(changeset)
+  test "changeset/2 with existing email" do
+    user = %User{email: "test@example.com"}
+
     changeset = User.changeset(user, %{})
     refute Ecto.Changeset.get_change(changeset, :email_confirmation_token)
+    refute changeset.errors[:email_confirmation_token]
 
     changeset = User.changeset(user, %{email: "test@example.com"})
     refute Ecto.Changeset.get_change(changeset, :email_confirmation_token)
+    refute changeset.errors[:email_confirmation_token]
 
     changeset = User.changeset(user, %{email: "new@example.com"})
     assert Ecto.Changeset.get_change(changeset, :email_confirmation_token)
+    refute changeset.errors[:email_confirmation_token]
   end
 end
