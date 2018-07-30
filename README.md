@@ -102,7 +102,9 @@ end
 
 That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
 
-By default, Pow will only expose files that are absolutely necessary. If you wish to modify the templates, you can generate them (and the view files) using the `mix pow.phoenix.gen.templates` command.
+By default, Pow will only expose files that are absolutely necessary
+
+ If you wish to modify the templates, you can generate them (and the view files) using: `mix pow.phoenix.gen.templates`. Remember to add `web_module: MyAppWeb` to the configuration.
 
 ## Extensions
 
@@ -118,7 +120,11 @@ To keep it easy to understand and configure Pow, you'll have to enable the exten
 
 Let's install the `PowResetPassword` and `PowEmailConfirmation` extensions.
 
-First, install extension migrations by running `mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation`.
+First, install extension migrations by running:
+
+```bash
+mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation
+```
 
 Update `config/config.ex` with the `:extensions`and `:controller_callbacks` key:
 
@@ -208,6 +214,38 @@ config :my_app_web, :pow,
 
 That's it!
 
+#### Modify mailer templates
+
+Since Phoenix doesn't ship with a mailer setup by default you should first modify `my_app_web.ex` with a `:mailer_view` macro:
+
+```elixir
+defmodule MyAppWeb do
+  # ...
+
+  def mailer_view do
+    quote do
+      use Phoenix.View, root: "lib/my_app_web/templates",
+                        namespace: MyAppWeb
+
+      use Phoenix.HTML
+    end
+  end
+
+  # ...
+
+end
+```
+
+Now generate the view and template files:
+
+```bash
+mix pow.extension.phoenix.mailer.gen.templates
+```
+
+This will generate view files in `WEB_PATH/views/mailer/`, and html and text templates in `WEB_PATH/templates/mailer` directory.
+
+Add `web_mailer_module: MyAppWeb` to the configuration, and you're set!
+
 ## Configuration
 
 Pow is build to be modular, and easy to configure. Configuration is primarily passed through method calls, and plug options and they will take priority over any environment configuration. This is ideal in case you've an umbrella app with multiple separate user domains.
@@ -234,7 +272,7 @@ The registration and session controllers can be changed with your customized ver
 
 ### Pow.Extension
 
-This module helps build extensions for Pow. There're two extension mix tasks to generate ecto migrations and phoenix templates.
+This module helps build extensions for Pow. There're three extension mix tasks to generate ecto migrations and phoenix templates.
 
 ```bash
 mix pow.extension.ecto.gen.migrations
@@ -242,6 +280,10 @@ mix pow.extension.ecto.gen.migrations
 
 ```bash
 mix pow.extension.phoenix.gen.templates
+```
+
+```bash
+mix pow.extension.phoenix.mailer.gen.templates
 ```
 
 ### Authorization plug
@@ -462,12 +504,12 @@ Set up `user.ex` to use Pow:
 
 Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
-  1. Install comeonin for bcrypt in `mix.exs`:
+ 1. Install comeonin for bcrypt in `mix.exs`:
     ```elixir
     {:comeonin, "~> 3.0"}
     ```
 
-  2. Set up `user.ex` to use bcrypt for password hashing:
+ 2. Set up `user.ex` to use bcrypt for password hashing:
 
     ```elixir
     defmodule MyApp.User do

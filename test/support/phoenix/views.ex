@@ -6,6 +6,12 @@ defmodule Pow.Test.Phoenix.Pow.SessionView do
   @moduledoc false
   use Pow.Test.Phoenix.Web, :web_module_view
 end
+defmodule Pow.Test.Phoenix.Pow.MailerView do
+  @moduledoc false
+  use Pow.Test.Phoenix.Web, :mailer_view
+
+  def subject(:mail_test, _assigns), do: ":web_mailer_module subject"
+end
 defmodule Pow.Test.Phoenix.ErrorView do
   @moduledoc false
   def render("500.html", _assigns), do: "500.html"

@@ -16,9 +16,10 @@ defmodule Pow.Phoenix.Mailer.ViewTest do
 
   alias Pow.Phoenix.Mailer.ViewTest.MailView
 
-  test "render/2" do
-    assert MailView.render("mail.html", value: "test") == "<p>HTML line test</p>"
+  test "MailView.render/2" do
+    assert MailView.subject(:mail, value: "test") == "Subject line"
+    html = Phoenix.HTML.safe_to_string(MailView.render("mail.html", value: "test"))
+    assert html == "<p>HTML line test</p>"
     assert MailView.render("mail.text", value: "test") == "Text line test"
-    assert MailView.subject(:mail) == "Subject line"
   end
 end

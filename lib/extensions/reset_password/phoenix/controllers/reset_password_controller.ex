@@ -4,8 +4,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     messages_backend_fallback: PowResetPassword.Phoenix.Messages
 
   alias Plug.Conn
-  alias Pow.Phoenix.Mailer
-  alias PowResetPassword.{Phoenix.Mailer.ResetPasswordMailer, Plug}
+  alias PowResetPassword.{Phoenix.Mailer, Plug}
 
   plug :require_not_authenticated
   plug :load_user_from_reset_token when action in [:edit, :update]
@@ -87,9 +86,9 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   end
 
   defp deliver_email(conn, user, url) do
-    email = ResetPasswordMailer.reset_password(user, url)
+    email = Mailer.reset_password(conn, user, url)
 
-    Mailer.deliver(conn, email)
+    Pow.Phoenix.Mailer.deliver(conn, email)
   end
 
   defp assign_create_path(conn, _opts) do

@@ -1,11 +1,13 @@
 defmodule Pow.Phoenix.Mailer do
   @moduledoc """
-  This is a mailer module that provides an API for any mails that Pow might
-  need to sent.
+  This module provides an API for mails to be sent by Pow.
+
+  Pow mails is build with `Pow.Phoenix.Mailer.Mail` structs, and consists of
+  `:subject`, `:text`, `:html` and `:user` keys.
 
   ## Usage
 
-      defmodule MyAppWeb.Mailer do
+      defmodule MyAppWeb.Pow.Mailer do
         use Pow.Phoenix.Mailer
         use Swoosh.Mailer, otp_app: :my_app
         import Swoosh.Email
@@ -21,6 +23,8 @@ defmodule Pow.Phoenix.Mailer do
 
         def process(email), do: deliver(email)
       end
+
+    Remember to update configuration with `mailer_backend: MyAppWeb.Pow.Mailer`
   """
   alias Plug.Conn
   alias Pow.Phoenix.Mailer.Mail

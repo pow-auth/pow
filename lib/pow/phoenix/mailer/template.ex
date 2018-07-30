@@ -1,17 +1,15 @@
 defmodule Pow.Phoenix.Mailer.Template do
   @moduledoc """
-  Module that can builds mailer templates for Phoenix views using EEx with
+  Module that builds mailer templates for Phoenix views using EEx with
   `Phoenix.HTML.Engine`.
 
   ## Usage
 
-      defmodule MyAppWeb.Mailer.MailTemplate do
+      defmodule PowExtension.Phoenix.Mailer.MailTemplate do
         use Pow.Phoenix.Mailer.Template
 
         template :mail, "Subject line", "Text content", "<p>HTML content</p>"
       end
-
-      MyAppWeb.Mailer.MailTemplate.render("mail.html", assigns)
   """
   defmacro __using__(_opts) do
     quote do
@@ -29,8 +27,6 @@ defmodule Pow.Phoenix.Mailer.Template do
       def render(unquote("#{action}.html"), var!(assigns)) do
         _ = var!(assigns)
         unquote(quoted_html)
-        |> Phoenix.Template.HTML.encode_to_iodata!()
-        |> IO.iodata_to_binary()
       end
 
       def render(unquote("#{action}.text"), var!(assigns)) do

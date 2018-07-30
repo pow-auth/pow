@@ -1,8 +1,8 @@
-defmodule PowEmailConfirmation.Phoenix.Mailer.EmailConfirmationTemplate do
+defmodule PowEmailConfirmation.Phoenix.MailerTemplate do
   @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
-  template :mail,
+  template :email_confirmation,
   "Confirm your email address",
   """
   Hi,

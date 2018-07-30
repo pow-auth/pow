@@ -29,7 +29,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   ]
   defp create_template_files(config) do
     structure    = Phoenix.parse_structure(config)
-    context_base = structure[:context_base]
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
     extensions   =
@@ -45,6 +44,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       end
     end
 
-    %{context_base: context_base, web_module: web_module}
+    %{structure: structure}
   end
 end

@@ -49,10 +49,8 @@ defmodule Pow.Phoenix.ViewHelpers do
       conn
       |> Plug.fetch_config()
       |> Config.get(:web_module, nil)
-      |> split_module()
-    [pow_module | _rest] = Module.split(view_module)
 
-    view   = build_view_module(view_module, web_module, pow_module)
+    view   = build_view_module(view_module, web_module)
     layout = build_layout(layout, web_module || base)
 
     conn
@@ -60,15 +58,23 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Controller.put_layout(layout)
   end
 
-  defp build_view_module(module, nil, _pow_module), do: module
-  defp build_view_module(module, base, pow_module) do
-    base = base ++ [pow_module]
+  @spec build_view_module(module(), module() | nil) :: module()
+  def build_view_module(module, nil), do: module
+  def build_view_module(module, web_module) when is_atom(web_module) do
+    build_view_module(module, split_module(web_module))
+  end
+  def build_view_module(module, base) do
+    [pow_module | _rest] = Module.split(module)
+    base                 = base ++ [pow_module]
 
     module
     |> split_module()
     |> build_module(base)
   end
 
+  defp build_layout({view, template}, web_module) when is_atom(web_module) do
+    build_layout({view, template}, split_module(web_module))
+  end
   defp build_layout({view, template}, base) do
     view =
       view

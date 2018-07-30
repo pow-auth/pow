@@ -7,11 +7,11 @@ defmodule Pow.Phoenix.Mailer.View do
     quote do
       @template_module Pow.Phoenix.View.__template_module__(__MODULE__)
 
-      def render(action, assigns) do
-        @template_module.render(action, assigns)
+      def render(mail, assigns) do
+        @template_module.render(mail, assigns)
       end
 
-      def subject(action), do: @template_module.subject(action)
+      def subject(mail, _assigns), do: @template_module.subject(mail)
     end
   end
 end

@@ -39,7 +39,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def send_confirmation_email(user, conn) do
     token = user.email_confirmation_token
     url   = Controller.router_helpers(conn).pow_email_confirmation_confirmation_url(conn, :show, token)
-    email = Mailer.EmailConfirmationMailer.email_confirmation(user, url)
+    email = Mailer.email_confirmation(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
 

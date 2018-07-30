@@ -4,21 +4,20 @@ defmodule Pow.Phoenix.MailerTest.Mailer do
   def cast(email), do: {:cast, email}
   def process({:cast, email}), do: {:process, email}
 end
-
 defmodule Pow.Phoenix.MailerTest do
   use Pow.Test.Phoenix.ConnCase
   doctest Pow.Phoenix.Mailer
 
+  alias Pow.Test.Phoenix.Pow.MailerView
   alias Pow.Phoenix.Mailer
 
   setup %{conn: conn} do
-    email = Mailer.Mail.new(%{email: "test@example.com"}, :subject, :text, :html)
+    email =
+      conn
+      |> Plug.Conn.put_private(:pow_config, [])
+      |> Mailer.Mail.new(%{email: "test@example.com"}, {MailerView, :mail_test}, value: "test")
 
     {:ok, conn: conn, email: email}
-  end
-
-  test "Mail.new/3", %{email: email} do
-    assert email == %Pow.Phoenix.Mailer.Mail{user: %{email: "test@example.com"}, text: :text, html: :html, subject: :subject}
   end
 
   test "deliver/2", %{conn: conn, email: email} do

@@ -1,8 +1,8 @@
-defmodule PowResetPassword.Phoenix.Mailer.ResetPasswordTemplate do
+defmodule PowResetPassword.Phoenix.MailerTemplate do
   @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
-  template :mail,
+  template :reset_password,
   "Reset password link",
   """
   Hi,
