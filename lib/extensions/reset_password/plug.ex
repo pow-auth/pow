@@ -1,21 +1,26 @@
 defmodule PowResetPassword.Plug do
   @moduledoc false
   alias Plug.Conn
-  alias Pow.{Config, Ecto.Schema.Changeset, Store.Backend.EtsCache, UUID}
+  alias Pow.{Config, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
 
   @spec change_user(Conn.t(), map()) :: map()
   def change_user(conn, params \\ %{}) do
-    config   = Pow.Plug.fetch_config(conn)
     user =
       conn
       |> reset_password_user()
       |> case do
-        nil  -> config |> Context.user_schema_mod() |> struct()
-        user -> user
+        nil  ->
+          conn
+          |> Pow.Plug.fetch_config()
+          |> Context.user_schema_mod()
+          |> struct()
+
+        user ->
+          user
       end
 
-    Changeset.password_changeset(user, params, config)
+    user.__struct__.pow_password_changeset(user, params)
   end
 
   @spec assign_reset_password_user(Conn.t(), map()) :: Conn.t()

@@ -2,6 +2,7 @@ defmodule PowResetPassword.Ecto.ContextTest do
   use Pow.Test.Ecto.TestCase
   doctest PowResetPassword.Ecto.Context
 
+  alias Pow.Ecto.Schema.Password
   alias PowResetPassword.Ecto.Context
   alias PowResetPassword.Test.{RepoMock, Users.User}
 
@@ -17,8 +18,11 @@ defmodule PowResetPassword.Ecto.ContextTest do
   end
 
   describe "update_password/2" do
-    test "updates" do
-      assert {:ok, _user} = Context.update_password(@config, @user, %{password: @password, confirm_password: @password})
+    test "updates with compiled password hash methods" do
+      config = @config ++ [password_hash_methods: {&(&1 <> "123"), &(&1 == &2 <> "123")}]
+
+      assert {:ok, user} = Context.update_password(config, @user, %{password: @password, confirm_password: @password})
+      assert Password.pbkdf2_verify(@password, user.password_hash)
     end
 
     test "requires password input" do

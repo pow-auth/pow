@@ -12,7 +12,7 @@ defmodule PowResetPassword.Ecto.Context do
   @spec update_password(Config.t(), map(), map()) :: {:ok, map()} | {:error, Changeset.t()}
   def update_password(config, user, params) do
     user
-    |> Pow.Ecto.Schema.Changeset.password_changeset(params, config)
+    |> user.__struct__.pow_password_changeset(params)
     |> Changeset.validate_required([:password])
     |> Context.do_update(config)
   end

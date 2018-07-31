@@ -60,15 +60,33 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
+  @changeset_methods [:user_id_field_changeset, :password_changeset, :current_password_changeset]
+
   @spec __pow_methods__() :: Macro.t()
   defmacro __pow_methods__() do
+    quoted_changeset_methods = for method <- @changeset_methods do
+      pow_method_name = :"pow_#{method}"
+
+      quote do
+        @spec unquote(pow_method_name)(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
+        def unquote(pow_method_name)(user_or_changeset, attrs) do
+          unquote(__MODULE__).Changeset.unquote(method)(user_or_changeset, attrs, @pow_config)
+        end
+      end
+    end
+
     quote do
       import unquote(__MODULE__), only: [pow_user_fields: 0]
 
       @spec pow_changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
       def pow_changeset(user_or_changeset, attrs) do
-        unquote(__MODULE__).Changeset.changeset(@pow_config, user_or_changeset, attrs)
+        user_or_changeset
+        |> pow_user_id_field_changeset(attrs)
+        |> pow_current_password_changeset(attrs)
+        |> pow_password_changeset(attrs)
       end
+
+      unquote(quoted_changeset_methods)
 
       @spec pow_verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def pow_verify_password(user, password) do

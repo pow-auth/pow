@@ -1,6 +1,10 @@
 defmodule Pow.Ecto.Schema.Changeset do
   @moduledoc """
-  Handles changeset for pow user.
+  Handles changesets methods for Pow schema.
+
+  These methods should never be called directly, but instead the methods
+  build in macros in `Pow.Ecto.Schema` should be used. This is to ensure
+  that only compile time configuration is used.
 
   ## Configuration options
 
@@ -20,19 +24,11 @@ defmodule Pow.Ecto.Schema.Changeset do
   @password_min_length 10
   @password_max_length 4096
 
-  @spec changeset(Config.t(), Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
-  def changeset(config, user_or_changeset, params) do
-    user_or_changeset
-    |> user_id_field_changeset(params, config)
-    |> current_password_changeset(params, config)
-    |> password_changeset(params, config)
-  end
-
   @spec user_id_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def user_id_field_changeset(changeset, params, _config) do
-    user_id_field = Schema.user_id_field(changeset)
+  def user_id_field_changeset(user_or_changeset, params, _config) do
+    user_id_field = Schema.user_id_field(user_or_changeset)
 
-    changeset
+    user_or_changeset
     |> Changeset.cast(params, [user_id_field])
     |> Changeset.update_change(user_id_field, &Schema.normalize_user_id_field_value/1)
     |> maybe_validate_email_format(user_id_field)
@@ -41,8 +37,8 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   @spec password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def password_changeset(changeset, params, config) do
-    changeset
+  def password_changeset(user_or_changeset, params, config) do
+    user_or_changeset
     |> Changeset.cast(params, [:password, :confirm_password])
     |> maybe_require_password()
     |> maybe_validate_password(config)
@@ -52,8 +48,8 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   @spec current_password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def current_password_changeset(changeset, params, config) do
-    changeset
+  def current_password_changeset(user_or_changeset, params, config) do
+    user_or_changeset
     |> Changeset.cast(params, [:current_password])
     |> maybe_validate_current_password(config)
   end

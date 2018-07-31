@@ -5,7 +5,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
   alias Pow.Ecto.Schema.{Changeset, Password}
   alias Pow.Test.Ecto.{Repo, Users.User, Users.UsernameUser}
 
-  describe "changeset/2" do
+  describe "User.changeset/2" do
     @valid_params %{
       "email" => "john.doe@example.com",
       "password" => "secret1234",
@@ -138,7 +138,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       password_verify = &(&1 == &2 <> "123")
       config = [password_hash_methods: {password_hash, password_verify}]
 
-      changeset = Changeset.changeset(config, %User{}, @valid_params)
+      changeset = Changeset.password_changeset(%User{}, @valid_params, config)
 
       assert changeset.valid?
       assert changeset.changes[:password_hash] == "secret1234123"
