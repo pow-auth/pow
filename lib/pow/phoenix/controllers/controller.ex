@@ -77,6 +77,7 @@ defmodule Pow.Phoenix.Controller do
     apply(controller, :"process_#{action}", [conn, params])
   end
 
+  defp respond_action({:halt, conn}, _controller, _action), do: conn
   defp respond_action(results, controller, action) do
     apply(controller, :"respond_#{action}", [results])
   end

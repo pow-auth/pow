@@ -17,8 +17,9 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
     def unquote(hook)(controller, action, results, config) do
       config
       |> modules()
-      |> Enum.reduce(results, fn extension, results ->
-        extension.unquote(hook)(controller, action, results, config)
+      |> Enum.reduce(results, fn
+        _extension, {:halt, conn} -> {:halt, conn}
+        extension, results        -> extension.unquote(hook)(controller, action, results, config)
       end)
     end
   end

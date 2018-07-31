@@ -448,19 +448,19 @@ Set up a migration file with the following change to continue using your users t
   def up do
     alter table(:users) do
       add :email_confirmation_token, :string
-      add :email_confirmed_at, :utc_datetime
-
-      create unique_index(:users, :email_confirmation_token)
+      add :email_confirmed_at,       :utc_datetime
+      add :unconfirmed_email,        :string
     end
+
+    create unique_index(:users, :email_confirmation_token)
   end
 
   def down do
     alter table(:users) do
       remove :email_confirmation_token
       remove :email_confirmed_at
+      remove :unconfirmed_email
     end
-
-    drop index(:users, :email_confirmation_token)
   end
   ```
 
@@ -584,6 +584,32 @@ Change `Routes.session_path` to `Routes.pow_session_path`, and
 `Routes.registration_path` to `Routes.pow_registration_path`. Any references to `Coherence.current_user/1`, can be changed to `Pow.Plug.current_user/1`.
 
 That's it! You can now test out your Pow'ered app, and then remove all unused fields/tables after.
+
+### Keep confirmed_at and confirmation_token data
+
+To keep confirmed_at and confirmation_token data from your past coherence setup, you should first add the coherence fields to your user schema:
+
+```elixir
+field :confirmation_token, :string
+field :confirmed_at, :utc_datetime
+```
+
+And then you can run the following:
+
+```elixir
+alias MyApp.{User, Repo}
+
+User
+|> Repo.all()
+|> Enum.each(fn user ->
+  user
+  |> Ecto.Changeset.change(%{
+    email_confirmation_token: user.confirmation_token,
+    email_confirmed_at: user.confirmed_at
+    })
+  |> Repo.update!()
+end)
+```
 
 ## Pow security practices
 

@@ -6,18 +6,34 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
   alias PowEmailConfirmation.Test.{RepoMock, Users.User}
 
   @config [repo: RepoMock, user: User]
+  @user   %User{id: 1, email: "test@example.com"}
 
   describe "confirm_email/2" do
-    test "doesn't confirm when already confirmed" do
-      user = %User{id: 1}
-      assert {:ok, user} = Context.confirm_email(@config, user)
+    test "confirms with no :unconfirmed_email" do
+      assert {:ok, user} = Context.confirm_email(@config, @user)
       assert user.email_confirmed_at
+      assert user.email == "test@example.com"
+    end
 
+    test "doesn't confirm when previously confirmed" do
       previously_confirmed_at = DateTime.from_iso8601("2018-01-01 00:00:00")
-      user = %User{id: 1, email_confirmed_at: previously_confirmed_at}
+      user                    = %{@user | email_confirmed_at: previously_confirmed_at}
 
       assert {:ok, user} = Context.confirm_email(@config, user)
       assert user.email_confirmed_at == previously_confirmed_at
+    end
+
+    test "changes :email to :unconfirmed_email" do
+      user = %{@user | unconfirmed_email: "new@example.com"}
+      assert {:ok, user} = Context.confirm_email(@config, user)
+      assert user.email == "new@example.com"
+      refute user.unconfirmed_email
+    end
+
+    test "handles unique index" do
+      user = %{@user | unconfirmed_email: "taken@example.com"}
+      assert {:error, changeset} = Context.confirm_email(@config, user)
+      assert changeset.errors[:email] == {"has already been taken", []}
     end
   end
 end
