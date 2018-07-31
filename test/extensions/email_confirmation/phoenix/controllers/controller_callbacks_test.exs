@@ -1,6 +1,7 @@
 defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
-  alias Pow.{Phoenix.Messages, Plug}
+
+  alias Pow.{Ecto.Schema.Password, Phoenix.Messages, Plug}
   alias PowEmailConfirmation.Test.Users.User
 
   @user_created_message Messages.user_has_been_created(nil)
@@ -25,7 +26,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     @params %{"user" => %{"email" => "test@example.com", "current_password" => @password}}
 
     setup %{conn: conn} do
-      user = %User{id: 1, email: "test@example.com", password_hash: Comeonin.Pbkdf2.hashpwsalt(@password), email_confirmation_token: "token"}
+      user = %User{id: 1, email: "test@example.com", password_hash: Password.pbkdf2_hash(@password), email_confirmation_token: "token"}
       conn = Plug.assign_current_user(conn, user, [])
 
       {:ok, conn: conn}

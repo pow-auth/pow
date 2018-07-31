@@ -10,12 +10,12 @@ defmodule Pow.Ecto.Schema.Changeset do
       defaults to:
 
       ```elixir
-      {&Pow.Ecto.Schema.Changeset.pbkdf2_hash/1,
-       &Pow.Ecto.Schema.Changeset.pbkdf2_verify/2}
+      {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
+       &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
       ```
   """
   alias Ecto.Changeset
-  alias Pow.{Config, Ecto.Schema}
+  alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
 
   @password_min_length 10
   @password_max_length 4096
@@ -140,12 +140,6 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> apply([password])
   end
 
-  @spec pbkdf2_hash(binary()) :: binary()
-  def pbkdf2_hash(password), do: Comeonin.Pbkdf2.hashpwsalt(password)
-
-  @spec pbkdf2_verify(binary(), binary()) :: boolean()
-  def pbkdf2_verify(hash, password), do: Comeonin.Pbkdf2.checkpw(hash, password)
-
   defp password_hash_method(config) do
     {password_hash_method, _} = password_hash_methods(config)
 
@@ -159,7 +153,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   defp password_hash_methods(config) do
-    Config.get(config, :password_hash_methods, {&pbkdf2_hash/1, &pbkdf2_verify/2})
+    Config.get(config, :password_hash_methods, {&Password.pbkdf2_hash/1, &Password.pbkdf2_verify/2})
   end
 
   @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>

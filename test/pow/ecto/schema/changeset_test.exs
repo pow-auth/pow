@@ -2,7 +2,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Ecto.Schema.Changeset
 
-  alias Pow.Ecto.Schema.Changeset
+  alias Pow.Ecto.Schema.{Changeset, Password}
   alias Pow.Test.Ecto.{Repo, Users.User, Users.UsernameUser}
 
   describe "changeset/2" do
@@ -89,7 +89,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.errors[:password] == {"can't be blank", [validation: :required]}
 
       password = "secret"
-      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt(password)}
+      user = %User{password_hash: Password.pbkdf2_hash(password)}
       params = Map.put(@valid_params, "current_password", password)
       changeset = User.changeset(user, params)
 
@@ -130,7 +130,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
       assert changeset.valid?
       assert changeset.changes[:password_hash]
-      assert Comeonin.Pbkdf2.checkpw("secret1234", changeset.changes[:password_hash])
+      assert Password.pbkdf2_verify("secret1234", changeset.changes[:password_hash])
     end
 
     test "can use custom password hash methods" do
@@ -145,7 +145,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     end
 
     test "requires current password when password_hash exists" do
-      user = %User{password_hash: Comeonin.Pbkdf2.hashpwsalt("secret1234")}
+      user = %User{password_hash: Password.pbkdf2_hash("secret1234")}
 
       changeset = User.changeset(%User{}, @valid_params)
       assert changeset.valid?

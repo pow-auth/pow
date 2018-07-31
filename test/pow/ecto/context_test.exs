@@ -3,7 +3,7 @@ defmodule Pow.Ecto.ContextTest do
   doctest Pow.Ecto.Context
 
   alias Ecto.Changeset
-  alias Pow.Ecto.Context
+  alias Pow.Ecto.{Context, Schema.Password}
   alias Pow.Test.Ecto.{Repo, Users, Users.User, Users.UsernameUser}
 
   @config [repo: Repo, user: User]
@@ -15,7 +15,7 @@ defmodule Pow.Ecto.ContextTest do
     @valid_params_username %{"username" => "john.doe", "password" => @password}
 
     setup do
-      password_hash = Comeonin.Pbkdf2.hashpwsalt(@password)
+      password_hash = Password.pbkdf2_hash(@password)
       user =
         %User{}
         |> Changeset.change(email: "test@example.com", password_hash: password_hash)
@@ -96,7 +96,7 @@ defmodule Pow.Ecto.ContextTest do
     }
 
     setup do
-      password_hash = Comeonin.Pbkdf2.hashpwsalt(@password)
+      password_hash = Password.pbkdf2_hash(@password)
       changeset = Changeset.change(%User{}, email: "test@exampe.com", password_hash: password_hash)
 
       {:ok, %{user: Repo.insert!(changeset)}}
