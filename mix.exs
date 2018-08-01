@@ -44,7 +44,7 @@ defmodule Pow.MixProject do
       {:phoenix_html, "~> 2.11.0", only: [:dev, :test]},
       {:phoenix_ecto, "~> 3.3.0", only: [:dev, :test]},
 
-      {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.19.0", only: :dev},
       {:credo, "~> 0.9.3", only: :dev},
 
       {:postgrex, ">= 0.0.0", only: [:test]},

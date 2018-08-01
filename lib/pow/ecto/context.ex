@@ -34,7 +34,6 @@ defmodule Pow.Ecto.Context do
     * `:repo` the ecto repo module
     * `:user` the user schema module
   """
-
   alias Ecto.Changeset
   alias Pow.Config
   alias Pow.Ecto.Schema
