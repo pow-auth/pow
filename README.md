@@ -262,7 +262,7 @@ This group will handle the plug connection. The configuration will be assigned t
 
 #### Pow.Ecto
 
-This group contains all modules related to the Ecto based user schema and context. By default, Pow will use the `Pow.Ecto.Context` module to authenticate, create, update and delete users with lookups to the database. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
+This group contains all modules related to the Ecto based user schema and context. By default, Pow will use the [`Pow.Ecto.Context`](lib/pow/ecto/context.ex) module to authenticate, create, update and delete users with lookups to the database. However, it's very simple to extend, or write your own user context. You can do this by setting the `:users_context` configuration key.
 
 #### Pow.Phoenix
 
@@ -394,9 +394,9 @@ Enables session based authorization. The user struct will be collected from a ca
 
 #### Cache store
 
-By default `Pow.Store.EtsCache` is started automatically and can be used in development and test environment.
+By default [`Pow.Store.Backend.EtsCache`](lib/pow/store/backend/ets_cache.ex) is started automatically and can be used in development and test environment.
 
-For production environment a distributed, persistent cache store should be used. Pow makes this easy with `Pow.Store.MnesiaCache`. As an example, to start MnesiaCache in your Phoenix app, you just have to set up your `application.ex`:
+For production environment a distributed, persistent cache store should be used. Pow makes this easy with [`Pow.Store.Backend.MnesiaCache`](lib/pow/store/backend/mnesia_cache.ex). As an example, to start MnesiaCache in your Phoenix app, you just have to set up your `application.ex`:
 
 ```elixir
 defmodule MyAppWeb.Application do
