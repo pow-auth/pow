@@ -13,11 +13,18 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   def respond_show({:ok, _user, conn}) do
     conn
     |> put_flash(:info, messages(conn).email_has_been_confirmed(conn))
-    |> redirect(to: router_helpers(conn).pow_registration_path(conn, :edit))
+    |> redirect(to: redirect_to(conn))
   end
   def respond_show({:error, _changeset, conn}) do
     conn
     |> put_flash(:error, messages(conn).email_confirmation_failed(conn))
-    |> redirect(to: router_helpers(conn).pow_registration_path(conn, :edit))
+    |> redirect(to: redirect_to(conn))
+  end
+
+  defp redirect_to(conn) do
+    case Pow.Plug.current_user(conn) do
+      nil   -> router_helpers(conn).pow_session_path(conn, :new)
+      _user -> router_helpers(conn).pow_registration_path(conn, :edit)
+    end
   end
 end
