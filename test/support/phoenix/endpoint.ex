@@ -23,7 +23,8 @@ defmodule Pow.Test.Phoenix.Endpoint do
     session_key: "auth",
     cache_store_backend: Pow.Test.EtsCacheMock,
     user: Pow.Test.Ecto.Users.User,
-    users_context: Pow.Test.ContextMock
+    users_context: Pow.Test.ContextMock,
+    messages_backend: Pow.Test.Phoenix.Messages
 
   plug Pow.Test.Phoenix.Router
 end

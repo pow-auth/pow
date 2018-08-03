@@ -16,13 +16,17 @@ defmodule Pow.Phoenix.Messages do
   """
   alias Plug.Conn
 
-  @callback signed_out(Conn.t()) :: binary()
-  @callback signed_in(Conn.t()) :: binary()
-  @callback invalid_credentials(Conn.t()) :: binary()
-  @callback user_has_been_created(Conn.t()) :: binary()
-  @callback user_has_been_updated(Conn.t()) :: binary()
-  @callback user_has_been_deleted(Conn.t()) :: binary()
-  @callback user_could_not_be_deleted(Conn.t()) :: binary()
+  @type message :: binary() | nil
+
+  @callback user_not_authenticated(Conn.t()) :: message()
+  @callback user_already_authenticated(Conn.t()) :: message()
+  @callback signed_out(Conn.t()) :: message()
+  @callback signed_in(Conn.t()) :: message()
+  @callback invalid_credentials(Conn.t()) :: message()
+  @callback user_has_been_created(Conn.t()) :: message()
+  @callback user_has_been_updated(Conn.t()) :: message()
+  @callback user_has_been_deleted(Conn.t()) :: message()
+  @callback user_could_not_be_deleted(Conn.t()) :: message()
 
   defmacro __using__(_opts) do
     quote do
@@ -51,13 +55,13 @@ defmodule Pow.Phoenix.Messages do
     end
   end
 
-  def user_not_authenticated(_conn), do: "You need to sign in to see this page."
-  def user_already_authenticated(_conn), do: "You're already signed in."
-  def signed_in(_conn), do: "Welcome! You've been signed in."
-  def signed_out(_conn), do: "You've been signed out. See you soon!"
+  def user_not_authenticated(_conn), do: nil
+  def user_already_authenticated(_conn), do: nil
+  def signed_in(_conn), do: nil
+  def signed_out(_conn), do: nil
   def invalid_credentials(_conn), do: "The provided login details did not work. Please verify your credentials, and try again."
-  def user_has_been_created(_conn), do: "Welcome! Your account has been created."
+  def user_has_been_created(_conn), do: nil
   def user_has_been_updated(_conn), do: "Your account has been updated."
   def user_has_been_deleted(_conn), do: "Your account has been deleted. Sorry to see you go!"
-  def user_could_not_be_deleted(_conn), do: "Something went wrong. Your account could not be deleted."
+  def user_could_not_be_deleted(_conn), do: "Your account could not be deleted."
 end

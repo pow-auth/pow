@@ -1,11 +1,6 @@
 defmodule Pow.Phoenix.RegistrationControllerTest do
   use Pow.Test.Phoenix.ConnCase
-  alias Pow.{Phoenix.Messages, Plug}
-
-  @user_created_message Messages.user_has_been_created(nil)
-  @user_updated_message Messages.user_has_been_updated(nil)
-  @user_deleted_message Messages.user_has_been_deleted(nil)
-  @user_not_deleted_message Messages.user_could_not_be_deleted(nil)
+  alias Pow.Plug
 
   describe "new/2" do
     test "shows", %{conn: conn} do
@@ -47,7 +42,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
       assert redirected_to(conn) == "/"
-      assert get_flash(conn, :info) == @user_created_message
+      assert get_flash(conn, :info) == "user_created"
       assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
@@ -104,7 +99,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = put(conn, Routes.pow_registration_path(conn, :update, @valid_params))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
-      assert get_flash(conn, :info) == @user_updated_message
+      assert get_flash(conn, :info) == "Your account has been updated."
       assert user = Plug.current_user(conn)
       assert user.id == :updated
       assert conn.private[:plug_session]["auth"] != session_id
@@ -143,7 +138,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> delete(Routes.pow_registration_path(conn, :delete))
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :info) == @user_deleted_message
+      assert get_flash(conn, :info) == "Your account has been deleted. Sorry to see you go!"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
@@ -155,7 +150,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> delete(Routes.pow_registration_path(conn, :delete))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
-      assert get_flash(conn, :info) == @user_not_deleted_message
+      assert get_flash(conn, :error) == "Your account could not be deleted."
       assert Plug.current_user(conn) == :fail_deletion
     end
   end

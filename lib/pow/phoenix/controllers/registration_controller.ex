@@ -81,7 +81,7 @@ defmodule Pow.Phoenix.RegistrationController do
   end
   def respond_delete({:error, _changeset, conn}) do
     conn
-    |> put_flash(:info, messages(conn).user_could_not_be_deleted(conn))
+    |> put_flash(:error, messages(conn).user_could_not_be_deleted(conn))
     |> redirect(to: router_helpers(conn).pow_registration_path(conn, :edit))
   end
 

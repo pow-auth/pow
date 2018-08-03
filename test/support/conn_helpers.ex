@@ -1,4 +1,5 @@
 defmodule Plug.ProcessStore do
+  @moduledoc false
   @behaviour Plug.Session.Store
 
   def init(_opts) do

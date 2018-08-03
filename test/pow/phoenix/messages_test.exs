@@ -10,10 +10,12 @@ defmodule Pow.Phoenix.MessagesTest do
   alias Pow.Phoenix.Messages
 
   test "can customize messages" do
-    assert Messages.signed_out(nil) == "You've been signed out. See you soon!"
-    assert Messages.signed_in(nil) == "Welcome! You've been signed in."
+    conn = nil
 
-    assert CustomMessages.signed_out(nil) == "Custom"
-    assert CustomMessages.signed_in(nil) == "Welcome! You've been signed in."
+    assert is_nil(Messages.signed_out(conn))
+    assert Messages.invalid_credentials(conn) == "The provided login details did not work. Please verify your credentials, and try again."
+
+    assert CustomMessages.signed_out(conn) == "Custom"
+    assert CustomMessages.invalid_credentials(conn) == "The provided login details did not work. Please verify your credentials, and try again."
   end
 end

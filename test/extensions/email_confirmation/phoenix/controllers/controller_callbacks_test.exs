@@ -26,7 +26,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     test "when email has been confirmed", %{conn: conn} do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "confirmed@example.com")})
 
-      assert get_flash(conn, :info) == "Welcome! You've been signed in."
+      assert get_flash(conn, :info) == "signed_in"
       assert redirected_to(conn) == "/"
     end
   end
