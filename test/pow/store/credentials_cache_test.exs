@@ -67,7 +67,7 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.get(config, backend_config, "key_2") == user_1
     assert CredentialsCache.list(config, backend_config, user_1) == ["key_1", "key_2"]
 
-    CredentialsCache.put(config, backend_config ++ [ttl: 50], "key_2", user_1)
+    CredentialsCache.put(config, backend_config ++ [ttl: 100], "key_2", user_1)
     :timer.sleep(50)
     assert CredentialsCache.list(config, backend_config, user_1) == ["key_2"]
 
