@@ -69,7 +69,7 @@ defmodule Pow.Extension.Phoenix.Router do
       def methods do
         for router_module <- unquote(__MODULE__).__router_extensions__(unquote(config)) do
           namespace      = unquote(__MODULE__).__scope_namespace__(router_module)
-          router_method  = :"#{namespace}_routes"
+          router_method  = String.to_atom("#{namespace}_routes")
 
           {router_module, router_method}
         end

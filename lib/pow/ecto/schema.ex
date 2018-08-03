@@ -65,7 +65,7 @@ defmodule Pow.Ecto.Schema do
   @spec __pow_methods__() :: Macro.t()
   defmacro __pow_methods__() do
     quoted_changeset_methods = for method <- @changeset_methods do
-      pow_method_name = :"pow_#{method}"
+      pow_method_name = String.to_atom("pow_#{method}")
 
       quote do
         @spec unquote(pow_method_name)(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()

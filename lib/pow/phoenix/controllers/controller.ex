@@ -74,12 +74,12 @@ defmodule Pow.Phoenix.Controller do
   end
 
   defp process_action(conn, controller, action, params) do
-    apply(controller, :"process_#{action}", [conn, params])
+    apply(controller, String.to_atom("process_#{action}"), [conn, params])
   end
 
   defp respond_action({:halt, conn}, _controller, _action), do: conn
   defp respond_action(results, controller, action) do
-    apply(controller, :"respond_#{action}", [results])
+    apply(controller, String.to_atom("respond_#{action}"), [results])
   end
 
   defp maybe_callback(results, nil, _hook, _controller, _action, _config), do: results
