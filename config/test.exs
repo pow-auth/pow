@@ -10,9 +10,9 @@ config :pow, Pow.Test.Ecto.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   priv: "test/support/ecto/priv"
 
-config :pbkdf2_elixir, rounds: 1
-
 config :mnesia, dir: 'tmp/mnesia'
+
+config :pow, Pow.Ecto.Schema.Password, iterations: 1
 
 for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] do
   context_module = Module.concat([extension, Test])

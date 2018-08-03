@@ -46,7 +46,7 @@ module_raised_with = try do
   defmodule Pow.Test.Extension.Ecto.Schema.InvalidUser do
     use Ecto.Schema
     use Pow.Ecto.Schema,
-    user_id_field: :username
+      user_id_field: :username
     use Pow.Extension.Ecto.Schema,
       extensions: [Pow.Test.Extension.Ecto.Schema]
 

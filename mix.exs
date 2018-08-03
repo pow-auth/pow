@@ -35,8 +35,6 @@ defmodule Pow.MixProject do
 
   defp deps do
     [
-      {:comeonin, ">= 3.0.0 and < 4.2.0"},
-      {:pbkdf2_elixir, "~> 0.12.0"},
       {:ecto, "~> 2.2.0", optional: true},
       {:phoenix, "~> 1.3.0", optional: true},
       {:plug, ">= 1.5.0 and < 1.7.0", optional: true},
