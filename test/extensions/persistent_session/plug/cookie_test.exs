@@ -15,7 +15,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       :get
       |> ConnHelpers.conn("/")
       |> ConnHelpers.init_session()
-      |> Session.call([otp_app: PowPersistentSession.Test])
+      |> Session.call([otp_app: PowPersistentSession.TestWeb])
 
     {:ok, %{conn: conn}}
   end
@@ -33,7 +33,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "call/2 sets pow_persistent_session_mod in conn", %{conn: conn} do
     conn = Cookie.call(conn, Cookie.init([]))
 
-    assert {Cookie, [mod: Session, otp_app: PowPersistentSession.Test]} = conn.private[:pow_persistent_session]
+    assert {Cookie, [mod: Session, otp_app: PowPersistentSession.TestWeb]} = conn.private[:pow_persistent_session]
     refute conn.resp_cookies["persistent_session_cookie"]
   end
 

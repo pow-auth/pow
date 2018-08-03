@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       refute File.exists?(@views_path)
 
       assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow_web"
 
       assert msg =~ "use Pow.Phoenix.Router"
       assert msg =~ "pow_routes()"
@@ -65,7 +65,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       Install.run(@options ++ ~w(--context-app test))
 
       assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "plug Pow.Plug.Session, otp_app: :test"
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :test_web"
     end
   end
 end

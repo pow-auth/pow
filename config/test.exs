@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :pow, Pow.Test.Phoenix.Endpoint,
+config :pow_web, Pow.Test.Phoenix.Endpoint,
   secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2),
   render_errors: [view: Pow.Test.Phoenix.ErrorView, accepts: ~w(html json)]
 
@@ -18,11 +18,11 @@ for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] 
   context_module = Module.concat([extension, Test])
   web_module = Module.concat([extension, TestWeb])
 
-  config context_module, Module.concat([web_module, Phoenix.Endpoint]),
+  config web_module, Module.concat([web_module, Phoenix.Endpoint]),
     render_errors: [view: Module.concat([web_module, Phoenix.ErrorView]), accepts: ~w(html json)],
     secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 
-  config context_module, :pow,
+  config web_module, :pow,
     user: Module.concat([context_module, Users.User]),
     repo: Module.concat([context_module, RepoMock]),
     cache_store_backend: Pow.Test.EtsCacheMock,

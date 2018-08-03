@@ -7,7 +7,8 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([context_module, Users.User])
     quoted = quote do
       use Ecto.Schema
-      use Pow.Ecto.Schema, otp_app: unquote(context_module)
+      use Pow.Ecto.Schema,
+        extensions: unquote(opts)[:extensions]
       use Pow.Extension.Ecto.Schema
 
       schema "users" do
@@ -28,7 +29,7 @@ defmodule Pow.Test.ExtensionMocks do
     quoted = quote do
       use Phoenix.Router
       use Pow.Phoenix.Router
-      use Pow.Extension.Phoenix.Router, otp_app: unquote(context_module)
+      use Pow.Extension.Phoenix.Router, otp_app: unquote(web_module)
 
       pipeline :browser do
         plug :accepts, ["html"]
@@ -50,7 +51,7 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([web_module, Phoenix.Endpoint])
 
     quoted = quote do
-      use Phoenix.Endpoint, otp_app: unquote(context_module)
+      use Phoenix.Endpoint, otp_app: unquote(web_module)
 
       plug Plug.RequestId
       plug Plug.Logger
@@ -68,7 +69,7 @@ defmodule Pow.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: unquote(context_module)
+      plug Pow.Plug.Session, otp_app: unquote(web_module)
 
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])

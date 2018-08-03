@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
       for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "defmodule PowWeb.Endpoint"
-      assert msg =~ "otp_app: :pow"
+      assert msg =~ "otp_app: :pow_web"
       assert msg =~ "repo: Pow.Repo"
       assert msg =~ "user: Pow.Users.User"
       assert msg =~ "web_module: PowWeb"
@@ -68,7 +68,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
       for _ <- 1..5, do: assert_received {:mix_shell, :info, [_msg]}
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "defmodule TestWeb.Endpoint"
-      assert msg =~ "otp_app: :test"
+      assert msg =~ "otp_app: :test_web"
       assert msg =~ "repo: Test.Repo"
       assert msg =~ "user: Test.Users.User"
       assert msg =~ "web_module: TestWeb"

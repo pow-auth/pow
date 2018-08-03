@@ -1,6 +1,6 @@
 defmodule Pow.Test.Phoenix.Endpoint do
   @moduledoc false
-  use Phoenix.Endpoint, otp_app: :pow
+  use Phoenix.Endpoint, otp_app: :pow_web
 
   plug Plug.RequestId
   plug Plug.Logger

@@ -54,7 +54,6 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   defp maybe_run_extensions_gen_templates(config, _args), do: config
 
   defp print_shell_instructions(%{structure: structure}) do
-    context_base = structure[:context_base]
     web_base     = structure[:web_module]
     web_prefix   = structure[:web_prefix]
 
@@ -66,7 +65,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     First, the #{web_prefix}/endpoint.ex file needs the `Pow.Plug.Session` plug:
 
     defmodule #{inspect web_base}.Endpoint do
-      use Phoenix.Endpoint, otp_app: :#{Macro.underscore(context_base)}
+      use Phoenix.Endpoint, otp_app: :#{Macro.underscore(web_base)}
 
       # ...
 
@@ -75,7 +74,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
         key: "_my_project_demo_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: :#{Macro.underscore(context_base)}
+      plug Pow.Plug.Session, otp_app: :#{Macro.underscore(web_base)}
 
       # ...
     end
