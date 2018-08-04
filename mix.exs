@@ -8,9 +8,9 @@ defmodule Pow.MixProject do
       app: :pow,
       version: @version,
       elixir: "~> 1.6",
-      elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env(), optional_deps()),
       start_permanent: Mix.env() == :prod,
-      compilers: [:phoenix] ++ Mix.compilers(),
+      compilers: compilers(optional_deps()),
       deps: deps(),
 
       # Hex
@@ -52,8 +52,53 @@ defmodule Pow.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  def elixirc_paths(:test, _optional_deps), do: ["lib", "test/support"]
+  def elixirc_paths(_, optional_deps) do
+    case optional_deps_missing?(optional_deps) do
+      true -> paths_without_missing_optional_deps(optional_deps)
+      false  -> ["lib"]
+    end
+  end
+
+  def compilers(optional_deps) do
+    case phoenix_missing?(optional_deps) do
+      true  -> [:phoenix] ++ Mix.compilers
+      _     -> Mix.compilers()
+    end
+  end
+
+  defp phoenix_missing?(optional_deps) do
+    Keyword.get(optional_deps, :phoenix)
+  end
+
+  defp optional_deps_missing?(optional_deps) do
+    not Enum.empty?(optional_deps_missing(optional_deps))
+  end
+
+  defp optional_deps_missing(optional_deps) do
+    Enum.reject(optional_deps, &elem(&1, 1))
+  end
+
+  defp optional_deps do
+    for dep <- [:phoenix, :phoenix_html, :ecto, :plug] do
+      case Mix.ProjectStack.peek() do
+        %{config: config} -> {dep, Keyword.has_key?(config[:deps], dep)}
+        _                 -> {dep, true}
+      end
+    end
+  end
+
+  defp paths_without_missing_optional_deps(optional_deps) do
+    deps = optional_deps_missing(optional_deps)
+
+    "lib/**/*.ex"
+    |> Path.wildcard()
+    |> Enum.reject(&reject_deps_path?(deps, &1))
+  end
+
+  defp reject_deps_path?(deps, path) do
+    Enum.any?(deps, &String.contains?(path, "/#{elem(&1, 0)}"))
+  end
 
   defp package do
     [
