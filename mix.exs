@@ -69,6 +69,7 @@ defmodule Pow.MixProject do
       source_url: "https://github.com/danschultzer/pow",
       extras: [
         "README.md": [filename: "Pow", title: "Pow"],
+        "COHERENCE_MIGRATION.md": [filename: "CoherenceMigration", title: "Migrating from Coherence"],
         "lib/extensions/email_confirmation/README.md": [filename: "PowEmailConfirmation", title: "PowEmailConfirmation"],
         "lib/extensions/persistent_session/README.md": [filename: "PowPersistentSession", title: "PowPersistentSession"],
         "lib/extensions/reset_password/README.md": [filename: "PowResetPassword", title: "PowResetPassword"]],
