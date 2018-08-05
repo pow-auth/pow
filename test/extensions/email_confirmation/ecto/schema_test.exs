@@ -2,9 +2,9 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
   use ExUnit.Case
   doctest PowEmailConfirmation.Ecto.Schema
 
-  alias PowEmailConfirmation.Test.Users.User
-  alias PowEmailConfirmation.Ecto.Schema
   alias Pow.Ecto.Schema.Password
+  alias PowEmailConfirmation.Ecto.Schema
+  alias PowEmailConfirmation.Test.Users.User
 
   @password          "secret1234"
   @new_user          %User{}

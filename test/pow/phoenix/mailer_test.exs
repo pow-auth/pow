@@ -8,8 +8,8 @@ defmodule Pow.Phoenix.MailerTest do
   use Pow.Test.Phoenix.ConnCase
   doctest Pow.Phoenix.Mailer
 
-  alias Pow.Test.Phoenix.Pow.MailerView
   alias Pow.Phoenix.Mailer
+  alias Pow.Test.Phoenix.Pow.MailerView
 
   setup %{conn: conn} do
     email =

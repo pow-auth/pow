@@ -35,8 +35,8 @@ defmodule Pow.Ecto.Schema do
     * `:user_id_field` the field to use for user id, defaults to :email, and will
       be validated as an email
   """
-  alias Pow.Config
   alias Ecto.Changeset
+  alias Pow.Config
 
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
@@ -63,7 +63,7 @@ defmodule Pow.Ecto.Schema do
   @changeset_methods [:user_id_field_changeset, :password_changeset, :current_password_changeset]
 
   @spec __pow_methods__() :: Macro.t()
-  defmacro __pow_methods__() do
+  defmacro __pow_methods__ do
     quoted_changeset_methods = for method <- @changeset_methods do
       pow_method_name = String.to_atom("pow_#{method}")
 
@@ -109,7 +109,7 @@ defmodule Pow.Ecto.Schema do
   end
 
   @spec __register_fields__() :: Macro.t()
-  defmacro __register_fields__() do
+  defmacro __register_fields__ do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
       for attr <- unquote(__MODULE__).Fields.attrs(@pow_config) do
@@ -119,7 +119,7 @@ defmodule Pow.Ecto.Schema do
   end
 
   @spec __register_user_id_field__() :: Macro.t()
-  defmacro __register_user_id_field__() do
+  defmacro __register_user_id_field__ do
     quote do
       @user_id_field unquote(__MODULE__).user_id_field(@pow_config)
       def pow_user_id_field, do: @user_id_field

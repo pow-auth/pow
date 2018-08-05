@@ -62,7 +62,7 @@ defmodule Pow.Ecto.Schema.Password do
     Pbkdf2.compare(hash, secret_hash)
   end
 
-  defp raise_not_valid_password_hash() do
+  defp raise_not_valid_password_hash do
     raise ArgumentError, "not a valid encoded password hash"
   end
 end

@@ -26,7 +26,6 @@ defmodule Pow.Phoenix.Mailer.Mail do
       |> Phoenix.Template.HTML.encode_to_iodata!()
       |> IO.iodata_to_binary()
 
-
     struct(__MODULE__, user: user, subject: subject, text: text, html: html)
   end
 

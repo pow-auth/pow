@@ -1,7 +1,7 @@
 defmodule PowEmailConfirmation.Test.RepoMock do
   @moduledoc false
-  alias PowEmailConfirmation.Test.Users.User
   alias Pow.Ecto.Schema.Password
+  alias PowEmailConfirmation.Test.Users.User
 
   @user %User{id: 1, email: "test@example.com", email_confirmation_token: "valid", password_hash: Password.pbkdf2_hash("secret1234")}
 

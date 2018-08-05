@@ -2,7 +2,7 @@ defmodule Pow.Store.CredentialsCacheTest do
   use ExUnit.Case
   doctest Pow.Store.Base
 
-  alias Pow.Store.{CredentialsCache, Backend.EtsCache}
+  alias Pow.Store.{Backend.EtsCache, CredentialsCache}
   alias Pow.Test.Ecto.Users.{User, UsernameUser}
   alias Pow.Test.EtsCacheMock
 

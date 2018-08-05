@@ -155,7 +155,6 @@ defmodule Pow.Ecto.Context do
     |> reload_after_write(config)
   end
 
-
   @spec do_update(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
   def do_update(changeset, config) do
     changeset

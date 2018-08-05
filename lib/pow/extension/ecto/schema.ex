@@ -43,7 +43,7 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   @spec __register_extension_fields__() :: Macro.t()
-  defmacro __register_extension_fields__() do
+  defmacro __register_extension_fields__ do
     quote do
       config = Module.get_attribute(__MODULE__, :pow_extension_config)
       extension_attrs = unquote(__MODULE__).attrs(config)
@@ -55,7 +55,7 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   @spec __pow_extension_methods__() :: Macro.t()
-  defmacro __pow_extension_methods__() do
+  defmacro __pow_extension_methods__ do
     quote do
       @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
       def pow_extension_changeset(changeset, attrs) do
@@ -65,7 +65,7 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   @spec __register_after_compile_validation__() :: Macro.t()
-  defmacro __register_after_compile_validation__() do
+  defmacro __register_after_compile_validation__ do
     quote do
       def validate_after_compilation!(env, _bytecode) do
         unquote(__MODULE__).validate!(@pow_extension_config, __MODULE__)

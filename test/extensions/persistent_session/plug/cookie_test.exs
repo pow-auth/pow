@@ -2,10 +2,10 @@ defmodule PowPersistentSession.Plug.CookieTest do
   use ExUnit.Case
   doctest PowPersistentSession.Plug.Cookie
 
-  alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
   alias Pow.{Plug, Plug.Session}
-  alias PowPersistentSession.Test.Users.User
   alias Pow.Test.{ConnHelpers, EtsCacheMock}
+  alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
+  alias PowPersistentSession.Test.Users.User
 
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
 

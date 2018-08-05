@@ -1,8 +1,8 @@
 defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
   use PowPersistentSession.TestWeb.Phoenix.ConnCase
 
-  alias PowPersistentSession.Store.PersistentSessionCache
   alias Pow.Test.EtsCacheMock
+  alias PowPersistentSession.Store.PersistentSessionCache
 
   @valid_params %{"email" => "test@example.com", "password" => "secret1234"}
   @max_age Integer.floor_div(:timer.hours(30) * 24, 1000)
