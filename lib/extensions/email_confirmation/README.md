@@ -7,3 +7,7 @@ Users won't be signed in when they register, and can't sign in until the e-mail 
 ## Installation
 
 Follow the instructions for extensions in [README.md](../../../README.md), and set `PowEmailConfirmation` in the `:extensions` list.
+
+## Prevent persistent session sign in
+
+To prevent persistent session from being created when the email hasn't been confirmed, `PowEmailConfirmation` should be places first in the extensions list. It'll halt the connection.
