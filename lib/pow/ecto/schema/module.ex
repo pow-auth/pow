@@ -4,7 +4,12 @@ defmodule Pow.Ecto.Schema.Module do
 
   ## Configuration options
 
-    * `:table` the ecto table name
+    * `:table` - the ecto table name, defaults to "users".
+
+    * `:binary_id` - if the schema module should use binary id, default nil.
+
+    * `:user_id_field` - the user id field to use in the schema module,
+      defaults nil.
   """
   alias Pow.Config
 

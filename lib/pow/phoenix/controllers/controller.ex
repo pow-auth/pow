@@ -4,14 +4,12 @@ defmodule Pow.Phoenix.Controller do
 
   ## Configuration options
 
-    * `:messages_backend`
-      See `Pow.Phoenix.Messages` for more.
+    * `:messages_backend` - See `Pow.Phoenix.Messages` for more.
 
-    * `:routes_backend`
-      See `Pow.Phoenix.Routes` for more.
+    * `:routes_backend` - See `Pow.Phoenix.Routes` for more.
 
-    * `:controller_callbacks`
-      See `Pow.Extension.Phoenix.ControllerCallbacks` for more.
+    * `:controller_callbacks` - See
+      `Pow.Extension.Phoenix.ControllerCallbacks` for more.
   """
   alias Plug.Conn
   alias Pow.{Config, Plug}

@@ -6,8 +6,12 @@ defmodule Pow.Operations do
 
   @spec changeset(Config.t(), map()) :: map() | nil | no_return
   def changeset(config, params) do
-    user_mod = Config.user_module(config)
-    changeset(config, struct(user_mod), params)
+    user =
+      config
+      |> Config.user_module()
+      |> struct()
+
+      changeset(config, user, params)
   end
 
   @spec changeset(Config.t(), map(), map()) :: map()

@@ -8,8 +8,11 @@ defmodule Pow.Store.Backend.EtsCache do
 
   ## Configuration options
 
-    * `:ttl` integer value for ttl of records
-    * `:namespace` string value to use for namespacing keys
+    * `:ttl` - integer value in milliseconds for ttl of records. If this value
+      is not provided, or is set to nil, the records will never expire.
+
+    * `:namespace` - string value to use for namespacing keys. Defaults to
+      "cache".
   """
   @behaviour Pow.Store.Base
 

@@ -19,8 +19,8 @@ defmodule Pow.Store.CredentialsCache do
   @doc """
   List sessions for user
   """
-  @spec list(Config.t(), Config.t(), map()) :: [binary()]
-  def list(config, backend_config, user) do
+  @spec sessions(Config.t(), Config.t(), map()) :: [binary()]
+  def sessions(config, backend_config, user) do
     case Base.get(config, backend_config, user_session_list_key(user)) do
       :not_found            -> []
       %{sessions: sessions} -> sessions
@@ -64,7 +64,7 @@ defmodule Pow.Store.CredentialsCache do
   defp append_to_session_list(config, backend_config, session_id, user) do
     new_list =
       config
-      |> list(backend_config, user)
+      |> sessions(backend_config, user)
       |> Enum.reject(&get(config, backend_config, &1) == :not_found)
       |> Enum.concat([session_id])
       |> Enum.uniq()
@@ -76,7 +76,7 @@ defmodule Pow.Store.CredentialsCache do
     %{user: user} = Base.get(config, backend_config, key)
 
     config
-    |> list(backend_config, user)
+    |> sessions(backend_config, user)
     |> Enum.filter(&(&1 != session_id))
     |> case do
       []       -> Base.delete(config, backend_config, key)
@@ -92,7 +92,7 @@ defmodule Pow.Store.CredentialsCache do
     key
   end
 
-  defp user_session_list_key(%{__struct__: struct, id: id}) do
+  defp user_session_list_key(%struct{id: id}) do
     "#{Macro.underscore(struct)}_sessions_#{id}"
   end
 end

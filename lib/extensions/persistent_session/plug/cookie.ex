@@ -20,10 +20,15 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   ## Configuration options
 
-    * `:persistent_session_store` the persistent session store
-    * `:cache_store_backend` the backend cache store
-    * `:persistent_session_cookie_key` session key name
-    * `:persistent_session_cookie_max_age` max age for cookie
+    * `:persistent_session_store` - see `PowPersistentSession.Plug.Base`
+
+    * `:cache_store_backend` - see `PowPersistentSession.Plug.Base`
+
+    * `:persistent_session_cookie_key` session key name. This defaults to
+      "persistent_session_cookie".
+
+    * `:persistent_session_cookie_max_age` max age for cookie in seconds. This
+      defaults to 30 days in seconds.
   """
   use PowPersistentSession.Plug.Base
 

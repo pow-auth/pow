@@ -29,9 +29,9 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.get(config, backend_config, "key_3") == user_2
     assert CredentialsCache.get(config, backend_config, "key_4") == user_3
 
-    assert CredentialsCache.list(config, backend_config, user_1) == ["key_1", "key_2"]
-    assert CredentialsCache.list(config, backend_config, user_2) == ["key_3"]
-    assert CredentialsCache.list(config, backend_config, user_3) == ["key_4"]
+    assert CredentialsCache.sessions(config, backend_config, user_1) == ["key_1", "key_2"]
+    assert CredentialsCache.sessions(config, backend_config, user_2) == ["key_3"]
+    assert CredentialsCache.sessions(config, backend_config, user_3) == ["key_4"]
 
     assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == %{user: user_1, sessions: ["key_1", "key_2"]}
 
@@ -40,10 +40,10 @@ defmodule Pow.Store.CredentialsCacheTest do
 
     CredentialsCache.delete(config, backend_config, "key_1")
     assert CredentialsCache.get(config, backend_config, "key_1") == :not_found
-    assert CredentialsCache.list(config, backend_config, user_1) == ["key_2"]
+    assert CredentialsCache.sessions(config, backend_config, user_1) == ["key_2"]
 
     CredentialsCache.delete(config, backend_config, "key_2")
-    assert CredentialsCache.list(config, backend_config, user_1) == []
+    assert CredentialsCache.sessions(config, backend_config, user_1) == []
 
     assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
   end
@@ -60,21 +60,21 @@ defmodule Pow.Store.CredentialsCacheTest do
 
     assert CredentialsCache.get(config, backend_config, "key_1") == user_1
     assert CredentialsCache.get(config, backend_config, "key_2") == user_1
-    assert CredentialsCache.list(config, backend_config, user_1) == ["key_1", "key_2"]
+    assert CredentialsCache.sessions(config, backend_config, user_1) == ["key_1", "key_2"]
 
     :timer.sleep(50)
     assert CredentialsCache.get(config, backend_config, "key_1") == :not_found
     assert CredentialsCache.get(config, backend_config, "key_2") == user_1
-    assert CredentialsCache.list(config, backend_config, user_1) == ["key_1", "key_2"]
+    assert CredentialsCache.sessions(config, backend_config, user_1) == ["key_1", "key_2"]
 
     CredentialsCache.put(config, backend_config ++ [ttl: 100], "key_2", user_1)
     :timer.sleep(50)
-    assert CredentialsCache.list(config, backend_config, user_1) == ["key_2"]
+    assert CredentialsCache.sessions(config, backend_config, user_1) == ["key_2"]
 
     :timer.sleep(50)
     assert CredentialsCache.get(config, backend_config, "key_1") == :not_found
     assert CredentialsCache.get(config, backend_config, "key_2") == :not_found
-    assert CredentialsCache.list(config, backend_config, user_1) == []
+    assert CredentialsCache.sessions(config, backend_config, user_1) == []
     assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
   end
 end

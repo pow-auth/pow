@@ -23,10 +23,17 @@ defmodule Pow.Plug.Session do
 
   ## Configuration options
 
-    * `:session_key` session key name
-    * `:session_store` credentials cache store to use
-    * `:cache_store_backend` backend key value store to use
-    * `:session_ttl_renewal` the ttl until trigger renewal of session
+    * `:session_key` - session key name, defaults to "auth".
+
+    * `:session_store` - the credentials cache store. This value defaults to
+      `{CredentialsCache, backend: EtsCache}`. The `EtsCache` backend store
+      can be changed with the `:cache_store_backend` option.
+
+    * `:cache_store_backend` - the backend cache store. This value defaults to
+      `EtsCache`.
+
+    * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
+      sessions. Defaults to 15 minutes in miliseconds.
   """
   use Pow.Plug.Base
 

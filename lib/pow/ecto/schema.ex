@@ -32,8 +32,8 @@ defmodule Pow.Ecto.Schema do
 
   ## Configuration options
 
-    * `:user_id_field` the field to use for user id, defaults to :email, and will
-      be validated as an email
+    * `:user_id_field` - the field to use for user id. This value defaults to
+      `:email`, and the changeset will automatically validate it as an e-mail.
   """
   alias Ecto.Changeset
   alias Pow.Config

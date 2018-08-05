@@ -8,9 +8,9 @@ defmodule Pow.Ecto.Schema.Changeset do
 
   ## Configuration options
 
-    * `:password_min_length` minimum password length, defaults to 10
-    * `:password_max_length` maximum password length, defaults to 4096
-    * `:password_hash_methods` what password hash and verify method to use,
+    * `:password_min_length`   - minimum password length, defaults to 10
+    * `:password_max_length`   - maximum password length, defaults to 4096
+    * `:password_hash_methods` - the password hash and verify methods to use,
       defaults to:
 
       ```elixir

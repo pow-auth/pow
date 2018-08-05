@@ -31,8 +31,8 @@ defmodule Pow.Ecto.Context do
 
   ## Configuration options
 
-    * `:repo` the ecto repo module
-    * `:user` the user schema module
+    * `:repo` - the ecto repo module (required)
+    * `:user` - the user schema module (required)
   """
   alias Ecto.Changeset
   alias Pow.Config
@@ -110,8 +110,7 @@ defmodule Pow.Ecto.Context do
   def create(config, params) do
     user_mod = user_schema_mod(config)
 
-    user_mod
-    |> struct()
+    user_mod.__struct__()
     |> user_mod.changeset(params)
     |> do_insert(config)
   end

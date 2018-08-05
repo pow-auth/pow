@@ -8,12 +8,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   ## Initialization options
 
-    * `:nodes` list of nodes to use, defaults to [node()]
+    * `:nodes` - list of nodes to use. This value defaults to `[node()]`.
 
   ## Configuration options
 
-    * `:ttl` integer value for ttl of records
-    * `:namespace` string value to use for namespacing keys
+    * `:ttl` - integer value in milliseconds for ttl of records (required).
+
+    * `:namespace` - string value to use for namespacing keys, defaults to
+      "cache".
   """
   @behaviour Pow.Store.Base
 

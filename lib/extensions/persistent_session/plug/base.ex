@@ -6,8 +6,12 @@ defmodule PowPersistentSession.Plug.Base do
 
   ## Configuration options
 
-    * `:persistent_session_store` the persistent session store
-    * `:cache_store_backend` the backend cache store
+    * `:persistent_session_store` - the persistent session store. This value
+      defaults to `{PersistentSessionCache, backend: EtsCache}`. The `EtsCache`
+      backend store can be changed with the `:cache_store_backend` option.
+
+    * `:cache_store_backend` - the backend cache store. This value defaults to
+      `EtsCache`.
   """
 
   alias Plug.Conn

@@ -4,8 +4,16 @@ defmodule Pow.Ecto.Schema.Migration do
 
   ## Configuration options
 
-    * `:repo` the ecto repo to use, defaults to context base repo
-    * `:table` the ecto table name
+    * `:repo` - the ecto repo to use. This value defaults to the derrived
+      context base repo from the `context_base` argument in `gen/2`.
+
+    * `:table` - the ecto table name, defaults to "users".
+
+    * `:attrs` - list of attributes, defaults to the results from
+      `Pow.Ecto.Schema.Fields.attrs/1`.
+
+    * `:indexes` - list of indexes, defaults to the results from
+      `Pow.Ecto.Schema.Fields.indexes/1`.
   """
   alias Pow.{Config, Ecto.Schema.Fields}
 
@@ -85,10 +93,7 @@ defmodule Pow.Ecto.Schema.Migration do
     to_migration_attr({name, type})
   end
   defp to_migration_attr({name, type, defaults}) do
-    defaults =
-      defaults
-      |> Enum.map(fn {k, v} -> "#{k}: #{v}" end)
-      |> Enum.join(", ")
+    defaults = Enum.map_join(defaults, ", ", fn {k, v} -> "#{k}: #{v}" end)
 
     {name, type, ", #{defaults}"}
   end
