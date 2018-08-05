@@ -3,25 +3,29 @@ defmodule PowPersistentSession.Plug.CookieTest do
   doctest PowPersistentSession.Plug.Cookie
 
   alias Pow.{Plug, Plug.Session}
-  alias Pow.Test.{ConnHelpers, EtsCacheMock}
+  alias Pow.Test.ConnHelpers
   alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
   alias PowPersistentSession.Test.Users.User
 
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
 
   setup do
-    EtsCacheMock.init()
+    config = [otp_app: PowPersistentSession.TestWeb]
+    ets    = Pow.Config.get(config, :cache_store_backend, nil)
+
+    ets.init()
+
     conn =
       :get
       |> ConnHelpers.conn("/")
       |> ConnHelpers.init_session()
-      |> Session.call([otp_app: PowPersistentSession.TestWeb])
+      |> Session.call(config)
 
-    {:ok, %{conn: conn}}
+    {:ok, %{conn: conn, config: config, ets: ets}}
   end
 
-  defp store_persistent(conn, id, user) do
-    PersistentSessionCache.put([backend: EtsCacheMock], id, user.id)
+  defp store_persistent(conn, ets, id, user) do
+    PersistentSessionCache.put([backend: ets], id, user.id)
     persistent_cookie(conn, id)
   end
 
@@ -30,53 +34,54 @@ defmodule PowPersistentSession.Plug.CookieTest do
     %{conn | req_cookies: cookies, cookies: cookies}
   end
 
-  test "call/2 sets pow_persistent_session_mod in conn", %{conn: conn} do
-    conn = Cookie.call(conn, Cookie.init([]))
+  test "call/2 sets pow_persistent_session_mod in conn", %{conn: conn, config: config} do
+    conn            = Cookie.call(conn, Cookie.init([]))
+    expected_config = [mod: Session] ++ config
 
-    assert {Cookie, [mod: Session, otp_app: PowPersistentSession.TestWeb]} = conn.private[:pow_persistent_session]
+    assert {Cookie, ^expected_config} = conn.private[:pow_persistent_session]
     refute conn.resp_cookies["persistent_session_cookie"]
   end
 
-  test "call/2 assigns user from cookie", %{conn: conn} do
+  test "call/2 assigns user from cookie", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"
     conn =
       conn
-      |> store_persistent(id, user)
+      |> store_persistent(ets, id, user)
       |> Cookie.call(Cookie.init([]))
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     refute new_id == id
-    assert PersistentSessionCache.get([backend: EtsCacheMock], id) == :not_found
-    assert PersistentSessionCache.get([backend: EtsCacheMock], new_id) == 1
+    assert PersistentSessionCache.get([backend: ets], id) == :not_found
+    assert PersistentSessionCache.get([backend: ets], new_id) == 1
   end
 
-  test "call/2 when user already assigned", %{conn: conn} do
+  test "call/2 when user already assigned", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"
     conn =
       conn
-      |> store_persistent(id, user)
+      |> store_persistent(ets, id, user)
       |> Plug.assign_current_user(:user, [])
       |> Cookie.call(Cookie.init([]))
 
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     assert new_id == id
-    assert PersistentSessionCache.get([backend: EtsCacheMock], id) == 1
+    assert PersistentSessionCache.get([backend: ets], id) == 1
   end
 
-  test "call/2 when user doesn't exist in database", %{conn: conn} do
+  test "call/2 when user doesn't exist in database", %{conn: conn, ets: ets} do
     user = %User{id: -1}
     id   = "test"
     conn =
       conn
-      |> store_persistent(id, user)
+      |> store_persistent(ets, id, user)
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
     assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
-    assert PersistentSessionCache.get([backend: EtsCacheMock], id) == :not_found
+    assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 
   test "call/2 when persistent session cache doesn't have credentials", %{conn: conn} do

@@ -1,22 +1,23 @@
 defmodule Pow.Store.CredentialsCacheTest do
   use ExUnit.Case
-  doctest Pow.Store.Base
+  doctest Pow.Store.CredentialsCache
 
   alias Pow.Store.{Backend.EtsCache, CredentialsCache}
   alias Pow.Test.Ecto.Users.{User, UsernameUser}
-  alias Pow.Test.EtsCacheMock
+
+  @ets Pow.Test.EtsCacheMock
 
   setup do
-    EtsCacheMock.init()
+    @ets.init()
 
-    :ok
+    {:ok, ets: @ets}
   end
 
-  test "stores sessions" do
+  test "stores sessions", %{ets: ets} do
     user_1 = %User{id: 1}
     user_2 = %User{id: 2}
     user_3 = %UsernameUser{id: 1}
-    config = [backend: EtsCacheMock]
+    config = [backend: ets]
     backend_config = []
 
     CredentialsCache.put(config, backend_config, "key_1", user_1)
@@ -33,7 +34,7 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.sessions(config, backend_config, user_2) == ["key_3"]
     assert CredentialsCache.sessions(config, backend_config, user_3) == ["key_4"]
 
-    assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == %{user: user_1, sessions: ["key_1", "key_2"]}
+    assert ets.get(config, "#{Macro.underscore(User)}_sessions_1") == %{user: user_1, sessions: ["key_1", "key_2"]}
 
     CredentialsCache.put(config, backend_config, "key_2", %{user_1 | email: :updated})
     assert CredentialsCache.get(config, backend_config, "key_1") == %{user_1 | email: :updated}
@@ -45,7 +46,7 @@ defmodule Pow.Store.CredentialsCacheTest do
     CredentialsCache.delete(config, backend_config, "key_2")
     assert CredentialsCache.sessions(config, backend_config, user_1) == []
 
-    assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
+    assert ets.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
   end
 
   test "handles purged values" do
@@ -75,6 +76,6 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.get(config, backend_config, "key_1") == :not_found
     assert CredentialsCache.get(config, backend_config, "key_2") == :not_found
     assert CredentialsCache.sessions(config, backend_config, user_1) == []
-    assert EtsCacheMock.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
+    assert EtsCache.get(config, "#{Macro.underscore(User)}_sessions_1") == :not_found
   end
 end

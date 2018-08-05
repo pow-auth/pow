@@ -4,18 +4,21 @@ defmodule Pow.PlugTest do
 
   alias Plug.Conn
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
-  alias Pow.Test.{ConnHelpers, ContextMock,
-                  Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User}
 
+  @ets Pow.Test.EtsCacheMock
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
-    cache_store_backend: EtsCacheMock,
+    cache_store_backend: @ets,
     user: User
   ]
   @admin_config Config.put(@default_config,
                            :current_user_assigns_key,
                            :current_admin_user)
+  setup do
+    {:ok, ets: @ets}
+  end
 
   test "current_user/1" do
     assert_raise ConfigError, "Pow configuration not found. Please set the Pow.Plug.Session plug beforehand.", fn ->
@@ -48,8 +51,8 @@ defmodule Pow.PlugTest do
     assert Plug.assign_current_user(conn, %{id: 1}, @admin_config) == %Conn{assigns: %{current_admin_user: user}}
   end
 
-  test "authenticate_user/2" do
-    EtsCacheMock.init()
+  test "authenticate_user/2", %{ets: ets} do
+    ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -85,8 +88,8 @@ defmodule Pow.PlugTest do
     end
   end
 
-  test "clear_authenticated_user/1" do
-    EtsCacheMock.init()
+  test "clear_authenticated_user/1", %{ets: ets} do
+    ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -98,12 +101,12 @@ defmodule Pow.PlugTest do
     assert user.id == 1
     assert Plug.current_user(conn) == user
     assert session_id = conn.private[:plug_session]["auth"]
-    assert {^user, _timestamp} = EtsCacheMock.get(nil, session_id)
+    assert {^user, _timestamp} = ets.get(nil, session_id)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
-    assert EtsCacheMock.get(nil, session_id) == :not_found
+    assert ets.get(nil, session_id) == :not_found
   end
 
   test "change_user/2" do
@@ -115,8 +118,8 @@ defmodule Pow.PlugTest do
     assert changeset.data.id == 1
   end
 
-  test "create_user/2" do
-    EtsCacheMock.init()
+  test "create_user/2", %{ets: ets} do
+    ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -133,8 +136,8 @@ defmodule Pow.PlugTest do
     assert conn.private[:plug_session]["auth"]
   end
 
-  test "update_user/2" do
-    EtsCacheMock.init()
+  test "update_user/2", %{ets: ets} do
+    ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -156,8 +159,8 @@ defmodule Pow.PlugTest do
     refute conn.private[:plug_session]["auth"] == session_id
   end
 
-  test "delete_user/2" do
-    EtsCacheMock.init()
+  test "delete_user/2", %{ets: ets} do
+    ets.init()
 
     opts = Session.init(@default_config)
     conn =

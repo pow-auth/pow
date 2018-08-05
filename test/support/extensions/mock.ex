@@ -82,7 +82,7 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([web_module, Phoenix.ConnCase])
     quoted = quote do
       use ExUnit.CaseTemplate
-      alias Pow.Test.{EtsCacheMock, Phoenix.ControllerAssertions}
+      alias Pow.Test.Phoenix.ControllerAssertions
       alias unquote(web_module).Phoenix.{Endpoint, Router}
 
       using do
@@ -96,9 +96,11 @@ defmodule Pow.Test.ExtensionMocks do
         end
       end
 
+      @ets Application.get_env(unquote(web_module), :pow)[:cache_store_backend]
+
       setup _tags do
-        EtsCacheMock.init()
-        {:ok, conn: Phoenix.ConnTest.build_conn()}
+        @ets.init()
+        {:ok, conn: Phoenix.ConnTest.build_conn(), ets: @ets}
       end
     end
     Module.create(module, quoted, Macro.Env.location(__ENV__))

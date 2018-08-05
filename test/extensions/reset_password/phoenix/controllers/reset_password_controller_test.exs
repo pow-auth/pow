@@ -1,7 +1,6 @@
 defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
   use PowResetPassword.TestWeb.Phoenix.ConnCase
 
-  alias Pow.Test.EtsCacheMock
   alias PowResetPassword.Store.ResetTokenCache
   alias PowResetPassword.Test.Users.User
 
@@ -65,10 +64,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_token "valid"
     @invalid_token "invalid"
 
-    setup %{conn: conn} do
-      ResetTokenCache.put([backend: EtsCacheMock], @valid_token, @user)
+    setup %{conn: conn, ets: ets} do
+      ResetTokenCache.put([backend: ets], @valid_token, @user)
 
-      {:ok, conn: conn}
+      {:ok, conn: conn, ets: ets}
     end
 
     test "already signed in", %{conn: conn} do
@@ -105,10 +104,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_params %{"user" => %{"password" => @password, "confirm_password" => @password}}
     @invalid_params %{"user" => %{"password" => @password, "confirm_password" => "invalid"}}
 
-    setup %{conn: conn} do
-      ResetTokenCache.put([backend: EtsCacheMock], @valid_token, @user)
+    setup %{conn: conn, ets: ets} do
+      ResetTokenCache.put([backend: ets], @valid_token, @user)
 
-      {:ok, conn: conn}
+      {:ok, conn: conn, ets: ets}
     end
 
     test "already signed in", %{conn: conn} do
@@ -127,16 +126,16 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert get_flash(conn, :error) == "The reset token has expired."
     end
 
-    test "with valid params", %{conn: conn} do
+    test "with valid params", %{conn: conn, ets: ets} do
       conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, @valid_token, @valid_params)
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "The password has been updated."
 
-      assert ResetTokenCache.get([backend: EtsCacheMock], @valid_token) == :not_found
+      assert ResetTokenCache.get([backend: ets], @valid_token) == :not_found
     end
 
-    test "with invalid params", %{conn: conn} do
+    test "with invalid params", %{conn: conn, ets: ets} do
       conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, @valid_token, @invalid_params)
 
       assert html = html_response(conn, 200)
@@ -146,7 +145,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert errors = conn.assigns[:changeset].errors
       assert errors[:confirm_password]
 
-      assert ResetTokenCache.get([backend: EtsCacheMock], @valid_token) == @user
+      assert ResetTokenCache.get([backend: ets], @valid_token) == @user
     end
   end
 end
