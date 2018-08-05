@@ -4,6 +4,9 @@ defmodule Mix.Pow.Ecto.Migration do
   """
   alias Mix.{Ecto, Generator}
 
+  @doc """
+  Creates a migration file for the repo.
+  """
   @spec create_migration_files(atom(), binary(), binary()) :: any()
   def create_migration_files(repo, name, content) do
     base_name    = "#{Macro.underscore(name)}.exs"

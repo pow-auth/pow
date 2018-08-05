@@ -7,21 +7,28 @@ defmodule Pow.Config do
     defexception [:message]
   end
 
-  @spec user_module(t()) :: atom()
-  def user_module(config) do
-    get(config, :user, nil) || raise_no_user_error()
-  end
+  @doc """
+  Gets the key value from the configuration.
 
+  If not found, it'll fallback to environment config, and lastly to the default
+  value.
+  """
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default) do
     Keyword.get(config, key, get_env_config(config, key, default))
   end
 
+  @doc """
+  Puts a new key value to the configuration.
+  """
   @spec put(t(), atom(), any()) :: t()
   def put(config, key, value) do
     Keyword.put(config, key, value)
   end
 
+  @doc """
+  Merges two configurations.
+  """
   @spec merge(t(), t()) :: t()
   def merge(l_config, r_config) do
     Keyword.merge(l_config, r_config)
@@ -40,11 +47,9 @@ defmodule Pow.Config do
     end
   end
 
-  @spec raise_no_user_error :: no_return
-  defp raise_no_user_error do
-    raise_error("No :user configuration option found for user schema module.")
-  end
-
+  @doc """
+  Raise a ConfigError exception.
+  """
   @spec raise_error(binary()) :: no_return
   def raise_error(message) do
     raise ConfigError, message: message

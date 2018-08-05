@@ -2,6 +2,11 @@ defmodule Pow.Application do
   @moduledoc false
   use Application
 
+  @doc """
+  Starts the Pow application.
+
+  The EtsCache will be started by default.
+  """
   def start(_type, _args) do
     import Supervisor.Spec
 

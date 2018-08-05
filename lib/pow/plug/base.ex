@@ -1,8 +1,8 @@
 defmodule Pow.Plug.Base do
   @moduledoc """
-  This plug macro will set the `:pow_config` key, and attempt to fetch and
-  assign a user in the connection if it has not already been assigned. The
-  user will be assigned automatically in any of the operations.
+  This plug macro will set `:pow_config` as private, and attempt to fetch and
+  assign a user in the connection if it has not already been assigned. The user
+  will be assigned automatically in any of the operations.
 
   ## Example
 
@@ -35,14 +35,24 @@ defmodule Pow.Plug.Base do
   @callback create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   @callback delete(Conn.t(), Config.t()) :: Conn.t()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       alias Pow.Plug.Base
 
       @behaviour Base
 
+      @doc false
       def init(config), do: config
 
+      @doc """
+      Initializes the connection for Pow, and assigns current user.
+
+      If a user is not already assigned, `do_fetch/1` will be called. `:mod` is
+      added to the private pow configuration key, so it can be used in
+      subsequent calls to create, update and delete user credentials from the
+      connection.
+      """
       def call(conn, config) do
         config = Pow.Config.put(config, :mod, __MODULE__)
         conn   = Pow.Plug.put_config(conn, config)
@@ -52,6 +62,9 @@ defmodule Pow.Plug.Base do
         |> maybe_fetch_user(conn)
       end
 
+      @doc """
+      Calls `fetch/2` and assigns the current user.
+      """
       @spec do_fetch(Conn.t()) :: Conn.t()
       def do_fetch(conn) do
         config = fetch_config(conn)
@@ -61,6 +74,9 @@ defmodule Pow.Plug.Base do
         |> assign_current_user(config)
       end
 
+      @doc """
+      Calls `create/3` and assigns the current user.
+      """
       @spec do_create(Conn.t(), map()) :: Conn.t()
       def do_create(conn, user) do
         config = fetch_config(conn)
@@ -70,6 +86,9 @@ defmodule Pow.Plug.Base do
         |> assign_current_user(config)
       end
 
+      @doc """
+      Calls `delete/2` and removes the current user assign.
+      """
       @spec do_delete(Conn.t()) :: Conn.t()
       def do_delete(conn) do
         config = fetch_config(conn)

@@ -42,6 +42,14 @@ defmodule Pow.Plug.Session do
 
   @session_ttl_renewal :timer.minutes(15)
 
+  @doc """
+  Fetches session from credentials cache.
+
+  This will fetch a session from the credentials cache with the session id
+  fetched through `Plug.Conn.get_session/2` session. If the credentials are
+  stale (timestamp is older than the `:session_ttl_renewal` value), the session
+  will be regenerated with `create/3`.
+  """
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     conn                  = Conn.fetch_session(conn)
@@ -53,6 +61,14 @@ defmodule Pow.Plug.Session do
     |> handled_fetched_value(conn, config)
   end
 
+  @doc """
+  Create new session with a randomly generated unique session id.
+
+  This will store the unique session id with user credentials in the
+  credentials cache. The session id will be stored in the connection with
+  `Plug.Conn.put_session/3`. Any existing sessions will be deleted first with
+  `delete/2`.
+  """
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
@@ -72,6 +88,13 @@ defmodule Pow.Plug.Session do
     {conn, user}
   end
 
+  @doc """
+  Delete an existing session in the credentials cache.
+
+  This will delete a session in the credentials cache with the session id
+  fetched through `Plug.Conn.get_session/2`. The session in the connection is
+  deleted too with `Plug.Conn.delete_session/2`.
+  """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     conn                  = Conn.fetch_session(conn)

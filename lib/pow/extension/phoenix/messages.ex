@@ -74,6 +74,9 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
+  @doc """
+  Generates a namespaced method name for a message method.
+  """
   @spec method_name(atom(), atom()) :: atom()
   def method_name(extension, type) do
     namespace = Extension.Config.underscore_extension(extension)

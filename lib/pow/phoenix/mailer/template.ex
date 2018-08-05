@@ -19,9 +19,11 @@ defmodule Pow.Phoenix.Mailer.Template do
   end
 
   @doc """
-  A macro that will compile a mailer template from the provided binaries, and
-  add the compiled versions to `render/2` methods. The `text/1` and `html/1`
-  outputs the binaries.
+  Generate template methods.
+
+  This macro that will compile a mailer template from the provided binaries,
+  and add the compiled versions to `render/2` methods. The `text/1` and
+  `html/1` outputs the binaries. A `subject/1` method will be added too.
   """
   @spec template(atom(), binary(), binary(), binary()) :: Macro.t()
   defmacro template(action, subject, text, html) do

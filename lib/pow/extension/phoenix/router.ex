@@ -65,7 +65,7 @@ defmodule Pow.Extension.Phoenix.Router do
   end
 
   @spec build_router_methods_module(module(), Config.t()) :: {:module, module(), binary(), term()}
-  def build_router_methods_module(module, config) do
+  defp build_router_methods_module(module, config) do
     module = Module.concat(module, RouterMethods)
 
     Module.create(module, quote do

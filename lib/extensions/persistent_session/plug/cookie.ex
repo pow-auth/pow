@@ -39,8 +39,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   @ttl Integer.floor_div(:timer.hours(24) * 30, 1000)
 
   @doc """
-  Sets a persistent session cookie with an auto generated token, and sets the
-  token as a key in the persistent session cache with the credentials.
+  Sets a persistent session cookie with an auto generated token.
+
+  The token is set as a key in the persistent session cache with
+  the user struct id.
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, %{id: user_id}, config) do
@@ -55,8 +57,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   @doc """
-  If a persistent session cookie exists, it'll be expired, and the key in the
-  persistent session cache will be removed.
+  Expires the persistent session cookie.
+
+  If a persistent session cookie exists it'll be expired, and the token in
+  the persistent session cache will be deleted.
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
@@ -78,6 +82,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   @doc """
+  Authenticates a user with the persistent session cookie.
+
   If a persistent session cookie exists, it'll fetch the credentials from the
   persistent session cache, and create a new session and persistent session
   cookie. The old persistent session cookie and session cache credentials will

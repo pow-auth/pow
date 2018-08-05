@@ -13,6 +13,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
   alias Pow.{Config, Extension}
 
   for hook <- [:before_process, :before_respond] do
+    @doc false
     @spec unquote(hook)(atom(), atom(), any(), Config.t()) :: any()
     def unquote(hook)(controller, action, results, config) do
       config

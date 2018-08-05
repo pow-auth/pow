@@ -2,6 +2,9 @@ defmodule Pow.Extension.Ecto.Schema do
   @moduledoc """
   Handles extensions for the user Ecto schema.
 
+  The macro will append attributes to the `:pow_fields` module attribute, and
+  run `validate!/2` when compilation is done.
+
   ## Usage
 
   Configure `lib/my_project/users/user.ex` the following way:
@@ -73,6 +76,13 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
+  @doc """
+  Merge all extension attributes together to one list.
+
+  The extension ecto schema modules is discovered through the `:extensions` key
+  in the configuration, and the attribute list will be in the same order as the
+  extensions list.
+  """
   @spec attrs(Config.t()) :: [tuple]
   def attrs(config) do
     config
@@ -84,6 +94,13 @@ defmodule Pow.Extension.Ecto.Schema do
     end)
   end
 
+  @doc """
+  Merge all extension indexes together to one list.
+
+  The extension ecto schema modules is discovered through the `:extensions` key
+  in the configuration, and the index list will be in the same order as the
+  extensions list.
+  """
   @spec indexes(Config.t()) :: [tuple]
   def indexes(config) do
     config
@@ -95,6 +112,13 @@ defmodule Pow.Extension.Ecto.Schema do
     end)
   end
 
+  @doc """
+  This will run `changeset/3` on all extension ecto schema modules.
+
+  The extension ecto schema modules is discovered through the `:extensions` key
+  in the configuration, and the changesets will be piped in the same order
+  as the extensions list.
+  """
   @spec changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
   def changeset(changeset, attrs, config) do
     config
@@ -104,6 +128,13 @@ defmodule Pow.Extension.Ecto.Schema do
     end)
   end
 
+  @doc """
+  This will run `validate!/2` on all extension ecto schema modules.
+
+  It's used to ensure certain fields are available, e.g. an `:email` field. The
+  method should either raise an exception, or return `:ok`. Compilation will
+  fail when the exception is raised.
+  """
   @spec validate!(Config.t(), atom()) :: :ok | no_return
   def validate!(config, module) do
     config
@@ -113,11 +144,19 @@ defmodule Pow.Extension.Ecto.Schema do
     :ok
   end
 
+  @doc """
+  Fetches all existing Ecto.Schema modules in the extensions.
+  """
   @spec __schema_extensions__(Config.t()) :: [atom()]
   def __schema_extensions__(config) do
     Extension.Config.discover_modules(config, ["Ecto", "Schema"])
   end
 
+  @doc """
+  Validates that the ecto schema has the specified field.
+
+  If the field doesn't exist, it'll raise an exception.
+  """
   @spec require_schema_field!(atom(), atom(), atom()) :: :ok | no_return
   def require_schema_field!(module, field, extension) do
     fields = module.__schema__(:fields)

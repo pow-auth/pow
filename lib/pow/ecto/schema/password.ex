@@ -2,7 +2,16 @@ defmodule Pow.Ecto.Schema.Password do
   @moduledoc """
   Simple wrapper for password hash and verification.
 
-  The password hash format is based on https://github.com/riverrun/pbkdf2_elixir
+  The password hash format is based on [Pbkdf2](https://github.com/riverrun/pbkdf2_elixir)
+  """
+  alias Pow.Ecto.Schema.Password.Pbkdf2
+
+  @doc """
+  Generates an encoded PBKDF2 hash.
+
+  By default this is a `PBKDF2-SHA512` hash with 100,000 iterations, with a
+  random salt. The hash, salt, iterations and digest method will be part of
+  the returned binary. The hash and salt are Base64 encoded.
 
   ## Options
     * `:iterations`  - defaults to 100_000;
@@ -11,8 +20,6 @@ defmodule Pow.Ecto.Schema.Password do
     * `:salt`        - a salt binary to use. Defaults to a randomly generated binary;
     * `:salt_length` - a length for the random salt binary. Defaults to 16;
   """
-  alias Pow.Ecto.Schema.Password.Pbkdf2
-
   @spec pbkdf2_hash(binary(), Keyword.t() | nil) :: binary()
   def pbkdf2_hash(secret, opts \\ nil) do
     opts        = opts || Application.get_env(:pow, __MODULE__, [])
@@ -26,6 +33,17 @@ defmodule Pow.Ecto.Schema.Password do
     encode(digest, iterations, salt, hash)
   end
 
+  @doc """
+  Verifies that the secret matches the encoded binary.
+
+  A PBKDF2 hash will be generated from the secret with the same options as
+  found in the encoded binary. The hash, salt, iterations and digest method
+  is parsed from the encoded binary. The hash and salt decoded as Base64
+  encoded binaries.
+
+  ## Options
+    * `:length` - a length in octets for the derived key. Defaults to 64;
+  """
   @spec pbkdf2_verify(binary(), binary(), Keyword.t()) :: boolean()
   def pbkdf2_verify(secret, secret_hash, opts \\ []) do
     secret_hash

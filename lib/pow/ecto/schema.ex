@@ -2,6 +2,13 @@ defmodule Pow.Ecto.Schema do
   @moduledoc """
   Handles the Ecto schema for user.
 
+  The macro will create a `:pow_fields` module attribute, and append fields
+  to it. The `pow_user_fields/0` macro will use these attributes to create
+  fields in the ecto schema.
+
+  A default `changeset/2` method is created, but can be overridden with a
+  custom `changeset/2` method.
+
   ## Usage
 
   Configure `lib/my_project/users/user.ex` the following way:
@@ -63,6 +70,7 @@ defmodule Pow.Ecto.Schema do
 
   @changeset_methods [:user_id_field_changeset, :password_changeset, :current_password_changeset]
 
+  @doc false
   defmacro __pow_methods__ do
     quoted_changeset_methods = for method <- @changeset_methods do
       pow_method_name = String.to_atom("pow_#{method}")
@@ -111,6 +119,7 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
+  @doc false
   defmacro __register_fields__ do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
@@ -120,6 +129,7 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
+  @doc false
   defmacro __register_user_id_field__ do
     quote do
       @user_id_field unquote(__MODULE__).user_id_field(@pow_config)
@@ -136,6 +146,11 @@ defmodule Pow.Ecto.Schema do
   def user_id_field(map) when is_map(map), do: user_id_field(map.__struct__)
   def user_id_field(module), do: module.pow_user_id_field()
 
+  @doc """
+  Normalizes the user id field.
+
+  Keeps the user id field value case insensitive.
+  """
   @spec normalize_user_id_field_value(binary()) :: binary()
   def normalize_user_id_field_value(value), do: String.downcase(value)
 end

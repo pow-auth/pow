@@ -9,6 +9,12 @@ defmodule Pow.Phoenix.Mailer.Mail do
 
   defstruct [:user, :subject, :text, :html]
 
+  @doc """
+  Returns a populated `%Pow.Phoenix.Mailer.Mail{}` map.
+
+  If the configuration has `:web_mailer_module`, it will be used to find the
+  template view module to call.
+  """
   @spec new(Conn.t(), map(), {module(), atom()}, Keyword.t()) :: t()
   def new(conn, user, {view_module, template}, assigns) do
     web_module =

@@ -3,6 +3,8 @@ defmodule Pow.Phoenix.View do
   View macros for Pow Phoenix, that calls render methods generated with
   `Pow.Phoenix.Template`.
   """
+
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @template_module unquote(__MODULE__).__template_module__(__MODULE__)
@@ -13,6 +15,7 @@ defmodule Pow.Phoenix.View do
     end
   end
 
+  @doc false
   @spec __template_module__(atom()) :: atom()
   def __template_module__(view_module) do
     [name | rest] =

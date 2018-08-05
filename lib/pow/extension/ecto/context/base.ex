@@ -2,6 +2,11 @@ defmodule Pow.Extension.Ecto.Context.Base do
   @moduledoc """
   Used for extensions to add helpers for user contexts.
 
+  The macro will add two helper methods to the module:
+
+    * `user_schema_mod/1`
+    * `repo/1`
+
   ## Usage
 
       defmodule MyPowExtension.Ecto.Context do

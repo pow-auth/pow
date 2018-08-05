@@ -4,6 +4,9 @@ defmodule Mix.Pow.Phoenix.Mailer do
   """
   alias Mix.Generator
 
+  @doc """
+  Creates a mailer view file for the web module.
+  """
   @spec create_view_file(atom(), binary(), atom(), binary(), [binary()]) :: :ok
   def create_view_file(module, name, web_mod, web_prefix, mails) do
     subjects        = subjects_methods(module, name, mails)
@@ -19,6 +22,9 @@ defmodule Mix.Pow.Phoenix.Mailer do
     Generator.create_file(path, content)
   end
 
+  @doc """
+  Creates mailer template files for the web module.
+  """
   @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
   def create_templates(module, name, web_prefix, mails) do
     path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])

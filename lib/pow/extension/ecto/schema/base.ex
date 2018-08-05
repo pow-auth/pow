@@ -2,6 +2,8 @@ defmodule Pow.Extension.Ecto.Schema.Base do
   @moduledoc """
   Used for extensions to extend user schemas.
 
+  The macro will add fallback methods to the module, that can be overridden.
+
   ## Usage
 
       defmodule MyPowExtension.Ecto.Schema do
@@ -25,6 +27,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
   @callback indexes(Config.t()) :: [tuple()]
   @callback changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)

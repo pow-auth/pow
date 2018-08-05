@@ -4,6 +4,9 @@ defmodule Mix.Pow do
   """
   alias Mix.Project
 
+  @doc """
+  Raises an exception if the project is an umbrella app.
+  """
   @spec no_umbrella!(binary()) :: :ok | no_return
   def no_umbrella!(task) do
     if Project.umbrella? do
@@ -13,6 +16,9 @@ defmodule Mix.Pow do
     :ok
   end
 
+  @doc """
+  Parses argument options into a map.
+  """
   @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: map()
   def parse_options(args, switches, default_opts) do
     {opts, _parsed, _invalid} = OptionParser.parse(args, switches: switches)
@@ -42,6 +48,9 @@ defmodule Mix.Pow do
   defp context_app_to_atom(config),
     do: config
 
+  @doc """
+  Fetches context app for the project.
+  """
   @spec context_app :: atom() | no_return
   def context_app do
     this_app = otp_app()
@@ -62,6 +71,9 @@ defmodule Mix.Pow do
     |> Keyword.fetch!(:app)
   end
 
+  @doc """
+  Fetches the context base module for the app.
+  """
   @spec context_base(atom()) :: atom()
   def context_base(app) do
     case Application.get_env(app, :namespace, app) do
@@ -77,6 +89,9 @@ defmodule Mix.Pow do
     end
   end
 
+  @doc """
+  Fetches the library path for the context app.
+  """
   @spec context_lib_path(atom(), Path.t()) :: Path.t()
   def context_lib_path(ctx_app, rel_path) do
     context_app_path(ctx_app, Path.join(["lib", to_string(ctx_app), rel_path]))

@@ -13,11 +13,13 @@ defmodule Pow.Plug.RequireAuthenticated do
   alias Plug.Conn
   alias Pow.{Config, Plug}
 
+  @doc false
   @spec init(Config.t()) :: atom() | no_return
   def init(config) do
     Config.get(config, :error_handler, nil) || raise_no_error_handler()
   end
 
+  @doc false
   @spec call(Conn.t(), atom()) :: Conn.t()
   def call(conn, handler) do
     conn

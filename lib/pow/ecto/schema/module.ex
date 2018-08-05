@@ -29,6 +29,9 @@ defmodule Pow.Ecto.Schema.Module do
     end
     """
 
+  @doc """
+  Generates schema module file content.
+  """
   @spec gen(atom(), Config.t()) :: binary()
   def gen(context_base, config \\ []) do
     context_base

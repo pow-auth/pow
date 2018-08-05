@@ -39,6 +39,9 @@ defmodule Pow.Phoenix.ViewHelpers do
   alias Plug.Conn
   alias Pow.{Config, Plug}
 
+  @doc """
+  Sets the view layout based on the pow configuration.
+  """
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
     endpoint_module = Controller.endpoint_module(conn)
@@ -58,6 +61,9 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Controller.put_layout(layout)
   end
 
+  @doc """
+  Generates the view module atom.
+  """
   @spec build_view_module(module(), module() | nil) :: module()
   def build_view_module(module, nil), do: module
   def build_view_module(module, web_module) when is_atom(web_module) do

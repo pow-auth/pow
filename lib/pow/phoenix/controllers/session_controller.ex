@@ -1,5 +1,10 @@
 defmodule Pow.Phoenix.SessionController do
-  @moduledoc false
+  @moduledoc """
+  Controller actions for session.
+
+  The `:request_path` param will automatically be assigned in `:new` and
+  `:create` actions, and used for the `pow_session_path(conn, :create)` path.
+  """
   use Pow.Phoenix.Controller
 
   alias Plug.Conn
@@ -10,11 +15,13 @@ defmodule Pow.Phoenix.SessionController do
   plug :assign_request_path when action in [:new, :create]
   plug :assign_create_path when action in [:new, :create]
 
+  @doc false
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
     {:ok, Plug.change_user(conn), conn}
   end
 
+  @doc false
   @spec respond_new({:ok, map(), Conn.t()}) :: Conn.t()
   def respond_new({:ok, changeset, conn}) do
     conn
@@ -22,11 +29,13 @@ defmodule Pow.Phoenix.SessionController do
     |> render("new.html")
   end
 
+  @doc false
   @spec process_create(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
   def process_create(conn, %{"user" => user_params}) do
     Plug.authenticate_user(conn, user_params)
   end
 
+  @doc false
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_create({:ok, _user, conn}) do
     conn
@@ -40,9 +49,11 @@ defmodule Pow.Phoenix.SessionController do
     |> render("new.html")
   end
 
+  @doc false
   @spec process_delete(Conn.t(), map()) :: {:ok, Conn.t()}
   def process_delete(conn, _params), do: Plug.clear_authenticated_user(conn)
 
+  @doc false
   @spec respond_delete({:ok, Conn.t()}) :: Conn.t()
   def respond_delete({:ok, conn}) do
     conn

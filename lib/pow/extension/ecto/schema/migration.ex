@@ -22,6 +22,9 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     end
     """
 
+  @doc """
+  Generates migration file content.
+  """
   @spec gen(atom(), atom(), Config.t()) :: binary()
   def gen(extension, context_base, config \\ []) do
     context_base
@@ -29,6 +32,10 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     |> migration_file(extension)
   end
 
+  @doc """
+  Generates a migration module name.
+  """
+  @spec name(atom(), binary()) :: binary()
   def name(extension, table) do
     "Add#{normalize_extension_name(extension)}To#{Macro.camelize(table)}"
   end

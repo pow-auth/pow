@@ -45,8 +45,9 @@ defmodule Pow.Plug do
   end
 
   @doc """
-  Fetch config from the connection. It'll raise an error if configuration
-  hasn't been set as a private key.
+  Fetch configuration from the private key in the connection.
+
+  It'll raise an error if configuration hasn't been set as a private key.
   """
   @spec fetch_config(Conn.t()) :: Config.t() | no_return
   def fetch_config(%{private: private}) do
@@ -54,7 +55,9 @@ defmodule Pow.Plug do
   end
 
   @doc """
-  Authenticates a user. If successful, a new session will be created.
+  Authenticates a user.
+
+  If successful, a new session will be created.
   """
   @spec authenticate_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def authenticate_user(conn, params) do
@@ -93,7 +96,9 @@ defmodule Pow.Plug do
   end
 
   @doc """
-  Creates a new user. If successful, a new session will be created.
+  Creates a new user.
+
+  If successful, a new session will be created.
   """
   @spec create_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def create_user(conn, params) do
@@ -105,8 +110,9 @@ defmodule Pow.Plug do
   end
 
   @doc """
-  Updates the current authenticated user. If successful, a new session will be
-  created.
+  Updates the current authenticated user.
+
+  If successful, a new session will be created.
   """
   @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def update_user(conn, params) do
@@ -119,8 +125,9 @@ defmodule Pow.Plug do
   end
 
   @doc """
-  Deletes the current authenticated user. If successful, the user
-  authentication will be cleared from the session.
+  Deletes the current authenticated user.
+
+  If successful, the user authentication will be cleared from the session.
   """
   @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
   def delete_user(conn) do

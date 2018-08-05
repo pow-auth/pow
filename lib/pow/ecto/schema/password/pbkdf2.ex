@@ -1,11 +1,14 @@
 defmodule Pow.Ecto.Schema.Password.Pbkdf2 do
   @moduledoc """
-  The pbkdf2 hash generation code is pulled from
-  https://github.com/elixir-plug/plug/blob/v1.6.1/lib/plug/crypto/key_generator.ex#L1
+  The Pbkdf2 hash generation code is pulled from
+  [Plug.Crypto.KeyGenerator](https://github.com/elixir-plug/plug/blob/v1.6.1/lib/plug/crypto/key_generator.ex#L1)
   and is under Apache 2 license.
   """
   use Bitwise
 
+  @doc """
+  Compares the two binaries in constant-time to avoid timing attacks.
+  """
   @spec compare(binary(), binary()) :: boolean()
   def compare(left, right) when byte_size(left) == byte_size(right) do
     compare(left, right, 0) == 0
@@ -22,6 +25,9 @@ defmodule Pow.Ecto.Schema.Password.Pbkdf2 do
 
   @max_length bsl(1, 32) - 1
 
+  @doc """
+  Returns a derived key suitable for use.
+  """
   @spec generate(binary(), binary(), integer(), integer(), atom()) :: binary()
   def generate(secret, salt, iterations, length, digest) do
     if length > @max_length do

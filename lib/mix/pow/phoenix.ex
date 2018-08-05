@@ -5,6 +5,9 @@ defmodule Mix.Pow.Phoenix do
   alias Mix.Generator
   alias Mix.Pow
 
+  @doc """
+  Builds a map containing context and web module information.
+  """
   @spec parse_structure(map()) :: map()
   def parse_structure(config) do
     context_app  = Map.get(config, :context_app, nil) || Pow.context_app()
@@ -29,6 +32,9 @@ defmodule Mix.Pow.Phoenix do
     end
   end
 
+  @doc """
+  Creates a view file for the web module.
+  """
   @spec create_view_file(atom(), binary(), atom(), binary()) :: :ok
   def create_view_file(module, name, web_mod, web_prefix) do
     path    = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
@@ -41,6 +47,9 @@ defmodule Mix.Pow.Phoenix do
     Generator.create_file(path, content)
   end
 
+  @doc """
+  Creates template files for the web module.
+  """
   @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
   def create_templates(module, name, web_prefix, actions) do
     path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])

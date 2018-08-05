@@ -35,6 +35,9 @@ defmodule Pow.Ecto.Schema.Migration do
     end
     """
 
+  @doc """
+  Generates migration file content.
+  """
   @spec gen(atom(), Config.t()) :: binary()
   def gen(context_base, config \\ []) do
     context_base
@@ -42,6 +45,9 @@ defmodule Pow.Ecto.Schema.Migration do
     |> migration_file()
   end
 
+  @doc """
+  Generates a migration module name.
+  """
   @spec name(binary()) :: binary()
   def name(table), do: "Create#{Macro.camelize(table)}"
 
@@ -55,6 +61,9 @@ defmodule Pow.Ecto.Schema.Migration do
     schema(context_base, repo, table, migration_name, attrs, indexes, binary_id: config[:binary_id])
   end
 
+  @doc """
+  Generates a schema map to be used with the schema template.
+  """
   @spec schema(atom(), atom(), binary(), binary(), list(), list(), Keyword.t()) :: map()
   def schema(context_base, repo, table, migration_name, attrs, indexes, opts) do
     migration_attrs    = migration_attrs(attrs)

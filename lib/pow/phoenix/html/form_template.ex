@@ -21,6 +21,13 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
   <%% end %>
   """
 
+  @doc """
+  Renders a form.
+
+  ## Options
+
+    * `:button_label` - the submit button label, defaults to "Submit"
+  """
   @spec render(list(), Keyword.t()) :: Macro.t()
   def render(inputs, opts \\ []) do
     inputs       = for {type, key} <- inputs, do: input(type, key)
@@ -29,11 +36,12 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
     unquote(@template)
   end
 
+  @doc false
   @spec input(atom(), atom()) :: {binary(), binary(), binary()}
-  def input(:text, key) do
+  defp input(:text, key) do
     {label(key), ~s(<%= text_input f, #{inspect_key(key)} %>), error(key)}
   end
-  def input(:password, key) do
+  defp input(:password, key) do
     {label(key), ~s(<%= password_input f, #{inspect_key(key)} %>), error(key)}
   end
 

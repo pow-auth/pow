@@ -17,7 +17,7 @@ defmodule Pow.Store.CredentialsCache do
     namespace: "credentials"
 
   @doc """
-  List sessions for user
+  List all existing sessions for the user fetched from the backend store.
   """
   @spec sessions(Config.t(), Config.t(), map()) :: [binary()]
   def sessions(config, backend_config, user) do
@@ -28,7 +28,11 @@ defmodule Pow.Store.CredentialsCache do
   end
 
   @doc """
-  Put new session for user
+  Add user credentials with the session id to the backend store.
+
+  This will either create or update the current user credentials in the
+  backend store. The session id will be appended to the session list for the
+  user credentials.
   """
   @spec put(Config.t(), Config.t(), binary(), any()) :: :ok
   def put(config, backend_config, session_id, user) do
@@ -38,7 +42,12 @@ defmodule Pow.Store.CredentialsCache do
   end
 
   @doc """
-  Delete session for user
+  Delete the sesison id from the backend store.
+
+  This will delete the sesison id from the session list for the user
+  credentials in the backend store. If the session id is the only one in the
+  session list, the user credentials will be deleted too from the backend
+  store.
   """
   @spec delete(Config.t(), Config.t(), binary()) :: :ok
   def delete(config, backend_config, session_id) do
@@ -49,7 +58,7 @@ defmodule Pow.Store.CredentialsCache do
   end
 
   @doc """
-  Fetch user from session
+  Fetch user credentials from the backend store from session id.
   """
   @spec get(Config.t(), Config.t(), binary()) :: any() | :not_found
   def get(config, backend_config, session_id) do
