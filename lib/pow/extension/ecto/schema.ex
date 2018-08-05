@@ -32,6 +32,7 @@ defmodule Pow.Extension.Ecto.Schema do
     defexception [:message]
   end
 
+  @doc false
   defmacro __using__(config) do
     quote do
       @pow_extension_config Config.merge(@pow_config, unquote(config))
@@ -42,7 +43,6 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
-  @spec __register_extension_fields__() :: Macro.t()
   defmacro __register_extension_fields__ do
     quote do
       config = Module.get_attribute(__MODULE__, :pow_extension_config)
@@ -54,7 +54,6 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
-  @spec __pow_extension_methods__() :: Macro.t()
   defmacro __pow_extension_methods__ do
     quote do
       @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
@@ -64,7 +63,6 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
-  @spec __register_after_compile_validation__() :: Macro.t()
   defmacro __register_after_compile_validation__ do
     quote do
       def validate_after_compilation!(env, _bytecode) do

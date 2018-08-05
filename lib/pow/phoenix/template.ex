@@ -24,6 +24,11 @@ defmodule Pow.Phoenix.Template do
     end
   end
 
+  @doc """
+  A macro that will compile a phoenix view template from the provided binary,
+  and add the compiled version to a `render/2` method. The `html/1` method
+  outputs the binary.
+  """
   @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
   defmacro template(action, :html, content) do
     content = EEx.eval_string(content)

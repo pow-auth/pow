@@ -6,6 +6,10 @@ defmodule Pow.UUID do
   https://github.com/elixir-ecto/ecto/blob/v2.2.10/lib/ecto/uuid.ex#L1, and is
   under Apache 2 license.
   """
+
+  @doc """
+  Generates a UUID binary.
+  """
   @spec generate :: binary()
   def generate, do: encode(bingenerate())
 

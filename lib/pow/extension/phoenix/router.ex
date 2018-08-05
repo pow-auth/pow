@@ -40,6 +40,9 @@ defmodule Pow.Extension.Phoenix.Router do
     end
   end
 
+  @doc """
+  A macro that will call the router method in all extension router modules.
+  """
   defmacro pow_extension_routes do
     router_methods = Module.concat(__CALLER__.module, RouterMethods).methods()
 

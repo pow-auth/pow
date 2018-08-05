@@ -17,6 +17,7 @@ defmodule Pow.Extension.Ecto.Context.Base do
   """
   alias Pow.Ecto.Context
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       def user_schema_mod(config), do: Context.user_schema_mod(config)

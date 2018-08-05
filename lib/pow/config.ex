@@ -7,11 +7,6 @@ defmodule Pow.Config do
     defexception [:message]
   end
 
-  @spec current_user_assigns_key(t()) :: atom()
-  def current_user_assigns_key(config) do
-    get(config, :current_user_assigns_key, :current_user)
-  end
-
   @spec user_module(t()) :: atom()
   def user_module(config) do
     get(config, :user, nil) || raise_no_user_error()

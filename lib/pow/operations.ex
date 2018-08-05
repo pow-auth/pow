@@ -11,7 +11,7 @@ defmodule Pow.Operations do
       |> Config.user_module()
       |> struct()
 
-      changeset(config, user, params)
+    changeset(config, user, params)
   end
 
   @spec changeset(Config.t(), map(), map()) :: map()

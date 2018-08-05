@@ -46,6 +46,7 @@ defmodule Pow.Ecto.Context do
   @callback delete(user()) :: {:ok, user()} | {:error, Changeset.t()}
   @callback get_by(Keyword.t() | map()) :: user() | nil
 
+  @doc false
   defmacro __using__(config) do
     quote do
       @behaviour unquote(__MODULE__)
@@ -82,6 +83,11 @@ defmodule Pow.Ecto.Context do
     end
   end
 
+  @doc """
+  Finds a user based on the user id, and verifies the password on the user.
+  User schema module and repo module will be fetched from the config. The
+  user id field is fetched from the user schema module.
+  """
   @spec authenticate(Config.t(), map()) :: user() | nil
   def authenticate(config, params) do
     user_mod    = user_schema_mod(config)
@@ -104,7 +110,8 @@ defmodule Pow.Ecto.Context do
   end
 
   @doc """
-  Creates a new user. User struct will be fetched from repo.
+  Creates a new user. User schema module and repo module will be fetched from
+  config.
   """
   @spec create(Config.t(), map()) :: {:ok, user()} | {:error, Changeset.t()}
   def create(config, params) do
@@ -116,7 +123,8 @@ defmodule Pow.Ecto.Context do
   end
 
   @doc """
-  updates a new user. User struct will be fetched from repo.
+  Updates the user. User schema module will be fetched from provided user and
+  repo will be fetched from the config.
   """
   @spec update(Config.t(), user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
   def update(config, user, params) do
@@ -125,11 +133,18 @@ defmodule Pow.Ecto.Context do
     |> do_update(config)
   end
 
+  @doc """
+  Deletes the user. Repo module will be fetched from the config.
+  """
   @spec delete(Config.t(), user()) :: {:ok, user()} | {:error, Changeset.t()}
   def delete(config, user) do
     repo(config).delete(user)
   end
 
+  @doc """
+  Retrieves an user by the provided clauses. User schema module and repo module
+  will be fetched from the config.
+  """
   @spec get_by(Config.t(), Keyword.t() | map()) :: user() | nil
   def get_by(config, clauses) do
     user_mod = user_schema_mod(config)
@@ -147,6 +162,10 @@ defmodule Pow.Ecto.Context do
     end
   end
 
+  @doc """
+  Inserts a changeset to the database. If succesful, the returned row will be
+  reloaded from the database.
+  """
   @spec do_insert(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
   def do_insert(changeset, config) do
     changeset
@@ -154,6 +173,10 @@ defmodule Pow.Ecto.Context do
     |> reload_after_write(config)
   end
 
+  @doc """
+  Updates a changeset in the database. If succesful, the returned row will be
+  reloaded from the database.
+  """
   @spec do_update(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
   def do_update(changeset, config) do
     changeset
@@ -170,11 +193,17 @@ defmodule Pow.Ecto.Context do
     {:ok, user}
   end
 
+  @doc """
+  Retrieves the repo module from the config, or raises an exception.
+  """
   @spec repo(Config.t()) :: atom() | no_return
   def repo(config) do
     Config.get(config, :repo, nil) || raise_no_repo_error()
   end
 
+  @doc """
+  Retrieves the user schema module from the config, or raises an exception.
+  """
   @spec user_schema_mod(Config.t()) :: atom() | no_return
   def user_schema_mod(config) do
     Config.get(config, :user, nil) || raise_no_user_error()

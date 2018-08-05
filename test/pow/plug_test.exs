@@ -40,7 +40,7 @@ defmodule Pow.PlugTest do
     assert is_nil(Plug.current_user(conn, @admin_config))
   end
 
-  test "assign_current_user/2" do
+  test "assign_current_user/3" do
     user = %{id: 1}
     conn = %Conn{assigns: %{}}
     assert Plug.assign_current_user(conn, %{id: 1}, @default_config) == %Conn{assigns: %{current_user: user}}

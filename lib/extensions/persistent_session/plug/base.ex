@@ -2,7 +2,7 @@ defmodule PowPersistentSession.Plug.Base do
   @moduledoc """
   Base module for setting up persistent session plugs.
 
-  See PowPersistentSession.Plug.Cookie for an implementation example.
+  See `PowPersistentSession.Plug.Cookie` for an implementation example.
 
   ## Configuration options
 
@@ -21,6 +21,7 @@ defmodule PowPersistentSession.Plug.Base do
   @callback authenticate(Conn.t(), Config.t()) :: Conn.t()
   @callback create(Conn.t(), map(), Config.t()) :: Conn.t()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)
