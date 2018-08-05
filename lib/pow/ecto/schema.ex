@@ -137,14 +137,13 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @spec user_id_field :: atom()
-  def user_id_field, do: :email
+  @doc """
+  Get user id field key from configuration.
 
-  @spec user_id_field(Config.t() | Changeset.t() | map() | atom()) :: atom()
-  def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, user_id_field())
-  def user_id_field(%Changeset{data: data}), do: user_id_field(data.__struct__)
-  def user_id_field(map) when is_map(map), do: user_id_field(map.__struct__)
-  def user_id_field(module), do: module.pow_user_id_field()
+  Defaults to `:email`.
+  """
+  @spec user_id_field(Config.t()) :: atom()
+  def user_id_field(config \\ []), do: Config.get(config, :user_id_field, :email)
 
   @doc """
   Normalizes the user id field.

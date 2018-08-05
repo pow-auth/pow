@@ -91,10 +91,10 @@ defmodule Pow.Ecto.Context do
   """
   @spec authenticate(Config.t(), map()) :: user() | nil
   def authenticate(config, params) do
-    user_mod    = user_schema_mod(config)
-    user_id_field = Schema.user_id_field(user_mod)
-    login_value = params[Atom.to_string(user_id_field)]
-    password    = params["password"]
+    user_mod      = user_schema_mod(config)
+    user_id_field = user_mod.pow_user_id_field()
+    login_value   = params[Atom.to_string(user_id_field)]
+    password      = params["password"]
 
     config
     |> get_by([{user_id_field, login_value}])
@@ -161,7 +161,7 @@ defmodule Pow.Ecto.Context do
   end
 
   defp normalize_user_id_field_value(user_mod, clauses) do
-    user_id_field = Schema.user_id_field(user_mod)
+    user_id_field = user_mod.pow_user_id_field()
 
     Enum.map clauses, fn
       {^user_id_field, value} -> {user_id_field, Schema.normalize_user_id_field_value(value)}
