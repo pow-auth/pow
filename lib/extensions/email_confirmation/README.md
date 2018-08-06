@@ -8,6 +8,18 @@ Users won't be signed in when they register, and can't sign in until the e-mail 
 
 Follow the instructions for extensions in [README.md](../../../README.md), and set `PowEmailConfirmation` in the `:extensions` list.
 
+## Configuration
+
+Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the e-mail field:
+
+```elixir
+<%= if @changeset.data.unconfirmed_email do %>
+  <div>
+    <p>Click the link in the confirmation email to change your email to <%= @changeset.data.unconfirmed_email %></span>.</p>
+  </div>
+<% end %>
+```
+
 ## Prevent persistent session sign in
 
 To prevent persistent session from being created when the email hasn't been confirmed, `PowEmailConfirmation` should be places first in the extensions list. It'll halt the connection.
