@@ -20,7 +20,16 @@ defmodule PowEmailConfirmation.Plug do
     |> Context.confirm_email(user)
     |> case do
       {:error, changeset} -> {:error, changeset, conn}
-      {:ok, user}         -> {:ok, user, conn}
+      {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
+    end
+  end
+
+  defp maybe_renew_conn(conn, %{id: user_id} = user, config) do
+    mod = config[:mod]
+
+    case Plug.current_user(conn) do
+      %{id: ^user_id} -> mod.do_create(conn, user)
+      _any            -> conn
     end
   end
 end
