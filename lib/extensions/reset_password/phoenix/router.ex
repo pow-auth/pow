@@ -4,7 +4,8 @@ defmodule PowResetPassword.Phoenix.Router do
 
   defmacro routes(_config) do
     quote location: :keep do
-      resources "/reset-password", ResetPasswordController, only: [:new, :create, :edit, :update]
+      resources "/reset-password", ResetPasswordController, only: [:new, :create, :update]
+      get "/reset-password/:id", ResetPasswordController, :edit
     end
   end
 end

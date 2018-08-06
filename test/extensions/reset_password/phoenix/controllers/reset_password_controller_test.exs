@@ -46,8 +46,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert_received {:mail_mock, mail}
 
       assert mail.subject == "Reset password link"
-      assert mail.text =~ "\nhttp://localhost/reset-password/#{token}/edit\n"
-      assert mail.html =~ "<a href=\"http://localhost/reset-password/#{token}/edit\">"
+      assert mail.text =~ "\nhttp://localhost/reset-password/#{token}\n"
+      assert mail.html =~ "<a href=\"http://localhost/reset-password/#{token}\">"
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "An email with reset instructions has been sent to you. Please check your inbox."
