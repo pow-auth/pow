@@ -10,6 +10,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
     * `:nodes` - list of nodes to use. This value defaults to `[node()]`.
 
+    * `:table_opts` - options to add to table definition. This value defaults
+      to `[disc_copies: nodes]`.
+
+    * `:timeout` - timeout value in milliseconds for how long to wait until the
+      cache table has initiated. Defaults to 15 seconds.
+
   ## Configuration options
 
     * `:ttl` - integer value in milliseconds for ttl of records (required).
@@ -123,21 +129,24 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp table_init(config) do
-    nodes = Config.get(config, :nodes, [node()])
+    nodes      = Config.get(config, :nodes, [node()])
+    table_opts = Config.get(config, :table_opts, disc_copies: nodes)
+    table_def  = Keyword.merge(table_opts, [type: :set])
+    timeout    = Config.get(config, :timeout, :timer.seconds(15))
 
     case :mnesia.create_schema(nodes) do
-      :ok -> :ok
+      :ok                                 -> :ok
       {:error, {_, {:already_exists, _}}} -> :ok
     end
 
     :rpc.multicall(nodes, :mnesia, :start, [])
 
-    case :mnesia.create_table(@mnesia_cache_tab, [type: :set, disc_copies: nodes]) do
-      {:atomic, :ok} -> :ok
+    case :mnesia.create_table(@mnesia_cache_tab, table_def) do
+      {:atomic, :ok}                                   -> :ok
       {:aborted, {:already_exists, @mnesia_cache_tab}} -> :ok
     end
 
-    :ok = :mnesia.wait_for_tables([@mnesia_cache_tab], :timer.seconds(15))
+    :ok = :mnesia.wait_for_tables([@mnesia_cache_tab], timeout)
   end
 
   defp mnesia_key(config, key) do
