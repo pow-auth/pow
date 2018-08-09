@@ -4,12 +4,22 @@ defmodule Pow.Ecto.Schema.MigrationTest do
 
   alias Pow.Ecto.Schema.Migration
 
-  test "name/1" do
-    assert Migration.name("users") == "CreateUsers"
+  test "new/2" do
+    schema = Migration.new(Pow, "users")
+
+    assert schema.migration_name == "CreateUsers"
+    assert schema.repo == Pow.Repo
+    refute schema.binary_id
+
+    schema = Migration.new(Test, "organizations", binary_id: true)
+
+    assert schema.migration_name == "CreateOrganizations"
+    assert schema.repo == Test.Repo
+    assert schema.binary_id
   end
 
-  test "migration_file/1" do
-    content = Migration.gen(Pow)
+  test "gen/1" do
+    content = Migration.gen(Migration.new(Pow, "users"))
 
     assert content =~ "defmodule Pow.Repo.Migrations.CreateUsers do"
     assert content =~ "create table(:users)"
@@ -18,31 +28,31 @@ defmodule Pow.Ecto.Schema.MigrationTest do
     refute content =~ ":current_password"
     assert content =~ "create unique_index(:users, [:email])"
 
-    content = Migration.gen(Pow, user_id_field: :username)
+    content = Migration.gen(Migration.new(Pow, "users", user_id_field: :username))
     assert content =~ "add :username, :string, null: false"
     assert content =~ "create unique_index(:users, [:username])"
 
-    content = Migration.gen(Test)
+    content = Migration.gen(Migration.new(Test, "users"))
     assert content =~ "defmodule Test.Repo.Migrations.CreateUsers do"
 
-    content = Migration.gen(Pow, binary_id: true)
+    content = Migration.gen(Migration.new(Pow, "users", binary_id: true))
     assert content =~ "add :id, :binary_id, primary_key: true"
 
-    content = Migration.gen(Pow, table: "organizations")
+    content = Migration.gen(Migration.new(Pow, "organizations"))
     assert content =~ "defmodule Pow.Repo.Migrations.CreateOrganizations do"
     assert content =~ "create table(:organizations) do"
     assert content =~ "create unique_index(:organizations, [:email])"
 
-    content = Migration.gen(Pow, attrs: [{:organization_id, {:references, "organizations"}}])
+    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}]))
     assert content =~ "add :organization_id, references(\"organizations\"), on_delete: :nothing"
 
-    content = Migration.gen(Pow, attrs: [{:organization_id, {:references, "organizations"}}], binary_id: true)
+    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}], binary_id: true))
     assert content =~ "add :organization_id, references(\"organizations\"), on_delete: :nothing, type: :binary_id"
 
-    content = Migration.gen(Pow, indexes: [{:key, true}])
+    content = Migration.gen(Migration.new(Pow, "users", indexes: [{:key, true}]))
     assert content =~ "create unique_index(:users, [:key])"
 
-    content = Migration.gen(Pow, indexes: [{[:one, :two], true}])
+    content = Migration.gen(Migration.new(Pow, "users", indexes: [{[:one, :two], true}]))
     assert content =~ "create unique_index(:users, [:one, :two])"
   end
 end

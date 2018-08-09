@@ -27,9 +27,12 @@ defmodule Mix.Tasks.Pow.Install do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
+    |> parse()
     |> run_ecto_install(args)
     |> run_phoenix_install(args)
   end
+
+  defp parse({config, _parsed, _invalid}), do: config
 
   defp run_ecto_install(config, args) do
     Ecto.Install.run(args)

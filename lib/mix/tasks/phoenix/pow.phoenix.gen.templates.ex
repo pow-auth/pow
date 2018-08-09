@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     {"session", ~w(new)}
   ]
 
-  defp create_template_files(config) do
+  defp create_template_files({config, _parsed, _invalid}) do
     structure    = Phoenix.parse_structure(config)
     context_base = structure[:context_base]
     web_module   = structure[:web_module]

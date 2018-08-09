@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       {"reset_password", ~w(new edit)}
     ]}
   ]
-  defp create_template_files(config) do
+  defp create_template_files({config, _parsed, _invalid}) do
     structure    = Phoenix.parse_structure(config)
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]

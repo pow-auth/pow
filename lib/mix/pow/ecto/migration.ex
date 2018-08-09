@@ -9,13 +9,15 @@ defmodule Mix.Pow.Ecto.Migration do
   """
   @spec create_migration_files(atom(), binary(), binary()) :: any()
   def create_migration_files(repo, name, content) do
-    base_name    = "#{Macro.underscore(name)}.exs"
-    timestamp    = timestamp()
+    base_name = "#{Macro.underscore(name)}.exs"
+    path      =
+      repo
+      |> Ecto.source_repo_priv()
+      |> Path.join("migrations")
+      |> maybe_create_directory()
+    timestamp = timestamp(path)
 
-    repo
-    |> Ecto.source_repo_priv()
-    |> Path.join("migrations")
-    |> maybe_create_directory()
+    path
     |> ensure_unique(base_name, name)
     |> Path.join("#{timestamp}_#{base_name}")
     |> Generator.create_file(content)
@@ -37,8 +39,25 @@ defmodule Mix.Pow.Ecto.Migration do
     end
   end
 
-  defp timestamp do
-    {{y, m, d}, {hh, mm, ss}} = :calendar.universal_time()
+  defp timestamp(path, seconds \\ 0) do
+    timestamp = gen_timestamp(seconds)
+
+    path
+    |> Path.join("#{timestamp}_*.exs")
+    |> Path.wildcard()
+    |> case do
+      [] -> timestamp
+      _  -> timestamp(path, seconds + 1)
+    end
+  end
+
+  defp gen_timestamp(seconds) do
+    %{year: y, month: m, day: d, hour: hh, minute: mm, second: ss} =
+      DateTime.utc_now()
+      |> DateTime.to_unix()
+      |> Kernel.+(seconds)
+      |> DateTime.from_unix!()
+
     "#{y}#{pad(m)}#{pad(d)}#{pad(hh)}#{pad(mm)}#{pad(ss)}"
   end
 

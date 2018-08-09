@@ -5,6 +5,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   Generates a user schema.
 
       mix pow.ecto.gen.schema -r MyApp.Repo
+
+      mix pow.ecto.gen.schema -r MyApp.Repo Accounts.Organization organizations
   """
   use Mix.Task
 
@@ -20,20 +22,44 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
+    |> parse()
     |> create_schema_file()
   end
 
-  defp create_schema_file(%{binary_id: binary_id} = config) do
-    context_app  = Map.get(config, :context_app, Pow.context_app())
-    context_base = Pow.context_base(context_app)
+  defp parse({config, parsed, _invalid}) do
+    case parsed do
+      [schema_name, schema_plural | _rest] ->
+        Map.merge(config, %{schema_name: schema_name, schema_plural: schema_plural})
 
-    base_name = "user.ex"
-    content   = SchemaModule.gen(context_base, module: "Users.User", binary_id: binary_id)
+      _ ->
+        config
+    end
+  end
+
+  defp create_schema_file(%{binary_id: binary_id} = config) do
+    context_app   = Map.get(config, :context_app, Pow.context_app())
+    context_base  = Pow.context_base(context_app)
+    schema_name   = Map.get(config, :schema_name, "Users.User")
+    schema_plural = Map.get(config, :schema_plural, "users")
+    schema        = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
+    content       = SchemaModule.gen(schema)
+    dir_name      =
+      schema.schema_name
+      |> String.split(".")
+      |> Enum.slice(0..-2)
+      |> Enum.join(".")
+      |> Macro.underscore()
+    file_name    =
+      schema.module
+      |> Module.split()
+      |> List.last()
+      |> Macro.underscore()
+      |> Kernel.<>(".ex")
 
     context_app
-    |> Pow.context_lib_path("users")
+    |> Pow.context_lib_path(dir_name)
     |> maybe_create_directory()
-    |> Path.join(base_name)
+    |> Path.join(file_name)
     |> ensure_unique()
     |> Generator.create_file(content)
   end

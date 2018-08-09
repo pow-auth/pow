@@ -19,15 +19,17 @@ defmodule Mix.Pow do
   @doc """
   Parses argument options into a map.
   """
-  @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: map()
+  @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: {map(), OptionParser.argv(), OptionParser.errors()}
   def parse_options(args, switches, default_opts) do
-    {opts, _parsed, _invalid} = OptionParser.parse(args, switches: switches)
-    default_opts              = to_map(default_opts)
-    opts                      = to_map(opts)
+    {opts, parsed, invalid} = OptionParser.parse(args, switches: switches)
+    default_opts            = to_map(default_opts)
+    opts                    = to_map(opts)
+    config                  =
+      default_opts
+      |> Map.merge(opts)
+      |> context_app_to_atom()
 
-    default_opts
-    |> Map.merge(opts)
-    |> context_app_to_atom()
+    {config, parsed, invalid}
   end
 
   defp to_map(keyword) do

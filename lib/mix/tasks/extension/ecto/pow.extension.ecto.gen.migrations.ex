@@ -5,6 +5,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   Generates a migration files for extensions.
 
       mix pow.extension.ecto.gen.migrations -r MyApp.Repo
+
+      mix pow.extension.ecto.gen.migrations -r MyApp.Repo Accounts.Organization organizations
   """
   use Mix.Task
 
@@ -20,7 +22,18 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
+    |> parse()
     |> create_migrations_files(args)
+  end
+
+  defp parse({config, parsed, _invalid}) do
+    case parsed do
+      [_schema_name, schema_plural | _rest] ->
+        Map.merge(config, %{schema_plural: schema_plural})
+
+      _ ->
+        config
+    end
   end
 
   defp create_migrations_files(config, args) do
@@ -39,10 +52,18 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
       do: create_migration_files(config, extension, context_base)
   end
 
-  defp create_migration_files(%{repo: repo, binary_id: binary_id}, extension, context_base) do
-    name    = SchemaMigration.name(extension, "users")
-    content = SchemaMigration.gen(extension, context_base, repo: repo, binary_id: binary_id)
+  defp create_migration_files(%{repo: repo, binary_id: binary_id} = config, extension, context_base) do
+    schema_plural = Map.get(config, :schema_plural, "users")
+    schema        = SchemaMigration.new(extension, context_base, schema_plural, repo: repo, binary_id: binary_id)
+    content       = SchemaMigration.gen(schema)
 
-    Migration.create_migration_files(repo, name, content)
+    case empty?(schema) do
+      true  -> nil
+      false -> Migration.create_migration_files(repo, schema.migration_name, content)
+    end
   end
+
+  defp empty?(%{assocs: [], attrs: [], indexes: []}),
+    do: true
+  defp empty?(_schema), do: false
 end

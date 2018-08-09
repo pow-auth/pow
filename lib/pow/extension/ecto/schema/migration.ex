@@ -2,9 +2,7 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
   @moduledoc """
   Generates schema migration content for extensions.
   """
-  alias Pow.{Config,
-                Ecto.Schema.Migration,
-                Extension.Ecto.Schema}
+  alias Pow.{Config, Ecto.Schema.Migration, Extension.Ecto.Schema}
 
   @template """
     defmodule <%= inspect schema.repo %>.Migrations.<%= schema.migration_name %> do
@@ -23,41 +21,33 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     """
 
   @doc """
-  Generates migration file content.
+  Generates migration schema map.
   """
-  @spec gen(atom(), atom(), Config.t()) :: binary()
-  def gen(extension, context_base, config \\ []) do
-    context_base
-    |> parse_options(extension, config)
-    |> migration_file(extension)
-  end
-
-  @doc """
-  Generates a migration module name.
-  """
-  @spec name(atom(), binary()) :: binary()
-  def name(extension, table) do
-    "Add#{normalize_extension_name(extension)}To#{Macro.camelize(table)}"
-  end
-
-  defp parse_options(context_base, extension, config) do
+  @spec new(atom(), atom(), binary(), Config.t()) :: map()
+  def new(extension, context_base, schema_plural, config \\ []) do
     repo           = Config.get(config, :repo, Module.concat([context_base, "Repo"]))
-    table          = Config.get(config, :table, "users")
     config         = Config.put(config, :extensions, [extension])
     attrs          = Schema.attrs(config)
     indexes        = Schema.indexes(config)
-    migration_name = name(extension, table)
+    migration_name = name(extension, schema_plural)
 
-    Migration.schema(context_base, repo, table, migration_name, attrs, indexes, config)
+    Migration.schema(context_base, repo, schema_plural, migration_name, attrs, indexes, config)
   end
 
-  defp migration_file(schema, extension) do
-    EEx.eval_string(unquote(@template), schema: schema, extension: normalize_extension_name(extension))
+  defp name(extension, table) do
+    extension_name =
+      extension
+      |> Module.split()
+      |> List.last()
+
+    "Add#{extension_name}To#{Macro.camelize(table)}"
   end
 
-  defp normalize_extension_name(extension) do
-    extension
-    |> Module.split()
-    |> List.last()
+  @doc """
+  Generates migration file content.
+  """
+  @spec gen(map()) :: binary()
+  def gen(schema) do
+    EEx.eval_string(unquote(@template), schema: schema)
   end
 end

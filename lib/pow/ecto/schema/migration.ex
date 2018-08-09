@@ -38,28 +38,25 @@ defmodule Pow.Ecto.Schema.Migration do
   @doc """
   Generates migration file content.
   """
-  @spec gen(atom(), Config.t()) :: binary()
-  def gen(context_base, config \\ []) do
-    context_base
-    |> parse_options(config)
-    |> migration_file()
+  @spec gen(map()) :: binary()
+  def gen(schema) do
+    EEx.eval_string(unquote(@template), schema: schema)
   end
 
   @doc """
-  Generates a migration module name.
+  Generates migration schema map.
   """
-  @spec name(binary()) :: binary()
-  def name(table), do: "Create#{Macro.camelize(table)}"
-
-  defp parse_options(context_base, config) do
+  @spec new(atom(), binary(), Config.t()) :: map()
+  def new(context_base, schema_plural, config \\ []) do
     repo           = Config.get(config, :repo, Module.concat([context_base, "Repo"]))
-    table          = Config.get(config, :table, "users")
     attrs          = Config.get(config, :attrs, Fields.attrs(config))
     indexes        = Config.get(config, :indexes, Fields.indexes(config))
-    migration_name = name(table)
+    migration_name = name(schema_plural)
 
-    schema(context_base, repo, table, migration_name, attrs, indexes, binary_id: config[:binary_id])
+    schema(context_base, repo, schema_plural, migration_name, attrs, indexes, binary_id: config[:binary_id])
   end
+
+  defp name(schema_plural), do: "Create#{Macro.camelize(schema_plural)}"
 
   @doc """
   Generates a schema map to be used with the schema template.
@@ -142,8 +139,4 @@ defmodule Pow.Ecto.Schema.Migration do
 
   defp to_migration_index(table, {key_or_keys, true}),
     do: "create unique_index(:#{table}, #{inspect List.wrap(key_or_keys)})"
-
-  defp migration_file(schema) do
-    EEx.eval_string(unquote(@template), schema: schema)
-  end
 end

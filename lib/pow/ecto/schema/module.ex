@@ -4,8 +4,6 @@ defmodule Pow.Ecto.Schema.Module do
 
   ## Configuration options
 
-    * `:table` - the ecto table name, defaults to "users".
-
     * `:binary_id` - if the schema module should use binary id, default nil.
 
     * `:user_id_field` - the user id field to use in the schema module,
@@ -32,28 +30,26 @@ defmodule Pow.Ecto.Schema.Module do
   @doc """
   Generates schema module file content.
   """
-  @spec gen(atom(), Config.t()) :: binary()
-  def gen(context_base, config \\ []) do
-    context_base
-    |> parse_options(config)
-    |> schema_module()
+  @spec gen(map()) :: binary()
+  def gen(schema) do
+    EEx.eval_string(unquote(@template), schema: schema)
   end
 
-  defp parse_options(base, config) do
-    module        = Module.concat([base, "Users", "User"])
-    table         = Config.get(config, :table, "users")
+  @doc """
+  Generates a schema module map.
+  """
+  @spec new(atom(), binary(), binary(), Config.t()) :: map()
+  def new(base, schema_name, schema_plural, config \\ []) do
+    module        = Module.concat([base, schema_name])
     binary_id     = config[:binary_id]
     user_id_field = config[:user_id_field]
 
     %{
+      schema_name: schema_name,
       module: module,
-      table: table,
+      table: schema_plural,
       binary_id: binary_id,
       user_id_field: user_id_field
     }
-  end
-
-  defp schema_module(schema) do
-    EEx.eval_string(unquote(@template), schema: schema)
   end
 end

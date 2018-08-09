@@ -6,10 +6,18 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
 
       mix pow.ecto.install -r MyApp.Repo
 
+      mix pow.ecto.install -r MyApp.Repo Accounts.Organization organizations
+
   This generator will add the following files to `lib/`:
 
     * a schema in `lib/my_app/users/user.ex` for `users` table
     * a migration file in `priv/repo/migrations` for `users` table
+
+  ## Arguments
+
+    * `--no-migrations` don't generate migration files
+    * `--no-schema` don't generate schema file
+    * `--extension` extension to generate migrations for
   """
   use Mix.Task
 
@@ -27,10 +35,13 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
+    |> parse()
     |> maybe_run_gen_migration(args)
     |> maybe_run_extension_gen_migrations(args)
     |> maybe_run_gen_schema(args)
   end
+
+  defp parse({config, _parsed, _invalid}), do: config
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do
     MigrationTask.run(args)

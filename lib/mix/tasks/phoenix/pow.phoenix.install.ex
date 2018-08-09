@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     |> print_shell_instructions()
   end
 
-  defp parse_structure(config) do
+  defp parse_structure({config, _parsed, _invalid}) do
     Map.put(config, :structure, Phoenix.parse_structure(config))
   end
 
