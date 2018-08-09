@@ -15,7 +15,6 @@ defmodule Pow.Ecto.Schema.Module do
     defmodule <%= inspect schema.module %> do
       use Ecto.Schema
       use Pow.Ecto.Schema<%= if schema.user_id_field do %>, user_id_field: <%= inspect(schema.user_id_field) %><% end %>
-
     <%= if schema.binary_id do %>
       @primary_key {:id, :binary_id, autogenerate: true}
       @foreign_key_type :binary_id<% end %>
