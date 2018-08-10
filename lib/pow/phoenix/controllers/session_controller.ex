@@ -30,21 +30,21 @@ defmodule Pow.Phoenix.SessionController do
   end
 
   @doc false
-  @spec process_create(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
+  @spec process_create(Conn.t(), map()) :: {:ok | :error, Conn.t()}
   def process_create(conn, %{"user" => user_params}) do
     Plug.authenticate_user(conn, user_params)
   end
 
   @doc false
-  @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
-  def respond_create({:ok, _user, conn}) do
+  @spec respond_create({:ok | :error, Conn.t()}) :: Conn.t()
+  def respond_create({:ok, conn}) do
     conn
     |> put_flash(:info, messages(conn).signed_in(conn))
     |> redirect(to: routes(conn).after_sign_in_path(conn))
   end
-  def respond_create({:error, changeset, conn}) do
+  def respond_create({:error, conn}) do
     conn
-    |> assign(:changeset, changeset)
+    |> assign(:changeset, Plug.change_user(conn, conn.params["user"]))
     |> put_flash(:error, messages(conn).invalid_credentials(conn))
     |> render("new.html")
   end

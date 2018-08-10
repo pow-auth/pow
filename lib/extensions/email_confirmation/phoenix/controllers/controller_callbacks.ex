@@ -12,11 +12,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     Conn.put_private(conn, :pow_user_before_update, user)
   end
 
-  def before_respond(Pow.Phoenix.SessionController, :create, {:ok, user, conn}, _config) do
-    reject_unconfirmed(user, conn)
+  def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
+    conn
+    |> Plug.current_user()
+    |> halt_unconfirmed(conn, {:ok, conn})
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
-    reject_unconfirmed(user, conn)
+    halt_unconfirmed(user, conn, {:ok, user, conn})
   end
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
     case should_send_email?(user, conn.private[:pow_user_before_update]) do
@@ -33,14 +35,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp should_send_email?(%{unconfirmed_email: new_email}, %{unconfirmed_email: old_email}),
     do: new_email != old_email
 
-  defp reject_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn) when not is_nil(token) do
+  defp halt_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn, _success_response) when not is_nil(token) do
     send_confirmation_email(user, conn)
 
-    reject(conn)
-  end
-  defp reject_unconfirmed(user, conn), do: {:ok, user, conn}
-
-  defp reject(conn) do
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     error       = ConfirmationController.messages(conn).email_confirmation_required(conn)
     path        = Controller.router_helpers(conn).pow_session_path(conn, :new)
@@ -51,6 +48,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     {:halt, conn}
   end
+  defp halt_unconfirmed(_user, _conn, success_response), do: success_response
 
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do

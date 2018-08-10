@@ -63,16 +63,15 @@ defmodule Pow.PlugTest do
     refute conn.private[:plug_session]["auth"]
     refute Plug.current_user(conn)
 
-    assert {:ok, user, loaded_conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert {:ok, loaded_conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert user = Plug.current_user(loaded_conn)
     assert user.id == 1
-    assert Plug.current_user(loaded_conn) == user
     assert loaded_conn.private[:plug_session]["auth"]
 
-    assert {:error, _changeset, conn} = Plug.authenticate_user(conn, %{})
+    assert {:error, conn} = Plug.authenticate_user(conn, %{})
     refute Plug.current_user(conn)
 
-    assert {:error, changeset, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com"})
-    assert changeset.changes.email == "test@example.com"
+    assert {:error, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com"})
     refute Plug.current_user(conn)
   end
 
@@ -97,9 +96,8 @@ defmodule Pow.PlugTest do
       |> ConnHelpers.init_session()
       |> Session.call(opts)
 
-    assert {:ok, user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
-    assert user.id == 1
-    assert Plug.current_user(conn) == user
+    assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    assert user = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
     assert {^user, _timestamp} = ets.get(nil, session_id)
 
@@ -145,8 +143,9 @@ defmodule Pow.PlugTest do
       |> ConnHelpers.init_session()
       |> Session.call(opts)
 
-    {:ok, user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
-    session_id = conn.private[:plug_session]["auth"]
+    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    user        = Plug.current_user(conn)
+    session_id  = conn.private[:plug_session]["auth"]
 
     assert {:error, _changeset, conn} = Plug.update_user(conn, %{})
     assert Plug.current_user(conn) == user
@@ -168,7 +167,7 @@ defmodule Pow.PlugTest do
       |> ConnHelpers.init_session()
       |> Session.call(opts)
 
-    {:ok, _user, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
 
     assert {:ok, user, conn} = Plug.delete_user(conn)
     assert user.id == :deleted

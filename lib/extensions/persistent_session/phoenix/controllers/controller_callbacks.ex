@@ -11,10 +11,12 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacks do
     Conn.put_private(conn, :store_persistent_session?, store)
   end
 
-  def before_respond(Pow.Phoenix.SessionController, :create, {:ok, user, conn}, _config) do
+  def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
+    user = Pow.Plug.current_user(conn)
+
     case conn.private[:store_persistent_session?] do
-      "true" -> {:ok, user, Plug.create(conn, user)}
-      _any   -> {:ok, user, conn}
+      "true" -> {:ok, Plug.create(conn, user)}
+      _any   -> {:ok, conn}
     end
   end
 

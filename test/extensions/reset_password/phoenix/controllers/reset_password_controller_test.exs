@@ -142,10 +142,21 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       assert html =~ "<span class=\"help-block\">not same as password</span>"
-      assert errors = conn.assigns[:changeset].errors
-      assert errors[:confirm_password]
+
+      changeset = conn.assigns[:changeset]
+      assert changeset.errors[:confirm_password]
+      assert changeset.action == :update
 
       assert ResetTokenCache.get([backend: ets], @valid_token) == @user
+    end
+
+    test "with missing user", %{conn: conn, ets: ets} do
+      ResetTokenCache.put([backend: ets], @valid_token, %User{id: :missing})
+
+      conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, @valid_token, @valid_params)
+
+      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert get_flash(conn, :info) == "The password has been updated."
     end
   end
 end

@@ -59,17 +59,16 @@ defmodule Pow.Plug do
 
   If successful, a new session will be created.
   """
-  @spec authenticate_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec authenticate_user(Conn.t(), map()) :: {:ok | :error, Conn.t()} | no_return
   def authenticate_user(conn, params) do
     config = fetch_config(conn)
 
     config
     |> Operations.authenticate(params)
     |> case do
-      nil  -> {:error, change_user(conn, params)}
-      user -> {:ok, user}
+      nil  -> {:error, conn}
+      user -> {:ok, get_mod(config).do_create(conn, user)}
     end
-    |> maybe_create_auth(conn, config)
   end
 
   @doc """
