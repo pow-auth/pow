@@ -150,7 +150,7 @@ defmodule MyApp.Users.User do
   def changeset(user_or_changeset, attrs) do
     user_or_changeset
     |> pow_changeset(attrs)
-    |> pow_extensions_changeset(attrs)
+    |> pow_extension_changeset(attrs)
   end
 end
 ```
