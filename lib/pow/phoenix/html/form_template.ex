@@ -1,10 +1,10 @@
 
 defmodule Pow.Phoenix.HTML.FormTemplate do
   @moduledoc """
-  Module that can build form templates for Phoenix.
+  Module that can build user form templates for Phoenix.
   """
   @template EEx.compile_string """
-  <%%= form_for @changeset, @action, fn f -> %>
+  <%%= form_for @changeset, @action, [as: :user], fn f -> %>
     <%%= if @changeset.action do %>
       <div class="alert alert-danger">
         <p>Oops, something went wrong! Please check the errors below.</p>
