@@ -23,7 +23,8 @@ defmodule Pow.Plug.Session do
 
   ## Configuration options
 
-    * `:session_key` - session key name, defaults to "auth".
+    * `:session_key` - session key name, defaults to "auth". If `:otp_app` is
+      used it'll automatically prepend the key with the `:otp_app` value.
 
     * `:session_store` - the credentials cache store. This value defaults to
       `{CredentialsCache, backend: EtsCache}`. The `EtsCache` backend store
@@ -40,6 +41,7 @@ defmodule Pow.Plug.Session do
   alias Plug.Conn
   alias Pow.{Config, Store.Backend.EtsCache, Store.CredentialsCache, UUID}
 
+  @session_key "auth"
   @session_ttl_renewal :timer.minutes(15)
 
   @doc """
@@ -68,11 +70,14 @@ defmodule Pow.Plug.Session do
   credentials cache. The session id will be stored in the connection with
   `Plug.Conn.put_session/3`. Any existing sessions will be deleted first with
   `delete/2`.
+
+  The unique session id will be prepended by the `:otp_app` configuration
+  value, if present.
   """
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
-    key                   = UUID.generate()
+    key                   = session_id(config)
     session_key           = session_key(config)
     {store, store_config} = store(config)
     value                 = session_value(user)
@@ -124,8 +129,24 @@ defmodule Pow.Plug.Session do
     (inserted_at + ttl) < timestamp()
   end
 
+  defp session_id(config) do
+    uuid = UUID.generate()
+
+    case Config.get(config, :otp_app, nil) do
+      nil     -> uuid
+      otp_app -> "#{otp_app}_#{uuid}"
+    end
+  end
+
   defp session_key(config) do
-    Config.get(config, :session_key, "auth")
+    Config.get(config, :session_key, default_session_key(config))
+  end
+
+  defp default_session_key(config) do
+    case Config.get(config, :otp_app, nil) do
+      nil     -> @session_key
+      otp_app -> "#{otp_app}_#{@session_key}"
+    end
   end
 
   defp session_value(user), do: {user, timestamp()}

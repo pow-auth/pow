@@ -94,6 +94,25 @@ defmodule Pow.Plug.SessionTest do
     assert new_session_id != session_id
   end
 
+  test "call/2 with prepended `:otp_app` session key", %{conn: conn, ets: ets} do
+    opts =
+      @default_opts
+      |> Keyword.delete(:session_key)
+      |> Keyword.put(:otp_app, :test)
+    session_key = "test_auth"
+
+    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
+
+    opts = Session.init(opts)
+    conn =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(session_key, "token")
+      |> Session.call(opts)
+
+    assert conn.assigns[:current_user] == "cached"
+  end
+
   test "create/2 creates new session id", %{conn: conn, ets: ets} do
     user = %{id: 1}
     opts = Session.init(@default_opts)
@@ -118,6 +137,23 @@ defmodule Pow.Plug.SessionTest do
     assert ets.get(nil, session_id) == :not_found
     assert etc_user == user
     assert Plug.current_user(conn) == user
+  end
+
+  test "create/2 creates new session id with `:otp_app` prepended", %{conn: conn} do
+    opts =
+      @default_opts
+      |> Keyword.delete(:session_key)
+      |> Keyword.put(:otp_app, :test_app)
+      |> Session.init()
+    conn =
+      conn
+      |> Session.call(opts)
+      |> Session.do_create(%{id: 1})
+
+    refute get_session_id(conn)
+
+    session_id = conn.private[:plug_session]["test_app_auth"]
+    assert String.starts_with?(session_id, "test_app_")
   end
 
   test "delete/1 removes session id", %{conn: conn, ets: ets} do

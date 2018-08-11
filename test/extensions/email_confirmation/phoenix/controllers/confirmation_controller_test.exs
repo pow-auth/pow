@@ -1,6 +1,8 @@
 defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
+  @session_key "Elixir.PowEmailConfirmation.TestWeb_auth"
+
   describe "show/2" do
     test "confirms with valid token", %{conn: conn} do
       conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid")
@@ -36,7 +38,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
     end
 
     test "when the same user is signed in", %{conn: conn} do
-      session_id = conn.private[:plug_session]["auth"]
+      session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
         |> Pow.Plug.assign_current_user(%{id: 1}, [])
@@ -44,11 +46,11 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
       assert Pow.Plug.current_user(conn)
-      refute conn.private[:plug_session]["auth"] == session_id
+      refute conn.private[:plug_session][@session_key] == session_id
     end
 
     test "when the signed in user is different", %{conn: conn} do
-      session_id = conn.private[:plug_session]["auth"]
+      session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
         |> Pow.Plug.assign_current_user(%{id: 2}, [])
@@ -56,7 +58,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
       assert Pow.Plug.current_user(conn)
-      assert conn.private[:plug_session]["auth"] == session_id
+      assert conn.private[:plug_session][@session_key] == session_id
     end
   end
 end

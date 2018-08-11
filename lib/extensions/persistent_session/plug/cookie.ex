@@ -24,16 +24,17 @@ defmodule PowPersistentSession.Plug.Cookie do
 
     * `:cache_store_backend` - see `PowPersistentSession.Plug.Base`
 
-    * `:persistent_session_cookie_key` session key name. This defaults to
-      "persistent_session_cookie".
+    * `:persistent_session_cookie_key` - session key name. This defaults to
+      "persistent_session_cookie". If `:otp_app` is used it'll automatically
+      prepend the key with the `:otp_app` value.
 
-    * `:persistent_session_cookie_max_age` max age for cookie in seconds. This
+    * `:persistent_session_cookie_max_age` - max age for cookie in seconds. This
       defaults to 30 days in seconds.
   """
   use PowPersistentSession.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Plug}
+  alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
   @ttl Integer.floor_div(:timer.hours(24) * 30, 1000)
@@ -43,12 +44,15 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   The token is set as a key in the persistent session cache with
   the user struct id.
+
+  The unique cookie id will be prepended by the `:otp_app` configuration
+  value, if present.
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, %{id: user_id}, config) do
     {store, store_config} = store(config)
     cookie_key            = cookie_key(config)
-    key                   = Pow.UUID.generate()
+    key                   = cookie_id(config)
     value                 = user_id
     opts                  = session_opts(config)
 
@@ -153,8 +157,24 @@ defmodule PowPersistentSession.Plug.Cookie do
     end
   end
 
+  defp cookie_id(config) do
+    uuid = UUID.generate()
+
+    case Config.get(config, :otp_app, nil) do
+      nil     -> uuid
+      otp_app -> "#{otp_app}_#{uuid}"
+    end
+  end
+
   defp cookie_key(config) do
-    Config.get(config, :persistent_session_cookie_key, @cookie_key)
+    Config.get(config, :persistent_session_cookie_key, default_cookie_key(config))
+  end
+
+  defp default_cookie_key(config) do
+    case Config.get(config, :otp_app, nil) do
+      nil     -> @cookie_key
+      otp_app -> "#{otp_app}_#{@cookie_key}"
+    end
   end
 
   defp session_opts(config) do

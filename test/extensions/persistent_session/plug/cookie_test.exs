@@ -10,7 +10,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
 
   setup do
-    config = [otp_app: PowPersistentSession.TestWeb]
+    config = Application.get_env(PowPersistentSession.TestWeb, :pow)
     ets    = Pow.Config.get(config, :cache_store_backend, nil)
 
     ets.init()
@@ -24,13 +24,13 @@ defmodule PowPersistentSession.Plug.CookieTest do
     {:ok, %{conn: conn, config: config, ets: ets}}
   end
 
-  defp store_persistent(conn, ets, id, user) do
+  defp store_persistent(conn, ets, id, user, cookie_key \\ "persistent_session_cookie") do
     PersistentSessionCache.put([backend: ets], id, user.id)
-    persistent_cookie(conn, id)
+    persistent_cookie(conn, cookie_key, id)
   end
 
-  defp persistent_cookie(conn, id) do
-    cookies = %{"persistent_session_cookie" => id}
+  defp persistent_cookie(conn, cookie_key, id) do
+    cookies = Map.new([{cookie_key, id}])
     %{conn | req_cookies: cookies, cookies: cookies}
   end
 
@@ -54,6 +54,24 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     refute new_id == id
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
+    assert PersistentSessionCache.get([backend: ets], new_id) == 1
+  end
+
+  test "call/2 assigns user from cookie with prepended :otp_app", %{config: config, ets: ets} do
+    user   = %User{id: 1}
+    id     = "test_app_test"
+    config = Pow.Config.merge(config, [otp_app: :test_app])
+    conn   =
+      :get
+      |> ConnHelpers.conn("/")
+      |> ConnHelpers.init_session()
+      |> Session.call(config)
+      |> store_persistent(ets, id, user, "test_app_persistent_session_cookie")
+      |> Cookie.call(Cookie.init(config))
+
+    assert Plug.current_user(conn) == user
+    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["test_app_persistent_session_cookie"]
+    assert String.starts_with?(new_id, "test_app")
     assert PersistentSessionCache.get([backend: ets], new_id) == 1
   end
 
@@ -87,7 +105,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "call/2 when persistent session cache doesn't have credentials", %{conn: conn} do
     conn =
       conn
-      |> persistent_cookie("test")
+      |> persistent_cookie("persistent_session_cookie", "test")
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
