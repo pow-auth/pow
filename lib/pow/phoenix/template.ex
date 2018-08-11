@@ -9,8 +9,6 @@ defmodule Pow.Phoenix.Template do
         use Pow.Phoenix.Template
 
         template :new, :html, "<%= content_tag(:span, "Template") %>"
-
-        template :edit, :html, {:form, [{:text, :custom}]}
       end
 
       MyApp.ResourceTemplate.render("new.html", assigns)

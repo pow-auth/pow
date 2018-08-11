@@ -1,8 +1,14 @@
-
 defmodule Pow.Phoenix.HTML.FormTemplate do
   @moduledoc """
   Module that can build user form templates for Phoenix.
+
+  This module is build to support Phoenix 1.4 with minimalist CSS. Another
+  module `Pow.Phoenix.HTML.Bootstrap` exists to ensure Phoenix 1.3 templates
+  can be rendered with Bootstrap CSS classes. This is the default behaviour
+  until Phoenix 1.4 is released.
   """
+  alias Pow.Phoenix.HTML.Bootstrap
+
   @template EEx.compile_string """
   <%%= form_for @changeset, @action, [as: :user], fn f -> %>
     <%%= if @changeset.action do %>
@@ -26,18 +32,25 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
 
   ## Options
 
-    * `:button_label` - the submit button label, defaults to "Submit"
+    * `:button_label` - the submit button label, defaults to "Submit".
+    * `:bootstrap` - to render form as bootstrap, defaults to true.
   """
   @spec render(list(), Keyword.t()) :: Macro.t()
   def render(inputs, opts \\ []) do
-    inputs       = for {type, key} <- inputs, do: input(type, key)
     button_label = Keyword.get(opts, :button_label, "Submit")
+
+    case Keyword.get(opts, :bootstrap, true) do
+      true -> Bootstrap.render_form(inputs, button_label)
+      _any -> render_form(inputs, button_label)
+    end
+  end
+
+  defp render_form(inputs, button_label) do
+    inputs = for {type, key} <- inputs, do: input(type, key)
 
     unquote(@template)
   end
 
-  @doc false
-  @spec input(atom(), atom()) :: {binary(), binary(), binary()}
   defp input(:text, key) do
     {label(key), ~s(<%= text_input f, #{inspect_key(key)} %>), error(key)}
   end
@@ -53,6 +66,8 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
     ~s(<%= error_tag f, #{inspect_key(key)} %>)
   end
 
-  defp inspect_key({:changeset, :pow_user_id_field}), do: "@changeset.data.__struct__.pow_user_id_field()"
-  defp inspect_key(key), do: inspect(key)
+  @doc false
+  @spec inspect_key(any()) :: binary()
+  def inspect_key({:changeset, :pow_user_id_field}), do: "@changeset.data.__struct__.pow_user_id_field()"
+  def inspect_key(key), do: inspect(key)
 end
