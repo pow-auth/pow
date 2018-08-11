@@ -11,7 +11,7 @@ defmodule PowPersistentSession.Plug.Cookie do
     defmodule MyAppWeb.Endpoint do
       # ...
 
-      plug Pow.Plug.Session, otp_app: :my_app_web
+      plug Pow.Plug.Session, otp_app: :my_app
 
       plug PowPersistentSession.Plug.Cookie
 

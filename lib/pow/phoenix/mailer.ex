@@ -9,7 +9,7 @@ defmodule Pow.Phoenix.Mailer do
 
       defmodule MyAppWeb.Pow.Mailer do
         use Pow.Phoenix.Mailer
-        use Swoosh.Mailer, otp_app: :my_app_web
+        use Swoosh.Mailer, otp_app: :my_app
         import Swoosh.Email
 
         def cast(email) do

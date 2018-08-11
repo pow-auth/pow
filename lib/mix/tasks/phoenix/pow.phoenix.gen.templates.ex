@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     Please set `web_module: #{inspect web_base}` in your configuration.
 
         defmodule #{inspect web_base}.Endpoint do
-          use #{inspect web_base}.Endpoint, otp_app: :#{Macro.underscore(web_base)}
+          use #{inspect web_base}.Endpoint, otp_app: :#{Macro.underscore(context_base)}
 
           # ...
 

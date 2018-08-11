@@ -46,7 +46,7 @@ PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 Update `config/config.ex` with the following:
 
 ```elixir
-config :my_app_web, :pow,
+config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo
 ```
@@ -55,7 +55,7 @@ Set up `WEB_PATH/endpoint.ex` to enable session based authentication:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :my_app_web
+  use Phoenix.Endpoint, otp_app: :my_app
 
   # ...
 
@@ -64,7 +64,7 @@ defmodule MyAppWeb.Endpoint do
     key: "_my_project_demo_key",
     signing_salt: "secret"
 
-  plug Pow.Plug.Session, otp_app: :my_app_web
+  plug Pow.Plug.Session, otp_app: :my_app
 
   # ...
 end
@@ -100,7 +100,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registrations/new`, and create a new user.
+That's it! Run `mix ecto.setup`, and you can now visit `http://localhost:4000/registration/new`, and create a new user.
 
 By default, Pow will only expose files that are absolutely necessary
 
@@ -129,7 +129,7 @@ mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension P
 Update `config/config.ex` with the `:extensions`and `:controller_callbacks` key:
 
 ```elixir
-config :my_app_web, :pow,
+config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
   extensions: [PowResetPassword, PowEmailConfirmation],
@@ -161,7 +161,7 @@ Add Pow extension routes to `WEB_PATH/router.ex` (note the `:otp_app` configurat
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use Pow.Phoenix.Router
-  use Pow.Extension.Phoenix.Router, otp_app: :my_app_web
+  use Pow.Extension.Phoenix.Router, otp_app: :my_app
 
   # ...
 
@@ -185,7 +185,7 @@ Many extensions requires a mailer to have been set up. Let's create the mailer i
 ```elixir
 defmodule MyAppWeb.PowMailer do
   use Pow.Phoenix.Mailer
-  use Swoosh.Mailer, otp_app: :my_app_web
+  use Swoosh.Mailer, otp_app: :my_app
 
   import Swoosh.Email
 
@@ -207,7 +207,7 @@ end
 Update `config/config.ex` with `:mailer_backend` key:
 
 ```elixir
-config :my_app_web, :pow,
+config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
   extensions: [PowResetPassword, PowEmailConfirmation],
@@ -317,7 +317,7 @@ end
 defmodule MyAppWeb.Endpoint do
   # ...
 
-  plug MyAppWeb.Pow.Plug, otp_app: :my_app_web
+  plug MyAppWeb.Pow.Plug, otp_app: :my_app
 end
 ```
 

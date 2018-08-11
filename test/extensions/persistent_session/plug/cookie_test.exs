@@ -10,7 +10,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
 
   setup do
-    config = Application.get_env(PowPersistentSession.TestWeb, :pow)
+    config = Application.get_env(PowPersistentSession.Test, :pow)
     ets    = Pow.Config.get(config, :cache_store_backend, nil)
 
     ets.init()

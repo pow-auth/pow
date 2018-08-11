@@ -29,7 +29,7 @@ defmodule Pow.Test.ExtensionMocks do
     quoted = quote do
       use Phoenix.Router
       use Pow.Phoenix.Router
-      use Pow.Extension.Phoenix.Router, otp_app: unquote(web_module)
+      use Pow.Extension.Phoenix.Router, otp_app: unquote(context_module)
 
       pipeline :browser do
         plug :accepts, ["html"]
@@ -51,7 +51,7 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([web_module, Phoenix.Endpoint])
 
     quoted = quote do
-      use Phoenix.Endpoint, otp_app: unquote(web_module)
+      use Phoenix.Endpoint, otp_app: unquote(context_module)
 
       plug Plug.RequestId
       plug Plug.Logger
@@ -69,7 +69,7 @@ defmodule Pow.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: unquote(web_module)
+      plug Pow.Plug.Session, otp_app: unquote(context_module)
 
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])
@@ -96,7 +96,7 @@ defmodule Pow.Test.ExtensionMocks do
         end
       end
 
-      @ets Application.get_env(unquote(web_module), :pow)[:cache_store_backend]
+      @ets Application.get_env(unquote(context_module), :pow)[:cache_store_backend]
 
       setup _tags do
         @ets.init()

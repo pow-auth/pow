@@ -35,7 +35,7 @@ Set up a migration file with the following change to continue using your users t
 Add configuration:
 
 ```elixir
-config :my_app_web, :pow,
+config :my_app, :pow,
   repo: MyApp.Repo,
   user: MyApp.User,
   extensions: [PowEmailConfirmation, PowResetPassword],
@@ -98,7 +98,7 @@ Set up `pow_mailer.ex` to enable emails:
   defmodule MyAppWeb.PowMailer do
     @moduledoc false
     use Pow.Phoenix.Mailer
-    use Swoosh.Mailer, otp_app: :my_app_web
+    use Swoosh.Mailer, otp_app: :my_app
 
     import Swoosh.Email
 
@@ -120,7 +120,7 @@ Add session plug to `endpoint.ex`:
   ```elixir
   # After plug Plug.Session
 
-  plug MyApp.Pow.Plug.Session, otp_app: :my_app_web
+  plug MyApp.Pow.Plug.Session, otp_app: :my_app
   ```
 
 Set up `routes.ex`
@@ -129,7 +129,7 @@ Set up `routes.ex`
   defmodule MyAppWeb.Router do
     use Phoenix.Router
     use Pow.Phoenix.Router
-    use Pow.Extension.Phoenix.Router, otp_app: :my_app_web
+    use Pow.Extension.Phoenix.Router, otp_app: :my_app
 
     # ...
 
