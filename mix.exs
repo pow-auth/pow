@@ -14,7 +14,7 @@ defmodule Pow.MixProject do
       deps: deps(),
 
       # Hex
-      description: "Powerful user authentication solution",
+      description: "Robust user authentication solution",
       package: package(),
 
       # Docs
