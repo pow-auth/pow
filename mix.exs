@@ -35,11 +35,11 @@ defmodule Pow.MixProject do
 
   defp deps do
     [
-      {:ecto, "~> 2.2.0", optional: true},
-      {:phoenix, "~> 1.3.0", optional: true},
+      {:ecto, "~> 2.2.0"},
+      {:phoenix, "~> 1.3.0"},
+      {:phoenix_html, "~> 2.11.0"},
       {:plug, ">= 1.5.0 and < 1.7.0", optional: true},
 
-      {:phoenix_html, "~> 2.11.0", only: [:dev, :test]},
       {:phoenix_ecto, "~> 3.3.0", only: [:dev, :test]},
       {:credo, "~> 0.9.3", only: [:dev, :test]},
 
