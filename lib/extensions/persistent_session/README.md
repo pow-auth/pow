@@ -1,6 +1,6 @@
 # PowPersistentSession
 
-This extension will permit reissuing sessions, by setting a cookie with a 30 day expiration (renewed on every request). The token in this cookie can be used exactly once to create the session. When the session has been created, the cookie will be updated with a new id.
+This extension will permit reissuing sessions, by setting a cookie with a 30-day expiration (renewed on every request). The token in this cookie can be used exactly once to create the session. When the session has been created, the cookie will be updated with a new id.
 
 ## Installation
 
@@ -22,7 +22,7 @@ end
 
 ### Configuration
 
-By default, persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex` (you may need to generate the templates first):
+By default, the persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex` (you may need to generate the templates first):
 
 ```elixir
 <%= label f, :persistent_session, "Remember me" %>

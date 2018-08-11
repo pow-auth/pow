@@ -1,6 +1,6 @@
 # PowResetPassword
 
-This extension will allow users to reset password by sending an e-mail with a reset password link. It requires that the user schema has an `:email` field.
+This extension will allow users to reset the password by sending an e-mail with a reset password link. It requires that the user schema has an `:email` field.
 
 ## Installation
 
