@@ -65,7 +65,7 @@ defmodule Pow.Phoenix.Routes do
 
   By default this is the same as `after_sign_in_path/1`.
   """
-  def user_already_authenticated_path(conn), do: after_sign_in_path(conn)
+  def user_already_authenticated_path(conn), do: routes(conn).after_sign_in_path(conn)
 
   @doc """
   Path to redirect user to when user has signed out.
@@ -88,7 +88,7 @@ defmodule Pow.Phoenix.Routes do
 
   By default this is the same as `after_sign_in_path/1`.
   """
-  def after_registration_path(conn), do: after_sign_in_path(conn)
+  def after_registration_path(conn), do: routes(conn).after_sign_in_path(conn)
 
   @doc """
   Path to redirect user to when user has updated their account.
@@ -102,5 +102,7 @@ defmodule Pow.Phoenix.Routes do
 
   By default this is the same as `after_sign_out_path/1`.
   """
-  def after_user_deleted_path(conn), do: after_sign_out_path(conn)
+  def after_user_deleted_path(conn), do: routes(conn).after_sign_out_path(conn)
+
+  defp routes(conn), do: Controller.routes(conn, __MODULE__)
 end
