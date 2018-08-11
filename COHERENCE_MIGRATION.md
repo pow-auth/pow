@@ -40,7 +40,7 @@ config :my_app_web, :pow,
   user: MyApp.User,
   extensions: [PowEmailConfirmation, PowResetPassword],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
-  mailer_backend: MyAppWeb.Mailer
+  mailer_backend: MyAppWeb.PowMailer
 ```
 
 Set up `user.ex` to use Pow:
@@ -92,13 +92,14 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
     end
     ```
 
-Set up `mailer.ex` to enable emails:
+Set up `pow_mailer.ex` to enable emails:
 
   ```elixir
-  defmodule MyAppWeb.Mailer do
+  defmodule MyAppWeb.PowMailer do
     @moduledoc false
     use Pow.Phoenix.Mailer
     use Swoosh.Mailer, otp_app: :my_app_web
+
     import Swoosh.Email
 
     def cast(email) do

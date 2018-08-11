@@ -155,7 +155,7 @@ defmodule MyApp.Users.User do
 end
 ```
 
-Add Pow extension routes to `WEB_PATH/router.ex`:
+Add Pow extension routes to `WEB_PATH/router.ex` (note the `:otp_app` configuration that will pull the extensions defined in the app environment):
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -176,19 +176,22 @@ defmodule MyAppWeb.Router do
 end
 ```
 
+Templates and views can be generated with `mix pow.extension.phoenix.gen.templates  --extension PowResetPassword --extension PowEmailConfirmation`.
+
 ### Mailer support
 
-Many extensions requires a mailer to have been set up. Let's create the mailer in `WEB_PATH/mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
+Many extensions requires a mailer to have been set up. Let's create the mailer in `WEB_PATH/pow_mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
 
 ```elixir
-defmodule MyAppWeb.Mailer do
+defmodule MyAppWeb.PowMailer do
   use Pow.Phoenix.Mailer
   use Swoosh.Mailer, otp_app: :my_app_web
+
   import Swoosh.Email
 
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     %Swoosh.Email{}
-    |> to({"", email.user.email})
+    |> to({"", user.email})
     |> from({"My App", "myapp@example.com"})
     |> subject(subject)
     |> html_body(html)
@@ -209,10 +212,10 @@ config :my_app_web, :pow,
   repo: MyApp.Repo,
   extensions: [PowResetPassword, PowEmailConfirmation],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
-  mailer_backend: MyAppWeb.Mailer
+  mailer_backend: MyAppWeb.PowMailer
 ```
 
-That's it!
+Remember to set the swoosh app configuration, and that's it!
 
 #### Modify mailer templates
 
