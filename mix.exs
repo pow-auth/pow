@@ -1,7 +1,7 @@
 defmodule Pow.MixProject do
   use Mix.Project
 
-  @version "0.1.0-rc.1"
+  @version "1.0.0-rc.0"
 
   def project do
     [
