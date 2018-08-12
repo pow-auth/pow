@@ -21,7 +21,7 @@ defmodule Pow.Phoenix.RoutesTest do
     assert Routes.after_registration_path(conn) == "/"
     assert Routes.after_sign_out_path(conn) == "/session/new"
 
-    conn = Plug.Conn.put_private(conn, :pow_config, [routes_backend: CustomRoutes])
+    conn = Plug.Conn.put_private(conn, :pow_config, routes_backend: CustomRoutes)
     assert CustomRoutes.after_sign_in_path(conn) == "/custom"
     assert CustomRoutes.after_registration_path(conn) == "/custom"
     assert CustomRoutes.after_sign_out_path(conn) == "/session/new"

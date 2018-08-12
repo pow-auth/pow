@@ -35,14 +35,14 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       config
       |> Extension.extensions()
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
-      |> Enum.map(&({&1, @extension_templates[&1]}))
+      |> Enum.map(&{&1, @extension_templates[&1]})
 
-    Enum.each extensions, fn {module, templates} ->
-      Enum.each templates, fn {name, actions} ->
+    Enum.each(extensions, fn {module, templates} ->
+      Enum.each(templates, fn {name, actions} ->
         Phoenix.create_view_file(module, name, web_module, web_prefix)
         Phoenix.create_templates(module, name, web_prefix, actions)
-      end
-    end
+      end)
+    end)
 
     %{structure: structure}
   end

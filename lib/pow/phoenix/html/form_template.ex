@@ -9,23 +9,24 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
   """
   alias Pow.Phoenix.HTML.Bootstrap
 
-  @template EEx.compile_string """
-  <%%= form_for @changeset, @action, [as: :user], fn f -> %>
-    <%%= if @changeset.action do %>
-      <div class="alert alert-danger">
-        <p>Oops, something went wrong! Please check the errors below.</p>
+  @template EEx.compile_string(
+    """
+    <%%= form_for @changeset, @action, [as: :user], fn f -> %>
+      <%%= if @changeset.action do %>
+        <div class="alert alert-danger">
+          <p>Oops, something went wrong! Please check the errors below.</p>
+        </div>
+      <%% end %>
+    <%= for {label, input, error} <- inputs, input do %>
+      <%= label %>
+      <%= input %>
+      <%= error %>
+    <% end %>
+      <div>
+        <%%= submit <%= inspect button_label %> %>
       </div>
     <%% end %>
-  <%= for {label, input, error} <- inputs, input do %>
-    <%= label %>
-    <%= input %>
-    <%= error %>
-  <% end %>
-    <div>
-      <%%= submit <%= inspect button_label %> %>
-    </div>
-  <%% end %>
-  """
+    """)
 
   @doc """
   Renders a form.

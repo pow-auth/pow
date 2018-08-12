@@ -108,7 +108,8 @@ defmodule Pow.Store.Backend.EtsCache do
     end
   end
 
-  defp table_update(config, key, value), do: :ets.insert(@ets_cache_tab, {ets_key(config, key), value})
+  defp table_update(config, key, value),
+    do: :ets.insert(@ets_cache_tab, {ets_key(config, key), value})
 
   defp table_delete(config, key), do: :ets.delete(@ets_cache_tab, ets_key(config, key))
 

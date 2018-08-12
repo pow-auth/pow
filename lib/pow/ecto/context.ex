@@ -163,10 +163,10 @@ defmodule Pow.Ecto.Context do
   defp normalize_user_id_field_value(user_mod, clauses) do
     user_id_field = user_mod.pow_user_id_field()
 
-    Enum.map clauses, fn
+    Enum.map(clauses, fn
       {^user_id_field, value} -> {user_id_field, Schema.normalize_user_id_field_value(value)}
       any -> any
-    end
+    end)
   end
 
   @doc """
@@ -174,7 +174,7 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_insert(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
+  @spec do_insert(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
   def do_insert(changeset, config) do
     changeset
     |> repo(config).insert()
@@ -186,7 +186,7 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_update(Changeset.t(), Config.t()) ::  {:ok, user()} | {:error, Changeset.t()}
+  @spec do_update(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
   def do_update(changeset, config) do
     changeset
     |> repo(config).update()

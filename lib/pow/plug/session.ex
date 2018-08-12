@@ -126,7 +126,7 @@ defmodule Pow.Plug.Session do
   end
   defp session_stale?(_inserted_at, _config, nil), do: false
   defp session_stale?(inserted_at, _config, ttl) do
-    (inserted_at + ttl) < timestamp()
+    inserted_at + ttl < timestamp()
   end
 
   defp session_id(config) do

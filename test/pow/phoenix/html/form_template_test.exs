@@ -5,11 +5,11 @@ defmodule Pow.Phoenix.HTML.FormTemplateTest do
   alias Pow.Phoenix.HTML.FormTemplate
 
   test "render/2 with bootstrap" do
-    inputs = [
+    html = FormTemplate.render([
       {:text, {:changeset, :pow_user_id_field}},
       {:password, :password},
-      {:password, :confirm_password}]
-    html = FormTemplate.render(inputs, [bootstrap: true])
+      {:password, :confirm_password}
+    ], bootstrap: true)
 
     assert html =~ "<div class=\"form-group\">"
     assert html =~ "<%= label f, :password, class: \"control-label\" %>"
@@ -18,11 +18,11 @@ defmodule Pow.Phoenix.HTML.FormTemplateTest do
   end
 
   test "render/2 with minimalist" do
-    inputs = [
+    html = FormTemplate.render([
       {:text, {:changeset, :pow_user_id_field}},
       {:password, :password},
-      {:password, :confirm_password}]
-    html = FormTemplate.render(inputs, [bootstrap: false])
+      {:password, :confirm_password}
+    ], bootstrap: false)
 
     refute html =~ "<div class=\"form-group\">"
     assert html =~ "<%= label f, :password %>"

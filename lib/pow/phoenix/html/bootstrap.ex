@@ -4,25 +4,26 @@ defmodule Pow.Phoenix.HTML.Bootstrap do
   """
   import Pow.Phoenix.HTML.FormTemplate, only: [inspect_key: 1]
 
-  @form_template EEx.compile_string """
-  <%%= form_for @changeset, @action, [as: :user], fn f -> %>
-    <%%= if @changeset.action do %>
-      <div class="alert alert-danger">
-        <p>Oops, something went wrong! Please check the errors below.</p>
+  @form_template EEx.compile_string(
+    """
+    <%%= form_for @changeset, @action, [as: :user], fn f -> %>
+      <%%= if @changeset.action do %>
+        <div class="alert alert-danger">
+          <p>Oops, something went wrong! Please check the errors below.</p>
+        </div>
+      <%% end %>
+    <%= for {label, input, error} <- inputs, input do %>
+      <div class="form-group">
+        <%= label %>
+        <%= input %>
+        <%= error %>
+      </div>
+    <% end %>
+      <div class="form-group">
+        <%%= submit <%= inspect button_label %>, class: "btn btn-primary" %>
       </div>
     <%% end %>
-  <%= for {label, input, error} <- inputs, input do %>
-    <div class="form-group">
-      <%= label %>
-      <%= input %>
-      <%= error %>
-    </div>
-  <% end %>
-    <div class="form-group">
-      <%%= submit <%= inspect button_label %>, class: "btn btn-primary" %>
-    </div>
-  <%% end %>
-  """
+    """)
 
   @doc """
   Renders a form.

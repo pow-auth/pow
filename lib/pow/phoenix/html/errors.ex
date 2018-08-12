@@ -22,6 +22,7 @@ defmodule Pow.Phoenix.HTML.ErrorHelpers do
   defp translate_error({msg, opts}) do
     Enum.reduce(opts, msg, fn {key, value}, msg ->
       token = "%{#{key}}"
+
       case String.contains?(msg, token) do
         true  -> String.replace(msg, token, to_string(value), global: false)
         false -> msg

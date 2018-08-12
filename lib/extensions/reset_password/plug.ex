@@ -10,7 +10,7 @@ defmodule PowResetPassword.Plug do
       conn
       |> reset_password_user()
       |> case do
-        nil  ->
+        nil ->
           conn
           |> Pow.Plug.fetch_config()
           |> Context.user_schema_mod()

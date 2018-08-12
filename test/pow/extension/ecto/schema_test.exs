@@ -42,23 +42,24 @@ defmodule Pow.Test.Extension.Ecto.Schema.User do
   end
 end
 
-module_raised_with = try do
-  defmodule Pow.Test.Extension.Ecto.Schema.InvalidUser do
-    use Ecto.Schema
-    use Pow.Ecto.Schema,
-      user_id_field: :username
-    use Pow.Extension.Ecto.Schema,
-      extensions: [Pow.Test.Extension.Ecto.Schema]
+module_raised_with =
+  try do
+    defmodule Pow.Test.Extension.Ecto.Schema.InvalidUser do
+      use Ecto.Schema
+      use Pow.Ecto.Schema,
+        user_id_field: :username
+      use Pow.Extension.Ecto.Schema,
+        extensions: [Pow.Test.Extension.Ecto.Schema]
 
-    schema "users" do
-      pow_user_fields()
+      schema "users" do
+        pow_user_fields()
 
-      timestamps()
+        timestamps()
+      end
     end
+  rescue
+    e in RuntimeError -> e.message
   end
-rescue
-  e in RuntimeError -> e.message
-end
 
 defmodule Pow.Extension.Ecto.SchemaTest do
   use Pow.Test.Ecto.TestCase

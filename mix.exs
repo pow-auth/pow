@@ -8,9 +8,9 @@ defmodule Pow.MixProject do
       app: :pow,
       version: @version,
       elixir: "~> 1.6",
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      compilers: [:phoenix] ++ Mix.compilers,
+      compilers: [:phoenix] ++ Mix.compilers(),
       deps: deps(),
 
       # Hex
@@ -25,7 +25,7 @@ defmodule Pow.MixProject do
 
   def application do
     [
-      extra_applications: extra_applications(Mix.env),
+      extra_applications: extra_applications(Mix.env()),
       mod: {Pow.Application, []}
     ]
   end
@@ -45,7 +45,7 @@ defmodule Pow.MixProject do
 
       {:ex_doc, "~> 0.19.0", only: :dev},
 
-      {:postgrex, ">= 0.0.0", only: [:test]},
+      {:postgrex, ">= 0.0.0", only: [:test]}
     ]
   end
 
@@ -69,23 +69,36 @@ defmodule Pow.MixProject do
       source_url: "https://github.com/danschultzer/pow",
       extras: [
         "README.md": [filename: "Pow", title: "Pow"],
-        "COHERENCE_MIGRATION.md": [filename: "CoherenceMigration", title: "Migrating from Coherence"],
-        "lib/extensions/email_confirmation/README.md": [filename: "PowEmailConfirmation", title: "PowEmailConfirmation"],
-        "lib/extensions/persistent_session/README.md": [filename: "PowPersistentSession", title: "PowPersistentSession"],
-        "lib/extensions/reset_password/README.md": [filename: "PowResetPassword", title: "PowResetPassword"]],
+        "COHERENCE_MIGRATION.md": [
+          filename: "CoherenceMigration",
+          title: "Migrating from Coherence"
+        ],
+        "lib/extensions/email_confirmation/README.md": [
+          filename: "PowEmailConfirmation",
+          title: "PowEmailConfirmation"
+        ],
+        "lib/extensions/persistent_session/README.md": [
+          filename: "PowPersistentSession",
+          title: "PowPersistentSession"
+        ],
+        "lib/extensions/reset_password/README.md": [
+          filename: "PowResetPassword",
+          title: "PowResetPassword"
+        ]
+      ],
       groups_for_modules: [
-        "Plug": ~r/^Pow.Plug/,
-        "Ecto": ~r/^Pow.Ecto/,
-        "Phoenix": ~r/^Pow.Phoenix/,
+        Plug: ~r/^Pow.Plug/,
+        Ecto: ~r/^Pow.Ecto/,
+        Phoenix: ~r/^Pow.Phoenix/,
         "Plug extension": ~r/^Pow.Extension.Plug/,
         "Ecto extension": ~r/^Pow.Extension.Ecto/,
         "Phoenix extension": ~r/^Pow.Extension.Phoenix/,
         "Store handling": ~r/^Pow.Store/,
         "Mix helpers": ~r/^Mix.Pow/,
-        "Extensions": ~r/^(PowEmailConfirmation|PowPersistentSession|PowResetPassword)/
+        Extensions: ~r/^(PowEmailConfirmation|PowPersistentSession|PowResetPassword)/
       ],
       groups_for_extras: [
-        "Extensions": Path.wildcard("lib/extensions/*/README.md"),
+        Extensions: Path.wildcard("lib/extensions/*/README.md")
       ]
     ]
   end

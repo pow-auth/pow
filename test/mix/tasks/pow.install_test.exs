@@ -4,7 +4,6 @@ defmodule Mix.Tasks.Pow.InstallTest do
   alias Mix.Tasks.Pow.Install
 
   @tmp_path Path.join(["tmp", inspect(Install)])
-  @options  []
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -14,10 +13,12 @@ defmodule Mix.Tasks.Pow.InstallTest do
   end
 
   test "generates files" do
-    File.cd! @tmp_path, fn ->
-      Install.run(@options ++ ~w(--context-app pow))
+    options = ~w(--context-app pow)
+
+    File.cd!(@tmp_path, fn ->
+      Install.run(options)
 
       assert File.ls!("lib/pow/users") == ["user.ex"]
-    end
+    end)
   end
 end

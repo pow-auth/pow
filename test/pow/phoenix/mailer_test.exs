@@ -4,6 +4,7 @@ defmodule Pow.Phoenix.MailerTest.Mailer do
   def cast(email), do: {:cast, email}
   def process({:cast, email}), do: {:process, email}
 end
+
 defmodule Pow.Phoenix.MailerTest do
   use Pow.Test.Phoenix.ConnCase
   doctest Pow.Phoenix.Mailer
@@ -27,7 +28,7 @@ defmodule Pow.Phoenix.MailerTest do
 
     res =
       conn
-      |> Plug.Conn.put_private(:pow_config, [mailer_backend: Pow.Phoenix.MailerTest.Mailer])
+      |> Plug.Conn.put_private(:pow_config, mailer_backend: Pow.Phoenix.MailerTest.Mailer)
       |> Mailer.deliver(email)
 
     assert res == {:process, email}

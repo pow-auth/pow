@@ -38,32 +38,32 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     web_module   = structure[:web_module]
     web_prefix   = structure[:web_prefix]
 
-    Enum.each @templates, fn {name, actions} ->
+    Enum.each(@templates, fn {name, actions} ->
       Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix)
       Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
-    end
+    end)
 
     %{context_base: context_base, web_module: web_module}
   end
 
   defp print_shell_instructions(%{context_base: context_base, web_module: web_base}) do
-    Mix.shell.info """
+    Mix.shell.info("""
     Pow Phoenix templates and views has been generated.
 
-    Please set `web_module: #{inspect web_base}` in your configuration.
+    Please set `web_module: #{inspect(web_base)}` in your configuration.
 
-        defmodule #{inspect web_base}.Endpoint do
-          use #{inspect web_base}.Endpoint, otp_app: :#{Macro.underscore(context_base)}
+        defmodule #{inspect(web_base)}.Endpoint do
+          use #{inspect(web_base)}.Endpoint, otp_app: :#{Macro.underscore(context_base)}
 
           # ...
 
-          plug #{inspect web_base}.Pow.Plug.Session,
-            repo: #{inspect context_base}.Repo,
-            user: #{inspect context_base}.Users.User,
-            web_module: #{inspect web_base}
+          plug #{inspect(web_base)}.Pow.Plug.Session,
+            repo: #{inspect(context_base)}.Repo,
+            user: #{inspect(context_base)}.Users.User,
+            web_module: #{inspect(web_base)}
 
           # ...
         end
-    """
+    """)
   end
 end

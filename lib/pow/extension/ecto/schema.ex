@@ -139,7 +139,7 @@ defmodule Pow.Extension.Ecto.Schema do
   def validate!(config, module) do
     config
     |> __schema_extensions__()
-    |> Enum.each(&(&1.validate!(config, module)))
+    |> Enum.each(& &1.validate!(config, module))
 
     :ok
   end

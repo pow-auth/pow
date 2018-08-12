@@ -30,16 +30,22 @@ defmodule Pow.Phoenix.Routes do
 
       def user_not_authenticated_path(conn),
         do: unquote(__MODULE__).user_not_authenticated_path(conn)
+
       def user_already_authenticated_path(conn),
         do: unquote(__MODULE__).user_already_authenticated_path(conn)
+
       def after_sign_out_path(conn),
         do: unquote(__MODULE__).after_sign_out_path(conn)
+
       def after_sign_in_path(conn),
         do: unquote(__MODULE__).after_sign_in_path(conn)
+
       def after_registration_path(conn),
         do: unquote(__MODULE__).after_registration_path(conn)
+
       def after_user_updated_path(conn),
         do: unquote(__MODULE__).after_user_updated_path(conn)
+
       def after_user_deleted_path(conn),
         do: unquote(__MODULE__).after_user_deleted_path(conn)
 
@@ -80,7 +86,9 @@ defmodule Pow.Phoenix.Routes do
   This will look for a `:request_path` assigns key, and redirect to this value
   if it exists.
   """
-  def after_sign_in_path(%{assigns: %{request_path: request_path}}) when is_binary(request_path), do: request_path
+  def after_sign_in_path(%{assigns: %{request_path: request_path}}) when is_binary(request_path),
+    do: request_path
+
   def after_sign_in_path(_params), do: "/"
 
   @doc """

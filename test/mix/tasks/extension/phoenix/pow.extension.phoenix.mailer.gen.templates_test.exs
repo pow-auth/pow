@@ -4,8 +4,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates
 
   @tmp_path Path.join(["tmp", inspect(Templates)])
-  @options ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
-
+  @options  ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
   @expected_template_files [
     {PowResetPassword, %{
       "mailer" => ["reset_password.html.eex", "reset_password.text.eex"]
@@ -24,8 +23,10 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
   test "generates mailer templates" do
     Mix.shell().flush
-    File.cd! @tmp_path, fn ->
+
+    File.cd!(@tmp_path, fn ->
       Templates.run(@options)
+
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
         expected_dirs  = Map.keys(expected_templates)
@@ -45,23 +46,25 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         [base_name | _rest] = expected_templates |> Map.keys() |> Enum.sort()
         view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
 
-        assert view_content =~ "defmodule PowWeb.#{inspect module}.#{Macro.camelize(base_name)}View do"
+        assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
         assert view_content =~ "use PowWeb, :mailer_view"
         assert view_content =~ "def subject(:"
       end
 
-      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
       assert_receive {:mix_shell, :info, [msg]}
       assert msg =~ "lib/pow_web.ex"
       assert msg =~ ":mailer_view"
       assert msg =~ "def mailer_view"
       assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
-    end
+    end)
   end
 
   test "generates with :context_app" do
-    File.cd! @tmp_path, fn ->
-      Templates.run(@options ++ ~w(--context-app test))
+    options = @options ++ ~w(--context-app test)
+
+    File.cd!(@tmp_path, fn ->
+      Templates.run(options)
 
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])
@@ -70,21 +73,20 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         assert dirs == Map.keys(expected_templates)
 
         views_path          = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
-
         [base_name | _rest] = expected_templates |> Map.keys()
         view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
 
-        assert view_content =~ "defmodule TestWeb.#{inspect module}.#{Macro.camelize(base_name)}View do"
+        assert view_content =~ "defmodule TestWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
         assert view_content =~ "use TestWeb, :mailer_view"
       end
 
-      for _ <- 1..6, do: assert_received {:mix_shell, :info, [_msg]}
+      for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
       assert_received {:mix_shell, :info, [msg]}
       assert msg =~ "lib/test_web.ex"
       assert msg =~ ":mailer_view"
       assert msg =~ "def mailer_view"
       assert msg =~ "use Phoenix.View, root: \"lib/test_web/templates\""
-    end
+    end)
   end
 
   defp ls(path), do: path |> File.ls!() |> Enum.sort()

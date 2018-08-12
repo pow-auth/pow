@@ -7,9 +7,10 @@ defmodule Pow.Plug.RequireAuthenticatedTest do
   alias Pow.Test.ConnHelpers
 
   setup do
-    conn = :get
-           |> ConnHelpers.conn("/")
-           |> Plug.put_config([current_user_assigns_key: :current_user])
+    conn =
+      :get
+      |> ConnHelpers.conn("/")
+      |> Plug.put_config(current_user_assigns_key: :current_user)
 
     {:ok, %{conn: conn}}
   end
@@ -38,9 +39,10 @@ defmodule Pow.Plug.RequireAuthenticatedTest do
 
   test "call/2 with assigned user", %{conn: conn} do
     opts = RequireAuthenticated.init(@default_config)
-    conn = conn
-           |> Plug.assign_current_user("user", [])
-           |> RequireAuthenticated.call(opts)
+    conn =
+      conn
+      |> Plug.assign_current_user("user", [])
+      |> RequireAuthenticated.call(opts)
 
     refute conn.private[:not_authenticated]
     refute conn.halted

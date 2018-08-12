@@ -72,16 +72,17 @@ defmodule Pow.Ecto.Schema do
 
   @doc false
   defmacro __pow_methods__ do
-    quoted_changeset_methods = for method <- @changeset_methods do
-      pow_method_name = String.to_atom("pow_#{method}")
+    quoted_changeset_methods =
+      for method <- @changeset_methods do
+        pow_method_name = String.to_atom("pow_#{method}")
 
-      quote do
-        @spec unquote(pow_method_name)(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
-        def unquote(pow_method_name)(user_or_changeset, attrs) do
-          unquote(__MODULE__).Changeset.unquote(method)(user_or_changeset, attrs, @pow_config)
+        quote do
+          @spec unquote(pow_method_name)(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
+          def unquote(pow_method_name)(user_or_changeset, attrs) do
+            unquote(__MODULE__).Changeset.unquote(method)(user_or_changeset, attrs, @pow_config)
+          end
         end
       end
-    end
 
     quote do
       import unquote(__MODULE__), only: [pow_user_fields: 0]
@@ -123,6 +124,7 @@ defmodule Pow.Ecto.Schema do
   defmacro __register_fields__ do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
+
       for attr <- unquote(__MODULE__).Fields.attrs(@pow_config) do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
       end

@@ -123,7 +123,7 @@ defmodule PowPersistentSession.Plug.Cookie do
     |> store.get(key_id)
     |> maybe_fetch_user(config)
     |> case do
-      nil  ->
+      nil ->
         delete(conn, config)
 
       user ->

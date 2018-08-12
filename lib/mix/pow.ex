@@ -9,8 +9,8 @@ defmodule Mix.Pow do
   """
   @spec no_umbrella!(binary()) :: :ok | no_return
   def no_umbrella!(task) do
-    if Project.umbrella? do
-      Mix.raise "mix #{task} can only be run inside an application directory"
+    if Project.umbrella?() do
+      Mix.raise("mix #{task} can only be run inside an application directory")
     end
 
     :ok
@@ -110,6 +110,7 @@ defmodule Mix.Pow do
           {^ctx_app, path} -> Path.relative_to_cwd(path)
           _ -> mix_app_path(ctx_app, this_app)
         end
+
       Path.join(app_path, rel_path)
     end
   end
@@ -118,8 +119,9 @@ defmodule Mix.Pow do
     case Mix.Project.deps_paths() do
       %{^app => path} ->
         Path.relative_to_cwd(path)
+
       _deps ->
-        Mix.raise("No directory for context_app #{inspect app} found in #{this_otp_app}'s deps.")
+        Mix.raise("No directory for context_app #{inspect(app)} found in #{this_otp_app}'s deps.")
     end
   end
 end

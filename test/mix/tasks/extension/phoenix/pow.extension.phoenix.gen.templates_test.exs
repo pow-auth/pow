@@ -4,8 +4,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates
 
   @tmp_path Path.join(["tmp", inspect(Templates)])
-  @options ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
-
+  @options  ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
   @expected_template_files [
     {PowResetPassword, %{
       "reset_password" => ["edit.html.eex", "new.html.eex"]
@@ -20,8 +19,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
   end
 
   test "generates templates" do
-    File.cd! @tmp_path, fn ->
+    File.cd!(@tmp_path, fn ->
       Templates.run(@options)
+
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
         expected_dirs  = Map.keys(expected_templates)
@@ -30,6 +30,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
 
         for {dir, expected_files} <- expected_templates do
           files = templates_path |> Path.join(dir) |> ls()
+
           assert files == expected_files
         end
 
@@ -41,15 +42,17 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
         [base_name | _rest] = expected_templates |> Map.keys()
         view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
 
-        assert view_content =~ "defmodule PowWeb.#{inspect module}.#{Macro.camelize(base_name)}View do"
+        assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
         assert view_content =~ "use PowWeb, :view"
       end
-    end
+    end)
   end
 
   test "generates with :context_app" do
-    File.cd! @tmp_path, fn ->
-      Templates.run(@options ++ ~w(--context-app test))
+    options = @options ++ ~w(--context-app test)
+
+    File.cd!(@tmp_path, fn ->
+      Templates.run(options)
 
       for {module, expected_templates} <- @expected_template_files do
         templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])
@@ -57,15 +60,15 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
 
         assert dirs == Map.keys(expected_templates)
 
-        views_path          = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
+        views_path = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
 
         [base_name | _rest] = expected_templates |> Map.keys()
         view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
 
-        assert view_content =~ "defmodule TestWeb.#{inspect module}.#{Macro.camelize(base_name)}View do"
+        assert view_content =~ "defmodule TestWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
         assert view_content =~ "use TestWeb, :view"
       end
-    end
+    end)
   end
 
   defp ls(path), do: path |> File.ls!() |> Enum.sort()

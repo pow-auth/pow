@@ -6,6 +6,7 @@ defmodule Pow.Phoenix.Mailer.ViewTest.MailTemplate do
     "Text line <%= @value %>",
     "<p>HTML line <%= @value %></p>"
 end
+
 defmodule Pow.Phoenix.Mailer.ViewTest.MailView do
   use Pow.Phoenix.Mailer.View
 end

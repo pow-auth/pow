@@ -197,5 +197,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   @spec raise_ttl_error :: no_return
-  defp raise_ttl_error, do: Config.raise_error("`:ttl` configuration option is required for #{__MODULE__}")
+  defp raise_ttl_error,
+    do: Config.raise_error("`:ttl` configuration option is required for #{__MODULE__}")
 end

@@ -1,9 +1,11 @@
 defmodule PowTest.Phoenix.TestView do
   def render(_template, _opts), do: :ok
 end
+
 defmodule Pow.Test.Phoenix.PowTest.TestView do
   def render(_template, _opts), do: :ok
 end
+
 defmodule Pow.Phoenix.ViewHelpersTest do
   use Pow.Test.Phoenix.ConnCase
   doctest Pow.Phoenix.ViewHelpers
@@ -13,8 +15,6 @@ defmodule Pow.Phoenix.ViewHelpersTest do
   alias Pow.Test.Ecto.Users.User
 
   setup %{conn: conn} do
-    changeset   = User.changeset(%User{}, %{})
-    action      = "/"
     conn =
       conn
       |> Map.put(:params, %{"_format" => "html"})
@@ -23,8 +23,8 @@ defmodule Pow.Phoenix.ViewHelpersTest do
       |> Conn.put_private(:phoenix_view, Pow.Phoenix.SessionView)
       |> Conn.put_private(:phoenix_layout, {Pow.Phoenix.LayoutView, :app})
       |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
-      |> Conn.assign(:changeset, changeset)
-      |> Conn.assign(:action, action)
+      |> Conn.assign(:changeset, User.changeset(%User{}, %{}))
+      |> Conn.assign(:action, "/")
 
     {:ok, %{conn: conn}}
   end
@@ -40,7 +40,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
   test "layout/1 with :web_module", %{conn: conn} do
     conn =
       conn
-      |> Conn.put_private(:pow_config, [web_module: Pow.Test.Phoenix])
+      |> Conn.put_private(:pow_config, web_module: Pow.Test.Phoenix)
       |> ViewHelpers.layout()
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
@@ -63,7 +63,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
     conn =
       conn
       |> Conn.put_private(:phoenix_view, PowTest.Phoenix.TestView)
-      |> Conn.put_private(:pow_config, [web_module: Pow.Test.Phoenix])
+      |> Conn.put_private(:pow_config, web_module: Pow.Test.Phoenix)
       |> ViewHelpers.layout()
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint

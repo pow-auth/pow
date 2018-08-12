@@ -5,19 +5,19 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
   alias Pow.{Config, Ecto.Schema.Migration, Extension.Ecto.Schema}
 
   @template """
-    defmodule <%= inspect schema.repo %>.Migrations.<%= schema.migration_name %> do
-      use Ecto.Migration
+  defmodule <%= inspect schema.repo %>.Migrations.<%= schema.migration_name %> do
+    use Ecto.Migration
 
-      def change do
-        alter table(:<%= schema.table %>) do<%= for {k, v} <- schema.attrs do %>
-          add <%= inspect k %>, <%= inspect v %><%= schema.migration_defaults[k] %><% end %><%= for {_, i, _, s} <- schema.assocs do %>
-          add <%= if(String.ends_with?(inspect(i), "_id"), do: inspect(i), else: inspect(i) <> "_id") %>, references(<%= inspect(s) %>, on_delete: :nothing<%= if schema.binary_id do %>, type: :binary_id<% end %>)<% end %>
-        end
-    <%= for index <- schema.indexes do %>
-        <%= index %><% end %>
+    def change do
+      alter table(:<%= schema.table %>) do<%= for {k, v} <- schema.attrs do %>
+        add <%= inspect k %>, <%= inspect v %><%= schema.migration_defaults[k] %><% end %><%= for {_, i, _, s} <- schema.assocs do %>
+        add <%= if(String.ends_with?(inspect(i), "_id"), do: inspect(i), else: inspect(i) <> "_id") %>, references(<%= inspect(s) %>, on_delete: :nothing<%= if schema.binary_id do %>, type: :binary_id<% end %>)<% end %>
       end
+  <%= for index <- schema.indexes do %>
+      <%= index %><% end %>
     end
-    """
+  end
+  """
 
   @doc """
   Generates migration schema map.

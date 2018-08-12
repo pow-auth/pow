@@ -39,15 +39,15 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
       config
       |> Extension.extensions()
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
-      |> Enum.map(&({&1, @extension_templates[&1]}))
+      |> Enum.map(&{&1, @extension_templates[&1]})
 
-    Enum.each extensions, fn {module, templates} ->
-      Enum.each templates, fn {name, mails} ->
+    Enum.each(extensions, fn {module, templates} ->
+      Enum.each(templates, fn {name, mails} ->
         mails = Enum.map(mails, &String.to_existing_atom/1)
         Mailer.create_view_file(module, name, web_module, web_prefix, mails)
         Mailer.create_templates(module, name, web_prefix, mails)
-      end
-    end
+      end)
+    end)
 
     %{structure: structure}
   end
@@ -56,18 +56,18 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     web_base     = structure[:web_module]
     web_prefix   = structure[:web_prefix]
 
-    Mix.shell.info """
+    Mix.shell.info("""
     Pow mailer templates has been installed in your phoenix app!
 
     You'll need to set up #{web_prefix}.ex with a `:mailer_view` macro:
 
-    defmodule #{inspect web_base} do
+    defmodule #{inspect(web_base)} do
       # ...
 
       def mailer_view do
         quote do
           use Phoenix.View, root: "#{web_prefix}/templates",
-                            namespace: #{inspect web_base}
+                            namespace: #{inspect(web_base)}
 
           use Phoenix.HTML
         end
@@ -75,6 +75,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
 
       # ...
     end
-    """
+    """)
   end
 end

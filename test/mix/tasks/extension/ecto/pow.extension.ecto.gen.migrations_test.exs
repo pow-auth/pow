@@ -20,9 +20,9 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     def config, do: [priv: "tmp/#{inspect(Migrations)}", otp_app: :pow]
   end
 
-  @tmp_path Path.join(["tmp", inspect(Migrations)])
+  @tmp_path        Path.join(["tmp", inspect(Migrations)])
   @migrations_path Path.join([@tmp_path, "migrations"])
-  @options  ["-r", inspect(Repo), "--extension", __MODULE__]
+  @options         ["-r", inspect(Repo), "--extension", __MODULE__]
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -32,34 +32,42 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
   end
 
   test "generates migrations" do
-    File.cd! @tmp_path, fn ->
+    File.cd!(@tmp_path, fn ->
       Migrations.run(@options)
+
       assert [migration_file] = File.ls!(@migrations_path)
       assert String.match?(migration_file, ~r/^\d{14}_add_migrations_test_to_users\.exs$/)
 
       file = @migrations_path |> Path.join(migration_file) |> File.read!()
+
       assert file =~ "defmodule #{inspect(Repo)}.Migrations.AddMigrationsTestToUsers do"
       assert file =~ "alter table(:users)"
       assert file =~ "add :custom_string, :string, null: false"
       assert file =~ "create unique_index(:users, [:custom_string])"
-    end
+    end)
   end
 
   test "generates with :binary_id" do
-    File.cd! @tmp_path, fn ->
-      Migrations.run(@options ++ ~w(--binary-id))
+    options = @options ++ ~w(--binary-id)
+
+    File.cd!(@tmp_path, fn ->
+      Migrations.run(options)
+
       assert [migration_file] = File.ls!(@migrations_path)
 
       file = @migrations_path |> Path.join(migration_file) |> File.read!()
+
       assert file =~ "add :custom_string, :string, null: true"
-    end
+    end)
   end
 
   test "doesn't make duplicate migrations" do
-    File.cd! @tmp_path, fn ->
+    options = @options ++ ["--extension", __MODULE__]
+
+    File.cd!(@tmp_path, fn ->
       assert_raise Mix.Error, "migration can't be created, there is already a migration file with name AddMigrationsTestToUsers.", fn ->
-        Migrations.run(@options ++ ["--extension", __MODULE__])
+        Migrations.run(options)
       end
-    end
+    end)
   end
 end

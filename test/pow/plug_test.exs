@@ -13,9 +13,8 @@ defmodule Pow.PlugTest do
     cache_store_backend: @ets,
     user: User
   ]
-  @admin_config Config.put(@default_config,
-                           :current_user_assigns_key,
-                           :current_admin_user)
+  @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
+
   setup do
     {:ok, ets: @ets}
   end

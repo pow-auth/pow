@@ -9,9 +9,11 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   end
 
   def attrs(_config) do
-    [{:email_confirmation_token, :string},
-     {:email_confirmed_at, :utc_datetime},
-     {:unconfirmed_email, :string}]
+    [
+      {:email_confirmation_token, :string},
+      {:email_confirmed_at, :utc_datetime},
+      {:unconfirmed_email, :string}
+    ]
   end
 
   def indexes(_config) do

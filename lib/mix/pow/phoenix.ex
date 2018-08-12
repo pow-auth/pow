@@ -39,8 +39,8 @@ defmodule Mix.Pow.Phoenix do
   def create_view_file(module, name, web_mod, web_prefix) do
     path    = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
     content = """
-    defmodule #{inspect web_mod}.#{inspect module}.#{Macro.camelize(name)}View do
-      use #{inspect web_mod}, :view
+    defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
+      use #{inspect(web_mod)}, :view
     end
     """
 

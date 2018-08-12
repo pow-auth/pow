@@ -65,7 +65,7 @@ defmodule Pow.Phoenix.Controller do
 
       import unquote(__MODULE__), only: [router_helpers: 1]
 
-      defoverridable [messages: 1, routes: 1]
+      defoverridable messages: 1, routes: 1
     end
   end
 

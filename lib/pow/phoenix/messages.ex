@@ -34,20 +34,28 @@ defmodule Pow.Phoenix.Messages do
 
       def user_not_authenticated(conn),
         do: unquote(__MODULE__).user_not_authenticated(conn)
+
       def user_already_authenticated(conn),
         do: unquote(__MODULE__).user_already_authenticated(conn)
+
       def signed_in(conn),
         do: unquote(__MODULE__).signed_in(conn)
+
       def signed_out(conn),
         do: unquote(__MODULE__).signed_out(conn)
+
       def invalid_credentials(conn),
         do: unquote(__MODULE__).invalid_credentials(conn)
+
       def user_has_been_created(conn),
         do: unquote(__MODULE__).user_has_been_created(conn)
+
       def user_has_been_updated(conn),
         do: unquote(__MODULE__).user_has_been_updated(conn)
+
       def user_has_been_deleted(conn),
         do: unquote(__MODULE__).user_has_been_deleted(conn)
+
       def user_could_not_be_deleted(conn),
         do: unquote(__MODULE__).user_could_not_be_deleted(conn)
 
@@ -86,7 +94,8 @@ defmodule Pow.Phoenix.Messages do
   @doc """
   Message for when user couldn't be signed in.
   """
-  def invalid_credentials(_conn), do: "The provided login details did not work. Please verify your credentials, and try again."
+  def invalid_credentials(_conn),
+    do: "The provided login details did not work. Please verify your credentials, and try again."
 
   @doc """
   Message for when user has signed up successfully.

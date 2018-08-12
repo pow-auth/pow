@@ -12,8 +12,8 @@ defmodule Mix.Pow.Phoenix.Mailer do
     subjects        = subjects_methods(module, name, mails)
     path            = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
     content         = """
-    defmodule #{inspect web_mod}.#{inspect module}.#{Macro.camelize(name)}View do
-      use #{inspect web_mod}, :mailer_view
+    defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
+      use #{inspect(web_mod)}, :mailer_view
 
       #{Enum.join(subjects, "\n")}
     end
@@ -47,7 +47,7 @@ defmodule Mix.Pow.Phoenix.Mailer do
 
     Enum.map(mails, fn mail ->
       subject = template_module.subject(mail)
-      "def subject(#{inspect mail}, _assigns), do: #{inspect subject}"
+      "def subject(#{inspect(mail)}, _assigns), do: #{inspect(subject)}"
     end)
   end
 end
