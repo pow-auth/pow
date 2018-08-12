@@ -25,3 +25,5 @@ pow-*.tar
 .DS_Store
 /.elixir_ls
 /tmp
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

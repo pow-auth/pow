@@ -12,6 +12,10 @@ defmodule Pow.MixProject do
       start_permanent: Mix.env() == :prod,
       compilers: [:phoenix] ++ Mix.compilers(),
       deps: deps(),
+      dialyzer: [
+        plt_add_apps: [:mnesia, :mix],
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
 
       # Hex
       description: "Robust user authentication solution",
@@ -43,6 +47,7 @@ defmodule Pow.MixProject do
       {:phoenix_ecto, "~> 4.1.0", only: [:dev, :test]},
       {:credo, "~> 1.2.0", only: [:dev, :test]},
       {:jason, "~> 1.0", only: [:dev, :test]}, # Credo requires jason to exist also in :dev
+      {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
 
       {:ex_doc, "~> 0.21.0", only: :dev},
 
