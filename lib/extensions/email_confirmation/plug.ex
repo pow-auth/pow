@@ -1,9 +1,10 @@
 defmodule PowEmailConfirmation.Plug do
   @moduledoc false
+  alias Plug.Conn
   alias Pow.Plug
   alias PowEmailConfirmation.Ecto.Context
 
-  @spec confirm_email(Conn.t(), binary()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec confirm_email(Conn.t(), binary()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def confirm_email(conn, token) do
     config = Plug.fetch_config(conn)
 

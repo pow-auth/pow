@@ -3,14 +3,14 @@ defmodule PowPersistentSession.Plug do
   alias Plug.Conn
   alias Pow.Config
 
-  @spec create(Conn.t(), map()) :: Conn.t() | no_return
+  @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, user) do
     {mod, config} = pow_persistent_session(conn)
 
     mod.create(conn, user, config)
   end
 
-  @spec delete(Conn.t()) :: Conn.t() | no_return
+  @spec delete(Conn.t()) :: Conn.t()
   def delete(conn) do
     {mod, config} = pow_persistent_session(conn)
 

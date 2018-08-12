@@ -14,7 +14,7 @@ defmodule Pow.Plug.RequireAuthenticated do
   alias Pow.{Config, Plug}
 
   @doc false
-  @spec init(Config.t()) :: atom() | no_return
+  @spec init(Config.t()) :: atom()
   def init(config) do
     Config.get(config, :error_handler, nil) || raise_no_error_handler()
   end

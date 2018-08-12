@@ -205,7 +205,7 @@ defmodule Pow.Ecto.Context do
   @doc """
   Retrieves the repo module from the config, or raises an exception.
   """
-  @spec repo(Config.t()) :: atom() | no_return
+  @spec repo(Config.t()) :: atom()
   def repo(config) do
     Config.get(config, :repo, nil) || raise_no_repo_error()
   end
@@ -213,7 +213,7 @@ defmodule Pow.Ecto.Context do
   @doc """
   Retrieves the user schema module from the config, or raises an exception.
   """
-  @spec user_schema_mod(Config.t()) :: atom() | no_return
+  @spec user_schema_mod(Config.t()) :: atom()
   def user_schema_mod(config) do
     Config.get(config, :user, nil) || raise_no_user_error()
   end

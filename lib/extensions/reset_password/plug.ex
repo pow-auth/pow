@@ -41,7 +41,7 @@ defmodule PowResetPassword.Plug do
     conn.private[:reset_password_token]
   end
 
-  @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_reset_token(conn, params) do
     email  = Map.get(params, "email")
     config = Pow.Plug.fetch_config(conn)
@@ -79,7 +79,7 @@ defmodule PowResetPassword.Plug do
     end
   end
 
-  @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, Changeset.t(), Conn.t()}
+  @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user_password(conn, params) do
     user   = reset_password_user(conn)
     config = Pow.Plug.fetch_config(conn)

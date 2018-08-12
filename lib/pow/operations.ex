@@ -13,7 +13,7 @@ defmodule Pow.Operations do
   It'll use the schema module fetched from the config through
   `Pow.Ecto.Context.user_schema_mod/1`.
   """
-  @spec changeset(Config.t(), map()) :: map() | nil | no_return
+  @spec changeset(Config.t(), map()) :: map() | nil
   def changeset(config, params) do
     user_mod = Context.user_schema_mod(config)
     user     = user_mod.__struct__()
@@ -37,7 +37,7 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.authenticate/2` or `authenticate/1` on a custom
   context module.
   """
-  @spec authenticate(Config.t(), map()) :: map() | nil | no_return
+  @spec authenticate(Config.t(), map()) :: map() | nil
   def authenticate(config, params) do
     case context_module(config) do
       Context -> Context.authenticate(config, params)
@@ -51,7 +51,7 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.create/2` or `create/1` on a custom context
   module.
   """
-  @spec create(Config.t(), map()) :: {:ok, map()} | {:error, map()} | no_return
+  @spec create(Config.t(), map()) :: {:ok, map()} | {:error, map()}
   def create(config, params) do
     case context_module(config) do
       Context -> Context.create(config, params)
@@ -65,7 +65,7 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.update/3` or `update/2` on a custom context
   module.
   """
-  @spec update(Config.t(), map(), map()) :: {:ok, map()} | {:error, map()} | no_return
+  @spec update(Config.t(), map(), map()) :: {:ok, map()} | {:error, map()}
   def update(config, user, params) do
     case context_module(config) do
       Context -> Context.update(config, user, params)
@@ -79,7 +79,7 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.delete/2` or `delete/1` on a custom context
   module.
   """
-  @spec delete(Config.t(), map()) :: {:ok, map()} | {:error, map()} | no_return
+  @spec delete(Config.t(), map()) :: {:ok, map()} | {:error, map()}
   def delete(config, user) do
     case context_module(config) do
       Context -> Context.delete(config, user)
@@ -93,7 +93,7 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.get_by/2` or `get_by/1` on a custom context
   module.
   """
-  @spec get_by(Config.t(), Keyword.t() | map()) :: map() | nil | no_return
+  @spec get_by(Config.t(), Keyword.t() | map()) :: map() | nil
   def get_by(config, clauses) do
     case context_module(config) do
       Context -> Context.get_by(config, clauses)

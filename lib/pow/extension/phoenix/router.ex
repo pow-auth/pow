@@ -28,7 +28,7 @@ defmodule Pow.Extension.Phoenix.Router do
         end
       end
   """
-  alias Pow.Extension
+  alias Pow.{Config, Extension}
 
   defmacro __using__(config \\ []) do
     build_router_methods_module(__CALLER__.module, config)

@@ -7,7 +7,7 @@ defmodule Pow.Plug do
 
   @private_config_key :pow_config
 
-  @spec current_user(Conn.t()) :: map() | nil | no_return
+  @spec current_user(Conn.t()) :: map() | nil
   def current_user(conn) do
     current_user(conn, fetch_config(conn))
   end
@@ -49,7 +49,7 @@ defmodule Pow.Plug do
 
   It'll raise an error if configuration hasn't been set as a private key.
   """
-  @spec fetch_config(Conn.t()) :: Config.t() | no_return
+  @spec fetch_config(Conn.t()) :: Config.t()
   def fetch_config(%{private: private}) do
     private[@private_config_key] || no_config_error()
   end
@@ -59,7 +59,7 @@ defmodule Pow.Plug do
 
   If successful, a new session will be created.
   """
-  @spec authenticate_user(Conn.t(), map()) :: {:ok | :error, Conn.t()} | no_return
+  @spec authenticate_user(Conn.t(), map()) :: {:ok | :error, Conn.t()}
   def authenticate_user(conn, params) do
     config = fetch_config(conn)
 
@@ -74,7 +74,7 @@ defmodule Pow.Plug do
   @doc """
   Clears the user authentication from the session.
   """
-  @spec clear_authenticated_user(Conn.t()) :: {:ok, Conn.t()} | no_return
+  @spec clear_authenticated_user(Conn.t()) :: {:ok, Conn.t()}
   def clear_authenticated_user(conn) do
     config = fetch_config(conn)
 
@@ -99,7 +99,7 @@ defmodule Pow.Plug do
 
   If successful, a new session will be created.
   """
-  @spec create_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec create_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_user(conn, params) do
     config = fetch_config(conn)
 
@@ -113,7 +113,7 @@ defmodule Pow.Plug do
 
   If successful, a new session will be created.
   """
-  @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user(conn, params) do
     config   = fetch_config(conn)
     user     = current_user(conn)
@@ -128,7 +128,7 @@ defmodule Pow.Plug do
 
   If successful, the user authentication will be cleared from the session.
   """
-  @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()} | no_return
+  @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def delete_user(conn) do
     config   = fetch_config(conn)
     user     = current_user(conn)
