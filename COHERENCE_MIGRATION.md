@@ -84,7 +84,7 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
     ```elixir
     defmodule MyApp.User do
       use Ecto.Schema
-      use MyApp.Pow.Ecto.Schema,
+      use Pow.Ecto.Schema,
         password_hash_methods: {&Comeonin.Bcrypt.hashpwsalt/1,
                                 &Comeonin.Bcrypt.checkpw/2}
 
@@ -120,7 +120,7 @@ Add session plug to `endpoint.ex`:
   ```elixir
   # After plug Plug.Session
 
-  plug MyApp.Pow.Plug.Session, otp_app: :my_app
+  plug Pow.Plug.Session, otp_app: :my_app
   ```
 
 Set up `routes.ex`
