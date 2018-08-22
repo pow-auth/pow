@@ -463,7 +463,7 @@ Will halt connection if a current user is present in assigns. Expects an `:error
 
 ## Migrating from Coherence
 
-If you're currently using Coherence, you can migrate your app to use Pow instead. Follow the instructions in [COHERENCE_MIGRATION.md](COHERENCE_MIGRATION.md).
+If you're currently using Coherence, you can migrate your app to use Pow instead. Follow the instructions in [COHERENCE_MIGRATION.md](guides/COHERENCE_MIGRATION.md).
 
 ## Pow security practices
 
