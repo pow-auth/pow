@@ -1,5 +1,7 @@
 # Migrating from Coherence
 
+## Remove coherence
+
 First we'll remove coherence.
 
   1. Remove `:coherence` config from `config/config.exs` (also any coherence config in `config/dev.exs`, `config/prod.exs` and `config/test.exs`)
@@ -8,7 +10,7 @@ First we'll remove coherence.
   4. Remove coherence from `router.ex`. Pipeline `:public` can be removed entirely if it's only used for coherence, as well as scopes that only contains coherence routes.
   5. Remove `:coherence` from `mix.exs` and run `mix deps.unlock coherence`
 
-Next we'll add in Pow.
+## Add Pow to your Ecto schema
 
 Set up a migration file with the following change to continue using your users table:
 
@@ -72,6 +74,8 @@ Set up `user.ex` to use Pow:
   end
   ```
 
+## Continue with bcrypt hashing
+
 Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
  1. Install comeonin for bcrypt in `mix.exs`:
@@ -91,6 +95,8 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
       # ...
     end
     ```
+
+## Mailer
 
 Set up `pow_mailer.ex` to enable emails:
 
@@ -114,6 +120,8 @@ Set up `pow_mailer.ex` to enable emails:
     def process(email), do: deliver(email)
   end
   ```
+
+## Phoenix
 
 Add session plug to `endpoint.ex`:
 

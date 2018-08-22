@@ -69,7 +69,7 @@ defmodule Pow.MixProject do
       source_url: "https://github.com/danschultzer/pow",
       extras: [
         "README.md": [filename: "Pow", title: "Pow"],
-        "COHERENCE_MIGRATION.md": [
+        "guides/COHERENCE_MIGRATION.md": [
           filename: "CoherenceMigration",
           title: "Migrating from Coherence"
         ],
@@ -98,7 +98,8 @@ defmodule Pow.MixProject do
         Extensions: ~r/^(PowEmailConfirmation|PowPersistentSession|PowResetPassword)/
       ],
       groups_for_extras: [
-        Extensions: Path.wildcard("lib/extensions/*/README.md")
+        Extensions: Path.wildcard("lib/extensions/*/README.md"),
+        Guides: Path.wildcard("guides/*.md")
       ]
     ]
   end

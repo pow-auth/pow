@@ -354,7 +354,7 @@ Controllers in Pow are very slim and consists of just one `Pow.Plug` method call
 However, to make it easier to integrate extension, you can add callbacks to the controllers that do some light pre/post-processing of the request:
 
 ```elixir
-defmodule MyCustomExtension.Pow.ControllerCallbacks do
+defmodule MyCustomExtension.Phoenix.ControllerCallbacks do
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
