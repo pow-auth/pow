@@ -37,7 +37,7 @@ defmodule Pow.MixProject do
     [
       {:ecto, "~> 2.2.0"},
       {:phoenix, "~> 1.3.0"},
-      {:phoenix_html, "~> 2.11.0"},
+      {:phoenix_html, ">= 2.0.0 and <= 3.0.0"},
       {:plug, ">= 1.5.0 and < 1.7.0", optional: true},
 
       {:phoenix_ecto, "~> 3.3.0", only: [:dev, :test]},
