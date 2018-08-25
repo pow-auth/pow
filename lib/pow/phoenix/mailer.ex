@@ -9,19 +9,19 @@ defmodule Pow.Phoenix.Mailer do
 
       defmodule MyAppWeb.Pow.Mailer do
         use Pow.Phoenix.Mailer
-        use Swoosh.Mailer, otp_app: :my_app
-        import Swoosh.Email
+        require Logger
 
-        def cast(email) do
-          %Swoosh.Email{}
-          |> from({"My App", "myapp@example.com"})
-          |> to({"", email.user.email})
-          |> subject(email.subject)
-          |> text_body(email.text)
-          |> html_body(email.html)
+        def cast(%{user: user, subject: subject, text: text, html: html}) do
+          # Build email struct to be used in `process/1`
+
+          %{to: user.email, subject: subject, text: text, html: html}
         end
 
-        def process(email), do: deliver(email)
+        def process(email) do
+          # Send email
+
+          Logger.debug("E-mail sent: \#{inspect email}")
+        end
       end
 
     Remember to update configuration with `mailer_backend: MyAppWeb.Pow.Mailer`

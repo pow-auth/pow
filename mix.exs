@@ -73,6 +73,10 @@ defmodule Pow.MixProject do
           filename: "CoherenceMigration",
           title: "Migrating from Coherence"
         ],
+        "guides/SWOOSH_MAILER.md": [
+          filename: "SwooshMailer",
+          title: "Swoosh mailer"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"

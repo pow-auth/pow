@@ -126,7 +126,7 @@ First, install extension migrations by running:
 mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-Update `config/config.ex` with the `:extensions`and `:controller_callbacks` key:
+Update `config/config.ex` with the `:extensions` and `:controller_callbacks` key:
 
 ```elixir
 config :my_app, :pow,
@@ -180,26 +180,23 @@ Templates and views can be generated with `mix pow.extension.phoenix.gen.templat
 
 ### Mailer support
 
-Many extensions require a mailer to have been set up. Let's create the mailer in `WEB_PATH/pow_mailer.ex` using [swoosh](https://github.com/swoosh/swoosh):
+Many extensions require a mailer to have been set up. Let's create a mailer mock module in  `WEB_PATH/pow_mailer.ex`:
 
 ```elixir
 defmodule MyAppWeb.PowMailer do
   use Pow.Phoenix.Mailer
-  use Swoosh.Mailer, otp_app: :my_app
-
-  import Swoosh.Email
+  require Logger
 
   def cast(%{user: user, subject: subject, text: text, html: html}) do
-    %Swoosh.Email{}
-    |> to({"", user.email})
-    |> from({"My App", "myapp@example.com"})
-    |> subject(subject)
-    |> html_body(html)
-    |> text_body(text)
+    # Build email struct to be used in `process/1`
+
+    %{to: user.email, subject: subject, text: text, html: html}
   end
 
   def process(email) do
-    deliver(email)
+    # Send email
+
+    Logger.debug("E-mail sent: #{inspect email}")
   end
 end
 ```
@@ -215,7 +212,7 @@ config :my_app, :pow,
   mailer_backend: MyAppWeb.PowMailer
 ```
 
-Remember to set the swoosh app configuration, and that's it!
+This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh integration, check out the [Swoosh mailer guide](guides/SWOOSH_MAILER.md).
 
 #### Modify mailer templates
 
