@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
 
     Enum.each(extensions, fn {module, templates} ->
       Enum.each(templates, fn {name, mails} ->
-        mails = Enum.map(mails, &String.to_existing_atom/1)
+        mails = Enum.map(mails, &String.to_atom/1)
         Mailer.create_view_file(module, name, web_module, web_prefix, mails)
         Mailer.create_templates(module, name, web_prefix, mails)
       end)

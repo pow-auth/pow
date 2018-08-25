@@ -56,7 +56,7 @@ defmodule Mix.Pow.Phoenix do
     template_module = Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
 
     actions
-    |> Enum.map(&String.to_existing_atom/1)
+    |> Enum.map(&String.to_atom/1)
     |> Enum.each(fn action ->
       content   = template_module.html(action)
       file_path = Path.join(path, "#{action}.html.eex")
