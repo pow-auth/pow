@@ -7,7 +7,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
 
   @type t :: %__MODULE__{}
 
-  defstruct [:user, :subject, :text, :html]
+  defstruct [:user, :subject, :text, :html, :assigns]
 
   @doc """
   Returns a populated `%Pow.Phoenix.Mailer.Mail{}` map.
@@ -32,7 +32,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
       |> Phoenix.Template.HTML.encode_to_iodata!()
       |> IO.iodata_to_binary()
 
-    struct(__MODULE__, user: user, subject: subject, text: text, html: html)
+    struct(__MODULE__, user: user, subject: subject, text: text, html: html, assigns: assigns)
   end
 
   @spec subject(Conn.t(), module(), atom()) :: binary()

@@ -32,6 +32,7 @@ defmodule Pow.Phoenix.Mailer.MailTest do
     assert mail.subject == "Test subject"
     assert mail.html =~ "<h3>test HTML</h3>"
     assert mail.text =~ "test text\n"
+    assert mail.assigns[:value] == "test"
   end
 
   test "new/4 with :web_module" do
