@@ -102,9 +102,23 @@ end
 
 That's it! Run `mix ecto.setup` and you can now visit `http://localhost:4000/registration/new`, and create a new user.
 
+### Modify templates
+
 By default, Pow will only expose files that are necessary.
 
- If you wish to modify the templates, you can generate them (and the view files) using: `mix pow.phoenix.gen.templates`. Remember to add `web_module: MyAppWeb` to the configuration.
+If you wish to modify the templates, you can generate them (and the view files) using:
+
+```bash
+mix pow.phoenix.gen.templates
+```
+
+Remember to add `web_module: MyAppWeb` to the configuration so that the view you've just generated will be used instead:
+
+```elixir
+config :my_app, :pow,
+  # ...
+  web_module: MyAppWeb
+```
 
 ## Extensions
 
@@ -176,7 +190,15 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-Templates and views can be generated with `mix pow.extension.phoenix.gen.templates  --extension PowResetPassword --extension PowEmailConfirmation`.
+#### Modify extension templates
+
+Templates and views for extensions can be generated with:
+
+```bash
+mix pow.extension.phoenix.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
+```
+
+Please follow the instructions in ["Modify templates"](#modify-templates) to enable customization of templates and views.
 
 ### Mailer support
 
@@ -205,10 +227,7 @@ Update `config/config.ex` with `:mailer_backend` key:
 
 ```elixir
 config :my_app, :pow,
-  user: MyApp.Users.User,
-  repo: MyApp.Repo,
-  extensions: [PowResetPassword, PowEmailConfirmation],
-  controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
+  # ...
   mailer_backend: MyAppWeb.PowMailer
 ```
 
@@ -239,12 +258,18 @@ end
 Now generate the view and template files:
 
 ```bash
-mix pow.extension.phoenix.mailer.gen.templates
+mix pow.extension.phoenix.mailer.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
 This will generate view files in `WEB_PATH/views/mailer/`, and html and text templates in `WEB_PATH/templates/mailer` directory.
 
-Add `web_mailer_module: MyAppWeb` to the configuration, and you're set!
+Add `web_mailer_module: MyAppWeb` to the configuration so Pow will use the views you've just generated:
+
+```elixir
+config :my_app, :pow,
+  # ...
+  web_mailer_module: MyAppWeb
+```
 
 ## Configuration
 
