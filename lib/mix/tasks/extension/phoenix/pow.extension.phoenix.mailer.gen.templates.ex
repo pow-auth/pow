@@ -4,7 +4,15 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
   @moduledoc """
   Generates Pow mailer extension templates for Phoenix.
 
-      mix pow.extension.phoenix.mailer.gen.templates
+  ## Usage
+
+  Install extension mailer templates explicitly:
+
+      mix pow.extension.phoenix.mailer.gen.templates --extension PowEmailConfirmation
+
+  Use the context app configuration environment for extensions:
+
+      mix pow.extension.phoenix.mailer.gen.templates --context-app my_app
   """
   use Mix.Task
 
@@ -32,12 +40,13 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     ]}
   ]
   defp create_template_files({config, _parsed, _invalid}) do
-    structure    = Phoenix.parse_structure(config)
-    web_module   = structure[:web_module]
-    web_prefix   = structure[:web_prefix]
-    extensions   =
+    structure  = Phoenix.parse_structure(config)
+    web_module = structure[:web_module]
+    web_prefix = structure[:web_prefix]
+    otp_app    = String.to_atom(Macro.underscore(structure[:context_base]))
+    extensions =
       config
-      |> Extension.extensions()
+      |> Extension.extensions(otp_app)
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
       |> Enum.map(&{&1, @extension_templates[&1]})
 
@@ -49,9 +58,12 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
       end)
     end)
 
-    %{structure: structure}
+    %{extensions: extensions, otp_app: otp_app, structure: structure}
   end
 
+  defp print_shell_instructions(%{extensions: [], otp_app: otp_app}) do
+    Extension.no_extensions_error(otp_app)
+  end
   defp print_shell_instructions(%{structure: structure}) do
     web_base     = structure[:web_module]
     web_prefix   = structure[:web_prefix]

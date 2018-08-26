@@ -60,33 +60,49 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     end)
   end
 
-  test "generates with :context_app" do
-    options = @options ++ ~w(--context-app test)
-
+  test "warns if no extensions" do
     File.cd!(@tmp_path, fn ->
-      Templates.run(options)
+      Templates.run([])
 
-      for {module, expected_templates} <- @expected_template_files do
-        templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])
-        dirs           = templates_path |> File.ls!() |> Enum.sort()
-
-        assert dirs == Map.keys(expected_templates)
-
-        views_path          = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
-        [base_name | _rest] = expected_templates |> Map.keys()
-        view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
-
-        assert view_content =~ "defmodule TestWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-        assert view_content =~ "use TestWeb, :mailer_view"
-      end
-
-      for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
-      assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "lib/test_web.ex"
-      assert msg =~ ":mailer_view"
-      assert msg =~ "def mailer_view"
-      assert msg =~ "use Phoenix.View, root: \"lib/test_web/templates\""
+      assert_received {:mix_shell, :error, [msg]}
+      assert msg =~ "No extensions was provided as arguments, or found in `config :pow, :pow` configuration."
     end)
+  end
+
+  describe "with :context_app configuration" do
+    setup do
+      Application.put_env(:test, :pow, extensions: [PowResetPassword, PowEmailConfirmation])
+      on_exit(fn ->
+        Application.delete_env(:test, :pow)
+      end)
+    end
+
+    test "generates mailer templates" do
+      File.cd!(@tmp_path, fn ->
+        Templates.run(~w(--context-app test))
+
+        for {module, expected_templates} <- @expected_template_files do
+          templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])
+          dirs           = templates_path |> File.ls!() |> Enum.sort()
+
+          assert dirs == Map.keys(expected_templates)
+
+          views_path          = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
+          [base_name | _rest] = expected_templates |> Map.keys()
+          view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
+
+          assert view_content =~ "defmodule TestWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
+          assert view_content =~ "use TestWeb, :mailer_view"
+        end
+
+        for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
+        assert_received {:mix_shell, :info, [msg]}
+        assert msg =~ "lib/test_web.ex"
+        assert msg =~ ":mailer_view"
+        assert msg =~ "def mailer_view"
+        assert msg =~ "use Phoenix.View, root: \"lib/test_web/templates\""
+      end)
+    end
   end
 
   defp ls(path), do: path |> File.ls!() |> Enum.sort()

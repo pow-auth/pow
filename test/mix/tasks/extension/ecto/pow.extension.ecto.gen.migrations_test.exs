@@ -47,6 +47,15 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     end)
   end
 
+  test "warns if no extensions" do
+    File.cd!(@tmp_path, fn ->
+      Migrations.run(["-r", inspect(Repo)])
+
+      assert_received {:mix_shell, :error, [msg]}
+      assert msg =~ "No extensions was provided as arguments, or found in `config :pow, :pow` configuration."
+    end)
+  end
+
   test "generates with :binary_id" do
     options = @options ++ ~w(--binary-id)
 
@@ -59,6 +68,24 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
       assert file =~ "add :custom_string, :string, null: true"
     end)
+  end
+
+  describe "with :otp_app configuration" do
+    setup do
+      Application.put_env(:pow, :pow, extensions: [__MODULE__])
+      on_exit(fn ->
+        Application.delete_env(:pow, :pow)
+      end)
+    end
+
+    test "generates migrations" do
+      File.cd!(@tmp_path, fn ->
+        Application.put_env(:pow, :pow, extensions: [__MODULE__])
+        Migrations.run(["-r", inspect(Repo)])
+
+        assert [_migration_file] = File.ls!(@migrations_path)
+      end)
+    end
   end
 
   test "doesn't make duplicate migrations" do

@@ -4,7 +4,15 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   @moduledoc """
   Generates pow extension templates for Phoenix.
 
-      mix pow.extension.phoenix.gen.templates
+  ## Usage
+
+  Install extension templates explicitly:
+
+      mix pow.extension.phoenix.gen.templates --extension PowEmailConfirmation
+
+  Use the context app configuration environment for extensions:
+
+      mix pow.extension.phoenix.gen.templates --context-app my_app
   """
   use Mix.Task
 
@@ -20,6 +28,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     args
     |> Pow.parse_options(@switches, @default_opts)
     |> create_template_files()
+    |> print_shell_instructions()
   end
 
   @extension_templates [
@@ -28,12 +37,13 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     ]}
   ]
   defp create_template_files({config, _parsed, _invalid}) do
-    structure    = Phoenix.parse_structure(config)
-    web_module   = structure[:web_module]
-    web_prefix   = structure[:web_prefix]
-    extensions   =
+    structure  = Phoenix.parse_structure(config)
+    web_module = structure[:web_module]
+    web_prefix = structure[:web_prefix]
+    otp_app    = String.to_atom(Macro.underscore(structure[:context_base]))
+    extensions =
       config
-      |> Extension.extensions()
+      |> Extension.extensions(otp_app)
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
       |> Enum.map(&{&1, @extension_templates[&1]})
 
@@ -44,6 +54,11 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       end)
     end)
 
-    %{structure: structure}
+    %{extensions: extensions, otp_app: otp_app, structure: structure}
   end
+
+  defp print_shell_instructions(%{extensions: [], otp_app: otp_app}) do
+    Extension.no_extensions_error(otp_app)
+  end
+  defp print_shell_instructions(config), do: config
 end
