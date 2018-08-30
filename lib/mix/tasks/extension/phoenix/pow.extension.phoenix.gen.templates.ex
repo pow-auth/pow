@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
 
   Install extension templates explicitly:
 
-      mix pow.extension.phoenix.gen.templates --extension PowEmailConfirmation
+      mix pow.extension.phoenix.gen.templates --extension PowResetPassword
 
   Use the context app configuration environment for extensions:
 
