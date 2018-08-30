@@ -441,6 +441,14 @@ defmodule MyApp.Users.User do
 end
 ```
 
+### Logout link
+
+You can use the following Phoenix link to add logout link to your Phoenix template:
+
+```elixir
+<%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
+```
+
 ## Plugs
 
 ### Pow.Plug.Session
@@ -500,6 +508,10 @@ If you're currently using Coherence, you can migrate your app to use Pow instead
 * The credentials and session are renewed when user updates
 
 Some of the above is based on [https://www.owasp.org/](OWASP) recommendations.
+
+## Other libraries
+
+[PowAssent](https://github.com/danschultzer/pow_assent) - Multi-provider support for Pow with strategies for Twitter, Github, Google, Facebook and more
 
 ## LICENSE
 
