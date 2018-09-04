@@ -11,6 +11,7 @@ Pow is a robust, modular, and extendable authentication and user management solu
 * Per Endpoint/Plug configuration
 * Extendable
 * I18n
+* [And more](guides/WHY_POW.md)
 
 ## Installation
 

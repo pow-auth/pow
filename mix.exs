@@ -69,6 +69,10 @@ defmodule Pow.MixProject do
       source_url: "https://github.com/danschultzer/pow",
       extras: [
         "README.md": [filename: "Pow", title: "Pow"],
+        "guides/WHY_POW.md": [
+          filename: "WhyPow",
+          title: "Why use Pow?"
+        ],
         "guides/COHERENCE_MIGRATION.md": [
           filename: "CoherenceMigration",
           title: "Migrating from Coherence"
