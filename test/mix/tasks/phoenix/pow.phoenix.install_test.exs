@@ -29,8 +29,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       refute File.exists?(@views_path)
 
       assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "config :my_app, :pow,"
+      assert msg =~ "user: Pow.Users.User,"
       assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
-
       assert msg =~ "use Pow.Phoenix.Router"
       assert msg =~ "pow_routes()"
     end)
