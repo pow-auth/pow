@@ -28,10 +28,10 @@ defmodule Pow.Extension.Phoenix.Router do
         end
       end
   """
-  alias Pow.{Config, Extension}
+  alias Pow.Extension.Config
 
   defmacro __using__(config \\ []) do
-    build_router_methods_module(__CALLER__.module, config)
+    __create_routers_module__(__CALLER__.module, config)
 
     quote do
       @pow_extension_config unquote(config)
@@ -44,39 +44,28 @@ defmodule Pow.Extension.Phoenix.Router do
   A macro that will call the router method in all extension router modules.
   """
   defmacro pow_extension_routes do
-    router_methods = Module.concat(__CALLER__.module, RouterMethods).methods()
-
-    for {router_module, router_method} <- router_methods do
-      quote do
-        require unquote(router_module)
-        unquote(router_module).unquote(router_method)(@pow_extension_config)
-      end
-    end
+    __router_module__(__CALLER__.module).routes()
   end
 
-  @spec __router_extensions__(Config.t()) :: [atom()]
-  def __router_extensions__(config) do
-    Extension.Config.discover_modules(config, ["Phoenix", "Router"])
-  end
+  defp __create_routers_module__(module, config) do
+    router = __router_module__(module)
 
-  @spec __scope_namespace__(atom()) :: binary()
-  def __scope_namespace__(module) do
-    Extension.Config.underscore_extension(module)
-  end
+    Module.create(router, quote do
+      @config unquote(config)
+      @routers Config.discover_modules(@config, ["Phoenix", "Router"])
 
-  @spec build_router_methods_module(module(), Config.t()) :: {:module, module(), binary(), term()}
-  defp build_router_methods_module(module, config) do
-    module = Module.concat(module, RouterMethods)
-
-    Module.create(module, quote do
-      def methods do
-        for router_module <- unquote(__MODULE__).__router_extensions__(unquote(config)) do
-          namespace      = unquote(__MODULE__).__scope_namespace__(router_module)
-          router_method  = String.to_atom("#{namespace}_routes")
-
-          {router_module, router_method}
+      def routes() do
+        for router <- @routers do
+          quote do
+            require unquote(router)
+            unquote(router).scoped_routes(@config)
+          end
         end
       end
     end, __ENV__)
+  end
+
+  defp __router_module__(module) do
+    Module.concat(module, PowExtensionRouter)
   end
 end

@@ -13,21 +13,27 @@ defmodule Pow.Extension.Phoenix.Router.Base do
           end
         end
       end
-  """
-  alias Pow.Config
 
-  @macrocallback routes(Config.t()) :: Macro.t()
+  A macro `MyPowExtension.Phoenix.Router.scoped_routes/1` will be created that
+  wraps the routes inside a scope with the extension as namespace similar to:
+
+      scope "/", MyPowExtension.Phoenix, as: "my_pow_extension" do
+        MyPowExtension.Phoenix.Router.routes(config)
+      end
+  """
+  alias Pow.Extension.Config
+
+  @macrocallback routes(Pow.Config.t()) :: Macro.t()
 
   defmacro __using__(_opts) do
     extension      = __MODULE__.__extension__(__CALLER__.module)
     phoenix_module = Module.concat([extension, "Phoenix"])
-    namespace      = Pow.Extension.Config.underscore_extension(extension)
-    routes_method  = String.to_atom("#{namespace}_routes")
+    namespace      = Config.underscore_extension(extension)
 
     quote do
       @behaviour unquote(__MODULE__)
 
-      defmacro unquote(routes_method)(config) do
+      defmacro scoped_routes(config) do
         phoenix_module = unquote(phoenix_module)
         namespace      = unquote(namespace)
 
