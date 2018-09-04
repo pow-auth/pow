@@ -61,7 +61,7 @@ defmodule MyAppWeb.Endpoint do
 
   plug Plug.Session,
     store: :cookie,
-    key: "_my_project_demo_key",
+    key: "_my_app_key",
     signing_salt: "secret"
 
   plug Pow.Plug.Session, otp_app: :my_app
