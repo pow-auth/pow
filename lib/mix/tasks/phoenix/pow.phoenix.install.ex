@@ -61,9 +61,15 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     Mix.shell.info("""
     Pow has been installed in your phoenix app!
 
-    There's two files you'll need to configure first before you can use Pow.
+    There are three files you'll need to configure first before you can use Pow.
 
-    First, the #{web_prefix}/endpoint.ex file needs the `Pow.Plug.Session` plug:
+    First, update config/config.ex with the following:
+
+    config :my_app, :pow,
+      user: MyApp.Users.User,
+      repo: MyApp.Repo
+
+    Next, the #{web_prefix}/endpoint.ex file needs the `Pow.Plug.Session` plug:
 
     defmodule #{inspect(web_base)}.Endpoint do
       use Phoenix.Endpoint, otp_app: :#{Macro.underscore(context_base)}
@@ -80,7 +86,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
       # ...
     end
 
-    Next, your router.ex should include the Pow routes:
+    Last, your router.ex should include the Pow routes:
 
     defmodule #{inspect(web_base)}.Router do
       use #{inspect(web_base)}, :router
