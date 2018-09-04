@@ -66,10 +66,10 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     First, update config/config.ex with the following:
 
     config :my_app, :pow,
-      user: MyApp.Users.User,
-      repo: MyApp.Repo
+      user: #{inspect(context_base)}.Users.User,
+      repo: #{inspect(context_base)}.Repo
 
-    Next, the #{web_prefix}/endpoint.ex file needs the `Pow.Plug.Session` plug:
+    Next, update #{web_prefix}/endpoint.ex with the `Pow.Plug.Session` plug:
 
     defmodule #{inspect(web_base)}.Endpoint do
       use Phoenix.Endpoint, otp_app: :#{Macro.underscore(context_base)}
@@ -78,7 +78,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
       plug Plug.Session,
         store: :cookie,
-        key: "_my_project_demo_key",
+        key: "_#{Macro.underscore(context_base)}_key",
         signing_salt: "secret"
 
       plug Pow.Plug.Session, otp_app: :#{Macro.underscore(context_base)}
@@ -86,7 +86,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
       # ...
     end
 
-    Last, your router.ex should include the Pow routes:
+    Last, update #{web_prefix}/router.ex with the Pow routes:
 
     defmodule #{inspect(web_base)}.Router do
       use #{inspect(web_base)}, :router
