@@ -44,7 +44,7 @@ defmodule Pow.Store.CredentialsCache do
   @doc """
   Delete the sesison id from the backend store.
 
-  This will delete the sesison id from the session list for the user
+  This will delete the session id from the session list for the user
   credentials in the backend store. If the session id is the only one in the
   session list, the user credentials will be deleted too from the backend
   store.
