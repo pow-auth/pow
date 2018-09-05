@@ -158,7 +158,7 @@ Set up `routes.ex`
   ```
 
 Change `Routes.session_path` to `Routes.pow_session_path`, and
-`Routes.registration_path` to `Routes.pow_registration_path`. Any references to `Coherence.current_user/1`, can be changed to `Pow.Plug.current_user/1`.
+`Routes.registration_path` to `Routes.pow_registration_path`. Any references to `Coherence.current_user/1`, can be changed to `Pow.Plug.Helpers.current_user/1`.
 
 That's it! You can now test out your Pow'ered app, and then remove all unused fields/tables after.
 

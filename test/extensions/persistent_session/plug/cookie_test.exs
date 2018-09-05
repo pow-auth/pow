@@ -50,7 +50,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> store_persistent(ets, id, user)
       |> Cookie.call(Cookie.init([]))
 
-    assert Plug.current_user(conn) == user
+    assert Plug.Helpers.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     refute new_id == id
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
@@ -69,7 +69,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> store_persistent(ets, id, user, "test_app_persistent_session_cookie")
       |> Cookie.call(Cookie.init(config))
 
-    assert Plug.current_user(conn) == user
+    assert Plug.Helpers.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["test_app_persistent_session_cookie"]
     assert String.starts_with?(new_id, "test_app")
     assert PersistentSessionCache.get([backend: ets], new_id) == 1
@@ -81,7 +81,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, user)
-      |> Plug.assign_current_user(:user, [])
+      |> Plug.Helpers.assign_current_user(:user, [])
       |> Cookie.call(Cookie.init([]))
 
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
@@ -97,7 +97,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> store_persistent(ets, id, user)
       |> Cookie.call(Cookie.init([]))
 
-    refute Plug.current_user(conn)
+    refute Plug.Helpers.current_user(conn)
     assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
@@ -108,7 +108,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> persistent_cookie("persistent_session_cookie", "test")
       |> Cookie.call(Cookie.init([]))
 
-    refute Plug.current_user(conn)
+    refute Plug.Helpers.current_user(conn)
     assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
   end
 end

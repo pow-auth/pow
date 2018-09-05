@@ -35,7 +35,7 @@ defmodule Pow.Plug.SessionTest do
     opts = Session.init(@default_opts)
     conn =
       conn
-      |> Plug.assign_current_user("assigned", @default_opts)
+      |> Plug.Helpers.assign_current_user("assigned", @default_opts)
       |> Session.call(opts)
 
     assert conn.assigns[:current_user] == "assigned"
@@ -126,7 +126,7 @@ defmodule Pow.Plug.SessionTest do
 
     assert is_binary(session_id)
     assert etc_user == user
-    assert Plug.current_user(conn) == user
+    assert Plug.Helpers.current_user(conn) == user
 
     conn = Session.do_create(conn, user)
     new_session_id = get_session_id(conn)
@@ -136,7 +136,7 @@ defmodule Pow.Plug.SessionTest do
     assert new_session_id != session_id
     assert ets.get(nil, session_id) == :not_found
     assert etc_user == user
-    assert Plug.current_user(conn) == user
+    assert Plug.Helpers.current_user(conn) == user
   end
 
   test "create/2 creates new session id with `:otp_app` prepended", %{conn: conn} do
@@ -169,14 +169,14 @@ defmodule Pow.Plug.SessionTest do
 
     assert is_binary(session_id)
     assert etc_user == user
-    assert Plug.current_user(conn) == user
+    assert Plug.Helpers.current_user(conn) == user
 
     conn = Session.do_delete(conn)
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
     assert ets.get(nil, session_id) == :not_found
-    assert is_nil(Plug.current_user(conn))
+    assert is_nil(Plug.Helpers.current_user(conn))
   end
 
   describe "with EtsCache backend" do

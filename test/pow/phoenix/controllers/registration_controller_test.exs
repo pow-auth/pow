@@ -19,7 +19,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Plug.assign_current_user(%{id: 1}, [])
+        |> Plug.Helpers.assign_current_user(%{id: 1}, [])
         |> get(Routes.pow_registration_path(conn, :new))
 
       assert_authenticated_redirect(conn)
@@ -33,7 +33,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Plug.assign_current_user(%{id: 1}, [])
+        |> Plug.Helpers.assign_current_user(%{id: 1}, [])
         |> post(Routes.pow_registration_path(conn, :create, @valid_params))
 
       assert_authenticated_redirect(conn)
@@ -43,7 +43,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "user_created"
-      assert %{id: 1} = Plug.current_user(conn)
+      assert %{id: 1} = Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
@@ -56,7 +56,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<span class=\"help-block\">should be at least 10 character(s)</span>"
       assert errors = conn.assigns[:changeset].errors
       assert errors[:password]
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
   end
@@ -100,7 +100,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
       assert get_flash(conn, :info) == "Your account has been updated."
-      assert user = Plug.current_user(conn)
+      assert user = Plug.Helpers.current_user(conn)
       assert user.id == :updated
       assert conn.private[:plug_session]["auth"] != session_id
     end
@@ -119,7 +119,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<span class=\"help-block\">can&#39;t be blank</span>"
       assert errors = conn.assigns[:changeset].errors
       assert errors[:current_password]
-      assert %{id: 1} = Plug.current_user(conn)
+      assert %{id: 1} = Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session]["auth"] == session_id
     end
   end
@@ -139,25 +139,25 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "Your account has been deleted. Sorry to see you go!"
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
 
     test "when fails", %{conn: conn} do
       conn =
         conn
-        |> Plug.assign_current_user(:fail_deletion, [])
+        |> Plug.Helpers.assign_current_user(:fail_deletion, [])
         |> delete(Routes.pow_registration_path(conn, :delete))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
       assert get_flash(conn, :error) == "Your account could not be deleted."
-      assert Plug.current_user(conn) == :fail_deletion
+      assert Plug.Helpers.current_user(conn) == :fail_deletion
     end
   end
 
   defp create_user_and_sign_in(conn) do
     conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
-    assert %{id: 1} = Plug.current_user(conn)
+    assert %{id: 1} = Plug.Helpers.current_user(conn)
     assert conn.private[:plug_session]["auth"]
     :timer.sleep(10)
 

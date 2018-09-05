@@ -1,4 +1,4 @@
-defmodule Pow.Plug do
+defmodule Pow.Plug.Helpers do
   @moduledoc """
   Plug helper methods.
   """

@@ -35,7 +35,7 @@ defmodule PowPersistentSession.Plug.Base do
       def call(conn, config) do
         config =
           conn
-          |> Plug.fetch_config()
+          |> Plug.Helpers.fetch_config()
           |> Config.merge(config)
 
         conn

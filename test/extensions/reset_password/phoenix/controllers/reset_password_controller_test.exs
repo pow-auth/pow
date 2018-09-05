@@ -19,7 +19,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(@user, [])
+        |> Pow.Plug.Helpers.assign_current_user(@user, [])
         |> get(Routes.pow_reset_password_reset_password_path(conn, :new))
 
       assert_authenticated_redirect(conn)
@@ -33,7 +33,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(@user, [])
+        |> Pow.Plug.Helpers.assign_current_user(@user, [])
         |> get(Routes.pow_reset_password_reset_password_path(conn, :new))
 
       assert_authenticated_redirect(conn)
@@ -73,7 +73,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(@user, [])
+        |> Pow.Plug.Helpers.assign_current_user(@user, [])
         |> get(Routes.pow_reset_password_reset_password_path(conn, :edit, @valid_token))
 
       assert_authenticated_redirect(conn)
@@ -113,7 +113,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(@user, [])
+        |> Pow.Plug.Helpers.assign_current_user(@user, [])
         |> put(Routes.pow_reset_password_reset_password_path(conn, :update, @valid_token, @valid_params))
 
       assert_authenticated_redirect(conn)

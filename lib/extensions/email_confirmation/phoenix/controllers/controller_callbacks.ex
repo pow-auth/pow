@@ -7,14 +7,14 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   alias PowEmailConfirmation.Phoenix.{ConfirmationController, Mailer}
 
   def before_process(Pow.Phoenix.RegistrationController, :update, conn, _config) do
-    user = Plug.current_user(conn)
+    user = Plug.Helpers.current_user(conn)
 
     Conn.put_private(conn, :pow_user_before_update, user)
   end
 
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     conn
-    |> Plug.current_user()
+    |> Plug.Helpers.current_user()
     |> halt_unconfirmed(conn, {:ok, conn})
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
@@ -38,7 +38,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp halt_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn, _success_response) when not is_nil(token) do
     send_confirmation_email(user, conn)
 
-    {:ok, conn} = Plug.clear_authenticated_user(conn)
+    {:ok, conn} = Plug.Helpers.clear_authenticated_user(conn)
     error       = ConfirmationController.messages(conn).email_confirmation_required(conn)
     path        = Controller.router_helpers(conn).pow_session_path(conn, :new)
     conn        =

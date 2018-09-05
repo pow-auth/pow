@@ -18,7 +18,7 @@ defmodule Pow.Phoenix.SessionController do
   @doc false
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
-    {:ok, Plug.change_user(conn), conn}
+    {:ok, Plug.Helpers.change_user(conn), conn}
   end
 
   @doc false
@@ -32,7 +32,7 @@ defmodule Pow.Phoenix.SessionController do
   @doc false
   @spec process_create(Conn.t(), map()) :: {:ok | :error, Conn.t()}
   def process_create(conn, %{"user" => user_params}) do
-    Plug.authenticate_user(conn, user_params)
+    Plug.Helpers.authenticate_user(conn, user_params)
   end
 
   @doc false
@@ -44,14 +44,14 @@ defmodule Pow.Phoenix.SessionController do
   end
   def respond_create({:error, conn}) do
     conn
-    |> assign(:changeset, Plug.change_user(conn, conn.params["user"]))
+    |> assign(:changeset, Plug.Helpers.change_user(conn, conn.params["user"]))
     |> put_flash(:error, messages(conn).invalid_credentials(conn))
     |> render("new.html")
   end
 
   @doc false
   @spec process_delete(Conn.t(), map()) :: {:ok, Conn.t()}
-  def process_delete(conn, _params), do: Plug.clear_authenticated_user(conn)
+  def process_delete(conn, _params), do: Plug.Helpers.clear_authenticated_user(conn)
 
   @doc false
   @spec respond_delete({:ok, Conn.t()}) :: Conn.t()

@@ -1,4 +1,4 @@
-defmodule PowEmailConfirmation.Plug do
+defmodule PowEmailConfirmation.Plug.Helpers do
   @moduledoc """
   Plug helper methods.
   """
@@ -13,7 +13,7 @@ defmodule PowEmailConfirmation.Plug do
   """
   @spec confirm_email(Conn.t(), binary()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def confirm_email(conn, token) do
-    config = Plug.fetch_config(conn)
+    config = Plug.Helpers.fetch_config(conn)
 
     token
     |> Context.get_by_confirmation_token(config)
@@ -35,7 +35,7 @@ defmodule PowEmailConfirmation.Plug do
   defp maybe_renew_conn(conn, %{id: user_id} = user, config) do
     mod = config[:mod]
 
-    case Plug.current_user(conn) do
+    case Plug.Helpers.current_user(conn) do
       %{id: ^user_id} -> mod.do_create(conn, user)
       _any            -> conn
     end

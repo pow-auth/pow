@@ -23,7 +23,7 @@ defmodule Pow.Plug.RequireNotAuthenticated do
   @spec call(Conn.t(), atom()) :: Conn.t()
   def call(conn, handler) do
     conn
-    |> Plug.current_user()
+    |> Plug.Helpers.current_user()
     |> maybe_halt(conn, handler)
   end
 
