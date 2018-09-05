@@ -1,8 +1,13 @@
 defmodule PowPersistentSession.Plug do
-  @moduledoc false
+  @moduledoc """
+  Plug helper methods.
+  """
   alias Plug.Conn
   alias Pow.Config
 
+  @doc """
+  Create a new persistent session in the connection for user.
+  """
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, user) do
     {mod, config} = pow_persistent_session(conn)
@@ -10,6 +15,9 @@ defmodule PowPersistentSession.Plug do
     mod.create(conn, user, config)
   end
 
+  @doc """
+  Deletes the persistent session in the connection.
+  """
   @spec delete(Conn.t()) :: Conn.t()
   def delete(conn) do
     {mod, config} = pow_persistent_session(conn)

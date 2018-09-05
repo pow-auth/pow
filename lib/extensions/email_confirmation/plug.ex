@@ -1,9 +1,16 @@
 defmodule PowEmailConfirmation.Plug do
-  @moduledoc false
+  @moduledoc """
+  Plug helper methods.
+  """
   alias Plug.Conn
   alias Pow.Plug
   alias PowEmailConfirmation.Ecto.Context
 
+  @doc """
+  Confirms the e-mail for the user found by the provided confirmation token.
+
+  If successful, and a session exists, the session will be regenerated.
+  """
   @spec confirm_email(Conn.t(), binary()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def confirm_email(conn, token) do
     config = Plug.fetch_config(conn)

@@ -1,9 +1,14 @@
 defmodule PowResetPassword.Plug do
-  @moduledoc false
+  @moduledoc """
+  Plug helper methods.
+  """
   alias Plug.Conn
   alias Pow.{Config, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
 
+  @doc """
+  Creates a changeset from the user fetched in the connection.
+  """
   @spec change_user(Conn.t(), map()) :: map()
   def change_user(conn, params \\ %{}) do
     user =
@@ -23,6 +28,9 @@ defmodule PowResetPassword.Plug do
     user.__struct__.pow_password_changeset(user, params)
   end
 
+  @doc """
+  Assigns a `:reset_password_user` key with the user in the connection.
+  """
   @spec assign_reset_password_user(Conn.t(), map()) :: Conn.t()
   def assign_reset_password_user(conn, user) do
     Conn.assign(conn, :reset_password_user, user)
@@ -36,11 +44,18 @@ defmodule PowResetPassword.Plug do
     Conn.put_private(conn, :reset_password_token, token)
   end
 
+  @doc """
+  Fetches the assigned `:reset_password_token` in the connection.
+  """
   @spec reset_password_token(Conn.t()) :: binary()
   def reset_password_token(conn) do
     conn.private[:reset_password_token]
   end
 
+  @doc """
+  Finds a user for the provided params, creates a token, and stores the user
+  for the token.
+  """
   @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_reset_token(conn, params) do
     config = Pow.Plug.fetch_config(conn)
@@ -66,6 +81,9 @@ defmodule PowResetPassword.Plug do
     {:ok, %{token: token, user: user}, conn}
   end
 
+  @doc """
+  Fetches user from the store by the provided token.
+  """
   @spec user_from_token(Conn.t(), binary()) :: map() | nil
   def user_from_token(conn, token) do
     {store, store_config} =
@@ -81,6 +99,9 @@ defmodule PowResetPassword.Plug do
     end
   end
 
+  @doc """
+  Updates the password for the user fetched in the connection.
+  """
   @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user_password(conn, params) do
     config = Pow.Plug.fetch_config(conn)

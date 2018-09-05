@@ -1,6 +1,6 @@
 defmodule Pow.Plug do
   @moduledoc """
-  Authorization methods for Plug.
+  Plug helper methods.
   """
   alias Plug.Conn
   alias Pow.{Config, Operations}
