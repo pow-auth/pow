@@ -139,10 +139,9 @@ First, install extension migrations by running:
 
 ```bash
 mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation
-mix ecto.migrate
 ```
 
-Update `config/config.ex` with the `:extensions` and `:controller_callbacks` key:
+Then run the migrations with `mix ecto.migrate`. Now, update `config/config.ex` with the `:extensions` and `:controller_callbacks` key:
 
 ```elixir
 config :my_app, :pow,
