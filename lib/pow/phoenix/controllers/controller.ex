@@ -79,7 +79,7 @@ defmodule Pow.Phoenix.Controller do
   @spec action(atom(), Conn.t(), map()) :: Conn.t()
   def action(controller, %{private: private} = conn, params) do
     action    = private.phoenix_action
-    config    = Plug.fetch_config(conn)
+    config    = Plug.Helpers.fetch_config(conn)
     callbacks = Config.get(config, :controller_callbacks)
 
     conn
@@ -109,7 +109,7 @@ defmodule Pow.Phoenix.Controller do
   @spec messages(Conn.t(), atom()) :: atom()
   def messages(conn, fallback) do
     conn
-    |> Plug.fetch_config()
+    |> Plug.Helpers.fetch_config()
     |> Config.get(:messages_backend, fallback)
   end
 
@@ -119,7 +119,7 @@ defmodule Pow.Phoenix.Controller do
   @spec routes(Conn.t(), atom()) :: atom()
   def routes(conn, fallback) do
     conn
-    |> Plug.fetch_config()
+    |> Plug.Helpers.fetch_config()
     |> Config.get(:routes_backend, fallback)
   end
 

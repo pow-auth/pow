@@ -97,7 +97,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
-    user = Plug.current_user(conn)
+    user = Plug.Helpers.current_user(conn)
 
     conn
     |> Conn.fetch_cookies()

@@ -27,7 +27,7 @@ defmodule Pow.Plug.Base do
       end
   """
   alias Plug.Conn
-  alias Pow.{Config, Plug}
+  alias Pow.{Config, Plug.Helpers}
 
   @callback init(Config.t()) :: Config.t()
   @callback call(Conn.t(), Config.t()) :: Conn.t()
@@ -54,11 +54,11 @@ defmodule Pow.Plug.Base do
       connection.
       """
       def call(conn, config) do
-        config = Pow.Config.put(config, :mod, __MODULE__)
-        conn   = Pow.Plug.put_config(conn, config)
+        config = Config.put(config, :mod, __MODULE__)
+        conn   = Helpers.put_config(conn, config)
 
         conn
-        |> Pow.Plug.current_user()
+        |> Helpers.current_user()
         |> maybe_fetch_user(conn)
       end
 
@@ -101,11 +101,11 @@ defmodule Pow.Plug.Base do
       defp maybe_fetch_user(nil, conn), do: do_fetch(conn)
       defp maybe_fetch_user(_user, conn), do: conn
 
-      defp fetch_config(conn), do: Plug.fetch_config(conn)
+      defp fetch_config(conn), do: Helpers.fetch_config(conn)
 
-      defp assign_current_user({conn, user}, config), do: Plug.assign_current_user(conn, user, config)
+      defp assign_current_user({conn, user}, config), do: Helpers.assign_current_user(conn, user, config)
 
-      defp remove_current_user(conn, config), do: Plug.assign_current_user(conn, nil, config)
+      defp remove_current_user(conn, config), do: Helpers.assign_current_user(conn, nil, config)
 
       defoverridable Base
     end

@@ -15,7 +15,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
 
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
 
       assert_received {:mail_mock, mail}
       assert token = mail.user.email_confirmation_token
@@ -40,7 +40,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
 
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
 
       assert_received {:mail_mock, mail}
       assert token = mail.user.email_confirmation_token
@@ -57,14 +57,14 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
     setup %{conn: conn} do
       user = Ecto.put_meta(@user, state: :loaded)
-      conn = Plug.assign_current_user(conn, user, [])
+      conn = Plug.Helpers.assign_current_user(conn, user, [])
 
       {:ok, conn: conn}
     end
 
     test "when email changes", %{conn: conn} do
       conn = put conn, Routes.pow_registration_path(conn, :update, @change_email_params)
-      assert %{id: 1, email_confirmation_token: new_token} = Plug.current_user(conn)
+      assert %{id: 1, email_confirmation_token: new_token} = Plug.Helpers.current_user(conn)
 
       assert get_flash(conn, :info) == "Your account has been updated."
       assert new_token != @token
@@ -79,7 +79,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = put conn, Routes.pow_registration_path(conn, :update, @params)
 
       assert get_flash(conn, :info) == "Your account has been updated."
-      assert %{id: 1, email_confirmation_token: @token} = Plug.current_user(conn)
+      assert %{id: 1, email_confirmation_token: @token} = Plug.Helpers.current_user(conn)
 
       refute_received {:mail_mock, _mail}
     end

@@ -13,7 +13,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
-    {:ok, Plug.change_user(conn), conn}
+    {:ok, Plug.Helpers.change_user(conn), conn}
   end
 
   @spec respond_new({:ok, map(), Conn.t()}) :: Conn.t()
@@ -25,7 +25,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec process_create(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
   def process_create(conn, %{"user" => user_params}) do
-    Plug.create_reset_token(conn, user_params)
+    Plug.Helpers.create_reset_token(conn, user_params)
   end
 
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
@@ -45,7 +45,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_edit(conn, _params) do
-    {:ok, Plug.change_user(conn), conn}
+    {:ok, Plug.Helpers.change_user(conn), conn}
   end
 
   @spec respond_edit({:ok, map(), Conn.t()}) :: Conn.t()
@@ -57,7 +57,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec process_update(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
   def process_update(conn, %{"user" => user_params}) do
-    Plug.update_user_password(conn, user_params)
+    Plug.Helpers.update_user_password(conn, user_params)
   end
 
   @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
@@ -73,7 +73,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   end
 
   defp load_user_from_reset_token(%{params: %{"id" => token}} = conn, _opts) do
-    case Plug.user_from_token(conn, token) do
+    case Plug.Helpers.user_from_token(conn, token) do
       nil ->
         conn
         |> put_flash(:error, messages(conn).invalid_token(conn))
@@ -81,7 +81,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
         |> halt()
 
       user ->
-        Plug.assign_reset_password_user(conn, user)
+        Plug.Helpers.assign_reset_password_user(conn, user)
     end
   end
 

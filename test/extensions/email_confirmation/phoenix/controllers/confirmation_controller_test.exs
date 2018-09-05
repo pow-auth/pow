@@ -14,7 +14,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       assert user.email == "test@example.com"
       assert user.email_confirmed_at
       refute user.unconfirmed_email
-      refute Pow.Plug.current_user(conn)
+      refute Pow.Plug.Helpers.current_user(conn)
     end
 
     test "confirms with valid token and :unconfirmed_email", %{conn: conn} do
@@ -41,11 +41,11 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
-        |> Pow.Plug.assign_current_user(%{id: 1}, [])
+        |> Pow.Plug.Helpers.assign_current_user(%{id: 1}, [])
         |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
-      assert Pow.Plug.current_user(conn)
+      assert Pow.Plug.Helpers.current_user(conn)
       refute conn.private[:plug_session][@session_key] == session_id
     end
 
@@ -53,11 +53,11 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
-        |> Pow.Plug.assign_current_user(%{id: 2}, [])
+        |> Pow.Plug.Helpers.assign_current_user(%{id: 2}, [])
         |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
-      assert Pow.Plug.current_user(conn)
+      assert Pow.Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session][@session_key] == session_id
     end
   end

@@ -40,7 +40,7 @@ defmodule Pow.Phoenix.Mailer do
 
   @spec deliver(Conn.t(), Mail.t()) :: any()
   def deliver(conn, email) do
-    config = Pow.Plug.fetch_config(conn)
+    config = Pow.Plug.Helpers.fetch_config(conn)
     mailer = Pow.Config.get(config, :mailer_backend) || raise_no_mailer_backend_set()
 
     email

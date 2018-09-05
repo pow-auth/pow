@@ -6,7 +6,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Plug.assign_current_user(%{id: 1}, [])
+        |> Plug.Helpers.assign_current_user(%{id: 1}, [])
         |> get(Routes.pow_session_path(conn, :new))
 
       assert_authenticated_redirect(conn)
@@ -39,7 +39,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
     test "already signed in", %{conn: conn} do
       conn =
         conn
-        |> Plug.assign_current_user(%{id: 1}, [])
+        |> Plug.Helpers.assign_current_user(%{id: 1}, [])
         |> post(Routes.pow_session_path(conn, :create, @valid_params))
 
       assert_authenticated_redirect(conn)
@@ -49,7 +49,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
       conn = post conn, Routes.pow_session_path(conn, :create, @valid_params)
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "signed_in"
-      assert %{id: 1} = Plug.current_user(conn)
+      assert %{id: 1} = Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
@@ -59,7 +59,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert get_flash(conn, :error) == "The provided login details did not work. Please verify your credentials, and try again."
       assert html =~ "<input class=\"form-control\" id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
       refute conn.private[:plug_session]["auth"]
       refute html =~ "request_path"
     end
@@ -68,7 +68,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
       conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@valid_params, "request_path", "/custom-url"))
       assert redirected_to(conn) == "/custom-url"
       assert get_flash(conn, :info) == "signed_in"
-      assert %{id: 1} = Plug.current_user(conn)
+      assert %{id: 1} = Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session]["auth"]
     end
 
@@ -89,14 +89,14 @@ defmodule Pow.Phoenix.SessionControllerTest do
 
     test "removes authenticated", %{conn: conn} do
       conn = post conn, Routes.pow_session_path(conn, :create, @valid_params)
-      assert %{id: 1} = Plug.current_user(conn)
+      assert %{id: 1} = Plug.Helpers.current_user(conn)
       assert conn.private[:plug_session]["auth"]
       :timer.sleep(10)
 
       conn = delete(conn, Routes.pow_session_path(conn, :delete))
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "signed_out"
-      refute Plug.current_user(conn)
+      refute Plug.Helpers.current_user(conn)
       refute conn.private[:plug_session]["auth"]
     end
   end
