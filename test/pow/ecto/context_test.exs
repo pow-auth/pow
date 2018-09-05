@@ -30,29 +30,29 @@ defmodule Pow.Ecto.ContextTest do
 
     test "requires user schema mod in config" do
       assert_raise Pow.Config.ConfigError, "No :user configuration option found for user schema module.", fn ->
-        Context.authenticate(Keyword.delete(@config, :user), @valid_params)
+        Context.authenticate(@valid_params, Keyword.delete(@config, :user))
       end
     end
 
     test "requires repo in config" do
       assert_raise Pow.Config.ConfigError, "No :repo configuration option found for users context module.", fn ->
-        Context.authenticate(Keyword.delete(@config, :repo), @valid_params)
+        Context.authenticate(@valid_params, Keyword.delete(@config, :repo))
       end
     end
 
     test "authenticates", %{user: user, username_user: username_user} do
-      refute Context.authenticate(@config, Map.put(@valid_params, "email", "other@example.com"))
-      refute Context.authenticate(@config, Map.put(@valid_params, "password", "invalid"))
-      assert Context.authenticate(@config, @valid_params) == user
+      refute Context.authenticate(Map.put(@valid_params, "email", "other@example.com"), @config)
+      refute Context.authenticate(Map.put(@valid_params, "password", "invalid"), @config)
+      assert Context.authenticate(@valid_params, @config) == user
 
-      refute Context.authenticate(@username_config, Map.put(@valid_params_username, "username", "jane.doe"))
-      refute Context.authenticate(@username_config, Map.put(@valid_params_username, "password", "invalid"))
-      assert Context.authenticate(@username_config, @valid_params_username) == username_user
+      refute Context.authenticate(Map.put(@valid_params_username, "username", "jane.doe"), @username_config)
+      refute Context.authenticate(Map.put(@valid_params_username, "password", "invalid"), @username_config)
+      assert Context.authenticate(@valid_params_username, @username_config) == username_user
     end
 
     test "authenticates with case insensitive value for user id field", %{user: user, username_user: username_user} do
-      assert Context.authenticate(@config, %{"email" => "TEST@example.COM", "password" => @password}) == user
-      assert Context.authenticate(@username_config, %{"username" => "JOHN.doE", "password" => @password}) == username_user
+      assert Context.authenticate(%{"email" => "TEST@example.COM", "password" => @password}, @config) == user
+      assert Context.authenticate(%{"username" => "JOHN.doE", "password" => @password}, @username_config) == username_user
     end
 
     test "as `use Pow.Ecto.Context`", %{user: user} do
@@ -70,8 +70,8 @@ defmodule Pow.Ecto.ContextTest do
     }
 
     test "creates" do
-      assert {:error, _changeset} = Context.create(@config, Map.delete(@valid_params, "confirm_password"))
-      assert {:ok, user} = Context.create(@config, @valid_params)
+      assert {:error, _changeset} = Context.create(Map.delete(@valid_params, "confirm_password"), @config)
+      assert {:ok, user} = Context.create(@valid_params, @config)
       assert user.custom == "custom"
       refute user.password
       refute user.confirm_password
@@ -103,9 +103,9 @@ defmodule Pow.Ecto.ContextTest do
     end
 
     test "updates", %{user: user} do
-      assert {:error, _changeset} = Context.update(@config, user, Map.delete(@valid_params, "current_password"))
-      assert {:ok, updated_user} = Context.update(@config, user, @valid_params)
-      assert Context.authenticate(@config, @valid_params) == updated_user
+      assert {:error, _changeset} = Context.update(user, Map.delete(@valid_params, "current_password"), @config)
+      assert {:ok, updated_user} = Context.update(user, @valid_params, @config)
+      assert Context.authenticate(@valid_params, @config) == updated_user
       assert updated_user.custom == "custom"
       refute updated_user.password
       refute updated_user.confirm_password
@@ -129,7 +129,7 @@ defmodule Pow.Ecto.ContextTest do
     end
 
     test "deletes", %{user: user} do
-      assert {:ok, user} = Context.delete(@config, user)
+      assert {:ok, user} = Context.delete(user, @config)
       assert user.__meta__.state == :deleted
     end
 
@@ -153,18 +153,18 @@ defmodule Pow.Ecto.ContextTest do
     end
 
     test "retrieves", %{user: user, username_user: username_user} do
-      get_by_user = Context.get_by(@config, email: @email)
+      get_by_user = Context.get_by([email: @email], @config)
       assert get_by_user.id == user.id
 
-      get_by_user = Context.get_by(@username_config, username: @username)
+      get_by_user = Context.get_by([username: @username], @username_config)
       assert get_by_user.id == username_user.id
     end
 
     test "retrieves with case insensitive user id", %{user: user, username_user: username_user} do
-      get_by_user = Context.get_by(@config, email: "TEST@EXAMPLE.COM")
+      get_by_user = Context.get_by([email: "TEST@EXAMPLE.COM"], @config)
       assert get_by_user.id == user.id
 
-      get_by_user = Context.get_by(@username_config, username: "JOHN.DOE")
+      get_by_user = Context.get_by([username: "JOHN.DOE"], @username_config)
       assert get_by_user.id == username_user.id
     end
 

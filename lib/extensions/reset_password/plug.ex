@@ -43,9 +43,11 @@ defmodule PowResetPassword.Plug do
 
   @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_reset_token(conn, params) do
-    email  = Map.get(params, "email")
     config = Pow.Plug.fetch_config(conn)
-    user   = Context.get_by_email(config, email)
+    user   =
+      params
+      |> Map.get("email")
+      |> Context.get_by_email(config)
 
     maybe_create_reset_token(conn, user, config)
   end
@@ -81,12 +83,12 @@ defmodule PowResetPassword.Plug do
 
   @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user_password(conn, params) do
-    user   = reset_password_user(conn)
     config = Pow.Plug.fetch_config(conn)
     token  = conn.params["id"]
 
-    config
-    |> Context.update_password(user, params)
+    conn
+    |> reset_password_user()
+    |> Context.update_password(params, config)
     |> maybe_expire_token(conn, token, config)
   end
 

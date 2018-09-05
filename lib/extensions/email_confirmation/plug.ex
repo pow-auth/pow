@@ -8,8 +8,8 @@ defmodule PowEmailConfirmation.Plug do
   def confirm_email(conn, token) do
     config = Plug.fetch_config(conn)
 
-    config
-    |> Context.get_by_confirmation_token(token)
+    token
+    |> Context.get_by_confirmation_token(config)
     |> maybe_confirm_email(conn, config)
   end
 
@@ -17,8 +17,8 @@ defmodule PowEmailConfirmation.Plug do
     {:error, nil, conn}
   end
   defp maybe_confirm_email(user, conn, config) do
-    config
-    |> Context.confirm_email(user)
+    user
+    |> Context.confirm_email(config)
     |> case do
       {:error, changeset} -> {:error, changeset, conn}
       {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
