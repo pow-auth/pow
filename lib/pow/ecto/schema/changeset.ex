@@ -115,6 +115,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   configuration.
   """
   @spec verify_password(Ecto.Schema.t(), binary(), Config.t()) :: boolean()
+  def verify_password(%{password_hash: nil}, _password, _config), do: false
   def verify_password(%{password_hash: password_hash}, password, config) do
     config
     |> password_verify_method()

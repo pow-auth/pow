@@ -169,4 +169,12 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.changes[:custom]
     end
   end
+
+  test "User.verify_password/2" do
+    refute User.verify_password(%User{}, "secret1234")
+
+    password_hash = Password.pbkdf2_hash("secret1234")
+    refute User.verify_password(%User{password_hash: password_hash}, "invalid")
+    assert User.verify_password(%User{password_hash: password_hash}, "secret1234")
+  end
 end
