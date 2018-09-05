@@ -139,6 +139,7 @@ First, install extension migrations by running:
 
 ```bash
 mix pow.extension.ecto.gen.migrations --extension PowResetPassword --extension PowEmailConfirmation
+mix ecto.migrate
 ```
 
 Update `config/config.ex` with the `:extensions` and `:controller_callbacks` key:
