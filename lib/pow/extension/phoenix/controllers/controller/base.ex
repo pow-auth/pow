@@ -17,7 +17,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
     quote do
       use Controller, unquote(config)
 
-      @messages_fallback Config.get(unquote(config), :messages_backend_fallback, nil)
+      @messages_fallback Config.get(unquote(config), :messages_backend_fallback)
 
       def messages(conn) do
         case Controller.messages(conn, @messages_fallback) do

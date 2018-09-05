@@ -20,7 +20,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
     web_module =
       conn
       |> Plug.fetch_config()
-      |> Config.get(:web_mailer_module, nil)
+      |> Config.get(:web_mailer_module)
 
     view_module = Pow.Phoenix.ViewHelpers.build_view_module(view_module, web_module)
 

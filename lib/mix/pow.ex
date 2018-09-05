@@ -34,7 +34,7 @@ defmodule Mix.Pow do
 
   defp to_map(keyword) do
     Enum.reduce(keyword, %{}, fn {key, value}, map ->
-      case Map.get(map, key, nil) do
+      case Map.get(map, key) do
         nil ->
           Map.put(map, key, value)
 

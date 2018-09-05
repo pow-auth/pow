@@ -80,7 +80,7 @@ defmodule Pow.Phoenix.Controller do
   def action(controller, %{private: private} = conn, params) do
     action    = private.phoenix_action
     config    = Plug.fetch_config(conn)
-    callbacks = Config.get(config, :controller_callbacks, nil)
+    callbacks = Config.get(config, :controller_callbacks)
 
     conn
     |> maybe_callback(callbacks, :before_process, controller, action, config)

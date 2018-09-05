@@ -16,7 +16,7 @@ defmodule Pow.Plug.RequireAuthenticated do
   @doc false
   @spec init(Config.t()) :: atom()
   def init(config) do
-    Config.get(config, :error_handler, nil) || raise_no_error_handler()
+    Config.get(config, :error_handler) || raise_no_error_handler()
   end
 
   @doc false

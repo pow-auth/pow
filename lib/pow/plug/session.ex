@@ -132,7 +132,7 @@ defmodule Pow.Plug.Session do
   defp session_id(config) do
     uuid = UUID.generate()
 
-    case Config.get(config, :otp_app, nil) do
+    case Config.get(config, :otp_app) do
       nil     -> uuid
       otp_app -> "#{otp_app}_#{uuid}"
     end
@@ -143,7 +143,7 @@ defmodule Pow.Plug.Session do
   end
 
   defp default_session_key(config) do
-    case Config.get(config, :otp_app, nil) do
+    case Config.get(config, :otp_app) do
       nil     -> @session_key
       otp_app -> "#{otp_app}_#{@session_key}"
     end

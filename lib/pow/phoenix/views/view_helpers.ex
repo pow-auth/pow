@@ -51,7 +51,7 @@ defmodule Pow.Phoenix.ViewHelpers do
     web_module      =
       conn
       |> Plug.fetch_config()
-      |> Config.get(:web_module, nil)
+      |> Config.get(:web_module)
 
     view   = build_view_module(view_module, web_module)
     layout = build_layout(layout, web_module || base)

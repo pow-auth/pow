@@ -207,7 +207,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec repo(Config.t()) :: atom()
   def repo(config) do
-    Config.get(config, :repo, nil) || raise_no_repo_error()
+    Config.get(config, :repo) || raise_no_repo_error()
   end
 
   @doc """
@@ -215,7 +215,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec user_schema_mod(Config.t()) :: atom()
   def user_schema_mod(config) do
-    Config.get(config, :user, nil) || raise_no_user_error()
+    Config.get(config, :user) || raise_no_user_error()
   end
 
   @spec raise_no_repo_error :: no_return

@@ -10,8 +10,8 @@ defmodule Pow.Config do
   @doc """
   Gets the key value from the configuration.
 
-  If not found, it'll fallback to environment config, and lastly to the default
-  value.
+  If not found, it'll fall back to environment config, and lastly to the
+  default value which is `nil` if not specified.
   """
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default \\ nil) do
@@ -41,7 +41,7 @@ defmodule Pow.Config do
   end
 
   defp env_config(config) do
-    case Keyword.get(config, :otp_app, nil) do
+    case Keyword.get(config, :otp_app) do
       nil     -> Application.get_all_env(:pow)
       otp_app -> Application.get_env(otp_app, :pow, [])
     end

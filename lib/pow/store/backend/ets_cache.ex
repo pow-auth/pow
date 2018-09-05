@@ -76,7 +76,7 @@ defmodule Pow.Store.Backend.EtsCache do
   end
 
   defp update_invalidators(config, invalidators, key) do
-    case Config.get(config, :ttl, nil) do
+    case Config.get(config, :ttl) do
       nil ->
         invalidators
 

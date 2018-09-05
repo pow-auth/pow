@@ -193,7 +193,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   defp timestamp, do: :os.system_time(:millisecond)
 
   defp ttl(config) do
-    Config.get(config, :ttl, nil) || raise_ttl_error()
+    Config.get(config, :ttl) || raise_ttl_error()
   end
 
   @spec raise_ttl_error :: no_return

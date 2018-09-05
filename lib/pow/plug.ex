@@ -19,7 +19,7 @@ defmodule Pow.Plug do
   def current_user(%{assigns: assigns}, config) do
     key = current_user_assigns_key(config)
 
-    Map.get(assigns, key, nil)
+    Map.get(assigns, key)
   end
 
   @doc """
