@@ -13,12 +13,12 @@ defmodule Pow.Operations do
   It'll use the schema module fetched from the config through
   `Pow.Ecto.Context.user_schema_mod/1`.
   """
-  @spec changeset(Config.t(), map()) :: map() | nil
-  def changeset(config, params) do
+  @spec changeset(map(), Config.t()) :: map() | nil
+  def changeset(params, config) do
     user_mod = Context.user_schema_mod(config)
     user     = user_mod.__struct__()
 
-    changeset(config, user, params)
+    changeset(user, params, config)
   end
 
   @doc """
@@ -26,8 +26,8 @@ defmodule Pow.Operations do
 
   It'll call the `changeset/2` method on the user struct.
   """
-  @spec changeset(Config.t(), map(), map()) :: map()
-  def changeset(_config, user, params) do
+  @spec changeset(map(), map(), Config.t()) :: map()
+  def changeset(user, params, _config) do
     user.__struct__.changeset(user, params)
   end
 
@@ -37,10 +37,10 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.authenticate/2` or `authenticate/1` on a custom
   context module.
   """
-  @spec authenticate(Config.t(), map()) :: map() | nil
-  def authenticate(config, params) do
+  @spec authenticate(map(), Config.t()) :: map() | nil
+  def authenticate(params, config) do
     case context_module(config) do
-      Context -> Context.authenticate(config, params)
+      Context -> Context.authenticate(params, config)
       module  -> module.authenticate(params)
     end
   end
@@ -51,10 +51,10 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.create/2` or `create/1` on a custom context
   module.
   """
-  @spec create(Config.t(), map()) :: {:ok, map()} | {:error, map()}
-  def create(config, params) do
+  @spec create(map(), Config.t()) :: {:ok, map()} | {:error, map()}
+  def create(params, config) do
     case context_module(config) do
-      Context -> Context.create(config, params)
+      Context -> Context.create(params, config)
       module  -> module.create(params)
     end
   end
@@ -65,10 +65,10 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.update/3` or `update/2` on a custom context
   module.
   """
-  @spec update(Config.t(), map(), map()) :: {:ok, map()} | {:error, map()}
-  def update(config, user, params) do
+  @spec update(map(), map(), Config.t()) :: {:ok, map()} | {:error, map()}
+  def update(user, params, config) do
     case context_module(config) do
-      Context -> Context.update(config, user, params)
+      Context -> Context.update(user, params, config)
       module  -> module.update(user, params)
     end
   end
@@ -79,10 +79,10 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.delete/2` or `delete/1` on a custom context
   module.
   """
-  @spec delete(Config.t(), map()) :: {:ok, map()} | {:error, map()}
-  def delete(config, user) do
+  @spec delete(map(), Config.t()) :: {:ok, map()} | {:error, map()}
+  def delete(user, config) do
     case context_module(config) do
-      Context -> Context.delete(config, user)
+      Context -> Context.delete(user, config)
       module  -> module.delete(user)
     end
   end
@@ -93,10 +93,10 @@ defmodule Pow.Operations do
   This calls `Pow.Ecto.Context.get_by/2` or `get_by/1` on a custom context
   module.
   """
-  @spec get_by(Config.t(), Keyword.t() | map()) :: map() | nil
-  def get_by(config, clauses) do
+  @spec get_by(Keyword.t() | map(), Config.t()) :: map() | nil
+  def get_by(clauses, config) do
     case context_module(config) do
-      Context -> Context.get_by(config, clauses)
+      Context -> Context.get_by(clauses, config)
       module  -> module.get_by(clauses)
     end
   end

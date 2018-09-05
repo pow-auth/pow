@@ -136,7 +136,7 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp maybe_fetch_user(:not_found, _config), do: nil
   defp maybe_fetch_user(user_id, config) do
-    Pow.Operations.get_by(config, id: user_id)
+    Pow.Operations.get_by([id: user_id], config)
   end
 
   defp maybe_renew(conn, config) do

@@ -60,23 +60,23 @@ defmodule Pow.Ecto.Context do
       def get_by(clauses), do: pow_get_by(clauses)
 
       def pow_authenticate(params) do
-        unquote(__MODULE__).authenticate(@pow_config, params)
+        unquote(__MODULE__).authenticate(params, @pow_config)
       end
 
       def pow_create(params) do
-        unquote(__MODULE__).create(@pow_config, params)
+        unquote(__MODULE__).create(params, @pow_config)
       end
 
       def pow_update(user, params) do
-        unquote(__MODULE__).update(@pow_config, user, params)
+        unquote(__MODULE__).update(user, params, @pow_config)
       end
 
       def pow_delete(user) do
-        unquote(__MODULE__).delete(@pow_config, user)
+        unquote(__MODULE__).delete(user, @pow_config)
       end
 
       def pow_get_by(clauses) do
-        unquote(__MODULE__).get_by(@pow_config, clauses)
+        unquote(__MODULE__).get_by(clauses, @pow_config)
       end
 
       defoverridable unquote(__MODULE__)
@@ -89,15 +89,15 @@ defmodule Pow.Ecto.Context do
   User schema module and repo module will be fetched from the config. The user
   id field is fetched from the user schema module.
   """
-  @spec authenticate(Config.t(), map()) :: user() | nil
-  def authenticate(config, params) do
+  @spec authenticate(map(), Config.t()) :: user() | nil
+  def authenticate(params, config) do
     user_mod      = user_schema_mod(config)
     user_id_field = user_mod.pow_user_id_field()
     login_value   = params[Atom.to_string(user_id_field)]
     password      = params["password"]
 
-    config
-    |> get_by([{user_id_field, login_value}])
+    [{user_id_field, login_value}]
+    |> get_by(config)
     |> maybe_verify_password(password)
   end
 
@@ -115,8 +115,8 @@ defmodule Pow.Ecto.Context do
 
   User schema module and repo module will be fetched from config.
   """
-  @spec create(Config.t(), map()) :: {:ok, user()} | {:error, Changeset.t()}
-  def create(config, params) do
+  @spec create(map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  def create(params, config) do
     user_mod = user_schema_mod(config)
 
     user_mod.__struct__()
@@ -130,8 +130,8 @@ defmodule Pow.Ecto.Context do
   User schema module will be fetched from provided user and repo will be
   fetched from the config.
   """
-  @spec update(Config.t(), user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
-  def update(config, user, params) do
+  @spec update(user(), map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  def update(user, params, config) do
     user
     |> user.__struct__.changeset(params)
     |> do_update(config)
@@ -142,8 +142,8 @@ defmodule Pow.Ecto.Context do
 
   Repo module will be fetched from the config.
   """
-  @spec delete(Config.t(), user()) :: {:ok, user()} | {:error, Changeset.t()}
-  def delete(config, user) do
+  @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  def delete(user, config) do
     repo(config).delete(user)
   end
 
@@ -152,8 +152,8 @@ defmodule Pow.Ecto.Context do
 
   User schema module and repo module will be fetched from the config.
   """
-  @spec get_by(Config.t(), Keyword.t() | map()) :: user() | nil
-  def get_by(config, clauses) do
+  @spec get_by(Keyword.t() | map(), Config.t()) :: user() | nil
+  def get_by(clauses, config) do
     user_mod = user_schema_mod(config)
     clauses  = normalize_user_id_field_value(user_mod, clauses)
 

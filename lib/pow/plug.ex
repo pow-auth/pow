@@ -63,8 +63,8 @@ defmodule Pow.Plug do
   def authenticate_user(conn, params) do
     config = fetch_config(conn)
 
-    config
-    |> Operations.authenticate(params)
+    params
+    |> Operations.authenticate(config)
     |> case do
       nil  -> {:error, conn}
       user -> {:ok, get_mod(config).do_create(conn, user)}
@@ -89,8 +89,8 @@ defmodule Pow.Plug do
     config = fetch_config(conn)
 
     case current_user(conn) do
-      nil  -> Operations.changeset(config, params)
-      user -> Operations.changeset(config, user, params)
+      nil  -> Operations.changeset(params, config)
+      user -> Operations.changeset(user, params, config)
     end
   end
 
@@ -103,8 +103,8 @@ defmodule Pow.Plug do
   def create_user(conn, params) do
     config = fetch_config(conn)
 
-    config
-    |> Operations.create(params)
+    params
+    |> Operations.create(config)
     |> maybe_create_auth(conn, config)
   end
 
@@ -115,11 +115,11 @@ defmodule Pow.Plug do
   """
   @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user(conn, params) do
-    config   = fetch_config(conn)
-    user     = current_user(conn)
+    config = fetch_config(conn)
 
-    config
-    |> Operations.update(user, params)
+    conn
+    |> current_user()
+    |> Operations.update(params, config)
     |> maybe_create_auth(conn, config)
   end
 
@@ -130,11 +130,11 @@ defmodule Pow.Plug do
   """
   @spec delete_user(Conn.t()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def delete_user(conn) do
-    config   = fetch_config(conn)
-    user     = current_user(conn)
+    config = fetch_config(conn)
 
-    config
-    |> Operations.delete(user)
+    conn
+    |> current_user()
+    |> Operations.delete(config)
     |> case do
       {:ok, user}         -> {:ok, user, get_mod(config).do_delete(conn)}
       {:error, changeset} -> {:error, changeset, conn}
