@@ -14,7 +14,7 @@ defmodule Pow.Config do
   value.
   """
   @spec get(t(), atom(), any()) :: any()
-  def get(config, key, default) do
+  def get(config, key, default \\ nil) do
     Keyword.get(config, key, get_env_config(config, key, default))
   end
 
