@@ -23,3 +23,9 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
 ## Prevent persistent session sign in
 
 To prevent the persistent session from being created when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.
+
+## Test and seed
+
+If you want your user to be automatically confirmed in test and seed, you just have to set `email_confirmed_at: DateTime.utc_now()`.
+
+If you would like to use the appropriate Pow method instead, you should call `PowEmailConfirmation.Ecto.Context.confirm_email([otp_app: :my_app], user)`.
