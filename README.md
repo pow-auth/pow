@@ -44,7 +44,7 @@ LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
 
-Update `config/config.ex` with the following:
+Add the following to `config/config.ex`:
 
 ```elixir
 config :my_app, :pow,
@@ -52,7 +52,7 @@ config :my_app, :pow,
   repo: MyApp.Repo
 ```
 
-Set up `WEB_PATH/endpoint.ex` to enable session based authentication:
+Set up `WEB_PATH/endpoint.ex` to enable session based authentication (`Pow.Plug.Session` is added after `Plug.Session`):
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
