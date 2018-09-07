@@ -139,7 +139,7 @@ Set up `routes.ex`
     use Pow.Phoenix.Router
     use Pow.Extension.Phoenix.Router, otp_app: :my_app
 
-    # ...
+    # pipelines ...
 
     pipeline :protected do
       plug Pow.Plug.RequireAuthenticated,
@@ -153,7 +153,7 @@ Set up `routes.ex`
       pow_extension_routes()
     end
 
-    # ...
+    # routes ...
   end
   ```
 

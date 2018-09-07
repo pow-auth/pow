@@ -78,7 +78,7 @@ defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use Pow.Phoenix.Router
 
-  # ...
+  # ... pipelines
 
   pipeline :protected do
     plug Pow.Plug.RequireAuthenticated,
@@ -91,13 +91,13 @@ defmodule MyAppWeb.Router do
     pow_routes()
   end
 
-  # ...
-
   scope "/", MyAppWeb do
     pipe_through [:browser, :protected]
 
-    # Protected routes ...
+    # Add your protected routes here
   end
+
+  # ... routes
 end
 ```
 

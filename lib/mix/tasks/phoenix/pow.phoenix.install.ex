@@ -92,7 +92,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
       use #{inspect(web_base)}, :router
       use Pow.Phoenix.Router
 
-      # ...
+      # ... pipelines
 
       scope "/" do
         pipe_through :browser
@@ -100,7 +100,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
         pow_routes()
       end
 
-      # ...
+      # ... routes
     end
     """)
   end
