@@ -18,10 +18,10 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_session_path(conn, :create)
       refute html =~ "request_path="
-      assert html =~ "<label class=\"control-label\" for=\"user_email\">Email</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_email\" name=\"user[email]\" type=\"text\">"
-      assert html =~ "<label class=\"control-label\" for=\"user_password\">Password</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       assert html =~ "<a href=\"/registration/new\">Register</a>"
     end
 
@@ -58,8 +58,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
       conn = post conn, Routes.pow_session_path(conn, :create, @invalid_params)
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "The provided login details did not work. Please verify your credentials, and try again."
-      assert html =~ "<input class=\"form-control\" id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
-      assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
       refute html =~ "request_path"

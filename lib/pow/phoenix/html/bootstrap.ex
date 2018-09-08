@@ -1,4 +1,6 @@
 defmodule Pow.Phoenix.HTML.Bootstrap do
+  # TODO: Remove module by 1.1.0 and only support Phoenix 1.4.0
+
   @moduledoc """
   Module that helps build HTML for Phoenix with Bootstrap CSS.
   """

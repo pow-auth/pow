@@ -30,3 +30,5 @@ for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] 
     extensions: [extension],
     controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks
 end
+
+config :phoenix, :json_library, Jason

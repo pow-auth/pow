@@ -12,8 +12,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label class=\"control-label\" for=\"user_email\">Email</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_email\" name=\"user[email]\" type=\"text\">"
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
     end
 
     test "already signed in", %{conn: conn} do
@@ -90,10 +90,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = get conn, Routes.pow_reset_password_reset_password_path(conn, :edit, @valid_token)
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label class=\"control-label\" for=\"user_password\">Password</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label class=\"control-label\" for=\"user_confirm_password\">Confirm password</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_confirm_password\">Confirm password</label>"
+      assert html =~ "<input id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
       assert html =~ "<a href=\"/session/new\">Sign in</a>"
     end
   end
@@ -140,8 +140,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, @valid_token, @invalid_params)
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label class=\"control-label\" for=\"user_password\">Password</label>"
-      assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       assert html =~ "<span class=\"help-block\">not same as password</span>"
 
       changeset = conn.assigns[:changeset]
