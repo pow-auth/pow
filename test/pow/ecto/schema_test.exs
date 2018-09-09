@@ -4,7 +4,7 @@ defmodule Pow.Ecto.SchemaTest do
 
   alias Pow.Test.Ecto.Users.{User, UsernameUser}
 
-  test "user_schema/1" do
+  test "schema/2" do
     user = %User{}
 
     assert Map.has_key?(user, :email)
@@ -19,5 +19,26 @@ defmodule Pow.Ecto.SchemaTest do
   test "changeset/2" do
     changeset = User.changeset(%User{}, %{custom: "custom"})
     assert changeset.changes.custom == "custom"
+  end
+
+  defmodule OverrideFieldUser do
+    @moduledoc false
+    use Ecto.Schema
+    use Pow.Ecto.Schema
+
+    schema "users" do
+      field :password_hash, :string, source: :encrypted_password
+
+      pow_user_fields()
+
+      timestamps()
+    end
+  end
+
+  test "schema/2 with overriden fields" do
+    user = %OverrideFieldUser{}
+
+    assert Map.has_key?(user, :password_hash)
+    assert OverrideFieldUser.__schema__(:field_source, :password_hash) == :encrypted_password
   end
 end

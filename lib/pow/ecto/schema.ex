@@ -37,6 +37,24 @@ defmodule Pow.Ecto.Schema do
 
   Remember to add `user: MyApp.Users.User` to your configuration.
 
+  ## Customize Pow fields
+
+  Pow fields can be overridden if the field name and type matches:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        schema "users" do
+          field :encrypted_password, :string
+          field :password_hash, :string, source: :encrypted_password
+
+          pow_user_fields()
+
+          timestamps()
+        end
+      end
+
   ## Configuration options
 
     * `:user_id_field` - the field to use for user id. This value defaults to
@@ -110,7 +128,9 @@ defmodule Pow.Ecto.Schema do
   """
   defmacro pow_user_fields do
     quote do
-      Enum.each(@pow_fields, fn
+      @pow_fields
+      |> unquote(__MODULE__).filter_new_fields(@ecto_fields)
+      |> Enum.each(fn
         {name, type} ->
           field(name, type)
 
@@ -154,4 +174,12 @@ defmodule Pow.Ecto.Schema do
   """
   @spec normalize_user_id_field_value(binary()) :: binary()
   def normalize_user_id_field_value(value), do: String.downcase(value)
+
+  @doc """
+  Filters field-type pairs that doesn't already exist in schema.
+  """
+  @spec filter_new_fields([tuple()], [tuple()]) :: [tuple()]
+  def filter_new_fields(fields, existing_fields) when is_list(fields) do
+    Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
+  end
 end
