@@ -55,6 +55,19 @@ defmodule Pow.Plug do
   end
 
   @doc """
+  Prepend namespace found in Plug configuration to binary.
+
+  Will prepend `:otp_app` if exists in configuration.
+  """
+  @spec prepend_namespace(Config.t(), binary()) :: any()
+  def prepend_namespace(config, string) do
+    case Config.get(config, :otp_app) do
+      nil       -> string
+      namespace -> "#{namespace}_#{string}"
+    end
+  end
+
+  @doc """
   Authenticates a user.
 
   If successful, a new session will be created.

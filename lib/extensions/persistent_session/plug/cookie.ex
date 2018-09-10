@@ -160,10 +160,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp cookie_id(config) do
     uuid = UUID.generate()
 
-    case Config.get(config, :otp_app) do
-      nil     -> uuid
-      otp_app -> "#{otp_app}_#{uuid}"
-    end
+    Plug.prepend_namespace(config, uuid)
   end
 
   defp cookie_key(config) do
@@ -171,10 +168,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp default_cookie_key(config) do
-    case Config.get(config, :otp_app) do
-      nil     -> @cookie_key
-      otp_app -> "#{otp_app}_#{@cookie_key}"
-    end
+    Plug.prepend_namespace(config, @cookie_key)
   end
 
   defp session_opts(config) do

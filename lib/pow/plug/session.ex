@@ -39,7 +39,7 @@ defmodule Pow.Plug.Session do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Store.Backend.EtsCache, Store.CredentialsCache, UUID}
+  alias Pow.{Config, Plug, Store.Backend.EtsCache, Store.CredentialsCache, UUID}
 
   @session_key "auth"
   @session_ttl_renewal :timer.minutes(15)
@@ -132,10 +132,7 @@ defmodule Pow.Plug.Session do
   defp session_id(config) do
     uuid = UUID.generate()
 
-    case Config.get(config, :otp_app) do
-      nil     -> uuid
-      otp_app -> "#{otp_app}_#{uuid}"
-    end
+    Plug.prepend_namespace(config, uuid)
   end
 
   defp session_key(config) do
@@ -143,10 +140,7 @@ defmodule Pow.Plug.Session do
   end
 
   defp default_session_key(config) do
-    case Config.get(config, :otp_app) do
-      nil     -> @session_key
-      otp_app -> "#{otp_app}_#{@session_key}"
-    end
+    Plug.prepend_namespace(config, @session_key)
   end
 
   defp session_value(user), do: {user, timestamp()}
