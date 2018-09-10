@@ -54,11 +54,11 @@ defmodule Pow.Plug.Base do
       connection.
       """
       def call(conn, config) do
-        config = Pow.Config.put(config, :mod, __MODULE__)
-        conn   = Pow.Plug.put_config(conn, config)
+        config = Config.put(config, :mod, __MODULE__)
+        conn   = Plug.put_config(conn, config)
 
         conn
-        |> Pow.Plug.current_user()
+        |> Plug.current_user()
         |> maybe_fetch_user(conn)
       end
 

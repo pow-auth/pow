@@ -48,10 +48,8 @@ defmodule Pow.Phoenix.ViewHelpers do
     view_module     = Controller.view_module(conn)
     layout          = Controller.layout(conn)
     base            = base_module(endpoint_module)
-    web_module      =
-      conn
-      |> Plug.fetch_config()
-      |> Config.get(:web_module)
+    config          = Plug.fetch_config(conn)
+    web_module      = Config.get(config, :web_module)
 
     view   = build_view_module(view_module, web_module)
     layout = build_layout(layout, web_module || base)
@@ -102,7 +100,7 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Enum.reverse()
     |> case do
       ["Endpoint" | base] -> base
-      base              -> base
+      base                -> base
     end
     |> Enum.reverse()
   end

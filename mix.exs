@@ -69,10 +69,6 @@ defmodule Pow.MixProject do
       source_url: "https://github.com/danschultzer/pow",
       extras: [
         "README.md": [filename: "Pow", title: "Pow"],
-        "guides/WHY_POW.md": [
-          filename: "WhyPow",
-          title: "Why use Pow?"
-        ],
         "guides/COHERENCE_MIGRATION.md": [
           filename: "CoherenceMigration",
           title: "Migrating from Coherence"
@@ -80,6 +76,10 @@ defmodule Pow.MixProject do
         "guides/SWOOSH_MAILER.md": [
           filename: "SwooshMailer",
           title: "Swoosh mailer"
+        ],
+        "guides/WHY_POW.md": [
+          filename: "WhyPow",
+          title: "Why use Pow?"
         ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
