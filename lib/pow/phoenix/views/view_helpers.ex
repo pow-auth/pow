@@ -44,19 +44,37 @@ defmodule Pow.Phoenix.ViewHelpers do
   """
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
-    endpoint_module = Controller.endpoint_module(conn)
-    view_module     = Controller.view_module(conn)
-    layout          = Controller.layout(conn)
-    base            = base_module(endpoint_module)
-    config          = Plug.fetch_config(conn)
-    web_module      = Config.get(config, :web_module)
-
-    view   = build_view_module(view_module, web_module)
-    layout = build_layout(layout, web_module || base)
+    web_module = conn |> Plug.fetch_config() |> Config.get(:web_module)
+    view       = view(conn, web_module)
+    layout     = layout(conn, web_module)
 
     conn
     |> Controller.put_view(view)
     |> Controller.put_layout(layout)
+  end
+
+  defp view(conn, web_module) do
+    conn
+    |> Controller.view_module()
+    |> build_view_module(web_module)
+  end
+
+  defp layout(conn, web_module) do
+    conn
+    |> Controller.layout()
+    |> build_layout(web_module || web_base(conn))
+  end
+
+  defp web_base(conn) do
+    conn
+    |> Controller.endpoint_module()
+    |> split_module()
+    |> Enum.reverse()
+    |> case do
+      ["Endpoint" | base] -> base
+      base                -> base
+    end
+    |> Enum.reverse()
   end
 
   @doc """
@@ -92,17 +110,6 @@ defmodule Pow.Phoenix.ViewHelpers do
     base
     |> Enum.concat(rest)
     |> Module.concat()
-  end
-
-  defp base_module(endpoint_module) do
-    endpoint_module
-    |> split_module()
-    |> Enum.reverse()
-    |> case do
-      ["Endpoint" | base] -> base
-      base                -> base
-    end
-    |> Enum.reverse()
   end
 
   defp split_module(nil), do: nil
