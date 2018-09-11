@@ -6,6 +6,7 @@ defmodule Pow.Plug do
   alias Pow.{Config, Operations}
 
   @private_config_key :pow_config
+  @private_namespace_key :pow_namespace
 
   @spec current_user(Conn.t()) :: map() | nil
   def current_user(conn) do
@@ -38,20 +39,37 @@ defmodule Pow.Plug do
 
   @doc """
   Put the provided config as a private key in the connection.
+
+  If `:namespace` is included in the configuration, then the configuration will
+  be stored as private `:pow_config_NAMESPACE` key in the connection. This key
+  will be fetched in `fetch_config/1` if `:pow_namespace` private key with the
+  namespace value exists in the connection.
   """
   @spec put_config(Conn.t(), Config.t()) :: Conn.t()
   def put_config(conn, config) do
-    Conn.put_private(conn, @private_config_key, config)
+    Conn.put_private(conn, config_key(config), config)
   end
+
+  defp config_key(%Conn{private: private}) do
+    config_key(@private_config_key, private[@private_namespace_key])
+  end
+  defp config_key(config) do
+    config_key(@private_config_key, Config.get(config, :namespace))
+  end
+  defp config_key(key, nil), do: key
+  defp config_key(key, namespace), do: String.to_atom("#{key}_#{namespace}")
 
   @doc """
   Fetch configuration from the private key in the connection.
 
-  It'll raise an error if configuration hasn't been set as a private key.
+  If the private key `:pow_namespace` exists, the configuration within
+  that namespace will be fetched. See `put_config/2` for more.
+
+  An error will be raised if configuration doesn't exist.
   """
   @spec fetch_config(Conn.t()) :: Config.t()
-  def fetch_config(%Conn{private: private}) do
-    private[@private_config_key] || no_config_error()
+  def fetch_config(%Conn{private: private} = conn) do
+    private[config_key(conn)] || no_config_error()
   end
 
   @doc """
@@ -168,6 +186,6 @@ defmodule Pow.Plug do
 
   @spec no_config_error :: no_return
   defp no_config_error do
-    Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
+    Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection. If you use `:namespace`, please ensure that the same namespace is set as a `:pow_namespace` private key in the connection")
   end
 end

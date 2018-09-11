@@ -20,7 +20,7 @@ defmodule Pow.PlugTest do
   end
 
   test "current_user/1" do
-    assert_raise ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.", fn ->
+    assert_raise ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection. If you use `:namespace`, please ensure that the same namespace is set as a `:pow_namespace` private key in the connection", fn ->
       Plug.current_user(%Conn{private: %{}, assigns: %{}})
     end
 
@@ -48,6 +48,24 @@ defmodule Pow.PlugTest do
     assert Plug.assign_current_user(conn, %{id: 1}, @default_config) == %Conn{assigns: %{current_user: user}}
 
     assert Plug.assign_current_user(conn, %{id: 1}, @admin_config) == %Conn{assigns: %{current_admin_user: user}}
+  end
+
+  test "put_config/2 with `:namespace` configuration" do
+    config = @default_config ++ [namespace: :test]
+    conn   = Plug.put_config(%Conn{}, config)
+
+    assert conn.private[:pow_config_test] == config
+  end
+
+  test "fetch_config/1 with `:namespace` configuration" do
+    conn = %Conn{private: %{pow_config_test: @default_config}}
+
+    assert_raise ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection. If you use `:namespace`, please ensure that the same namespace is set as a `:pow_namespace` private key in the connection", fn ->
+      Plug.fetch_config(conn)
+    end
+
+    conn = Conn.put_private(conn, :pow_namespace, :test)
+    assert Plug.fetch_config(conn) == @default_config
   end
 
   test "authenticate_user/2", %{ets: ets} do

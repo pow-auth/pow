@@ -21,6 +21,26 @@ defmodule Pow.Plug.Session do
         cache_store_backend: Pow.Store.Backend.EtsCache,
         users_context: Pow.Ecto.Users
 
+  ## Multiple sessions in same scope
+
+  You can add several sessions as long as you remember to keep them
+  isolated with the `:namespace` and `:current_user_assigns_key` keys:
+
+      plug Pow.Plug.Session,
+        repo: MyApp.Repo,
+        user: MyApp.User,
+        namespace: :user,
+        current_user_assigns_key: :current_user
+
+      plug Pow.Plug.Session,
+        repo: MyApp.Repo,
+        user: MyApp.Admin,
+        namespace: :admin,
+        current_user_assigns_key: :current_admin
+
+  You'll have to set the `:pow_config_namespace` private key in the connection for
+  `Pow.Plug.fetch_config/1` to fetch the config within that namespace.
+
   ## Configuration options
 
     * `:session_key` - session key name, defaults to "auth". If `:namespace`

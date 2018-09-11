@@ -18,12 +18,13 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
 
     * `--extension PowResetPassword` extension to include in generation
     * `--context-app MyApp` app to use for path and module names
+    * `--namespace my_namespace` namespace to use for path and module names
   """
   use Mix.Task
 
   alias Mix.{Pow, Pow.Extension, Pow.Phoenix, Pow.Phoenix.Mailer}
 
-  @switches [context_app: :string, extension: :keep]
+  @switches [context_app: :string, extension: :keep, namespace: :string]
   @default_opts []
   @mix_task "pow.extension.phoenix.mailer.gen.templates"
 
@@ -60,8 +61,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     Enum.each(extensions, fn {module, templates} ->
       Enum.each(templates, fn {name, mails} ->
         mails = Enum.map(mails, &String.to_atom/1)
-        Mailer.create_view_file(module, name, web_module, web_prefix, mails)
-        Mailer.create_templates(module, name, web_prefix, mails)
+        Mailer.create_view_file(module, name, web_module, web_prefix, mails, config[:namespace])
+        Mailer.create_templates(module, name, web_prefix, mails, config[:namespace])
       end)
     end)
 

@@ -105,5 +105,27 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     end
   end
 
+  describe "with `:namespace` configuration" do
+    test "generates mailer templates" do
+      File.cd!(@tmp_path, fn ->
+        Templates.run(@options ++ ~w(--namespace test))
+
+        for {module, expected_templates} <- @expected_template_files do
+          templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module), "test"])
+          dirs           = templates_path |> File.ls!() |> Enum.sort()
+
+          assert dirs == Map.keys(expected_templates)
+
+          views_path          = Path.join(["lib", "pow_web", "views", Macro.underscore(module), "test"])
+          [base_name | _rest] = expected_templates |> Map.keys()
+          view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
+
+          assert view_content =~ "defmodule PowWeb.#{inspect(module)}.Test.#{Macro.camelize(base_name)}View do"
+          assert view_content =~ "use PowWeb, :mailer_view"
+        end
+      end)
+    end
+  end
+
   defp ls(path), do: path |> File.ls!() |> Enum.sort()
 end

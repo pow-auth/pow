@@ -128,6 +128,15 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == "cached"
   end
 
+  test "call/2 with multiple `:namespace` configurations", %{conn: conn} do
+    opts = Session.init(@default_opts)
+    conn = Session.call(conn, opts ++ [namespace: :user])
+    conn = Session.call(conn, opts ++ [namespace: :admin])
+
+    assert conn.private[:pow_config_user]
+    assert conn.private[:pow_config_admin]
+  end
+
   test "create/2 creates new session id", %{conn: conn, ets: ets} do
     user = %{id: 1}
     opts = Session.init(@default_opts)

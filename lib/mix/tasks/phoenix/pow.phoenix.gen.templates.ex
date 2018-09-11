@@ -9,12 +9,13 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   ## Arguments
 
     * `--context-app MyApp` app to use for path and module names
+    * `--namespace my_namespace` namespace to use for path and module names
   """
   use Mix.Task
 
   alias Mix.{Pow, Pow.Phoenix}
 
-  @switches [context_app: :string]
+  @switches [context_app: :string, namespace: :string]
   @default_opts []
   @mix_task "pow.phoenix.gen.templates"
 
@@ -41,8 +42,8 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     web_prefix   = structure[:web_prefix]
 
     Enum.each(@templates, fn {name, actions} ->
-      Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix)
-      Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
+      Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix, config[:namespace])
+      Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions, config[:namespace])
     end)
 
     %{context_base: context_base, web_module: web_module}

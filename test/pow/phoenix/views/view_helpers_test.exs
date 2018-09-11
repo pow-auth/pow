@@ -48,6 +48,16 @@ defmodule Pow.Phoenix.ViewHelpersTest do
     assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
   end
 
+  test "layout/1 with `:web_module` and `:namespace`", %{conn: conn} do
+    conn =
+      conn
+      |> Conn.put_private(:pow_config, web_module: Pow.Test.Phoenix, namespace: :test)
+      |> ViewHelpers.layout()
+
+    assert conn.private[:phoenix_view] == Pow.Test.Phoenix.Pow.Test.SessionView
+    assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
+  end
+
   test "layout/1 in extension", %{conn: conn} do
     conn =
       conn
@@ -68,6 +78,17 @@ defmodule Pow.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == Pow.Test.Phoenix.PowTest.TestView
+    assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
+  end
+
+  test "layout/1 in extension with `:web_module` and `:namespace`", %{conn: conn} do
+    conn =
+      conn
+      |> Conn.put_private(:phoenix_view, PowTest.Phoenix.TestView)
+      |> Conn.put_private(:pow_config, web_module: Pow.Test.Phoenix, namespace: :test)
+      |> ViewHelpers.layout()
+
+    assert conn.private[:phoenix_view] == Pow.Test.Phoenix.PowTest.Test.TestView
     assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
   end
 end

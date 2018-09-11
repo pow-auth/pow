@@ -45,8 +45,9 @@ defmodule Pow.Phoenix.ViewHelpers do
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
     config     = Plug.fetch_config(conn)
+    namespace  = Config.get(config, :namespace)
     web_module = Config.get(config, :web_module)
-    view       = view(conn, web_module)
+    view       = view(conn, web_module, namespace)
     layout     = layout(conn, web_module)
 
     conn
@@ -54,10 +55,10 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Controller.put_layout(layout)
   end
 
-  defp view(conn, web_module) do
+  defp view(conn, web_module, namespace) do
     conn
     |> Controller.view_module()
-    |> build_view_module(web_module)
+    |> build_view_module(web_module, namespace)
   end
 
   defp layout(conn, web_module) do
@@ -81,23 +82,31 @@ defmodule Pow.Phoenix.ViewHelpers do
   @doc """
   Generates the view module atom.
   """
-  @spec build_view_module(module(), module() | nil) :: module()
-  def build_view_module(module, nil), do: module
-  def build_view_module(module, web_module) when is_atom(web_module) do
-    build_view_module(module, split_module(web_module))
+  @spec build_view_module(module(), module() | nil, atom() | nil) :: module()
+  def build_view_module(module, nil, _namespace), do: module
+  def build_view_module(module, web_module, namespace) when is_atom(web_module) do
+    build_view_module(module, split_module(web_module), namespace)
   end
-  def build_view_module(module, base) do
-    base = pow_base(module, base)
+  def build_view_module(module, base, namespace) do
+    base = pow_base(module, base, namespace)
 
     module
     |> split_module()
     |> build_module(base)
   end
 
-  defp pow_base(module, base) do
+  defp pow_base(module, base, namespace) do
     [pow_module | _rest] = Module.split(module)
+    base                 = base ++ [pow_module]
 
-    base ++ [pow_module]
+    append_namespace(base, namespace)
+  end
+
+  defp append_namespace(base, nil), do: base
+  defp append_namespace(base, namespace) do
+    namespace = namespace |> Atom.to_string() |> Macro.camelize()
+
+    base ++ [namespace]
   end
 
   defp build_layout({view, template}, web_module) when is_atom(web_module) do

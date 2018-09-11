@@ -3,13 +3,15 @@ defmodule Mix.Pow.Phoenix.Mailer do
   Utilities module for mix phoenix mailer tasks.
   """
   alias Mix.Generator
+  alias Mix.Pow.Phoenix, as: MixPhoenix
 
   @doc """
   Creates a mailer view file for the web module.
   """
-  @spec create_view_file(atom(), binary(), atom(), binary(), [binary()]) :: :ok
-  def create_view_file(module, name, web_mod, web_prefix, mails) do
+  @spec create_view_file(atom(), binary(), atom(), binary(), [binary()], binary() | nil) :: :ok
+  def create_view_file(module, name, web_mod, web_prefix, mails, namespace) do
     subjects = subjects_methods(module, name, mails)
+    module   = MixPhoenix.namespace_module(module, namespace)
     path     = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
     content  = """
     defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
@@ -25,9 +27,10 @@ defmodule Mix.Pow.Phoenix.Mailer do
   @doc """
   Creates mailer template files for the web module.
   """
-  @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
-  def create_templates(module, name, web_prefix, mails) do
+  @spec create_templates(atom(), binary(), binary(), [binary()], binary() | nil) :: :ok
+  def create_templates(module, name, web_prefix, mails, namespace) do
     template_module = template_module(module, name)
+    module          = MixPhoenix.namespace_module(module, namespace)
     path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
 
     Enum.each(mails, fn mail ->

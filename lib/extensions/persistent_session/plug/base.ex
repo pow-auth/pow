@@ -12,6 +12,8 @@ defmodule PowPersistentSession.Plug.Base do
 
     * `:cache_store_backend` - the backend cache store. This value defaults to
       `EtsCache`.
+
+    * `:namespace` - the namespace to use for fetching Pow configuration.
   """
 
   alias Plug.Conn
@@ -35,12 +37,20 @@ defmodule PowPersistentSession.Plug.Base do
       def call(conn, config) do
         config =
           conn
+          |> maybe_set_pow_namespace(config)
           |> Plug.fetch_config()
           |> Config.merge(config)
 
         conn
         |> Conn.put_private(:pow_persistent_session, {__MODULE__, config})
         |> authenticate(config)
+      end
+
+      defp maybe_set_pow_namespace(conn, config) do
+        case Config.get(config, :namespace) do
+          nil       -> conn
+          namespace -> Conn.put_private(conn, :pow_namespace, namespace)
+        end
       end
     end
   end

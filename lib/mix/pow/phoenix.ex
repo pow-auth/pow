@@ -35,8 +35,9 @@ defmodule Mix.Pow.Phoenix do
   @doc """
   Creates a view file for the web module.
   """
-  @spec create_view_file(atom(), binary(), atom(), binary()) :: :ok
-  def create_view_file(module, name, web_mod, web_prefix) do
+  @spec create_view_file(atom(), binary(), atom(), binary(), binary() | nil) :: :ok
+  def create_view_file(module, name, web_mod, web_prefix, namespace) do
+    module  = namespace_module(module, namespace)
     path    = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
     content = """
     defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
@@ -50,9 +51,10 @@ defmodule Mix.Pow.Phoenix do
   @doc """
   Creates template files for the web module.
   """
-  @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
-  def create_templates(module, name, web_prefix, actions) do
+  @spec create_templates(atom(), binary(), binary(), [binary()], binary() | nil) :: :ok
+  def create_templates(module, name, web_prefix, actions, namespace) do
     template_module = Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
+    module          = namespace_module(module, namespace)
     path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
 
     actions
@@ -64,4 +66,11 @@ defmodule Mix.Pow.Phoenix do
       Generator.create_file(file_path, content)
     end)
   end
+
+  @doc """
+  Adds namespace to module if namespace exists in config.
+  """
+  @spec namespace_module(atom(), binary() | nil) :: atom()
+  def namespace_module(module, nil), do: module
+  def namespace_module(module, namespace), do: Module.concat(module, Macro.camelize(namespace))
 end

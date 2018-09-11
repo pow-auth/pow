@@ -77,5 +77,24 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     end)
   end
 
+  test "generates with `:namespace" do
+    options = ~w(--namespace test)
+
+    File.cd!(@tmp_path, fn ->
+      Templates.run(options)
+
+      templates_path = Path.join(["lib", "pow_web", "templates", "pow", "test"])
+      dirs           = templates_path |> File.ls!() |> Enum.sort()
+
+      assert dirs == Map.keys(@expected_template_files)
+
+      views_path   = Path.join(["lib", "pow_web", "views", "pow", "test"])
+      view_content = views_path |> Path.join("session_view.ex") |> File.read!()
+
+      assert view_content =~ "defmodule PowWeb.Pow.Test.SessionView do"
+      assert view_content =~ "use PowWeb, :view"
+    end)
+  end
+
   defp ls(path), do: path |> File.ls!() |> Enum.sort()
 end

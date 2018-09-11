@@ -19,8 +19,9 @@ defmodule Pow.Phoenix.Mailer.Mail do
   def new(conn, user, {view_module, template}, assigns) do
     config     = Plug.fetch_config(conn)
     web_module = Config.get(config, :web_mailer_module)
+    namespace  = Config.get(config, :namespace)
 
-    view_module = Pow.Phoenix.ViewHelpers.build_view_module(view_module, web_module)
+    view_module = Pow.Phoenix.ViewHelpers.build_view_module(view_module, web_module, namespace)
 
     subject = subject(conn, view_module, template)
     text    = render(conn, view_module, "#{template}.text", assigns)

@@ -73,6 +73,10 @@ defmodule Pow.MixProject do
           filename: "CoherenceMigration",
           title: "Migrating from Coherence"
         ],
+        "guides/MULITPLE_USERS_SAME_SCOPE.md": [
+          filename: "MultipleUsersSameScope",
+          title: "Multiple users in same scope"
+        ],
         "guides/SWOOSH_MAILER.md": [
           filename: "SwooshMailer",
           title: "Swoosh mailer"
