@@ -25,8 +25,8 @@ defmodule PowPersistentSession.Plug.Cookie do
     * `:cache_store_backend` - see `PowPersistentSession.Plug.Base`
 
     * `:persistent_session_cookie_key` - session key name. This defaults to
-      "persistent_session_cookie". If `:otp_app` is used it'll automatically
-      prepend the key with the `:otp_app` value.
+      "persistent_session_cookie". If `:namespace` or `:otp_app` is used it'll
+      automatically prepend the key with the value.
 
     * `:persistent_session_cookie_max_age` - max age for cookie in seconds. This
       defaults to 30 days in seconds.

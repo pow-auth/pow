@@ -73,6 +73,22 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == 1
   end
 
+  test "call/2 assigns user from cookie with prepended `:namespace`", %{config: config, ets: ets} do
+    user = %User{id: 1}
+    conn =
+      :get
+      |> ConnHelpers.conn("/")
+      |> ConnHelpers.init_session()
+      |> Session.call(config ++ [namespace: :test])
+      |> store_persistent(ets, "test_test", user, "test_persistent_session_cookie")
+      |> Cookie.call(Cookie.init(config))
+
+    assert Plug.current_user(conn) == user
+    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["test_persistent_session_cookie"]
+    assert String.starts_with?(new_id, "test")
+    assert PersistentSessionCache.get([backend: ets], new_id) == 1
+  end
+
   test "call/2 when user already assigned", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"

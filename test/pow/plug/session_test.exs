@@ -111,6 +111,23 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == "cached"
   end
 
+  test "call/2 with prepended `:namespace` session key", %{conn: conn, ets: ets} do
+    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
+
+    opts =
+      @default_opts
+      |> Keyword.delete(:session_key)
+      |> Keyword.put(:namespace, :test)
+      |> Session.init()
+    conn =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session("test_auth", "token")
+      |> Session.call(opts)
+
+    assert conn.assigns[:current_user] == "cached"
+  end
+
   test "create/2 creates new session id", %{conn: conn, ets: ets} do
     user = %{id: 1}
     opts = Session.init(@default_opts)

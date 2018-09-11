@@ -23,8 +23,9 @@ defmodule Pow.Plug.Session do
 
   ## Configuration options
 
-    * `:session_key` - session key name, defaults to "auth". If `:otp_app` is
-      used it'll automatically prepend the key with the `:otp_app` value.
+    * `:session_key` - session key name, defaults to "auth". If `:namespace`
+      or `:otp_app` is used, it'll automatically prepend the key with this
+      value.
 
     * `:session_store` - the credentials cache store. This value defaults to
       `{CredentialsCache, backend: EtsCache}`. The `EtsCache` backend store
@@ -35,6 +36,9 @@ defmodule Pow.Plug.Session do
 
     * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
       sessions. Defaults to 15 minutes in miliseconds.
+
+    * `:namespace` - the namespace to be prepended to all keys that are shared
+      in the same scope. Defaults to the `:otp_app` value.
   """
   use Pow.Plug.Base
 
@@ -71,8 +75,8 @@ defmodule Pow.Plug.Session do
   `Plug.Conn.put_session/3`. Any existing sessions will be deleted first with
   `delete/2`.
 
-  The unique session id will be prepended by the `:otp_app` configuration
-  value, if present.
+  The unique session id will be prepended by the `:namespace` or `:otp_app`
+  configuration value.
   """
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do

@@ -57,7 +57,7 @@ defmodule Pow.Plug do
   @doc """
   Prepend namespace found in Plug Pow configuration to binary.
 
-  Will prepend `:otp_app` if exists in configuration.
+  Will prepend `:namespace` or `:otp_app` if exists in configuration.
   """
   @spec prepend_with_namespace(Config.t(), binary()) :: binary()
   def prepend_with_namespace(config, string) do
@@ -67,7 +67,7 @@ defmodule Pow.Plug do
     end
   end
 
-  defp fetch_namespace(config), do: Config.get(config, :otp_app)
+  defp fetch_namespace(config), do: Config.get(config, :namespace) || Config.get(config, :otp_app)
 
   @doc """
   Authenticates a user.
