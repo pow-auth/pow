@@ -27,7 +27,7 @@ defmodule Pow.Phoenix.Mailer do
     Remember to update configuration with `mailer_backend: MyAppWeb.Pow.Mailer`
   """
   alias Plug.Conn
-  alias Pow.Phoenix.Mailer.Mail
+  alias Pow.{Config, Phoenix.Mailer.Mail, Plug}
 
   @callback cast(Mail.t()) :: any()
   @callback process(any()) :: any()
@@ -40,8 +40,8 @@ defmodule Pow.Phoenix.Mailer do
 
   @spec deliver(Conn.t(), Mail.t()) :: any()
   def deliver(conn, email) do
-    config = Pow.Plug.fetch_config(conn)
-    mailer = Pow.Config.get(config, :mailer_backend) || raise_no_mailer_backend_set()
+    config = Plug.fetch_config(conn)
+    mailer = Config.get(config, :mailer_backend) || raise_no_mailer_backend_set()
 
     email
     |> mailer.cast()
@@ -50,6 +50,6 @@ defmodule Pow.Phoenix.Mailer do
 
   @spec raise_no_mailer_backend_set :: no_return
   defp raise_no_mailer_backend_set do
-    Pow.Config.raise_error("No :mailer_backend configuration option found for plug.")
+    Config.raise_error("No :mailer_backend configuration option found for plug.")
   end
 end

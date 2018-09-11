@@ -97,7 +97,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
-    user = Plug.current_user(conn)
+    user = Plug.current_user(conn, config)
 
     conn
     |> Conn.fetch_cookies()
@@ -117,7 +117,6 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp do_authenticate(conn, key_id, config) do
     {store, store_config} = store(config)
-    mod                   = config[:mod]
 
     store_config
     |> store.get(key_id)
@@ -130,7 +129,7 @@ defmodule PowPersistentSession.Plug.Cookie do
         conn
         |> delete(config)
         |> create(user, config)
-        |> mod.do_create(user)
+        |> Plug.get_mod(config).do_create(user, config)
     end
   end
 

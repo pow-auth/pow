@@ -48,7 +48,7 @@ defmodule Pow.Plug.Base do
       @doc """
       Initializes the connection for Pow, and assigns current user.
 
-      If a user is not already assigned, `do_fetch/1` will be called. `:mod` is
+      If a user is not already assigned, `do_fetch/2` will be called. `:mod` is
       added to the private pow configuration key, so it can be used in
       subsequent calls to create, update and delete user credentials from the
       connection.
@@ -58,17 +58,15 @@ defmodule Pow.Plug.Base do
         conn   = Plug.put_config(conn, config)
 
         conn
-        |> Plug.current_user()
-        |> maybe_fetch_user(conn)
+        |> Plug.current_user(config)
+        |> maybe_fetch_user(conn, config)
       end
 
       @doc """
       Calls `fetch/2` and assigns the current user.
       """
-      @spec do_fetch(Conn.t()) :: Conn.t()
-      def do_fetch(conn) do
-        config = fetch_config(conn)
-
+      @spec do_fetch(Conn.t(), Config.t()) :: Conn.t()
+      def do_fetch(conn, config) do
         conn
         |> fetch(config)
         |> assign_current_user(config)
@@ -77,10 +75,8 @@ defmodule Pow.Plug.Base do
       @doc """
       Calls `create/3` and assigns the current user.
       """
-      @spec do_create(Conn.t(), map()) :: Conn.t()
-      def do_create(conn, user) do
-        config = fetch_config(conn)
-
+      @spec do_create(Conn.t(), map(), Config.t()) :: Conn.t()
+      def do_create(conn, user, config) do
         conn
         |> create(user, config)
         |> assign_current_user(config)
@@ -89,19 +85,15 @@ defmodule Pow.Plug.Base do
       @doc """
       Calls `delete/2` and removes the current user assign.
       """
-      @spec do_delete(Conn.t()) :: Conn.t()
-      def do_delete(conn) do
-        config = fetch_config(conn)
-
+      @spec do_delete(Conn.t(), Config.t()) :: Conn.t()
+      def do_delete(conn, config) do
         conn
         |> delete(config)
         |> remove_current_user(config)
       end
 
-      defp maybe_fetch_user(nil, conn), do: do_fetch(conn)
-      defp maybe_fetch_user(_user, conn), do: conn
-
-      defp fetch_config(conn), do: Plug.fetch_config(conn)
+      defp maybe_fetch_user(nil, conn, config), do: do_fetch(conn, config)
+      defp maybe_fetch_user(_user, conn, _config), do: conn
 
       defp assign_current_user({conn, user}, config), do: Plug.assign_current_user(conn, user, config)
 

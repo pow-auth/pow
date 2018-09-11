@@ -119,7 +119,7 @@ defmodule Pow.Plug.SessionTest do
     conn =
       conn
       |> Session.call(opts)
-      |> Session.do_create(user)
+      |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
     {etc_user, _inserted_at} = ets.get(nil, session_id)
@@ -128,7 +128,7 @@ defmodule Pow.Plug.SessionTest do
     assert etc_user == user
     assert Plug.current_user(conn) == user
 
-    conn = Session.do_create(conn, user)
+    conn = Session.do_create(conn, user, opts)
     new_session_id = get_session_id(conn)
     {etc_user, _inserted_at} = ets.get(nil, new_session_id)
 
@@ -148,7 +148,7 @@ defmodule Pow.Plug.SessionTest do
     conn =
       conn
       |> Session.call(opts)
-      |> Session.do_create(%{id: 1})
+      |> Session.do_create(%{id: 1}, opts)
 
     refute get_session_id(conn)
 
@@ -162,7 +162,7 @@ defmodule Pow.Plug.SessionTest do
     conn =
       conn
       |> Session.call(opts)
-      |> Session.do_create(user)
+      |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
     {etc_user, _inserted_at} = ets.get(nil, session_id)
@@ -171,7 +171,7 @@ defmodule Pow.Plug.SessionTest do
     assert etc_user == user
     assert Plug.current_user(conn) == user
 
-    conn = Session.do_delete(conn)
+    conn = Session.do_delete(conn, opts)
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)

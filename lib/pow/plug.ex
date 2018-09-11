@@ -80,7 +80,7 @@ defmodule Pow.Plug do
     |> Operations.authenticate(config)
     |> case do
       nil  -> {:error, conn}
-      user -> {:ok, get_mod(config).do_create(conn, user)}
+      user -> {:ok, get_mod(config).do_create(conn, user, config)}
     end
   end
 
@@ -91,7 +91,7 @@ defmodule Pow.Plug do
   def clear_authenticated_user(conn) do
     config = fetch_config(conn)
 
-    {:ok, get_mod(config).do_delete(conn)}
+    {:ok, get_mod(config).do_delete(conn, config)}
   end
 
   @doc """
@@ -101,7 +101,7 @@ defmodule Pow.Plug do
   def change_user(conn, params \\ %{}) do
     config = fetch_config(conn)
 
-    case current_user(conn) do
+    case current_user(conn, config) do
       nil  -> Operations.changeset(params, config)
       user -> Operations.changeset(user, params, config)
     end
@@ -131,7 +131,7 @@ defmodule Pow.Plug do
     config = fetch_config(conn)
 
     conn
-    |> current_user()
+    |> current_user(config)
     |> Operations.update(params, config)
     |> maybe_create_auth(conn, config)
   end
@@ -146,22 +146,23 @@ defmodule Pow.Plug do
     config = fetch_config(conn)
 
     conn
-    |> current_user()
+    |> current_user(config)
     |> Operations.delete(config)
     |> case do
-      {:ok, user}         -> {:ok, user, get_mod(config).do_delete(conn)}
+      {:ok, user}         -> {:ok, user, get_mod(config).do_delete(conn, config)}
       {:error, changeset} -> {:error, changeset, conn}
     end
   end
 
   defp maybe_create_auth({:ok, user}, conn, config) do
-    {:ok, user, get_mod(config).do_create(conn, user)}
+    {:ok, user, get_mod(config).do_create(conn, user, config)}
   end
   defp maybe_create_auth({:error, changeset}, conn, _config) do
     {:error, changeset, conn}
   end
 
-  defp get_mod(config), do: config[:mod]
+  @spec get_mod(Config.t()) :: atom() | nil
+  def get_mod(config), do: config[:mod]
 
   @spec no_config_error :: no_return
   defp no_config_error do
