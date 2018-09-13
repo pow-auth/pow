@@ -50,7 +50,7 @@ defmodule Pow.Plug do
   It'll raise an error if configuration hasn't been set as a private key.
   """
   @spec fetch_config(Conn.t()) :: Config.t()
-  def fetch_config(%{private: private}) do
+  def fetch_config(%Conn{private: private}) do
     private[@private_config_key] || no_config_error()
   end
 

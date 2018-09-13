@@ -44,7 +44,8 @@ defmodule Pow.Phoenix.ViewHelpers do
   """
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
-    web_module = conn |> Plug.fetch_config() |> Config.get(:web_module)
+    config     = Plug.fetch_config(conn)
+    web_module = Config.get(config, :web_module)
     view       = view(conn, web_module)
     layout     = layout(conn, web_module)
 
@@ -86,12 +87,17 @@ defmodule Pow.Phoenix.ViewHelpers do
     build_view_module(module, split_module(web_module))
   end
   def build_view_module(module, base) do
-    [pow_module | _rest] = Module.split(module)
-    base                 = base ++ [pow_module]
+    base = pow_base(module, base)
 
     module
     |> split_module()
     |> build_module(base)
+  end
+
+  defp pow_base(module, base) do
+    [pow_module | _rest] = Module.split(module)
+
+    base ++ [pow_module]
   end
 
   defp build_layout({view, template}, web_module) when is_atom(web_module) do

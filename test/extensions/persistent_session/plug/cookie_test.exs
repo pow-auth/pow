@@ -58,15 +58,13 @@ defmodule PowPersistentSession.Plug.CookieTest do
   end
 
   test "call/2 assigns user from cookie with prepended `:otp_app`", %{config: config, ets: ets} do
-    user   = %User{id: 1}
-    id     = "test_app_test"
-    config = Pow.Config.merge(config, [otp_app: :test_app])
-    conn   =
+    user = %User{id: 1}
+    conn =
       :get
       |> ConnHelpers.conn("/")
       |> ConnHelpers.init_session()
-      |> Session.call(config)
-      |> store_persistent(ets, id, user, "test_app_persistent_session_cookie")
+      |> Session.call(config ++ [otp_app: :test_app])
+      |> store_persistent(ets, "test_app_test", user, "test_app_persistent_session_cookie")
       |> Cookie.call(Cookie.init(config))
 
     assert Plug.current_user(conn) == user

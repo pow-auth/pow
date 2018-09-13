@@ -21,11 +21,11 @@ defmodule Pow.Phoenix.Mailer.MailTest do
   use ExUnit.Case
   doctest Pow.Phoenix.Mailer.Mail
 
-  alias Pow.Phoenix.Mailer.Mail
-  alias Pow.Phoenix.MailerView
+  alias Plug.Conn
+  alias Pow.Phoenix.{Mailer.Mail, MailerView}
 
   test "new/4" do
-    conn = %{private: %{pow_config: []}}
+    conn = %Conn{private: %{pow_config: []}}
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 
     assert mail.user == :user
@@ -36,7 +36,7 @@ defmodule Pow.Phoenix.Mailer.MailTest do
   end
 
   test "new/4 with `:web_module`" do
-    conn = %{private: %{pow_config: [web_mailer_module: Pow.Test.Phoenix]}}
+    conn = %Conn{private: %{pow_config: [web_mailer_module: Pow.Test.Phoenix]}}
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 
     assert mail.user == :user

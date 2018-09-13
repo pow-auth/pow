@@ -52,8 +52,8 @@ defmodule Mix.Pow.Phoenix do
   """
   @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
   def create_templates(module, name, web_prefix, actions) do
-    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
     template_module = Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
+    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
 
     actions
     |> Enum.map(&String.to_atom/1)

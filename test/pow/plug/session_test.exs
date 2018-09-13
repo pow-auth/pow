@@ -95,19 +95,17 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn, ets: ets} do
+    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
+
     opts =
       @default_opts
       |> Keyword.delete(:session_key)
-      |> Keyword.put(:otp_app, :test)
-    session_key = "test_auth"
-
-    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
-
-    opts = Session.init(opts)
+      |> Keyword.put(:otp_app, :test_app)
+      |> Session.init()
     conn =
       conn
       |> Conn.fetch_session()
-      |> Conn.put_session(session_key, "token")
+      |> Conn.put_session("test_app_auth", "token")
       |> Session.call(opts)
 
     assert conn.assigns[:current_user] == "cached"

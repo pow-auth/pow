@@ -9,9 +9,9 @@ defmodule Mix.Pow.Phoenix.Mailer do
   """
   @spec create_view_file(atom(), binary(), atom(), binary(), [binary()]) :: :ok
   def create_view_file(module, name, web_mod, web_prefix, mails) do
-    subjects        = subjects_methods(module, name, mails)
-    path            = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
-    content         = """
+    subjects = subjects_methods(module, name, mails)
+    path     = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
+    content  = """
     defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
       use #{inspect(web_mod)}, :mailer_view
 
@@ -27,8 +27,8 @@ defmodule Mix.Pow.Phoenix.Mailer do
   """
   @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
   def create_templates(module, name, web_prefix, mails) do
-    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
     template_module = template_module(module, name)
+    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
 
     Enum.each(mails, fn mail ->
       for type <- [:html, :text] do
