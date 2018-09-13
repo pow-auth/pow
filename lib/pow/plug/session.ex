@@ -132,7 +132,7 @@ defmodule Pow.Plug.Session do
   defp session_id(config) do
     uuid = UUID.generate()
 
-    Plug.prepend_namespace(config, uuid)
+    Plug.prepend_with_namespace(config, uuid)
   end
 
   defp session_key(config) do
@@ -140,7 +140,7 @@ defmodule Pow.Plug.Session do
   end
 
   defp default_session_key(config) do
-    Plug.prepend_namespace(config, @session_key)
+    Plug.prepend_with_namespace(config, @session_key)
   end
 
   defp session_value(user), do: {user, timestamp()}

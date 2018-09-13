@@ -159,7 +159,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp cookie_id(config) do
     uuid = UUID.generate()
 
-    Plug.prepend_namespace(config, uuid)
+    Plug.prepend_with_namespace(config, uuid)
   end
 
   defp cookie_key(config) do
@@ -167,7 +167,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp default_cookie_key(config) do
-    Plug.prepend_namespace(config, @cookie_key)
+    Plug.prepend_with_namespace(config, @cookie_key)
   end
 
   defp session_opts(config) do
