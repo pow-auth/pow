@@ -168,6 +168,6 @@ defmodule Pow.Plug do
 
   @spec no_config_error :: no_return
   defp no_config_error do
-    Config.raise_error("Pow configuration not found. Please set the Pow.Plug.Session plug beforehand.")
+    Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
   end
 end

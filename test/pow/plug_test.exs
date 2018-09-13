@@ -20,7 +20,7 @@ defmodule Pow.PlugTest do
   end
 
   test "current_user/1" do
-    assert_raise ConfigError, "Pow configuration not found. Please set the Pow.Plug.Session plug beforehand.", fn ->
+    assert_raise ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.", fn ->
       Plug.current_user(%Conn{private: %{}, assigns: %{}})
     end
 
