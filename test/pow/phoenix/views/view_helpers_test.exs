@@ -37,7 +37,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
     assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
   end
 
-  test "layout/1 with :web_module", %{conn: conn} do
+  test "layout/1 with `:web_module`", %{conn: conn} do
     conn =
       conn
       |> Conn.put_private(:pow_config, web_module: Pow.Test.Phoenix)
@@ -59,7 +59,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
     assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
   end
 
-  test "layout/1 in extension with :web_module", %{conn: conn} do
+  test "layout/1 in extension with `:web_module`", %{conn: conn} do
     conn =
       conn
       |> Conn.put_private(:phoenix_view, PowTest.Phoenix.TestView)

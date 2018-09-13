@@ -50,7 +50,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     end)
   end
 
-  test "generates with :context_app" do
+  test "generates with `:context_app`" do
     options = ~w(--context-app test)
 
     File.cd!(@tmp_path, fn ->

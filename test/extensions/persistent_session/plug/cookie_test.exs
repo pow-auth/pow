@@ -57,7 +57,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == 1
   end
 
-  test "call/2 assigns user from cookie with prepended :otp_app", %{config: config, ets: ets} do
+  test "call/2 assigns user from cookie with prepended `:otp_app`", %{config: config, ets: ets} do
     user   = %User{id: 1}
     id     = "test_app_test"
     config = Pow.Config.merge(config, [otp_app: :test_app])

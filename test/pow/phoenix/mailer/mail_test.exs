@@ -35,7 +35,7 @@ defmodule Pow.Phoenix.Mailer.MailTest do
     assert mail.assigns[:value] == "test"
   end
 
-  test "new/4 with :web_module" do
+  test "new/4 with `:web_module`" do
     conn = %{private: %{pow_config: [web_mailer_module: Pow.Test.Phoenix]}}
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 

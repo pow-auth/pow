@@ -5,7 +5,7 @@ defmodule Pow.Phoenix.ControllerTest do
   alias Pow.Test.{Ecto.Users.User, Phoenix, Phoenix.Endpoint, Phoenix.Router}
 
   describe "action/3" do
-    test "using :web_module", %{conn: conn} do
+    test "using `:web_module`", %{conn: conn} do
       conn =
         conn
         |> Conn.put_private(:pow_config, web_module: Phoenix, user: User)

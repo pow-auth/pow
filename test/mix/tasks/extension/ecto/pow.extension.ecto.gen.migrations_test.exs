@@ -56,7 +56,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     end)
   end
 
-  test "generates with :binary_id" do
+  test "generates with `:binary_id`" do
     options = @options ++ ~w(--binary-id)
 
     File.cd!(@tmp_path, fn ->
@@ -70,7 +70,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     end)
   end
 
-  describe "with :otp_app configuration" do
+  describe "with `:otp_app` configuration" do
     setup do
       Application.put_env(:pow, :pow, extensions: [__MODULE__])
       on_exit(fn ->

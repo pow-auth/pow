@@ -69,7 +69,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     end)
   end
 
-  describe "with :context_app configuration" do
+  describe "with `:context_app` configuration" do
     setup do
       Application.put_env(:test, :pow, extensions: [PowResetPassword, PowEmailConfirmation])
       on_exit(fn ->

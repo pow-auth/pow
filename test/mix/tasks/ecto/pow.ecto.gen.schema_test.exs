@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     end)
   end
 
-  test "generates with :context_app" do
+  test "generates with `:context_app`" do
     options = ~w(--context-app pow)
     File.cd!(@tmp_path, fn ->
       Schema.run(options)
@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     end)
   end
 
-  test "generates with :binary_id" do
+  test "generates with `:binary_id`" do
     options = ~w(--binary-id)
 
     File.cd!(@tmp_path, fn ->

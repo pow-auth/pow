@@ -65,7 +65,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
-  test "with :context_app" do
+  test "with `:context_app`" do
     options = @options ++ ~w(--context-app test)
     File.cd!(@tmp_path, fn ->
       Install.run(options)
