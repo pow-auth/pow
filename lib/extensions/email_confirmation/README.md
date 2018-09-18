@@ -26,6 +26,6 @@ To prevent the persistent session from being created when the email hasn't been 
 
 ## Test and seed
 
-If you want your user to be automatically confirmed in test and seed, you just have to set `email_confirmed_at: DateTime.utc_now()`.
+If you want your user to be automatically confirmed in test and seed, you just have to call: `PowEmailConfirmation.Ecto.Context.confirm_email(user, otp_app: :my_app)`
 
-If you would like to use the appropriate Pow method instead, you should call `PowEmailConfirmation.Ecto.Context.confirm_email(user, otp_app: :my_app)`.
+You can also update or insert the row directly and set `email_confirmed_at: DateTime.utc_now()`.
