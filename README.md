@@ -272,6 +272,8 @@ config :my_app, :pow,
   web_mailer_module: MyAppWeb
 ```
 
+The generated view files contains the subject lines for the emails.
+
 ## Configuration
 
 Pow is build to be modular, and easy to configure. The configuration is passed to method calls, and plug options and they will take priority over any environment configuration. It's ideal in case you got an umbrella app with multiple separate user domains.
