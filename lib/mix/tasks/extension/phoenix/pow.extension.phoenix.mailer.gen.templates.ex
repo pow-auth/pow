@@ -13,6 +13,11 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
   Use the context app configuration environment for extensions:
 
       mix pow.extension.phoenix.mailer.gen.templates --context-app my_app
+
+  ## Arguments
+
+    * `--extension PowResetPassword` extension to include in generation
+    * `--context-app MyApp` app to use for path and module names
   """
   use Mix.Task
 
