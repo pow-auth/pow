@@ -5,6 +5,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
 
   alias Plug.Conn
   alias PowEmailConfirmation.Plug
+  alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
 
   @spec process_show(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
   def process_show(conn, %{"id" => token}), do: Plug.confirm_email(conn, token)
@@ -23,8 +24,8 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
 
   defp redirect_to(conn) do
     case Pow.Plug.current_user(conn) do
-      nil   -> router_helpers(conn).pow_session_path(conn, :new)
-      _user -> router_helpers(conn).pow_registration_path(conn, :edit)
+      nil   -> Controller.router_path(conn, SessionController, :new)
+      _user -> Controller.router_path(conn, RegistrationController, :edit)
     end
   end
 end

@@ -14,7 +14,7 @@ defmodule Pow.Phoenix.Routes do
     Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
   """
   alias Plug.Conn
-  alias Pow.Phoenix.Controller
+  alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
 
   @callback user_not_authenticated_path(Conn.t()) :: binary()
   @callback user_already_authenticated_path(Conn.t()) :: binary()
@@ -63,7 +63,7 @@ defmodule Pow.Phoenix.Routes do
   See `Pow.Phoenix.SessionController` for more on how this value is handled.
   """
   def user_not_authenticated_path(conn) do
-    Controller.router_helpers(conn).pow_session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
+    Controller.router_path(conn, SessionController, :new, [], request_path: Phoenix.Controller.current_path(conn))
   end
 
   @doc """
@@ -77,7 +77,7 @@ defmodule Pow.Phoenix.Routes do
   Path to redirect user to when user has signed out.
   """
   def after_sign_out_path(conn) do
-    Controller.router_helpers(conn).pow_session_path(conn, :new)
+    Controller.router_path(conn, SessionController, :new)
   end
 
   @doc """
@@ -102,7 +102,7 @@ defmodule Pow.Phoenix.Routes do
   Path to redirect user to when user has updated their account.
   """
   def after_user_updated_path(conn) do
-    Controller.router_helpers(conn).pow_registration_path(conn, :edit)
+    Controller.router_path(conn, RegistrationController, :edit)
   end
 
   @doc """
