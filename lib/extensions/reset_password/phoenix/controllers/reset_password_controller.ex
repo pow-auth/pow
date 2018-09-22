@@ -5,11 +5,13 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   alias Plug.Conn
   alias PowResetPassword.{Phoenix.Mailer, Plug}
+  alias Pow.Phoenix.{Controller, SessionController}
 
   plug :require_not_authenticated
   plug :load_user_from_reset_token when action in [:edit, :update]
   plug :assign_create_path when action in [:new, :create]
   plug :assign_update_path when action in [:edit, :update]
+  plug :assign_new_session_path when action in [:edit, :update]
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
@@ -30,7 +32,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_create({:ok, %{token: token, user: user}, conn}) do
-    url = router_helpers(conn).pow_reset_password_reset_password_url(conn, :edit, token)
+    url = Controller.router_url(conn, __MODULE__, :edit, [token])
     deliver_email(conn, user, url)
 
     default_respond_create(conn)
@@ -40,7 +42,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   defp default_respond_create(conn) do
     conn
     |> put_flash(:info, messages(conn).email_has_been_sent(conn))
-    |> redirect(to: router_helpers(conn).pow_session_path(conn, :new))
+    |> redirect(to: Controller.router_path(conn, SessionController, :new))
   end
 
   @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}
@@ -64,7 +66,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   def respond_update({:ok, _user, conn}) do
     conn
     |> put_flash(:info, messages(conn).password_has_been_reset(conn))
-    |> redirect(to: router_helpers(conn).pow_session_path(conn, :new))
+    |> redirect(to: Controller.router_path(conn, SessionController, :new))
   end
   def respond_update({:error, changeset, conn}) do
     conn
@@ -77,7 +79,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
       nil ->
         conn
         |> put_flash(:error, messages(conn).invalid_token(conn))
-        |> redirect(to: router_helpers(conn).pow_reset_password_reset_password_path(conn, :new))
+        |> redirect(to: Controller.router_path(conn, __MODULE__, :new))
         |> halt()
 
       user ->
@@ -92,13 +94,17 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   end
 
   defp assign_create_path(conn, _opts) do
-    path = router_helpers(conn).pow_reset_password_reset_password_path(conn, :create)
+    path = Controller.router_path(conn, __MODULE__, :create)
     Conn.assign(conn, :action, path)
   end
 
   defp assign_update_path(conn, _opts) do
     token = conn.params["id"]
-    path  = router_helpers(conn).pow_reset_password_reset_password_path(conn, :update, token)
+    path  = Controller.router_path(conn, __MODULE__, :update, [token])
     Conn.assign(conn, :action, path)
+  end
+
+  defp assign_new_session_path(conn, _opts) do
+    Conn.assign(conn, :new_session_path, Controller.router_path(conn, SessionController, :new))
   end
 end

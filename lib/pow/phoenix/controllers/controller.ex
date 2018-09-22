@@ -63,8 +63,6 @@ defmodule Pow.Phoenix.Controller do
         unquote(__MODULE__).routes(conn, Routes)
       end
 
-      import unquote(__MODULE__), only: [router_helpers: 1]
-
       defoverridable messages: 1, routes: 1
     end
   end
@@ -123,11 +121,46 @@ defmodule Pow.Phoenix.Controller do
     |> Config.get(:routes_backend, fallback)
   end
 
+  # TODO: Remove by 1.0.0
   @doc """
   Fetches router helpers module from connection.
   """
+  @deprecated "Call the router module directly instead."
   @spec router_helpers(Conn.t()) :: atom()
   def router_helpers(%{private: private}) do
     Module.concat([private.phoenix_router, Helpers])
+  end
+
+  @doc """
+  Generates a path route.
+  """
+  @spec router_path(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def router_path(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:path, conn, plug, verb, vars, query_params)
+  end
+
+  @doc """
+  Generates a url route.
+  """
+  @spec router_url(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def router_url(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:url, conn, plug, verb, vars, query_params)
+  end
+
+  defp gen_route(type, conn, plug, verb, vars, query_params) do
+    alias  = router_alias(plug)
+    router = Module.concat([conn.private.phoenix_router, Helpers])
+    helper = :"#{alias}_#{type}"
+    args   = [conn, verb] ++ vars ++ [query_params]
+
+    apply(router, helper, args)
+  end
+
+  defp router_alias(plug) do
+    as             = Phoenix.Naming.resource_name(plug, "Controller")
+    [base | _rest] = Module.split(plug)
+    base           = Macro.underscore(base)
+
+    "#{base}_#{as}"
   end
 end
