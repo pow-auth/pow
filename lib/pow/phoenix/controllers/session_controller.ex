@@ -8,13 +8,12 @@ defmodule Pow.Phoenix.SessionController do
   use Pow.Phoenix.Controller
 
   alias Plug.Conn
-  alias Pow.{Phoenix.Controller, Phoenix.RegistrationController, Plug}
+  alias Pow.{Phoenix.Controller, Plug}
 
   plug :require_not_authenticated when action in [:new, :create]
   plug :require_authenticated when action in [:delete]
   plug :assign_request_path when action in [:new, :create]
   plug :assign_create_path when action in [:new, :create]
-  plug :assign_new_registration_path when action in [:new, :create]
 
   @doc false
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
@@ -76,9 +75,5 @@ defmodule Pow.Phoenix.SessionController do
   end
   defp create_path(conn, query_params \\ []) do
     Controller.router_path(conn, __MODULE__, :create, [], query_params)
-  end
-
-  defp assign_new_registration_path(conn, _opts) do
-    Conn.assign(conn, :new_registration_path, Controller.router_path(conn, RegistrationController, :new))
   end
 end

@@ -22,6 +22,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert html =~ "<input class=\"form-control\" id=\"user_email\" name=\"user[email]\" type=\"text\">"
       assert html =~ "<label class=\"control-label\" for=\"user_password\">Password</label>"
       assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      assert html =~ "<a href=\"/registration/new\">Register</a>"
     end
 
     test "with request_path", %{conn: conn} do

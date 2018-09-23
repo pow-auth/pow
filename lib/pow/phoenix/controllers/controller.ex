@@ -148,15 +148,15 @@ defmodule Pow.Phoenix.Controller do
   end
 
   defp gen_route(type, conn, plug, verb, vars, query_params) do
-    alias  = router_alias(plug)
+    helper = :"#{route_helper(plug)}_#{type}"
     router = Module.concat([conn.private.phoenix_router, Helpers])
-    helper = :"#{alias}_#{type}"
     args   = [conn, verb] ++ vars ++ [query_params]
 
     apply(router, helper, args)
   end
 
-  defp router_alias(plug) do
+  @spec route_helper(atom()) :: binary()
+  def route_helper(plug) do
     as             = Phoenix.Naming.resource_name(plug, "Controller")
     [base | _rest] = Module.split(plug)
     base           = Macro.underscore(base)
