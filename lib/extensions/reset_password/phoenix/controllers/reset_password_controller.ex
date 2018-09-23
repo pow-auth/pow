@@ -11,7 +11,6 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   plug :load_user_from_reset_token when action in [:edit, :update]
   plug :assign_create_path when action in [:new, :create]
   plug :assign_update_path when action in [:edit, :update]
-  plug :assign_new_session_path when action in [:edit, :update]
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
@@ -102,9 +101,5 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     token = conn.params["id"]
     path  = Controller.router_path(conn, __MODULE__, :update, [token])
     Conn.assign(conn, :action, path)
-  end
-
-  defp assign_new_session_path(conn, _opts) do
-    Conn.assign(conn, :new_session_path, Controller.router_path(conn, SessionController, :new))
   end
 end

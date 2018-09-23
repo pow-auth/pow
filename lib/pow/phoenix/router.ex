@@ -52,4 +52,21 @@ defmodule Pow.Phoenix.Router do
       end
     end
   end
+
+  defmodule Helper do
+    @moduledoc false
+
+    alias Plug.Conn
+    alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
+
+    @spec pow_session_path(Conn.t(), :new) :: binary()
+    def pow_session_path(conn, :new) do
+      Controller.router_path(conn, SessionController, :new)
+    end
+
+    @spec pow_registration_path(Conn.t(), :new) :: binary()
+    def pow_registration_path(conn, :new) do
+      Controller.router_path(conn, RegistrationController, :new)
+    end
+  end
 end

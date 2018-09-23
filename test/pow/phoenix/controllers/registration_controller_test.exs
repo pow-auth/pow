@@ -14,6 +14,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<input class=\"form-control\" id=\"user_password\" name=\"user[password]\" type=\"password\">"
       assert html =~ "<label class=\"control-label\" for=\"user_confirm_password\">Confirm password</label>"
       assert html =~ "<input class=\"form-control\" id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
+      assert html =~ "<a href=\"/session/new\">Sign in</a>"
     end
 
     test "already signed in", %{conn: conn} do
