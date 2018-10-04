@@ -25,6 +25,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   """
   @behaviour Pow.Store.Base
 
+  use GenServer
   alias Pow.Config
 
   @mnesia_cache_tab __MODULE__
