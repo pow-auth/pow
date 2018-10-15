@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Pow.Install do
   """
   use Mix.Task
 
-  alias Mix.Pow
+  alias Mix.{Pow, Project}
   alias Mix.Tasks.Pow.{Ecto, Phoenix}
 
   @switches [context_app: :string, extension: :keep]
@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Pow.Install do
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.install")
+    no_umbrella!()
 
     args
     |> Pow.parse_options(@switches, @default_opts)
@@ -44,5 +44,11 @@ defmodule Mix.Tasks.Pow.Install do
     Phoenix.Install.run(args)
 
     config
+  end
+
+  defp no_umbrella! do
+    if Project.umbrella?() do
+      Mix.raise("mix pow.install can't be used in umbrella apps. Run mix pow.ecto.install in your ecto app directory, and mix pow.phoenix.install in your phoenix app directory.")
+    end
   end
 end
