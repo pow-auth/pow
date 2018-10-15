@@ -48,7 +48,7 @@ defmodule Pow.Phoenix.Router do
     quote location: :keep do
       scope "/", Pow.Phoenix, as: "pow" do
         resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
-        resources "/registration", RegistrationController, singleton: true, except: [:show]
+        resources "/registration", RegistrationController, singleton: true, only: [:new, :create, :edit, :update, :delete]
       end
     end
   end
