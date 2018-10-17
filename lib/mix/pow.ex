@@ -17,6 +17,44 @@ defmodule Mix.Pow do
   end
 
   @doc """
+  Raises an exception if the application doesn't have the dependency.
+  """
+  @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok | no_return
+  def ensure_dep!(task, dep, _args) do
+    fetch_config_deps()
+    |> dep_in_deps?(dep)
+    |> case do
+      true ->
+        :ok
+
+      false ->
+        Mix.raise("mix #{task} can only be run inside an application directory that has #{inspect dep} as dependency")
+    end
+  end
+
+  defp fetch_config_deps do
+    Keyword.get(Project.config(), :deps, [])
+  end
+
+  defp dep_in_deps?(deps, dep) do
+    Enum.any?(deps, fn
+      {^dep, _version} -> true
+      {^dep, _version, _opts} -> true
+      _any -> false
+    end)
+  end
+
+  @doc """
+  Raises an exception if application doesn't have Ecto as dependency.
+  """
+  def ensure_ecto!(task, args), do: ensure_dep!(task, :ecto, args)
+
+  @doc """
+  Raises an exception if application doesn't have Phoenix as dependency.
+  """
+  def ensure_phoenix!(task, args), do: ensure_dep!(task, :phoenix, args)
+
+  @doc """
   Parses argument options into a map.
   """
   @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: {map(), OptionParser.argv(), OptionParser.errors()}

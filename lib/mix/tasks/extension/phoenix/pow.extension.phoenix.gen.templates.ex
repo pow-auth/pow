@@ -25,10 +25,12 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
 
   @switches [context_app: :string, extension: :keep]
   @default_opts []
+  @mix_task "pow.extension.phoenix.gen.templates"
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.extension.phoenix.gen.templates")
+    Pow.no_umbrella!(@mix_task)
+    Pow.ensure_phoenix!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)
