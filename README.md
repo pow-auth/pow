@@ -31,6 +31,8 @@ Run `mix deps.get` to install it.
 
 ## Getting started (Phoenix)
 
+**Umbrella project:** In an umbrella project run `mix pow.ecto.install` inside your Ecto app instead of `mix pow.install`, and then continue with updating `config.ex`, `endpoint.ex` and `router.ex` inside your Phoenix app.
+
 Install the necessary files:
 
 ```bash
