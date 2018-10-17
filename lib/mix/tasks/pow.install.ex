@@ -48,7 +48,9 @@ defmodule Mix.Tasks.Pow.Install do
 
   defp no_umbrella! do
     if Project.umbrella?() do
-      Mix.raise("mix pow.install can't be used in umbrella apps. Run mix pow.ecto.install in your ecto app directory, and mix pow.phoenix.install in your phoenix app directory.")
+      Mix.raise("mix pow.install can't be used in umbrella apps. Run mix pow.ecto.install in your ecto app directory, and optionally mix pow.phoenix.install in your phoenix app directory.")
     end
+
+    :ok
   end
 end
