@@ -64,6 +64,9 @@ defmodule Pow.Phoenix.Controller do
       end
 
       defoverridable messages: 1, routes: 1
+
+      # TODO: Remove by 1.0.0
+      import unquote(__MODULE__), only: [router_helpers: 1]
     end
   end
 
