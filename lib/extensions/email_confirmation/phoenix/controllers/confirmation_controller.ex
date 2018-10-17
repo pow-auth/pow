@@ -4,8 +4,8 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
     messages_backend_fallback: PowEmailConfirmation.Phoenix.Messages
 
   alias Plug.Conn
-  alias PowEmailConfirmation.Plug
   alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
+  alias PowEmailConfirmation.Plug
 
   @spec process_show(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
   def process_show(conn, %{"id" => token}), do: Plug.confirm_email(conn, token)

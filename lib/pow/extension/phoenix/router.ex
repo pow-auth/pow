@@ -54,7 +54,7 @@ defmodule Pow.Extension.Phoenix.Router do
       @config unquote(config)
       @routers Config.discover_modules(@config, ["Phoenix", "Router"])
 
-      def routes() do
+      def routes do
         for router <- @routers do
           quote do
             require unquote(router)

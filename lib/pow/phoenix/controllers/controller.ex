@@ -12,8 +12,9 @@ defmodule Pow.Phoenix.Controller do
       `Pow.Extension.Phoenix.ControllerCallbacks` for more.
   """
   alias Plug.Conn
-  alias Pow.{Config, Plug}
+  alias Pow.Config
   alias Pow.Phoenix.{Messages, PlugErrorHandler, Routes, ViewHelpers}
+  alias Pow.Plug
 
   @doc false
   defmacro __using__(config) do

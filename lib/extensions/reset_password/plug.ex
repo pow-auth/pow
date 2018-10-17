@@ -3,7 +3,7 @@ defmodule PowResetPassword.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Config, Store.Backend.EtsCache, Plug, UUID}
+  alias Pow.{Config, Plug, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
 
   @doc """
