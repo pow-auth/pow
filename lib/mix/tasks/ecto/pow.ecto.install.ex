@@ -28,10 +28,12 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
 
   @switches [migrations: :boolean, schema: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true]
+  @mix_task "pow.ecto.install"
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.ecto.install")
+    Pow.no_umbrella!(@mix_task)
+    Pow.ensure_ecto!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)

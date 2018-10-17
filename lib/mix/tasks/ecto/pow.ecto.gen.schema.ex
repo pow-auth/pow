@@ -15,10 +15,12 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
   @switches [context_app: :string, binary_id: :boolean]
   @default_opts [binary_id: false]
+  @mix_task "pow.ecto.gen.schema"
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.ecto.gen.schema")
+    Pow.no_umbrella!(@mix_task)
+    Pow.ensure_ecto!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)

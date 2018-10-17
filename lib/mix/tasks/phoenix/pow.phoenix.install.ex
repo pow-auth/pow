@@ -22,10 +22,12 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
   @switches [context_app: :string, migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true, templates: false]
+  @mix_task "pow.phoenix.install"
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.phoenix.install")
+    Pow.no_umbrella!(@mix_task)
+    Pow.ensure_phoenix!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)

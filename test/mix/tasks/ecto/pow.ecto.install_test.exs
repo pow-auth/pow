@@ -58,4 +58,24 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
       assert two =~ "_add_pow_email_confirmation_to_users.exs"
     end)
   end
+
+  test "raises error in app with no ecto dep" do
+    File.cd!(@tmp_path, fn ->
+      File.write!("mix.exs", """
+      defmodule MyApp.MixProject do
+        use Mix.Project
+
+        def project do
+          []
+        end
+      end
+      """)
+
+      Mix.Project.in_project(:my_app, ".", fn _ ->
+        assert_raise Mix.Error, "mix pow.ecto.install can only be run inside an application directory that has :ecto as dependency", fn ->
+          Install.run([])
+        end
+      end)
+    end)
+  end
 end

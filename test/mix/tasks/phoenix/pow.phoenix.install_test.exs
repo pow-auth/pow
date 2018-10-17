@@ -74,4 +74,24 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       assert msg =~ "plug Pow.Plug.Session, otp_app: :test"
     end)
   end
+
+  test "raises error in app with no phoenix dep" do
+    File.cd!(@tmp_path, fn ->
+      File.write!("mix.exs", """
+      defmodule MyApp.MixProject do
+        use Mix.Project
+
+        def project do
+          []
+        end
+      end
+      """)
+
+      Mix.Project.in_project(:my_app, ".", fn _ ->
+        assert_raise Mix.Error, "mix pow.phoenix.install can only be run inside an application directory that has :phoenix as dependency", fn ->
+          Install.run([])
+        end
+      end)
+    end)
+  end
 end

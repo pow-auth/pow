@@ -25,10 +25,12 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
 
   @switches [binary_id: :boolean, extension: :keep]
   @default_opts [binary_id: false]
+  @mix_task "pow.extension.ecto.gen.migrations"
 
   @doc false
   def run(args) do
-    Pow.no_umbrella!("pow.extension.ecto.gen.migrations")
+    Pow.no_umbrella!(@mix_task)
+    Pow.ensure_ecto!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)
