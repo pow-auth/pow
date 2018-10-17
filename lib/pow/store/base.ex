@@ -15,6 +15,7 @@ defmodule Pow.Store.Base do
   @callback put(Config.t(), binary(), any()) :: :ok
   @callback delete(Config.t(), binary()) :: :ok
   @callback get(Config.t(), binary()) :: any() | :not_found
+  @callback keys(Config.t()) :: [any()]
 
   @doc false
   defmacro __using__(defaults) do
@@ -32,6 +33,10 @@ defmodule Pow.Store.Base do
       @spec get(Config.t(), binary()) :: any() | :not_found
       def get(config, key),
         do: unquote(__MODULE__).get(config, backend_config(config), key)
+
+      @spec keys(Config.t()) :: [any()]
+      def keys(config),
+        do: unquote(__MODULE__).keys(config, backend_config(config))
 
       defp backend_config(config) do
         [
@@ -60,6 +65,12 @@ defmodule Pow.Store.Base do
   @spec get(Config.t(), Config.t(), binary()) :: any() | :not_found
   def get(config, backend_config, key) do
     store(config).get(backend_config, key)
+  end
+
+  @doc false
+  @spec keys(Config.t(), Config.t()) :: [any()]
+  def keys(config, backend_config) do
+    store(config).keys(backend_config)
   end
 
   defp store(config) do
