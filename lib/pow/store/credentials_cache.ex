@@ -17,6 +17,20 @@ defmodule Pow.Store.CredentialsCache do
     namespace: "credentials"
 
   @doc """
+  List all user session keys stored for a certain user struct.
+
+  Each user session key can be used to look up all sessions for that user.
+  """
+  @spec user_session_keys(Config.t(), Config.t(), module()) :: [any()]
+  def user_session_keys(config, backend_config, struct) do
+    namespace = "#{Macro.underscore(struct)}_sessions_"
+
+    config
+    |> Base.keys(backend_config)
+    |> Enum.filter(&String.starts_with?(&1, namespace))
+  end
+
+  @doc """
   List all existing sessions for the user fetched from the backend store.
   """
   @spec sessions(Config.t(), Config.t(), map()) :: [binary()]

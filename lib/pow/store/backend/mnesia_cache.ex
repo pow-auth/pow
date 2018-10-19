@@ -50,6 +50,13 @@ defmodule Pow.Store.Backend.MnesiaCache do
     table_get(config, key)
   end
 
+  @spec keys(Config.t()) :: [any()]
+  def keys(config) do
+    table_keys(config)
+  end
+
+  # Callbacks
+
   @spec init(Config.t()) :: {:ok, map()}
   def init(config) do
     table_init(config)
@@ -129,6 +136,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end)
   end
 
+  defp table_keys(config) do
+    namespace = mnesia_key(config, "")
+
+    @mnesia_cache_tab
+    |> :mnesia.dirty_all_keys()
+    |> Enum.filter(&String.starts_with?(&1, namespace))
+  end
+
   defp table_init(config) do
     nodes      = Config.get(config, :nodes, [node()])
     table_opts = Config.get(config, :table_opts, disc_copies: nodes)
@@ -161,8 +176,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp init_invalidators(config) do
-    @mnesia_cache_tab
-    |> :mnesia.dirty_all_keys()
+    config
+    |> table_keys()
     |> Enum.map(&init_invalidator(config, &1))
     |> Enum.reject(&is_nil/1)
     |> Enum.into(%{})

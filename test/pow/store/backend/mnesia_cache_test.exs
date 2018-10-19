@@ -33,6 +33,14 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     assert MnesiaCache.get(@default_config, "key") == :not_found
   end
 
+  test "fetch keys" do
+    MnesiaCache.put(@default_config, "key1", "value")
+    MnesiaCache.put(@default_config, "key2", "value")
+    :timer.sleep(100)
+
+    assert MnesiaCache.keys(@default_config) == ["pow:test:key1", "pow:test:key2"]
+  end
+
   test "records auto purge with persistent storage", %{pid: pid} do
     config = Config.put(@default_config, :ttl, 100)
 

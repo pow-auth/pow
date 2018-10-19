@@ -41,6 +41,11 @@ defmodule Pow.Store.Backend.EtsCache do
     table_get(config, key)
   end
 
+  @spec keys(Config.t()) :: [any()]
+  def keys(config) do
+    table_keys(config)
+  end
+
   # Callbacks
 
   @spec init(Config.t()) :: {:ok, map()}
@@ -115,6 +120,19 @@ defmodule Pow.Store.Backend.EtsCache do
 
   defp table_init do
     :ets.new(@ets_cache_tab, [:set, :protected, :named_table])
+  end
+
+  defp table_keys(config) do
+    namespace = ets_key(config, "")
+    keys      =
+      Stream.resource(
+        fn -> :ets.first(@ets_cache_tab) end,
+        fn :"$end_of_table" -> {:halt, nil}
+          previous_key -> {[previous_key], :ets.next(@ets_cache_tab, previous_key)} end,
+        fn _ -> :ok
+      end)
+
+    Enum.filter(keys, &String.starts_with?(&1, namespace))
   end
 
   defp ets_key(config, key) do
