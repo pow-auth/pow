@@ -67,7 +67,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
         %User{}
         |> User.changeset(@valid_params)
         |> Repo.insert()
-      assert changeset.errors[:email] == {"has already been taken", []}
+      assert changeset.errors[:email] == {"has already been taken", [constraint: :unique, constraint_name: "users_email_index"]}
 
       {:ok, _user} =
         %UsernameUser{}
@@ -78,7 +78,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
         %UsernameUser{}
         |> UsernameUser.changeset(@valid_params_username)
         |> Repo.insert()
-      assert changeset.errors[:username] == {"has already been taken", []}
+      assert changeset.errors[:username] == {"has already been taken", [constraint: :unique, constraint_name: "users_username_index"]}
     end
 
     test "requires password when no password_hash is nil" do
@@ -100,11 +100,11 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..9)))
 
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, min: 10]}
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, kind: :min]}
 
       changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..4096)))
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 4096, validation: :length, max: 4096]}
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 4096, validation: :length, kind: :max]}
     end
 
     test "can use custom length requirements for password" do
@@ -112,11 +112,11 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
       changeset = Changeset.password_changeset(%User{}, %{"password" => "abcd"}, config)
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 5, validation: :length, min: 5]}
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 5, validation: :length, kind: :min]}
 
       changeset = Changeset.password_changeset(%User{}, %{"password" => "abcdefghijk"}, config)
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 10, validation: :length, max: 10]}
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max]}
     end
 
     test "can confirm and hash password" do

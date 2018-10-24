@@ -3,6 +3,14 @@ Logger.configure(level: :warn)
 
 ExUnit.start()
 
+# Ensure that symlink to custom ecto priv directory exists
+source = Pow.Test.Ecto.Repo.config()[:priv]
+target = Application.app_dir(:pow, source)
+File.rm_rf(target)
+File.mkdir_p(target)
+File.rmdir(target)
+:ok = :file.make_symlink(Path.expand(source), target)
+
 Mix.Task.run("ecto.drop", ~w(--quiet -r Pow.Test.Ecto.Repo))
 Mix.Task.run("ecto.create", ~w(--quiet -r Pow.Test.Ecto.Repo))
 Mix.Task.run("ecto.migrate", ~w(--quiet -r Pow.Test.Ecto.Repo))
