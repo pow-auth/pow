@@ -107,8 +107,7 @@ defmodule Mix.Pow do
   end
 
   defp otp_app do
-    Mix.Project.config()
-    |> Keyword.fetch!(:app)
+    Keyword.fetch!(Mix.Project.config(), :app)
   end
 
   @doc """
