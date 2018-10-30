@@ -81,6 +81,10 @@ defmodule Pow.MixProject do
           filename: "WhyPow",
           title: "Why use Pow?"
         ],
+        "guides/USER_ROLES.md": [
+          filename: "UserRoles",
+          title: "How to add user roles"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
