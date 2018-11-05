@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Pow let you add an easy way to register and manage sessions for your users. However sometimes you need more flexibility. For instance you may need to protect the registration process. Pow allow you to build those kind of apps. In this guide we'll see the extra steps needed to achieve this goal. The code exemple can be used as a starter pack. This guide was tested on a new phoenix 1.4-rc3 app. You'll need postgresql running and you need to make the adjustments to connect the db to the app. 
+Pow let you add an easy way to register and manage sessions for your users. However, sometimes you need more flexibility. For instance, you may need to protect the registration process. Pow allows you to build those kinds of apps. In this guide, we'll see the extra steps needed to achieve this goal. The code examples can be used as a starter pack. This guide was tested on a new Phoenix 1.4-rc3 app. You'll need PostgreSQL running and you need to make the adjustments to connect the db to the app. 
 
 ## First steps 
 
@@ -38,7 +38,7 @@ Install your deps
 mix deps.get
 ```
 
-If you don't have a user model your can easily run `mix pow.install` to get one. If you already have one verify that you had the equivalent of this migration: 
+If you don't have a user model you can easily run `mix pow.install` to get one. If you already have one verify that you had the equivalent of this migration: 
 
 ```
 defmodule MyApp.Repo.Migrations.CreateUsers do
@@ -66,7 +66,7 @@ config :my_app, :pow,
 ```
 Note that we're working with an `Accounts` context (this is optional). 
 
-Finaly we'll need to update our `my_app_web/endpoint.ex` to enable session based authentication:
+Finally we'll need to update our `my_app_web/endpoint.ex` to enable session based authentication:
 
 ```
 defmodule MyAppWeb.Endpoint do
@@ -138,11 +138,11 @@ Note that we've made a pipeline called `protected` which ensure that the routes 
 
 The other routes are the classic login/signup/logout. 
 
-Finaly we've scoped an admin section with a protected page for test purposes.
+Finally we've scoped an admin section with a protected page for test purposes.
 
 ### Add the controllers 
 
-As seen in the router we need an Registration and a Sessions controller. The names of the controller are not important, you can rename them as you want/need. 
+As seen in the router we need a Registration and a Sessions controller. The names of the controller are not important, you can rename them as you want/need. 
 
 `my_app_web/controllers/registration_controller.ex` will let us create our users.
 
@@ -226,7 +226,7 @@ defmodule MyAppWeb.SessionsController do
 end
 ```
 
-Finaly we need an error handler (we mentionned it in the router), we can't realy use the one given by Pow as we need to use our new controllers.
+Finally we need an error handler (we mentioned it in the router), we can't really use the one given by Pow as we need to use our new controllers.
 
 `my_app_web/controllers/auth_error_handler_controller.ex`
 
@@ -282,8 +282,8 @@ defmodule MyApp.Accounts.User do
 end
 ```
 
-The only important line is `|> pow_changeset(attrs)` this is where we're telling our app to use the fields requiered by Pow. 
-Note that I've add the `first_name` and `last_name` fields to test it, if you want to do the same you'll need a migration to add those. 
+The only important line is `|> pow_changeset(attrs)` this is where we're telling our app to use the fields required by Pow. 
+Note that we've added the `first_name` and `last_name` fields to test it, if you want to do the same you'll need a migration to add those. 
 
 
 ### Let's make some views and templates
@@ -333,6 +333,6 @@ Here are the snippets for the html templates you need. As the views are empty I'
 ## Conclusion
 
 That's all to start your custom pow powered app! You can run your server and test it. 
-Don't forget to create your private page (mentionned in the routes). 
+Don't forget to create your private page (mentioned in the routes). 
 
 Remember that Pow allows you to leverage the power of its plugs. I strongly encourage you to read their documentation. That's the only things you'll need to customize the registration/session part of your app with pow!  
