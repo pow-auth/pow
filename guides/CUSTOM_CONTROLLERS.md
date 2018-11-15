@@ -1,17 +1,17 @@
-# Custom session an registration on top of Pow
+# Custom controllers
 
 ## Introduction
 
-Pow let you add an easy way to register and manage sessions for your users. However, sometimes you need more flexibility. For instance, you may need to protect the registration process. Pow allows you to build those kinds of apps. In this guide, we'll see the extra steps needed to achieve this goal. The code examples can be used as a starter pack. This guide was tested on a new Phoenix 1.4-rc3 app. You'll need PostgreSQL running and you need to make the adjustments to connect the db to the app. 
+Pow let you add an easy way to register and manage sessions for your users. However, sometimes you need more flexibility. For instance, you may need to protect the registration process. Pow allows you to build those kinds of apps. In this guide, we'll see the extra steps needed to achieve this goal. The code examples can be used as a starter pack. This guide was tested on a new Phoenix 1.4-rc3 app. You'll need PostgreSQL running and you need to make the adjustments to connect the db to the app.
 
-## First steps 
+## First steps
 
 We need a new app
 ```
 mix phx.new my_app
 ```
 
-Let's add pow as a dependency, we'll use the phoenix-1.4 branch as phoenix 1.4 is still in rc.  
+Let's add pow as a dependency, we'll use the phoenix-1.4 branch as phoenix 1.4 is still in rc.
 
 ```
 defp deps do
@@ -38,7 +38,7 @@ Install your deps
 mix deps.get
 ```
 
-If you don't have a user model you can easily run `mix pow.install` to get one. If you already have one verify that you had the equivalent of this migration: 
+If you don't have a user model you can easily run `mix pow.install` to get one. If you already have one verify that you had the equivalent of this migration:
 
 ```
 defmodule MyApp.Repo.Migrations.CreateUsers do
@@ -57,14 +57,14 @@ defmodule MyApp.Repo.Migrations.CreateUsers do
 end
 ```
 
-Change your config (`config/config.exs`) according to the pow first steps guide: 
+Change your config (`config/config.exs`) according to the pow first steps guide:
 
 ```
 config :my_app, :pow,
   user: MyApp.Accounts.User,
   repo: MyApp.Repo
 ```
-Note that we're working with an `Accounts` context (this is optional). 
+Note that we're working with an `Accounts` context (this is optional).
 
 Finally we'll need to update our `my_app_web/endpoint.ex` to enable session based authentication:
 
@@ -87,14 +87,14 @@ end
 
 ## Start your customization process
 
-### let's add some routes for our app 
+### let's add some routes for our app
 
-This will help us to get an overview of our app: 
+This will help us to get an overview of our app:
 
 ```
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
-  
+
   # Not needed as we're making our routes
   # use Pow.Phoenix.Router
 
@@ -134,15 +134,15 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-Note that we've made a pipeline called `protected` which ensure that the routes using it require the users to be authenticated first. 
+Note that we've made a pipeline called `protected` which ensure that the routes using it require the users to be authenticated first.
 
-The other routes are the classic login/signup/logout. 
+The other routes are the classic login/signup/logout.
 
 Finally we've scoped an admin section with a protected page for test purposes.
 
-### Add the controllers 
+### Add the controllers
 
-As seen in the router we need a Registration and a Sessions controller. The names of the controller are not important, you can rename them as you want/need. 
+As seen in the router we need a Registration and a Sessions controller. The names of the controller are not important, you can rename them as you want/need.
 
 `my_app_web/controllers/registration_controller.ex` will let us create our users.
 
@@ -152,7 +152,7 @@ defmodule MyAppWeb.RegistrationController do
   alias MyApp.Accounts
 
   def new(conn, _params) do
-    # you can use a classic phoenix way of doing things if you want 
+    # you can use a classic phoenix way of doing things if you want
     # changeset = Accounts.User.custom_changeset(%Accounts.User{}, %{})
 
     # We'll leveraged the plug given by pow for now
@@ -167,7 +167,7 @@ defmodule MyAppWeb.RegistrationController do
     # new_user = %Accounts.User{}
     # |> Accounts.User.custom_changeset(user_params)
     # |> MyApp.Repo.insert()
-    
+
     new_user = Pow.Plug.create_user(conn, user_params)
 
     case new_user do
@@ -186,7 +186,7 @@ defmodule MyAppWeb.RegistrationController do
 end
 ```
 
-As you see we let `Pow.Plug` doing the hard work and wait for a response to continue. 
+As you see we let `Pow.Plug` doing the hard work and wait for a response to continue.
 
 We'll do the same in our `my_app_web/controllers/sessions_controller.ex`
 
@@ -208,7 +208,7 @@ defmodule MyAppWeb.SessionsController do
         conn
         |> put_flash(:info, "welcome back")
         |> redirect(to: Routes.page_path(conn, :you_should_be_logged_to_see_this))
-      
+
       {:error, conn} ->
         changeset = Pow.Plug.change_user(conn, conn.params["user"])
         conn
@@ -241,7 +241,7 @@ defmodule MyAppWeb.AuthErrorHandlerController do
     |> put_flash(:error, "This is a private area your should log first")
     |> redirect(to: Routes.login_path(conn, :new))
   end
-end  
+end
 ```
 
 We just override the function `call(conn, :not_authenticated)` to redirect to our login page with a flash message. We should do the same for the function `call(conn, :already_authenticated)`.
@@ -271,7 +271,7 @@ defmodule MyApp.Accounts.User do
     |> validate_required([:first_name, :last_name])
   end
 
-  # similar to the changeset above, we just want to underline 
+  # similar to the changeset above, we just want to underline
   # the fact that you can work with your custom changesets if needed.
   def custom_changeset(user, attrs) do
     user
@@ -282,13 +282,13 @@ defmodule MyApp.Accounts.User do
 end
 ```
 
-The only important line is `|> pow_changeset(attrs)` this is where we're telling our app to use the fields required by Pow. 
-Note that we've added the `first_name` and `last_name` fields to test it, if you want to do the same you'll need a migration to add those. 
+The only important line is `|> pow_changeset(attrs)` this is where we're telling our app to use the fields required by Pow.
+Note that we've added the `first_name` and `last_name` fields to test it, if you want to do the same you'll need a migration to add those.
 
 
 ### Let's make some views and templates
 
-Here are the snippets for the html templates you need. As the views are empty I'm not pasting them here. 
+Here are the snippets for the html templates you need. As the views are empty I'm not pasting them here.
 
 `my_app_web/templates/registration/new.html.eex`
 
@@ -297,7 +297,7 @@ Here are the snippets for the html templates you need. As the views are empty I'
   <%= label f, :first_name, "First name" %>
   <%= text_input f, :first_name %>
   <%= error_tag f, :first_name %>
-  
+
   <%= label f, :last_name, "Last name" %>
   <%= text_input f, :last_name %>
   <%= error_tag f, :last_name %>
@@ -332,7 +332,7 @@ Here are the snippets for the html templates you need. As the views are empty I'
 
 ## Conclusion
 
-That's all to start your custom pow powered app! You can run your server and test it. 
-Don't forget to create your private page (mentioned in the routes). 
+That's all to start your custom pow powered app! You can run your server and test it.
+Don't forget to create your private page (mentioned in the routes).
 
-Remember that Pow allows you to leverage the power of its plugs. I strongly encourage you to read their documentation. That's the only things you'll need to customize the registration/session part of your app with pow!  
+Remember that Pow allows you to leverage the power of its plugs. I strongly encourage you to read their documentation. That's the only things you'll need to customize the registration/session part of your app with pow!
