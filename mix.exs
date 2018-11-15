@@ -88,6 +88,10 @@ defmodule Pow.MixProject do
           filename: "UserRoles",
           title: "How to add user roles"
         ],
+        "guides/CUSTOM_CONTROLLERS.md": [
+          filename: "CustomControllers",
+          title: "Custom controllers"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
