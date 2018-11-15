@@ -1,6 +1,6 @@
 # Custom controllers
 
-Pow allows you to create your own controllers leveraging the underlying Pow logic. This is ideal for cases where you need to control the flow, e.g. protect the registration process in a certain way.
+Pow makes it easy to use custom controllers leveraging the underlying Pow logic. It is ideal for cases where you need to control the flow, e.g., protect the registration process in a certain way.
 
 First you should follow the [Getting Started](../README.md#getting-started-phoenix) section in README until before the `router.ex` modification.
 
@@ -66,7 +66,7 @@ defmodule MyAppWeb.AuthErrorHandler do
 end
 ```
 
-This will make sure that users who are not authenticated can't log out, and users who are already authenticated can't sign in again.
+This module will make sure that unauthenticated user can't log out, and authenticated users can't sign in again.
 
 ### Controllers
 
