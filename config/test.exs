@@ -5,7 +5,6 @@ config :pow, Pow.Test.Phoenix.Endpoint,
   render_errors: [view: Pow.Test.Phoenix.ErrorView, accepts: ~w(html json)]
 
 config :pow, Pow.Test.Ecto.Repo,
-  adapter: Ecto.Adapters.Postgres,
   database: "pow_test",
   pool: Ecto.Adapters.SQL.Sandbox,
   priv: "test/support/ecto/priv"
