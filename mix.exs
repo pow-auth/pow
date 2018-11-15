@@ -36,7 +36,7 @@ defmodule Pow.MixProject do
   defp deps do
     [
       {:ecto, "~> 2.2 or ~> 3.0"},
-      {:phoenix, "~> 1.3.0"},
+      {:phoenix, "~> 1.3.0 or ~> 1.4.0"},
       {:phoenix_html, ">= 2.0.0 and <= 3.0.0"},
       {:plug, ">= 1.5.0 and < 1.8.0", optional: true},
 
@@ -46,6 +46,8 @@ defmodule Pow.MixProject do
       {:ex_doc, "~> 0.19.0", only: :dev},
 
       {:ecto_sql, "~> 3.0.0", only: [:test]},
+      {:plug_cowboy, "~> 2.0", only: [:test]},
+      {:jason, "~> 1.0", only: [:test]},
       {:postgrex, "~> 0.14.0", only: [:test]}
     ]
   end
