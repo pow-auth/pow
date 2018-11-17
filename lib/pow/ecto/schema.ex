@@ -182,4 +182,28 @@ defmodule Pow.Ecto.Schema do
   def filter_new_fields(fields, existing_fields) when is_list(fields) do
     Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
   end
+
+  @doc false
+  def __timestamp_for__(struct, column) do
+    type = struct.__schema__(:type, column)
+
+    __timestamp__(type)
+  end
+
+  @doc false
+  def __timestamp__(:naive_datetime) do
+    %{NaiveDateTime.utc_now() | microsecond: {0, 0}}
+  end
+  def __timestamp__(:naive_datetime_usec) do
+    NaiveDateTime.utc_now()
+  end
+  def __timestamp__(:utc_datetime) do
+    DateTime.from_unix!(System.system_time(:second), :second)
+  end
+  def __timestamp__(:utc_datetime_usec) do
+    DateTime.from_unix!(System.system_time(:microsecond), :microsecond)
+  end
+  def __timestamp__(type) do
+    type.from_unix!(System.system_time(:microsecond), :microsecond)
+  end
 end

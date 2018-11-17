@@ -47,8 +47,8 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   defp maybe_confirm_email(changeset), do: changeset
 
   defp confirm_email(changeset) do
-    changes   = [
-      email_confirmed_at: DateTime.utc_now(),
+    changes = [
+      email_confirmed_at: Pow.Ecto.Schema.__timestamp_for__(changeset.data.__struct__, :email_confirmed_at),
       email: changeset.data.unconfirmed_email || changeset.data.email,
       unconfirmed_email: nil]
 
