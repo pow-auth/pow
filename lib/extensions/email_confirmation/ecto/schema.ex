@@ -48,7 +48,7 @@ defmodule PowEmailConfirmation.Ecto.Schema do
 
   defp confirm_email(changeset) do
     changes   = [
-      email_confirmed_at: DateTime.utc_now(),
+      email_confirmed_at: DateTime.truncate(DateTime.utc_now(), :second),
       email: changeset.data.unconfirmed_email || changeset.data.email,
       unconfirmed_email: nil]
 
