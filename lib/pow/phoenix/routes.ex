@@ -12,6 +12,19 @@ defmodule Pow.Phoenix.Routes do
       end
 
     Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
+
+    You can also customize path generation:
+
+      defmodule MyAppWeb.Pow.Routes do
+        use Pow.Phoenix.Routes
+        alias MyAppWeb.Router.Helpers, as: Routes
+
+        def url_for(conn, verb, vars \\ [], query_params \\ [])
+        def url_for(conn, PowEmailConfirmation.Phoenix.ConfirmationController, :show, [token], _query_params),
+          do: Routes.custom_confirmation_url(conn, :new, token)
+        def url_for(conn, plug, verb, vars, query_params),
+          do: Pow.Phoenix.Routes.url_for(conn, plug, verb, vars, query_params)
+      end
   """
   alias Plug.Conn
   alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
@@ -23,6 +36,10 @@ defmodule Pow.Phoenix.Routes do
   @callback after_registration_path(Conn.t()) :: binary()
   @callback after_user_updated_path(Conn.t()) :: binary()
   @callback after_user_deleted_path(Conn.t()) :: binary()
+  @callback session_path(Conn.t(), atom(), list()) :: binary()
+  @callback registration_path(Conn.t(), atom()) :: binary()
+  @callback path_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  @callback url_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
 
   defmacro __using__(_opts) do
     quote do
@@ -49,6 +66,18 @@ defmodule Pow.Phoenix.Routes do
       def after_user_deleted_path(conn),
         do: unquote(__MODULE__).after_user_deleted_path(conn)
 
+      def session_path(conn, verb, query_params \\ []),
+        do: unquote(__MODULE__).session_path(conn, verb, query_params)
+
+      def registration_path(conn, verb),
+        do: unquote(__MODULE__).registration_path(conn, verb)
+
+      def path_for(conn, plug, verb, vars \\ [], query_params \\ []),
+        do: unquote(__MODULE__).path_for(conn, plug, verb, vars, query_params)
+
+      def url_for(conn, plug, verb, vars \\ [], query_params \\ []),
+        do: unquote(__MODULE__).url_for(conn, plug, verb, vars, query_params)
+
       defoverridable unquote(__MODULE__)
     end
   end
@@ -63,7 +92,7 @@ defmodule Pow.Phoenix.Routes do
   See `Pow.Phoenix.SessionController` for more on how this value is handled.
   """
   def user_not_authenticated_path(conn) do
-    Controller.router_path(conn, SessionController, :new, [], request_path: Phoenix.Controller.current_path(conn))
+    session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
   end
 
   @doc """
@@ -76,9 +105,7 @@ defmodule Pow.Phoenix.Routes do
   @doc """
   Path to redirect user to when user has signed out.
   """
-  def after_sign_out_path(conn) do
-    Controller.router_path(conn, SessionController, :new)
-  end
+  def after_sign_out_path(conn), do: session_path(conn, :new)
 
   @doc """
   Path to redirect user to when user has signed in.
@@ -101,9 +128,7 @@ defmodule Pow.Phoenix.Routes do
   @doc """
   Path to redirect user to when user has updated their account.
   """
-  def after_user_updated_path(conn) do
-    Controller.router_path(conn, RegistrationController, :edit)
-  end
+  def after_user_updated_path(conn), do: registration_path(conn, :edit)
 
   @doc """
   Path to redirect user to when user has deleted their account.
@@ -111,6 +136,37 @@ defmodule Pow.Phoenix.Routes do
   By default this is the same as `after_sign_out_path/1`.
   """
   def after_user_deleted_path(conn), do: routes(conn).after_sign_out_path(conn)
+
+  @doc false
+  def session_path(conn, verb, query_params \\ []), do: path_for(conn, SessionController, verb, [], query_params)
+
+  @doc false
+  def registration_path(conn, verb), do: path_for(conn, RegistrationController, verb)
+
+  @doc """
+  Generates a path route.
+  """
+  @spec path_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def path_for(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:path, conn, plug, verb, vars, query_params)
+  end
+
+  @doc """
+  Generates a url route.
+  """
+  @spec url_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def url_for(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:url, conn, plug, verb, vars, query_params)
+  end
+
+  defp gen_route(type, conn, plug, verb, vars, query_params) do
+    alias  = Controller.route_helper(plug)
+    helper = :"#{alias}_#{type}"
+    router = Module.concat([conn.private.phoenix_router, Helpers])
+    args   = [conn, verb] ++ vars ++ [query_params]
+
+    apply(router, helper, args)
+  end
 
   defp routes(conn), do: Controller.routes(conn, __MODULE__)
 end
