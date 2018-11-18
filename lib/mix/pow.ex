@@ -2,7 +2,7 @@ defmodule Mix.Pow do
   @moduledoc """
   Utilities module for mix tasks.
   """
-  alias Mix.Project
+  alias Mix.{Dep, Project}
 
   @doc """
   Raises an exception if the project is an umbrella app.
@@ -21,7 +21,7 @@ defmodule Mix.Pow do
   """
   @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok | no_return
   def ensure_dep!(task, dep, _args) do
-    fetch_config_deps()
+    fetch_deps()
     |> dep_in_deps?(dep)
     |> case do
       true ->
@@ -32,14 +32,19 @@ defmodule Mix.Pow do
     end
   end
 
-  defp fetch_config_deps do
-    Keyword.get(Project.config(), :deps, [])
+  # TODO: Remove by 1.1.0 and only support Elixir 1.7
+  defp fetch_deps do
+    System.version()
+    |> Version.match?("~> 1.6.0")
+    |> case do
+      true  -> apply(Dep, :loaded, [[]])
+      false -> apply(Dep, :load_on_environment, [[]])
+    end
   end
 
   defp dep_in_deps?(deps, dep) do
     Enum.any?(deps, fn
-      {^dep, _version} -> true
-      {^dep, _version, _opts} -> true
+      %Mix.Dep{app: ^dep} -> true
       _any -> false
     end)
   end
