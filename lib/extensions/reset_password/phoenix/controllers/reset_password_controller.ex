@@ -4,7 +4,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     messages_backend_fallback: PowResetPassword.Phoenix.Messages
 
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, SessionController}
+  alias Pow.Phoenix.SessionController
   alias PowResetPassword.{Phoenix.Mailer, Plug}
 
   plug :require_not_authenticated
@@ -31,7 +31,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_create({:ok, %{token: token, user: user}, conn}) do
-    url = Controller.router_url(conn, __MODULE__, :edit, [token])
+    url = routes(conn).router_url(conn, __MODULE__, :edit, [token])
     deliver_email(conn, user, url)
 
     default_respond_create(conn)
@@ -41,7 +41,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   defp default_respond_create(conn) do
     conn
     |> put_flash(:info, messages(conn).email_has_been_sent(conn))
-    |> redirect(to: Controller.router_path(conn, SessionController, :new))
+    |> redirect(to: routes(conn).router_path(conn, SessionController, :new))
   end
 
   @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}
@@ -65,7 +65,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   def respond_update({:ok, _user, conn}) do
     conn
     |> put_flash(:info, messages(conn).password_has_been_reset(conn))
-    |> redirect(to: Controller.router_path(conn, SessionController, :new))
+    |> redirect(to: routes(conn).router_path(conn, SessionController, :new))
   end
   def respond_update({:error, changeset, conn}) do
     conn
@@ -78,7 +78,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
       nil ->
         conn
         |> put_flash(:error, messages(conn).invalid_token(conn))
-        |> redirect(to: Controller.router_path(conn, __MODULE__, :new))
+        |> redirect(to: routes(conn).router_path(conn, __MODULE__, :new))
         |> halt()
 
       user ->
@@ -93,13 +93,13 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   end
 
   defp assign_create_path(conn, _opts) do
-    path = Controller.router_path(conn, __MODULE__, :create)
+    path = routes(conn).router_path(conn, __MODULE__, :create)
     Conn.assign(conn, :action, path)
   end
 
   defp assign_update_path(conn, _opts) do
     token = conn.params["id"]
-    path  = Controller.router_path(conn, __MODULE__, :update, [token])
+    path  = routes(conn).router_path(conn, __MODULE__, :update, [token])
     Conn.assign(conn, :action, path)
   end
 end

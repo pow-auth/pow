@@ -135,30 +135,6 @@ defmodule Pow.Phoenix.Controller do
     Module.concat([private.phoenix_router, Helpers])
   end
 
-  @doc """
-  Generates a path route.
-  """
-  @spec router_path(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
-  def router_path(conn, plug, verb, vars \\ [], query_params \\ []) do
-    gen_route(:path, conn, plug, verb, vars, query_params)
-  end
-
-  @doc """
-  Generates a url route.
-  """
-  @spec router_url(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
-  def router_url(conn, plug, verb, vars \\ [], query_params \\ []) do
-    gen_route(:url, conn, plug, verb, vars, query_params)
-  end
-
-  defp gen_route(type, conn, plug, verb, vars, query_params) do
-    helper = :"#{route_helper(plug)}_#{type}"
-    router = Module.concat([conn.private.phoenix_router, Helpers])
-    args   = [conn, verb] ++ vars ++ [query_params]
-
-    apply(router, helper, args)
-  end
-
   @spec route_helper(atom()) :: binary()
   def route_helper(plug) do
     as             = Phoenix.Naming.resource_name(plug, "Controller")

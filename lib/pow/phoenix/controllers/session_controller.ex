@@ -8,7 +8,7 @@ defmodule Pow.Phoenix.SessionController do
   use Pow.Phoenix.Controller
 
   alias Plug.Conn
-  alias Pow.{Phoenix.Controller, Plug}
+  alias Pow.Plug
 
   plug :require_not_authenticated when action in [:new, :create]
   plug :require_authenticated when action in [:delete]
@@ -74,6 +74,6 @@ defmodule Pow.Phoenix.SessionController do
     create_path(conn, request_path: request_path)
   end
   defp create_path(conn, query_params \\ []) do
-    Controller.router_path(conn, __MODULE__, :create, [], query_params)
+    routes(conn).router_path(conn, __MODULE__, :create, [], query_params)
   end
 end

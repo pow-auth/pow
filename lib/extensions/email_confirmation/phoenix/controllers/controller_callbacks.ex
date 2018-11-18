@@ -3,7 +3,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
   alias Plug.Conn
-  alias Pow.{Phoenix.Controller, Phoenix.SessionController, Plug}
+  alias Pow.{Phoenix.SessionController, Plug}
   alias PowEmailConfirmation.Phoenix.{ConfirmationController, Mailer}
 
   def before_process(Pow.Phoenix.RegistrationController, :update, conn, _config) do
@@ -40,7 +40,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     error       = ConfirmationController.messages(conn).email_confirmation_required(conn)
-    path        = Controller.router_path(conn, SessionController, :new)
+    path        = ConfirmationController.routes(conn).router_path(conn, SessionController, :new)
     conn        =
       conn
       |> Phoenix.Controller.put_flash(:error, error)
@@ -53,7 +53,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do
     token = user.email_confirmation_token
-    url   = Controller.router_url(conn, ConfirmationController, :show, [token])
+    url   = ConfirmationController.routes(conn).router_url(conn, ConfirmationController, :show, [token])
     email = Mailer.email_confirmation(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)

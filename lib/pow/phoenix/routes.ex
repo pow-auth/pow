@@ -49,6 +49,12 @@ defmodule Pow.Phoenix.Routes do
       def after_user_deleted_path(conn),
         do: unquote(__MODULE__).after_user_deleted_path(conn)
 
+      def router_path(conn, plug, verb, vars \\ [], query_params \\ []),
+        do: unquote(__MODULE__).router_path(conn, plug, verb, vars, query_params)
+
+      def router_url(conn, plug, verb, vars \\ [], query_params \\ []),
+        do: unquote(__MODULE__).router_url(conn, plug, verb, vars, query_params)
+
       defoverridable unquote(__MODULE__)
     end
   end
@@ -63,7 +69,7 @@ defmodule Pow.Phoenix.Routes do
   See `Pow.Phoenix.SessionController` for more on how this value is handled.
   """
   def user_not_authenticated_path(conn) do
-    Controller.router_path(conn, SessionController, :new, [], request_path: Phoenix.Controller.current_path(conn))
+    router_path(conn, SessionController, :new, [], request_path: Phoenix.Controller.current_path(conn))
   end
 
   @doc """
@@ -77,7 +83,7 @@ defmodule Pow.Phoenix.Routes do
   Path to redirect user to when user has signed out.
   """
   def after_sign_out_path(conn) do
-    Controller.router_path(conn, SessionController, :new)
+    router_path(conn, SessionController, :new)
   end
 
   @doc """
@@ -102,7 +108,7 @@ defmodule Pow.Phoenix.Routes do
   Path to redirect user to when user has updated their account.
   """
   def after_user_updated_path(conn) do
-    Controller.router_path(conn, RegistrationController, :edit)
+    router_path(conn, RegistrationController, :edit)
   end
 
   @doc """
@@ -111,6 +117,31 @@ defmodule Pow.Phoenix.Routes do
   By default this is the same as `after_sign_out_path/1`.
   """
   def after_user_deleted_path(conn), do: routes(conn).after_sign_out_path(conn)
+
+  @doc """
+  Generates a path route.
+  """
+  @spec router_path(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def router_path(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:path, conn, plug, verb, vars, query_params)
+  end
+
+  @doc """
+  Generates a url route.
+  """
+  @spec router_url(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
+  def router_url(conn, plug, verb, vars \\ [], query_params \\ []) do
+    gen_route(:url, conn, plug, verb, vars, query_params)
+  end
+
+  defp gen_route(type, conn, plug, verb, vars, query_params) do
+    alias  = Controller.route_helper(plug)
+    helper = :"#{alias}_#{type}"
+    router = Module.concat([conn.private.phoenix_router, Helpers])
+    args   = [conn, verb] ++ vars ++ [query_params]
+
+    apply(router, helper, args)
+  end
 
   defp routes(conn), do: Controller.routes(conn, __MODULE__)
 end

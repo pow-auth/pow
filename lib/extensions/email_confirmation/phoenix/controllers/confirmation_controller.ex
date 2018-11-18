@@ -4,7 +4,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
     messages_backend_fallback: PowEmailConfirmation.Phoenix.Messages
 
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
+  alias Pow.Phoenix.{RegistrationController, SessionController}
   alias PowEmailConfirmation.Plug
 
   @spec process_show(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
@@ -24,8 +24,8 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
 
   defp redirect_to(conn) do
     case Pow.Plug.current_user(conn) do
-      nil   -> Controller.router_path(conn, SessionController, :new)
-      _user -> Controller.router_path(conn, RegistrationController, :edit)
+      nil   -> routes(conn).router_path(conn, SessionController, :new)
+      _user -> routes(conn).router_path(conn, RegistrationController, :edit)
     end
   end
 end

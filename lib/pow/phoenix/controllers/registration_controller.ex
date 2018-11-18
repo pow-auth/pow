@@ -3,7 +3,7 @@ defmodule Pow.Phoenix.RegistrationController do
   use Pow.Phoenix.Controller
 
   alias Plug.Conn
-  alias Pow.{Phoenix.Controller, Plug}
+  alias Pow.Plug
 
   plug :require_not_authenticated when action in [:new, :create]
   plug :require_authenticated when action in [:edit, :update, :delete]
@@ -82,16 +82,16 @@ defmodule Pow.Phoenix.RegistrationController do
   def respond_delete({:error, _changeset, conn}) do
     conn
     |> put_flash(:error, messages(conn).user_could_not_be_deleted(conn))
-    |> redirect(to: Controller.router_path(conn, __MODULE__, :edit))
+    |> redirect(to: routes(conn).router_path(conn, __MODULE__, :edit))
   end
 
   defp assign_create_path(conn, _opts) do
-    path = Controller.router_path(conn, __MODULE__, :create)
+    path = routes(conn).router_path(conn, __MODULE__, :create)
     Conn.assign(conn, :action, path)
   end
 
   defp assign_update_path(conn, _opts) do
-    path = Controller.router_path(conn, __MODULE__, :update)
+    path = routes(conn).router_path(conn, __MODULE__, :update)
     Conn.assign(conn, :action, path)
   end
 end
