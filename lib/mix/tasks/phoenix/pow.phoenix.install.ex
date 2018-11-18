@@ -67,7 +67,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
     First, append this to `config/config.ex`:
 
-    config :my_app, :pow,
+    config :#{Macro.underscore(context_base)}, :pow,
       user: #{inspect(context_base)}.Users.User,
       repo: #{inspect(context_base)}.Repo
 
