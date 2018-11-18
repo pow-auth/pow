@@ -82,16 +82,16 @@ defmodule Pow.Phoenix.RegistrationController do
   def respond_delete({:error, _changeset, conn}) do
     conn
     |> put_flash(:error, messages(conn).user_could_not_be_deleted(conn))
-    |> redirect(to: routes(conn).router_path(conn, __MODULE__, :edit))
+    |> redirect(to: routes(conn).path_for(conn, __MODULE__, :edit))
   end
 
   defp assign_create_path(conn, _opts) do
-    path = routes(conn).router_path(conn, __MODULE__, :create)
+    path = routes(conn).path_for(conn, __MODULE__, :create)
     Conn.assign(conn, :action, path)
   end
 
   defp assign_update_path(conn, _opts) do
-    path = routes(conn).router_path(conn, __MODULE__, :update)
+    path = routes(conn).path_for(conn, __MODULE__, :update)
     Conn.assign(conn, :action, path)
   end
 end

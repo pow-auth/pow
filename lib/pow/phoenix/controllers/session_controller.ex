@@ -74,6 +74,6 @@ defmodule Pow.Phoenix.SessionController do
     create_path(conn, request_path: request_path)
   end
   defp create_path(conn, query_params \\ []) do
-    routes(conn).router_path(conn, __MODULE__, :create, [], query_params)
+    routes(conn).path_for(conn, __MODULE__, :create, [], query_params)
   end
 end

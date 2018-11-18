@@ -61,12 +61,12 @@ defmodule Pow.Phoenix.Router do
 
     @spec pow_session_path(Conn.t(), :new) :: binary()
     def pow_session_path(conn, :new) do
-      SessionController.routes(conn).router_path(conn, SessionController, :new)
+      SessionController.routes(conn).session_path(conn, :new)
     end
 
     @spec pow_registration_path(Conn.t(), :new) :: binary()
     def pow_registration_path(conn, :new) do
-      RegistrationController.routes(conn).router_path(conn, RegistrationController, :new)
+      RegistrationController.routes(conn).registration_path(conn, :new)
     end
   end
 end
