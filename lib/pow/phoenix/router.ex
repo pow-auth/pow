@@ -53,7 +53,7 @@ defmodule Pow.Phoenix.Router do
     end
   end
 
-  defmodule Helper do
+  defmodule Helpers do
     @moduledoc false
 
     alias Plug.Conn

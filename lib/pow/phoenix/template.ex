@@ -20,7 +20,7 @@ defmodule Pow.Phoenix.Template do
       import Pow.Phoenix.HTML.ErrorHelpers, only: [error_tag: 2]
       import Phoenix.HTML.{Form, Link}
 
-      alias Pow.Phoenix.Router.Helper, as: Routes
+      alias Pow.Phoenix.Router.Helpers, as: Routes
     end
   end
 
