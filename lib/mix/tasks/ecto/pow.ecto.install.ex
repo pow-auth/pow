@@ -52,7 +52,7 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
   end
   defp maybe_run_gen_migration(config, _args), do: config
 
-  defp maybe_run_extension_gen_migrations(%{migrations: true} = config, args) do
+  defp maybe_run_extension_gen_migrations(%{migrations: true, extension: extensions} = config, args) when extensions != [] do
     ExtensionMigrationsTask.run(args)
 
     config

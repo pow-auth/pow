@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   end
   defp maybe_run_gen_templates(config, _args), do: config
 
-  defp maybe_run_extensions_gen_templates(%{templates: true} = config, args) do
+  defp maybe_run_extensions_gen_templates(%{templates: true, extension: extensions} = config, args) when extensions != [] do
     PhoenixExtensionTemplatesTask.run(args)
 
     config
