@@ -74,7 +74,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     content       = SchemaMigration.gen(schema)
 
     case empty?(schema) do
-      true  -> nil
+      true  -> Mix.shell().info("Warning: No migration file generated for #{inspect extension} as it doesn't require any migrations.")
       false -> Migration.create_migration_files(repo, schema.migration_name, content)
     end
   end
