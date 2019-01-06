@@ -57,6 +57,16 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert Ecto.Changeset.get_field(changeset, :username) == "username"
     end
 
+    test "trims value for user id" do
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "email", " test@example.com "))
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :email) == "test@example.com"
+
+      changeset = UsernameUser.changeset(%UsernameUser{}, Map.put(@valid_params, "username", " username "))
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :username) == "username"
+    end
+
     test "requires unique user id" do
       {:ok, _user} =
         %User{}
