@@ -512,7 +512,7 @@ If you're currently using Coherence, you can migrate your app to use Pow instead
 * The credentials and session are renewed after 15 minutes if any activity is detected
 * The credentials and session are renewed when user updates
 
-Some of the above is based on [https://www.owasp.org/](OWASP) recommendations.
+Some of the above is based on [OWASP](https://www.owasp.org/) recommendations.
 
 ## Other libraries
 
