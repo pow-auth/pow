@@ -170,10 +170,15 @@ defmodule Pow.Ecto.Schema do
   @doc """
   Normalizes the user id field.
 
-  Keeps the user id field value case insensitive.
+  Keeps the user id field value case insensitive and removes leading and
+  trailing whitespace.
   """
   @spec normalize_user_id_field_value(binary()) :: binary()
-  def normalize_user_id_field_value(value), do: String.downcase(value)
+  def normalize_user_id_field_value(value) do
+    value
+    |> String.trim()
+    |> String.downcase()
+  end
 
   @doc """
   Filters field-type pairs that doesn't already exist in schema.

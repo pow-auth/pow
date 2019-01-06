@@ -15,6 +15,10 @@ defmodule PowResetPassword.Ecto.ContextTest do
       assert Context.get_by_email("test@example.com", @config)
       assert Context.get_by_email("TEST@EXAMPLE.COM", @config)
     end
+
+    test "email is trimmed when it's the user id field" do
+      assert Context.get_by_email(" test@example.com ", @config)
+    end
   end
 
   describe "update_password/2" do

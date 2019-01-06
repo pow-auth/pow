@@ -55,6 +55,11 @@ defmodule Pow.Ecto.ContextTest do
       assert Context.authenticate(%{"username" => "JOHN.doE", "password" => @password}, @username_config) == username_user
     end
 
+    test "authenticates with extra trailing and leading whitespace for user id field", %{user: user, username_user: username_user} do
+      assert Context.authenticate(%{"email" => " test@example.com ", "password" => @password}, @config) == user
+      assert Context.authenticate(%{"username" => " john.doe ", "password" => @password}, @username_config) == username_user
+    end
+
     test "as `use Pow.Ecto.Context`", %{user: user} do
       assert Users.authenticate(@valid_params) == user
       assert Users.authenticate(:test_macro) == :ok
