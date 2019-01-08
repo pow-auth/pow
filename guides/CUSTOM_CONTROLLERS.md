@@ -183,6 +183,48 @@ Create `my_app_web/templates/session/new.html.eex`:
 
 Remember to create the view files `my_app_web/views/registration_view.ex` and `my_app_web/views/session_view.ex` too.
 
-## Conclusion
+## Further customization
 
 That's all you need to do to have custom controllers with Pow! From here on you can customize your flow.
+
+You may want to utilize some of the extensions, but since you have created a custom controller, it's highly recommended that you do not rely on any controller methods in the extensions. Instead, you should implement the logic yourself to keep your controllers as explicit as possible. This is only an example:
+
+```elixir
+defmodule MyAppWeb.SessionController do
+  # ...
+
+  def create(conn, %{"user" => user_params}) do
+    conn
+    |> Pow.Plug.authenticate_user(user_params)
+    |> verify_confirmed()
+  end
+
+  defp verify_confirmed({:ok, conn}) do
+    conn
+    |> Pow.Plug.current_user()
+    |> confirmed?()
+    |> case do
+      true ->
+        conn
+        |> put_flash(:info, "Welcome back!")
+        |> redirect(to: Routes.page_path(conn, :index))
+
+      false ->
+        conn
+        |> put_flash(:info, "Your e-mail address has not been confirmed.")
+        |> redirect(to: Routes.login_path(conn, :new))
+    end
+  end
+  defp verify_confirmed({:error, conn}) do
+    changeset = Pow.Plug.change_user(conn, conn.params["user"])
+
+    conn
+    |> put_flash(:info, "Invalid email or password")
+    |> render("login.html", changeset: changeset)
+  end
+
+  defp confirmed?(%{email_confirmed_at: nil, email_confirmation_token: token}) when not is_nil(token), do: false
+  defp confirmed?(_user), do: true
+  # ...
+end
+```
