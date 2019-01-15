@@ -28,7 +28,7 @@ defmodule Pow.Extension.Phoenix.Router do
         end
       end
   """
-  alias Pow.Extension.Config
+  alias Pow.{Extension.Config, Phoenix.Router}
 
   defmacro __using__(config \\ []) do
     __create_routers_module__(__CALLER__.module, config)
@@ -57,6 +57,8 @@ defmodule Pow.Extension.Phoenix.Router do
       def routes do
         for router <- @routers do
           quote do
+            Router.validate_scope!(@phoenix_router_scopes)
+
             require unquote(router)
             unquote(router).scoped_routes(@config)
           end
