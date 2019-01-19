@@ -17,29 +17,20 @@ defmodule Pow.Phoenix.Mailer.Mail do
   """
   @spec new(Conn.t(), map(), {module(), atom()}, Keyword.t()) :: t()
   def new(conn, user, {view_module, template}, assigns) do
-    config     = Plug.fetch_config(conn)
-    web_module = Config.get(config, :web_mailer_module)
+    config       = Plug.fetch_config(conn)
+    web_module   = Config.get(config, :web_mailer_module)
+    view_assigns = Keyword.merge([conn: conn, user: user], assigns)
 
     view_module = Pow.Phoenix.ViewHelpers.build_view_module(view_module, web_module)
 
-    subject = subject(conn, view_module, template)
-    text    = render(conn, view_module, "#{template}.text", assigns)
+    subject = view_module.subject(template, view_assigns)
+    text    = view_module.render("#{template}.text", view_assigns)
     html    =
-      conn
-      |> render(view_module, "#{template}.html", assigns)
+      "#{template}.html"
+      |> view_module.render(view_assigns)
       |> Phoenix.Template.HTML.encode_to_iodata!()
       |> IO.iodata_to_binary()
 
     struct(__MODULE__, user: user, subject: subject, text: text, html: html, assigns: assigns)
-  end
-
-  @spec subject(Conn.t(), module(), atom()) :: binary()
-  defp subject(conn, module, mail) do
-    module.subject(mail, conn: conn)
-  end
-
-  @spec render(Conn.t(), module(), binary(), Keyword.t()) :: binary()
-  defp render(_conn, module, mail, assigns) do
-    module.render(mail, assigns)
   end
 end

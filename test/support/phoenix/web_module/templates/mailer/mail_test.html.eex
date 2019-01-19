@@ -1,1 +1,1 @@
-<%= content_tag(:p, ":web_mailer_module html mail") %>
+<%= content_tag(:p, ":web_mailer_module html mail #{inspect @user}") %>
