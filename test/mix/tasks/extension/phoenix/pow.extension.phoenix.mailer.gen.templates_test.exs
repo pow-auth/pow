@@ -48,7 +48,14 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
         assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
         assert view_content =~ "use PowWeb, :mailer_view"
-        assert view_content =~ "def subject(:"
+
+        template =
+          expected_templates
+          |> Map.get(base_name)
+          |> List.first()
+          |> String.split(".html.eex")
+
+        assert view_content =~ "def subject(:#{template}, _assigns), do:"
       end
 
       for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})

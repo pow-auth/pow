@@ -42,8 +42,8 @@ defmodule Pow.Phoenix.Mailer.MailTest do
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 
     assert mail.user == :user
-    assert mail.subject == ":web_mailer_module subject"
-    assert mail.html == "<p>:web_mailer_module html mail</p>"
-    assert mail.text == ":web_mailer_module text mail"
+    assert mail.subject == ":web_mailer_module subject :user"
+    assert mail.html == "<p>:web_mailer_module html mail :user</p>"
+    assert mail.text == ":web_mailer_module text mail :user"
   end
 end
