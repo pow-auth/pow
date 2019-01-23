@@ -92,6 +92,10 @@ defmodule Pow.MixProject do
           filename: "CustomControllers",
           title: "Custom controllers"
         ],
+        "guides/DISABLE_REGISTRATION.md": [
+          filename: "DisableRegistration",
+          title: "Disable registration"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"

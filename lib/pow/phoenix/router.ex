@@ -29,7 +29,7 @@ defmodule Pow.Phoenix.Router do
   """
   defmacro __using__(_opts \\ []) do
     quote do
-      import unquote(__MODULE__)
+      import unquote(__MODULE__), only: [pow_routes: 0, pow_scope: 1, pow_session_routes: 0, pow_registration_routes: 0]
     end
   end
 
@@ -45,11 +45,36 @@ defmodule Pow.Phoenix.Router do
       end
   """
   defmacro pow_routes do
-    quote location: :keep do
+    quote do
+      pow_session_routes()
+      pow_registration_routes()
+    end
+  end
+
+  @doc false
+  defmacro pow_scope(do: context) do
+    quote do
       unquote(__MODULE__).validate_scope!(@phoenix_router_scopes)
 
       scope "/", Pow.Phoenix, as: "pow" do
+        unquote(context)
+      end
+    end
+  end
+
+  @doc false
+  defmacro pow_session_routes do
+    quote location: :keep do
+      pow_scope do
         resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
+      end
+    end
+  end
+
+  @doc false
+  defmacro pow_registration_routes do
+    quote location: :keep do
+      pow_scope do
         resources "/registration", RegistrationController, singleton: true, only: [:new, :create, :edit, :update, :delete]
       end
     end
