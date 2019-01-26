@@ -29,14 +29,14 @@ defmodule MyAppWeb.Router do
 
     get "/signup", RegistrationController, :new, as: :signup
     post "/signup", RegistrationController, :create, as: :signup
-    get "/login", SessionsController, :new, as: :login
-    post "/login", SessionsController, :create, as: :login
+    get "/login", SessionController, :new, as: :login
+    post "/login", SessionController, :create, as: :login
   end
 
   scope "/", MyAppWeb do
     pipe_through [:browser, :protected]
 
-    delete "/logout", SessionsController, :create, as: :logout
+    delete "/logout", SessionController, :delete, as: :logout
   end
 
   # ... routes
@@ -135,7 +135,7 @@ defmodule MyAppWeb.SessionController do
 
         conn
         |> put_flash(:info, "Invalid email or password")
-        |> render("login.html", changeset: changeset)
+        |> render("new.html", changeset: changeset)
     end
   end
 
