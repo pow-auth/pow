@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.1 (TBA)
+## v1.0.1 (2019-01-27)
 
 * `pow.extension.ecto.gen.migrations` mix task will output warning when a migration file won't be generated for any particular extension
 * Leading and trailing whitespace is removed from the user id field value (in addition to forced lower case)
