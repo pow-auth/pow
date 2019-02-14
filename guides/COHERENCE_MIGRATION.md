@@ -131,7 +131,7 @@ Add session plug to `endpoint.ex`:
   plug Pow.Plug.Session, otp_app: :my_app
   ```
 
-Set up `routes.ex`
+Set up `router.ex`
 
   ```elixir
   defmodule MyAppWeb.Router do
