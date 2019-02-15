@@ -376,7 +376,7 @@ end
 
 ### Phoenix controllers
 
-Controllers in Pow are very slim and consists of just one `Pow.Plug` method call with response methods. If you wish to change the flow of the `RegistrationController` and `SessionController`, the best way is to create your own and modify `router.ex`.
+Controllers in Pow are very slim and consists of just one [`Pow.Plug`](lib/pow/plug.ex) method call with response methods. If you wish to change the flow of the [`RegistrationController`](lib/pow/phoenix/controllers/registration_controller.ex) and [`SessionController`](lib/pow/phoenix/controllers/session_controller.ex), the best way is to create your own and modify `router.ex`.
 
 However, to make it easier to integrate extension, you can add callbacks to the controllers that do some light pre/post-processing of the request:
 
@@ -418,7 +418,7 @@ defmodule MyAppWeb.Pow.Messages do
 end
 ```
 
-Add `messages_backend: MyAppWeb.Pow.Messages` to your configuration. You can find all the messages in `Pow.Phoenix.Messages` and `[Pow Extension].Phoenix.Messages`.
+Add `messages_backend: MyAppWeb.Pow.Messages` to your configuration. You can find all the messages in [`Pow.Phoenix.Messages`](lib/pow/phoenix/messages.ex) and `[Pow Extension].Phoenix.Messages`.
 
 ### Callback routes
 
@@ -433,7 +433,7 @@ defmodule MyAppWeb.Pow.Routes do
 end
 ```
 
-Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in `Pow.Phoenix.Routes`.
+Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in [`Pow.Phoenix.Routes`](lib/pow/phoenix/routes.ex).
 
 ### Password hashing function
 
@@ -462,7 +462,7 @@ You can use the following Phoenix link to add logout link to your Phoenix templa
 
 ### Pow.Plug.Session
 
-Enables session based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by `Pow.Plug`).
+Enables session based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by [`Pow.Plug`](lib/pow/plug.ex)).
 
 #### Cache store
 
