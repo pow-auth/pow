@@ -4,6 +4,7 @@
 
 * Redis cache store backend guide
 * Correct shell instructions for `mix pow.phoenix.gen.templates` task
+* Adding `new_password_changeset/3` and `confirm_password_changeset/3` to `Pow.Ecto.Schema.Changeset`
 
 ## v1.0.1 (2019-01-27)
 
