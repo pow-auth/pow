@@ -96,6 +96,10 @@ defmodule Pow.MixProject do
           filename: "DisableRegistration",
           title: "Disable registration"
         ],
+        "guides/REDIS_CACHE_STORE_BACKEND.md": [
+          filename: "RedisCacheStoreBackend",
+          title: "Redis cache store backend"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"

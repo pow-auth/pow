@@ -492,6 +492,8 @@ end
 
 Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
+The MnesiaCache requires write access. If you've a read-only file system you should take a look at the [Redis cache backend store guide](guides/REDIS_CACHE_STORE_BACKEND.md).
+
 ### Pow.Plug.RequireAuthenticated
 
 Will halt connection if no current user is not present in assigns. Expects an `:error_handler` option.
