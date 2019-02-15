@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.2 (TBA)
+
+* Redis cache store backend guide
+* Correct shell instructions for `mix pow.phoenix.gen.templates` task
+
 ## v1.0.1 (2019-01-27)
 
 * `pow.extension.ecto.gen.migrations` mix task will output warning when a migration file won't be generated for any particular extension
