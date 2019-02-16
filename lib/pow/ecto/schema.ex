@@ -55,6 +55,27 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
+  ## Customize Pow changeset
+
+  You can extract individual changeset methods to modify the changeset
+  flow entirely. As an example, this  is how you can remove the validation
+  check for confirm password in the changeset method:
+
+      defmodule MyApp.Users.User do
+        # ...
+
+        import Pow.Ecto.Schema.Changeset, only: [new_password_changeset: 3]
+
+        # ...
+
+        def changeset(user_or_changeset, attrs) do
+          user_or_changeset
+          |> pow_user_id_field_changeset(attrs)
+          |> pow_current_password_changeset(attrs)
+          |> new_password_changeset(attrs, @pow_config)
+        end
+      end
+
   ## Configuration options
 
     * `:user_id_field` - the field to use for user id. This value defaults to
