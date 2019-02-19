@@ -464,6 +464,8 @@ You can use the following Phoenix link to add logout link to your Phoenix templa
 
 Enables session based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by [`Pow.Plug`](lib/pow/plug.ex)).
 
+The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to add a plug that reloads the user struct and reassigns it to the connection.
+
 #### Cache store
 
 By default [`Pow.Store.Backend.EtsCache`](lib/pow/store/backend/ets_cache.ex) is started automatically and can be used in development and test environment.
