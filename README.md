@@ -366,7 +366,7 @@ defmodule MyApp.Users.User do
   end
 
   def changeset(user_or_changeset, attrs) do
-    user
+    user_or_changeset
     |> pow_changeset(attrs)
     |> Ecto.Changeset.cast(attrs, [:custom])
     |> Ecto.Changeset.validate_required([:custom])
