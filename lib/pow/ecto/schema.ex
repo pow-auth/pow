@@ -2,9 +2,10 @@ defmodule Pow.Ecto.Schema do
   @moduledoc """
   Handles the Ecto schema for user.
 
-  The macro will create a `:pow_fields` module attribute, and append fields
-  to it. The `pow_user_fields/0` macro will use these attributes to create
-  fields in the ecto schema.
+  The macro will create a `@pow_fields` module attribute, and append fields to
+  it using the attributes from `Pow.Ecto.Schema.Fields.attrs/1`. The
+  `pow_user_fields/0` macro will use these attributes to create fields in the
+  ecto schema.
 
   A default `changeset/2` method is created, but can be overridden with a
   custom `changeset/2` method.
@@ -146,6 +147,15 @@ defmodule Pow.Ecto.Schema do
   @doc """
   A macro to add fields from the `@pow_fields` module attribute generated in
   `__using__/1`.
+
+  The `@pow_fields` are populated by `Pow.Ecto.Schema.Fields.attrs/1`, and will
+  have at minimum the following fields:
+
+    * `:email` (if not changed with `:user_id_field` option)
+    * `:password_hash`
+    * `:current_password` (virtual)
+    * `:password` (virtual)
+    * `:confirm_password` (virtual)
   """
   defmacro pow_user_fields do
     quote do
