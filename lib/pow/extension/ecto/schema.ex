@@ -2,8 +2,11 @@ defmodule Pow.Extension.Ecto.Schema do
   @moduledoc """
   Handles extensions for the user Ecto schema.
 
-  The macro will append attributes to the `:pow_fields` module attribute, and
-  run `validate!/2` when compilation is done.
+  The macro will append fields to the `@pow_fields` module attribute using the
+  attributes from `[Pow Extension].Ecto.Schema.attrs/1`, so they can be used in
+  the `Pow.Ecto.Schema.pow_user_fields/0` method call.
+
+  After module compilation `[Pow Extension].Ecto.Schema.validate!/2` will run.
 
   ## Usage
 
