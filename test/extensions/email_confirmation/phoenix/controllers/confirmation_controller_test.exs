@@ -1,7 +1,7 @@
 defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
-  @session_key "Elixir.PowEmailConfirmation.Test_auth"
+  @session_key "auth"
 
   describe "show/2" do
     test "confirms with valid token", %{conn: conn} do

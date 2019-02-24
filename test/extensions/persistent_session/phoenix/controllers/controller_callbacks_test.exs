@@ -5,7 +5,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
 
   @valid_params %{"email" => "test@example.com", "password" => "secret1234"}
   @max_age Integer.floor_div(:timer.hours(30) * 24, 1000)
-  @cookie_key "Elixir.PowPersistentSession.Test_persistent_session_cookie"
+  @cookie_key "persistent_session_cookie"
 
   describe "Pow.Phoenix.SessionController.create/2" do
     test "generates cookie", %{conn: conn, ets: ets} do
