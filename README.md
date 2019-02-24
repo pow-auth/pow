@@ -526,6 +526,22 @@ Some of the above is based on [OWASP](https://www.owasp.org/) recommendations.
 
 [PowAssent](https://github.com/danschultzer/pow_assent) - Multi-provider support for Pow with strategies for Twitter, Github, Google, Facebook and more
 
+## Contributing
+
+All contributions to Pow are welcome!
+
+Postgres is required to test locally. The [test helper](test/test_helper.exs) will automatically set up the database for you when you run the tests. Run `mix credo` for static code analysing.
+
+### Mocks
+
+As the default ETS cache store backend works asynchronously, a synchronous ETS cache store backend ([`Pow.Test.EtsCacheMock`](test/support/ets_cache_mock.ex)) is used instead.
+
+Only Ecto modules are tested against the database. Plug and Phoenix modules uses [`Pow.Test.ContextMock`](test/support/context_mock.ex).
+
+### Extension test support
+
+Due to compile-time configuration of Phoenix modules and User schema modules, several modules are dynamically generated with [`Pow.Test.ExtensionMocks`](test/support/extensions/mock.ex).
+
 ## LICENSE
 
 (The MIT License)
