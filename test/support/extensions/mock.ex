@@ -3,12 +3,22 @@ defmodule Pow.Test.ExtensionMocks do
   defmacro __using__(opts) do
     context_module = __CALLER__.module
     web_module     = String.to_atom("#{context_module}Web")
+    cache_backend  = Pow.Test.EtsCacheMock
+    extensions     = opts[:extensions]
+    pow_config     = [
+      user: Module.concat([context_module, Users.User]),
+      repo: Module.concat([context_module, RepoMock]),
+      cache_store_backend: cache_backend,
+      mailer_backend: Pow.Test.Phoenix.MailerMock,
+      messages_backend: Module.concat([web_module, Phoenix.Messages]),
+      extensions: extensions,
+      controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks]
 
     module = Module.concat([context_module, Users.User])
     quoted = quote do
       use Ecto.Schema
       use Pow.Ecto.Schema,
-        extensions: unquote(opts)[:extensions]
+        extensions: unquote(extensions)
       use Pow.Extension.Ecto.Schema
 
       schema "users" do
@@ -29,7 +39,7 @@ defmodule Pow.Test.ExtensionMocks do
     quoted = quote do
       use Phoenix.Router
       use Pow.Phoenix.Router
-      use Pow.Extension.Phoenix.Router, otp_app: unquote(context_module)
+      use Pow.Extension.Phoenix.Router, unquote(pow_config)
 
       pipeline :browser do
         plug :accepts, ["html"]
@@ -51,7 +61,7 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([web_module, Phoenix.Endpoint])
 
     quoted = quote do
-      use Phoenix.Endpoint, otp_app: unquote(context_module)
+      use Phoenix.Endpoint, otp_app: :pow
 
       plug Plug.RequestId
       plug Plug.Logger
@@ -69,7 +79,7 @@ defmodule Pow.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: unquote(context_module)
+      plug Pow.Plug.Session, unquote(pow_config)
 
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])
@@ -96,7 +106,7 @@ defmodule Pow.Test.ExtensionMocks do
         end
       end
 
-      @ets Application.get_env(unquote(context_module), :pow)[:cache_store_backend]
+      @ets unquote(cache_backend)
 
       setup _tags do
         @ets.init()
@@ -123,13 +133,14 @@ defmodule Pow.Test.ExtensionMocks do
     quoted = quote do
       use Pow.Phoenix.Messages
       use Pow.Extension.Phoenix.Messages,
-        extensions: unquote(opts)[:extensions]
+        extensions: unquote(extensions)
 
         def signed_in(_conn), do: "signed_in"
     end
     Module.create(module, quoted, Macro.Env.location(__ENV__))
 
     quote do
+      def pow_config(), do: unquote(pow_config)
     end
   end
 end
