@@ -1,5 +1,33 @@
 defmodule Pow.Test.ExtensionMocks do
-  @moduledoc false
+  @moduledoc """
+  Dynamically creates modules required for extension tests. This is due to
+  compile-time configuration of Phoenix and Ecto modules.
+
+  Since Phoenix and Plug modules in Pow are tested without Ecto integration,
+  an Ecto repo mock module is also necessary.
+
+  ## Example
+
+    defmodule PowPersistentSession.Test do
+      @moduledoc false
+      use Pow.Test.ExtensionMocks,
+        extensions: [PowPersistentSession],
+        plug: PowPersistentSession.Plug.Cookie
+    end
+
+    defmodule PowPersistentSession.Test.RepoMock do
+      @moduledoc false
+      alias Pow.Ecto.Schema.Password
+      alias PowPersistentSession.Test.Users.User
+
+      def get_by(User, id: 1), do: %User{id: 1}
+      def get_by(User, id: -1), do: nil
+
+      def get_by(User, email: "test@example.com"),
+        do: %User{id: 1, password_hash: Password.pbkdf2_hash("secret1234")}
+    end
+  """
+
   defmacro __using__(opts) do
     context_module = __CALLER__.module
     web_module     = String.to_atom("#{context_module}Web")
