@@ -404,7 +404,7 @@ For flash messages, you can create the following module:
 defmodule MyAppWeb.Pow.Messages do
   use Pow.Phoenix.Messages
   use Pow.Extension.Phoenix.Messages,
-    extensions: [ResetPassword]
+    extensions: [PowResetPassword]
 
   import MyAppWeb.Gettext
 
