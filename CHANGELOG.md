@@ -6,6 +6,7 @@
 * Correct shell instructions for `mix pow.phoenix.gen.templates` task
 * Added `new_password_changeset/3` and `confirm_password_changeset/3` to `Pow.Ecto.Schema.Changeset`
 * Only load environment config in `Pow.Config.get/3` when no key is set in the provided config
+* Added flash error message about e-mail confirmation for when user changes e-mail with PowEmailConfirmation enabled
 
 ## v1.0.1 (2019-01-27)
 
