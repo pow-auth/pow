@@ -23,6 +23,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
     case should_send_email?(user, conn.private[:pow_user_before_update]) do
       true  ->
+        error = ConfirmationController.messages(conn).email_confirmation_required_for_update(conn)
+        conn  = Phoenix.Controller.put_flash(conn, :error, error)
+
         send_confirmation_email(user, conn)
 
         {:ok, user, conn}
