@@ -24,7 +24,6 @@ defmodule Pow.Extension.Config do
     |> extensions()
     |> Enum.map(&Module.concat([&1] ++ module_list))
     |> Enum.filter(&Code.ensure_compiled?/1)
-    |> Enum.reject(&is_nil/1)
   end
 
   @doc """

@@ -18,4 +18,8 @@ defmodule Pow.Extension.Phoenix.MessagesTest do
     assert Messages.pow_a(nil) == "Overridden"
     assert Messages.pow_b(nil) == "Second"
   end
+
+  test "has fallback module" do
+    assert Messages.Pow.Extension.Phoenix.MessagesTest.Phoenix.Messages.a(nil) == "Overridden"
+  end
 end
