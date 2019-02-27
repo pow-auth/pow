@@ -24,7 +24,8 @@ defmodule Pow.Test.Phoenix.Endpoint do
     cache_store_backend: Pow.Test.EtsCacheMock,
     user: Pow.Test.Ecto.Users.User,
     users_context: Pow.Test.ContextMock,
-    messages_backend: Pow.Test.Phoenix.Messages
+    messages_backend: Pow.Test.Phoenix.Messages,
+    routes_backend: Pow.Test.Phoenix.Routes
 
   plug Pow.Test.Phoenix.Router
 end
