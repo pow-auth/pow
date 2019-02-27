@@ -13,7 +13,7 @@ defmodule Pow.Extension.Ecto.Context.Base do
         use Pow.Extension.Ecto.Context.Base
 
         def my_custom_action(_config) do
-          mod  = user_mod(config)
+          mod  = user_schema_mod(config)
           repo = repo(config)
 
           # ...

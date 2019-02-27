@@ -119,7 +119,8 @@ defmodule Pow.Ecto.Context do
   def create(params, config) do
     user_mod = user_schema_mod(config)
 
-    user_mod.__struct__()
+    user_mod
+    |> struct()
     |> user_mod.changeset(params)
     |> do_insert(config)
   end
