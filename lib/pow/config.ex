@@ -15,7 +15,20 @@ defmodule Pow.Config do
   """
   @spec get(t(), atom(), any()) :: any()
   def get(config, key, default \\ nil) do
-    Keyword.get(config, key, get_env_config(config, key, default))
+    case Keyword.get(config, key, :not_found) do
+      :not_found -> get_env_config(config, key, default)
+      value      -> value
+    end
+  end
+
+  defp get_env_config(config, key, default, env_key \\ :pow) do
+    config
+    |> Keyword.get(:otp_app)
+    |> case do
+      nil     -> Application.get_all_env(env_key)
+      otp_app -> Application.get_env(otp_app, env_key, [])
+    end
+    |> Keyword.get(key, default)
   end
 
   @doc """
@@ -32,19 +45,6 @@ defmodule Pow.Config do
   @spec merge(t(), t()) :: t()
   def merge(l_config, r_config) do
     Keyword.merge(l_config, r_config)
-  end
-
-  defp get_env_config(config, key, default) do
-    config
-    |> env_config()
-    |> Keyword.get(key, default)
-  end
-
-  defp env_config(config) do
-    case Keyword.get(config, :otp_app) do
-      nil     -> Application.get_all_env(:pow)
-      otp_app -> Application.get_env(otp_app, :pow, [])
-    end
   end
 
   @doc """
