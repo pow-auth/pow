@@ -4,7 +4,7 @@ defmodule Pow.ConfigTest do
 
   alias Pow.Config
 
-  test "get/1" do
+  test "get/3" do
     assert Config.get([], :key, 0) == 0
 
     Application.put_env(:pow, :key, 1)
