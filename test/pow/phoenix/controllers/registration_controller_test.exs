@@ -138,7 +138,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> create_user_and_sign_in()
         |> delete(Routes.pow_registration_path(conn, :delete))
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == "/signed_out"
       assert get_flash(conn, :info) == "Your account has been deleted. Sorry to see you go!"
       refute Plug.current_user(conn)
       refute conn.private[:plug_session]["auth"]
