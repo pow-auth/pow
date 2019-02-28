@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       refute File.exists?(@templates_path)
       refute File.exists?(@views_path)
 
-      assert_received {:mix_shell, :info, [msg]}
+      assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
       assert msg =~ "config :pow, :pow,"
       assert msg =~ "user: Pow.Users.User,"
       assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
@@ -70,7 +70,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd!(@tmp_path, fn ->
       Install.run(options)
 
-      assert_received {:mix_shell, :info, [msg]}
+      assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
       assert msg =~ "plug Pow.Plug.Session, otp_app: :test"
     end)
   end

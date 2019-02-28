@@ -51,8 +51,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     File.cd!(@tmp_path, fn ->
       Migrations.run(["-r", inspect(Repo)])
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "No extensions was provided as arguments, or found in `config :pow, :pow` configuration."
+      assert_received {:mix_shell, :error, ["No extensions was provided as arguments, or found in `config :pow, :pow` configuration."]}
     end)
   end
 
@@ -60,8 +59,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     File.cd!(@tmp_path, fn ->
       Migrations.run(["-r", inspect(Repo), "--extension", "PowResetPassword"])
 
-      assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "Warning: No migration file generated for PowResetPassword as it doesn't require any migrations."
+      assert_received {:mix_shell, :info, ["Warning: No migration file generated for PowResetPassword as it doesn't require any migrations."]}
     end)
   end
 

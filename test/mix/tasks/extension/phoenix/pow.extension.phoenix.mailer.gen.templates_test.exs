@@ -58,8 +58,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         assert view_content =~ "def subject(:#{template}, _assigns), do:"
       end
 
-      for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
-      assert_receive {:mix_shell, :info, [msg]}
+      assert_receive {:mix_shell, :info, ["Pow mailer templates has been installed in your phoenix app!" <> msg]}
       assert msg =~ "lib/pow_web.ex"
       assert msg =~ ":mailer_view"
       assert msg =~ "def mailer_view"
@@ -71,8 +70,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     File.cd!(@tmp_path, fn ->
       Templates.run([])
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "No extensions was provided as arguments, or found in `config :pow, :pow` configuration."
+      assert_received {:mix_shell, :error, ["No extensions was provided as arguments, or found in `config :pow, :pow` configuration."]}
     end)
   end
 
@@ -102,8 +100,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
           assert view_content =~ "use TestWeb, :mailer_view"
         end
 
-        for _ <- 1..6, do: assert_received({:mix_shell, :info, [_msg]})
-        assert_received {:mix_shell, :info, [msg]}
+        assert_received {:mix_shell, :info, ["Pow mailer templates has been installed in your phoenix app!" <> msg]}
         assert msg =~ "lib/test_web.ex"
         assert msg =~ ":mailer_view"
         assert msg =~ "def mailer_view"

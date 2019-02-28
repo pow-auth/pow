@@ -52,8 +52,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
     File.cd!(@tmp_path, fn ->
       Templates.run([])
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "No extensions was provided as arguments, or found in `config :pow, :pow` configuration."
+      assert_received {:mix_shell, :error, ["No extensions was provided as arguments, or found in `config :pow, :pow` configuration."]}
     end)
   end
 

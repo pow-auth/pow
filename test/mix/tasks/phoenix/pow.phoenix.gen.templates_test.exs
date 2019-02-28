@@ -40,8 +40,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
       assert view_content =~ "defmodule PowWeb.Pow.SessionView do"
       assert view_content =~ "use PowWeb, :view"
 
-      for _ <- 1..5, do: assert_received({:mix_shell, :info, [_msg]})
-      assert_received {:mix_shell, :info, [msg]}
+      assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
       assert msg =~ "config :pow, :pow,"
       assert msg =~ "web_module: PowWeb"
     end)
@@ -64,8 +63,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
       assert view_content =~ "defmodule TestWeb.Pow.SessionView do"
       assert view_content =~ "use TestWeb, :view"
 
-      for _ <- 1..5, do: assert_received({:mix_shell, :info, [_msg]})
-      assert_received {:mix_shell, :info, [msg]}
+      assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
       assert msg =~ "config :test, :pow,"
       assert msg =~ "web_module: TestWeb"
     end)
