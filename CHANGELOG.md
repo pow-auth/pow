@@ -2,11 +2,17 @@
 
 ## v1.0.2 (TBA)
 
+* Added flash error message about e-mail confirmation for when user changes e-mail with PowEmailConfirmation enabled
+* Added `new_password_changeset/3` and `confirm_password_changeset/3` to `Pow.Ecto.Schema.Changeset`
 * Redis cache store backend guide
 * Correct shell instructions for `mix pow.phoenix.gen.templates` task
-* Added `new_password_changeset/3` and `confirm_password_changeset/3` to `Pow.Ecto.Schema.Changeset`
 * Only load environment config in `Pow.Config.get/3` when no key is set in the provided config
-* Added flash error message about e-mail confirmation for when user changes e-mail with PowEmailConfirmation enabled
+* Fixed issue in `Pow.Store.Backend.MnesiaCache.keys/1` and `Pow.Store.Backend.EtsCache.keys/1` so they now return keys without namespace
+* `Pow.Store.Backend.MnesiaCache.put/3` now raises an error if TTL is not provided
+
+### Breaking changes
+
+* `PowResetPassword.Plug.reset_password_token/1` has been removed
 
 ## v1.0.1 (2019-01-27)
 
