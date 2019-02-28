@@ -7,6 +7,7 @@ defmodule Pow.Plug.SessionTest do
   alias Pow.Test.ConnHelpers
 
   @ets Pow.Test.EtsCacheMock
+  @ets_config [namespace: "credentials"]
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
@@ -20,7 +21,7 @@ defmodule Pow.Plug.SessionTest do
       |> ConnHelpers.conn("/")
       |> ConnHelpers.init_session()
 
-    {:ok, %{conn: conn, ets: @ets}}
+    {:ok, %{conn: conn}}
   end
 
   test "call/2 sets mod in :pow_config", %{conn: conn} do
@@ -41,8 +42,8 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == "assigned"
   end
 
-  test "call/2 with stored current_user", %{conn: conn, ets: ets} do
-    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
+  test "call/2 with stored current_user", %{conn: conn} do
+    @ets.put(@ets_config, "token", {"cached", :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -54,8 +55,8 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == "cached"
   end
 
-  test "call/2 with non existing cached key", %{conn: conn, ets: ets} do
-    ets.put(nil, "token", "cached")
+  test "call/2 with non existing cached key", %{conn: conn} do
+    @ets.put(@ets_config, "token", "cached")
 
     opts = Session.init(@default_opts)
     conn =
@@ -67,7 +68,7 @@ defmodule Pow.Plug.SessionTest do
     assert is_nil(conn.assigns[:current_user])
   end
 
-  test "call/2 creates new session when :session_renewal_ttl reached", %{conn: conn, ets: ets} do
+  test "call/2 creates new session when :session_renewal_ttl reached", %{conn: conn} do
     ttl             = 100
     config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
     timestamp       = :os.system_time(:millisecond)
@@ -77,7 +78,7 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    ets.put(nil, "token", {"cached", timestamp})
+    @ets.put(@ets_config, "token", {"cached", timestamp})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
@@ -85,7 +86,7 @@ defmodule Pow.Plug.SessionTest do
 
     assert conn.assigns[:current_user] == "cached"
 
-    ets.put(nil, "token", {"cached", stale_timestamp})
+    @ets.put(@ets_config, "token", {"cached", stale_timestamp})
 
     conn = Session.call(init_conn, opts)
 
@@ -94,8 +95,8 @@ defmodule Pow.Plug.SessionTest do
     assert new_session_id != session_id
   end
 
-  test "call/2 with prepended `:otp_app` session key", %{conn: conn, ets: ets} do
-    ets.put(nil, "token", {"cached", :os.system_time(:millisecond)})
+  test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
+    @ets.put(@ets_config, "token", {"cached", :os.system_time(:millisecond)})
 
     opts =
       @default_opts
@@ -111,7 +112,7 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == "cached"
   end
 
-  test "create/2 creates new session id", %{conn: conn, ets: ets} do
+  test "create/2 creates new session id", %{conn: conn} do
     user = %{id: 1}
     opts = Session.init(@default_opts)
     conn =
@@ -120,7 +121,7 @@ defmodule Pow.Plug.SessionTest do
       |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = ets.get(nil, session_id)
+    {etc_user, _inserted_at} = @ets.get(@ets_config, session_id)
 
     assert is_binary(session_id)
     assert etc_user == user
@@ -128,11 +129,11 @@ defmodule Pow.Plug.SessionTest do
 
     conn = Session.do_create(conn, user, opts)
     new_session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = ets.get(nil, new_session_id)
+    {etc_user, _inserted_at} = @ets.get(@ets_config, new_session_id)
 
     assert is_binary(session_id)
     assert new_session_id != session_id
-    assert ets.get(nil, session_id) == :not_found
+    assert @ets.get(@ets_config, session_id) == :not_found
     assert etc_user == user
     assert Plug.current_user(conn) == user
   end
@@ -154,7 +155,7 @@ defmodule Pow.Plug.SessionTest do
     assert String.starts_with?(session_id, "test_app_")
   end
 
-  test "delete/1 removes session id", %{conn: conn, ets: ets} do
+  test "delete/1 removes session id", %{conn: conn} do
     user = %{id: 1}
     opts = Session.init(@default_opts)
     conn =
@@ -163,7 +164,7 @@ defmodule Pow.Plug.SessionTest do
       |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = ets.get(nil, session_id)
+    {etc_user, _inserted_at} = @ets.get(@ets_config, session_id)
 
     assert is_binary(session_id)
     assert etc_user == user
@@ -173,7 +174,7 @@ defmodule Pow.Plug.SessionTest do
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
-    assert ets.get(nil, session_id) == :not_found
+    assert @ets.get(@ets_config, session_id) == :not_found
     assert is_nil(Plug.current_user(conn))
   end
 

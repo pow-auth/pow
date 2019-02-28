@@ -4,29 +4,42 @@ defmodule Pow.Test.EtsCacheMock do
 
   def init, do: :ets.new(@tab, [:set, :protected, :named_table])
 
-  def get(_config, key) do
+  def get(config, key) do
+    ets_key = ets_key(config, key)
+
     @tab
-    |> :ets.lookup(key)
+    |> :ets.lookup(ets_key)
     |> case do
-      [{^key, value} | _rest] -> value
-      []                      -> :not_found
+      [{^ets_key, value} | _rest] -> value
+      []                          -> :not_found
     end
   end
 
-  def delete(_config, key) do
-    :ets.delete(@tab, key)
+  def delete(config, key) do
+    :ets.delete(@tab, ets_key(config, key))
   end
 
-  def put(_config, key, value) do
-    :ets.insert(@tab, {key, value})
+  def put(config, key, value) do
+    :ets.insert(@tab, {ets_key(config, key), value})
   end
 
-  def keys(_config) do
+  def keys(config) do
+    namespace = ets_key(config, "")
+    length    = String.length(namespace)
+
     Stream.resource(
       fn -> :ets.first(@tab) end,
       fn :"$end_of_table" -> {:halt, nil}
         previous_key -> {[previous_key], :ets.next(@tab, previous_key)} end,
       fn _ -> :ok
     end)
+    |> Enum.filter(&String.starts_with?(&1, namespace))
+    |> Enum.map(&String.slice(&1, length..-1))
+  end
+
+  defp ets_key(config, key) do
+    namespace = Pow.Config.get(config, :namespace, "cache")
+
+    "#{namespace}:#{key}"
   end
 end

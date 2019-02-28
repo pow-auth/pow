@@ -38,7 +38,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     MnesiaCache.put(@default_config, "key2", "value")
     :timer.sleep(100)
 
-    assert MnesiaCache.keys(@default_config) == ["pow:test:key1", "pow:test:key2"]
+    assert MnesiaCache.keys(@default_config) == ["key1", "key2"]
   end
 
   test "records auto purge with persistent storage", %{pid: pid} do

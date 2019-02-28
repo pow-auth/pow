@@ -7,6 +7,7 @@ defmodule Pow.PlugTest do
   alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User}
 
   @ets Pow.Test.EtsCacheMock
+  @ets_config [namespace: "credentials"]
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
@@ -14,10 +15,6 @@ defmodule Pow.PlugTest do
     user: User
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
-
-  setup do
-    {:ok, ets: @ets}
-  end
 
   test "current_user/1" do
     assert_raise ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.", fn ->
@@ -50,8 +47,8 @@ defmodule Pow.PlugTest do
     assert Plug.assign_current_user(conn, %{id: 1}, @admin_config) == %Conn{assigns: %{current_admin_user: user}}
   end
 
-  test "authenticate_user/2", %{ets: ets} do
-    ets.init()
+  test "authenticate_user/2" do
+    @ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -86,8 +83,8 @@ defmodule Pow.PlugTest do
     end
   end
 
-  test "clear_authenticated_user/1", %{ets: ets} do
-    ets.init()
+  test "clear_authenticated_user/1" do
+    @ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -98,12 +95,12 @@ defmodule Pow.PlugTest do
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert user = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
-    assert {^user, _timestamp} = ets.get(nil, session_id)
+    assert {^user, _timestamp} = @ets.get(@ets_config, session_id)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
-    assert ets.get(nil, session_id) == :not_found
+    assert @ets.get(@ets_config, session_id) == :not_found
   end
 
   test "change_user/2" do
@@ -115,8 +112,8 @@ defmodule Pow.PlugTest do
     assert changeset.data.id == 1
   end
 
-  test "create_user/2", %{ets: ets} do
-    ets.init()
+  test "create_user/2" do
+    @ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -133,8 +130,8 @@ defmodule Pow.PlugTest do
     assert conn.private[:plug_session]["auth"]
   end
 
-  test "update_user/2", %{ets: ets} do
-    ets.init()
+  test "update_user/2" do
+    @ets.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -157,8 +154,8 @@ defmodule Pow.PlugTest do
     refute conn.private[:plug_session]["auth"] == session_id
   end
 
-  test "delete_user/2", %{ets: ets} do
-    ets.init()
+  test "delete_user/2" do
+    @ets.init()
 
     opts = Session.init(@default_config)
     conn =

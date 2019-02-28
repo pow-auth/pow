@@ -23,7 +23,7 @@ defmodule Pow.Store.Backend.EtsCacheTest do
     EtsCache.put(@default_config, "key2", "value")
     :timer.sleep(100)
 
-    assert Enum.sort(EtsCache.keys(@default_config)) == ["pow:test:key1", "pow:test:key2"]
+    assert Enum.sort(EtsCache.keys(@default_config)) == ["key1", "key2"]
   end
 
   test "records auto purge" do

@@ -136,12 +136,24 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end)
   end
 
-  defp table_keys(config) do
+  defp table_keys(config, opts \\ []) do
     namespace = mnesia_key(config, "")
 
     @mnesia_cache_tab
     |> :mnesia.dirty_all_keys()
     |> Enum.filter(&String.starts_with?(&1, namespace))
+    |> maybe_remove_namespace(namespace, opts)
+  end
+
+  defp maybe_remove_namespace(keys, namespace, opts) do
+    case Keyword.get(opts, :remove_namespace, true) do
+      true ->
+        start = String.length(namespace)
+        Enum.map(keys, &String.slice(&1, start..-1))
+
+      _ ->
+        keys
+    end
   end
 
   defp table_init(config) do
@@ -177,7 +189,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   defp init_invalidators(config) do
     config
-    |> table_keys()
+    |> table_keys(remove_namespace: false)
     |> Enum.map(&init_invalidator(config, &1))
     |> Enum.reject(&is_nil/1)
     |> Enum.into(%{})
