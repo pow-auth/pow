@@ -15,35 +15,26 @@ defmodule Mix.Tasks.Pow.Install do
   """
   use Mix.Task
 
-  alias Mix.{Pow, Project}
+  alias Mix.Project
   alias Mix.Tasks.Pow.{Ecto, Phoenix}
-
-  @switches [context_app: :string, extension: :keep]
-  @default_opts []
 
   @doc false
   def run(args) do
     no_umbrella!()
 
     args
-    |> Pow.parse_options(@switches, @default_opts)
-    |> parse()
-    |> run_ecto_install(args)
-    |> run_phoenix_install(args)
+    |> run_ecto_install()
+    |> run_phoenix_install()
   end
 
-  defp parse({config, _parsed, _invalid}), do: config
-
-  defp run_ecto_install(config, args) do
+  defp run_ecto_install(args) do
     Ecto.Install.run(args)
 
-    config
+    args
   end
 
-  defp run_phoenix_install(config, args) do
+  defp run_phoenix_install(args) do
     Phoenix.Install.run(args)
-
-    config
   end
 
   defp no_umbrella! do

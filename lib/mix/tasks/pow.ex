@@ -12,11 +12,11 @@ defmodule Mix.Tasks.Pow do
   def run(args) do
     case args do
       [] -> general()
-      _ -> Mix.raise("Invalid arguments, expected: mix pow")
+      _  -> Mix.raise("Invalid arguments, expected: mix pow")
     end
   end
 
-  defp general do
+  defp general() do
     Application.ensure_all_started(:pow)
     Mix.shell().info("Pow v#{Application.spec(:pow, :vsn)}")
     Mix.shell().info("A user authentication solution for Plug and Phoenix apps.")
