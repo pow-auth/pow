@@ -20,9 +20,6 @@ defmodule Mix.Pow.Extension do
 
   @spec no_extensions_error(atom()) :: :ok
   def no_extensions_error(otp_app) do
-    Mix.shell.error(
-      """
-      No extensions was provided as arguments, or found in `config :#{otp_app}, :pow` configuration.
-      """)
+    Mix.shell.error("No extensions was provided as arguments, or found in `config :#{otp_app}, :pow` configuration.")
   end
 end

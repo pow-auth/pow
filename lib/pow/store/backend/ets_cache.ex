@@ -124,15 +124,16 @@ defmodule Pow.Store.Backend.EtsCache do
 
   defp table_keys(config) do
     namespace = ets_key(config, "")
-    keys      =
-      Stream.resource(
-        fn -> :ets.first(@ets_cache_tab) end,
-        fn :"$end_of_table" -> {:halt, nil}
-          previous_key -> {[previous_key], :ets.next(@ets_cache_tab, previous_key)} end,
-        fn _ -> :ok
-      end)
+    length    = String.length(namespace)
 
-    Enum.filter(keys, &String.starts_with?(&1, namespace))
+    Stream.resource(
+      fn -> :ets.first(@ets_cache_tab) end,
+      fn :"$end_of_table" -> {:halt, nil}
+        previous_key -> {[previous_key], :ets.next(@ets_cache_tab, previous_key)} end,
+      fn _ -> :ok
+    end)
+    |> Enum.filter(&String.starts_with?(&1, namespace))
+    |> Enum.map(&String.slice(&1, length..-1))
   end
 
   defp ets_key(config, key) do

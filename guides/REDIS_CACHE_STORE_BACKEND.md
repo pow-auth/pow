@@ -52,10 +52,11 @@ defmodule MyAppWeb.PowRedisCache do
 
   def keys(config) do
     namespace = redis_key(config, "")
+    length    = String.length(namespace)
 
     {:ok, values} = Redix.command(@redix_instance_name, ["KEYS", "#{namespace}*"])
 
-    values
+    Enum.map(values, &String.slice(&1, length..-1))
   end
 
   defp redis_key(config, key) do
@@ -94,3 +95,48 @@ config :my_app, :pow,
 ```
 
 And now you've a running Redis cache store backend!
+
+## Test
+
+Here's a test module for your new Redis cache:
+
+```elixir
+defmodule MyAppWeb.PowRedisCacheTest do
+  use ExUnit.Case
+  doctest MyAppWeb.PowRedisCache
+
+  alias MyAppWeb.PowRedisCache
+
+  @default_config [namespace: "test", ttl: :timer.hours(1)]
+
+  test "can put, get and delete records" do
+    assert PowRedisCache.get(@default_config, "key") == :not_found
+
+    PowRedisCache.put(@default_config, "key", "value")
+    :timer.sleep(100)
+    assert PowRedisCache.get(@default_config, "key") == "value"
+
+    PowRedisCache.delete(@default_config, "key")
+    :timer.sleep(100)
+    assert PowRedisCache.get(@default_config, "key") == :not_found
+  end
+
+  test "fetch keys" do
+    PowRedisCache.put(@default_config, "key1", "value")
+    PowRedisCache.put(@default_config, "key2", "value")
+    :timer.sleep(100)
+
+    assert Enum.sort(PowRedisCache.keys(@default_config)) == ["key1", "key2"]
+  end
+
+  test "records auto purge" do
+    config = Keyword.put(@default_config, :ttl, 100)
+
+    PowRedisCache.put(config, "key", "value")
+    :timer.sleep(50)
+    assert PowRedisCache.get(config, "key") == "value"
+    :timer.sleep(100)
+    assert PowRedisCache.get(config, "key") == :not_found
+  end
+end
+```

@@ -26,14 +26,6 @@ defmodule PowResetPassword.Plug do
   end
 
   @doc """
-  Fetches the assigned `:reset_password_token` in the connection.
-  """
-  @spec reset_password_token(Conn.t()) :: binary()
-  def reset_password_token(conn) do
-    conn.private[:reset_password_token]
-  end
-
-  @doc """
   Finds a user for the provided params, creates a token, and stores the user
   for the token.
   """
@@ -55,7 +47,6 @@ defmodule PowResetPassword.Plug do
   defp maybe_create_reset_token(conn, user, config) do
     token = UUID.generate()
     {store, store_config} = store(config)
-    conn = put_reset_password_token(conn, token)
 
     store.put(store_config, token, user)
 
@@ -116,10 +107,6 @@ defmodule PowResetPassword.Plug do
 
   defp reset_password_user(conn) do
     conn.assigns[:reset_password_user]
-  end
-
-  defp put_reset_password_token(conn, token) do
-    Conn.put_private(conn, :reset_password_token, token)
   end
 
   defp store(config) do
