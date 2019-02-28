@@ -18,6 +18,17 @@ defmodule Pow.Store.Backend.EtsCacheTest do
     assert EtsCache.get(@default_config, "key") == :not_found
   end
 
+  test "with no `:ttl` option" do
+    config = [namespace: "pow:test"]
+
+    EtsCache.put(config, "key", "value")
+    :timer.sleep(100)
+    assert EtsCache.get(config, "key") == "value"
+
+    EtsCache.delete(config, "key")
+    :timer.sleep(100)
+  end
+
   test "fetch keys" do
     EtsCache.put(@default_config, "key1", "value")
     EtsCache.put(@default_config, "key2", "value")

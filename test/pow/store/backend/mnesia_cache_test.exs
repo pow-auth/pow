@@ -2,7 +2,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   use ExUnit.Case
   doctest Pow.Store.Backend.MnesiaCache
 
-  alias Pow.{Config, Store.Backend.MnesiaCache}
+  alias Pow.{Config, Config.ConfigError, Store.Backend.MnesiaCache}
 
   @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
 
@@ -31,6 +31,12 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     MnesiaCache.delete(@default_config, "key")
     :timer.sleep(100)
     assert MnesiaCache.get(@default_config, "key") == :not_found
+  end
+
+  test "with no `:ttl` opt" do
+    assert_raise ConfigError, "`:ttl` configuration option is required for Pow.Store.Backend.MnesiaCache", fn ->
+      MnesiaCache.put([namespace: "pow:test"], "key", "value")
+    end
   end
 
   test "fetch keys" do

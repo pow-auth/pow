@@ -37,7 +37,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   @spec put(Config.t(), binary(), any()) :: :ok
   def put(config, key, value) do
-    GenServer.cast(__MODULE__, {:cache, config, key, value})
+    GenServer.cast(__MODULE__, {:cache, config, key, value, ttl(config)})
   end
 
   @spec delete(Config.t(), binary()) :: :ok
@@ -64,10 +64,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:ok, %{invalidators: init_invalidators(config)}}
   end
 
-  @spec handle_cast({:cache, Config.t(), binary(), any()}, map()) :: {:noreply, map()}
-  def handle_cast({:cache, config, key, value}, %{invalidators: invalidators} = state) do
-    invalidators = update_invalidators(config, invalidators, key)
-    table_update(config, key, value)
+  @spec handle_cast({:cache, Config.t(), binary(), any(), integer()}, map()) :: {:noreply, map()}
+  def handle_cast({:cache, config, key, value, ttl}, %{invalidators: invalidators} = state) do
+    invalidators = update_invalidators(config, invalidators, key, ttl)
+    table_update(config, key, value, ttl)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
@@ -89,9 +89,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  defp update_invalidators(config, invalidators, key) do
+  defp update_invalidators(config, invalidators, key, ttl) do
     invalidators = clear_invalidator(invalidators, key)
-    invalidator  = trigger_ttl(config, key, ttl(config))
+    invalidator  = trigger_ttl(config, key, ttl)
 
     Map.put(invalidators, key, invalidator)
   end
@@ -119,9 +119,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp table_update(config, key, value) do
+  defp table_update(config, key, value, ttl) do
     mnesia_key = mnesia_key(config, key)
-    value      = mnesia_value(config, key, value)
+    expire     = timestamp() + ttl
+    value      = {key, value, config, expire}
 
     :mnesia.transaction(fn ->
       :mnesia.write({@mnesia_cache_tab, mnesia_key, value})
@@ -183,10 +184,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
     "#{namespace}:#{key}"
   end
 
-  defp mnesia_value(config, key, value) do
-    {key, value, config, expire(ttl(config))}
-  end
-
   defp init_invalidators(config) do
     config
     |> table_keys(remove_namespace: false)
@@ -215,9 +212,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
     Process.send_after(self(), {:invalidate, config, key}, ttl)
   end
 
-  defp expire(nil), do: nil
-  defp expire(ttl), do: timestamp() + ttl
-
   defp timestamp, do: :os.system_time(:millisecond)
 
   defp ttl(config) do
@@ -226,5 +220,5 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   @spec raise_ttl_error :: no_return
   defp raise_ttl_error,
-    do: Config.raise_error("`:ttl` configuration option is required for #{__MODULE__}")
+    do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 end
