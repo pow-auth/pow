@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.2 (TBA)
+## v1.0.2 (2019-02-28)
 
 * Added flash error message about e-mail confirmation for when user changes e-mail with PowEmailConfirmation enabled
 * Added `new_password_changeset/3` and `confirm_password_changeset/3` to `Pow.Ecto.Schema.Changeset`
