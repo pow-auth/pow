@@ -8,5 +8,17 @@ defmodule Pow.Test.Mix.TestCase do
     :ok
   end
 
+  setup context do
+    current_shell = Mix.shell()
+
+    on_exit fn ->
+      Mix.shell(current_shell)
+    end
+
+    Mix.shell(Mix.Shell.Process)
+
+    context
+  end
+
   defp clear_tmp_files, do: File.rm_rf!("tmp")
 end

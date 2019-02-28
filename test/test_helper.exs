@@ -23,5 +23,3 @@ for extension <- [PowEmailConfirmation, PowPersistentSession, PowResetPassword] 
   endpoint_module = Module.concat([extension, TestWeb.Phoenix.Endpoint])
   {:ok, _pid} = endpoint_module.start_link()
 end
-
-Mix.shell(Mix.Shell.Process)
