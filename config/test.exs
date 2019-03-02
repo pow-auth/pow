@@ -15,7 +15,7 @@ config :pow, Pow.Ecto.Schema.Password, iterations: 1
 
 config :phoenix, :json_library, Jason
 
-extension_test_modules = [PowEmailConfirmation, PowPersistentSession, PowResetPassword]
+extension_test_modules = [PowEmailConfirmation, PowInvitation, PowPersistentSession, PowResetPassword]
 
 for extension <- extension_test_modules do
   endpoint_module = Module.concat([extension, TestWeb.Phoenix.Endpoint])

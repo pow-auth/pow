@@ -104,6 +104,10 @@ defmodule Pow.MixProject do
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
         ],
+        "lib/extensions/invitation/README.md": [
+          filename: "PowInvitation",
+          title: "PowInvitation"
+        ],
         "lib/extensions/persistent_session/README.md": [
           filename: "PowPersistentSession",
           title: "PowPersistentSession"
