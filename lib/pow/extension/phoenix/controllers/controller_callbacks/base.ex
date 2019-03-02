@@ -12,11 +12,15 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
         end
       end
   """
-  alias Pow.Config
+  alias Pow.{Config, Extension.Phoenix.Controller.Base}
 
   @doc false
-  defmacro __using__(_opts) do
+  defmacro __using__(config) do
     quote do
+      import Base, only: [__define_helper_methods__: 1]
+
+      __define_helper_methods__(unquote(config))
+
       @before_compile unquote(__MODULE__)
     end
   end

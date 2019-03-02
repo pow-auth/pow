@@ -1,7 +1,6 @@
 defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   @moduledoc false
-  use Pow.Extension.Phoenix.Controller.Base,
-    messages_backend_fallback: PowEmailConfirmation.Phoenix.Messages
+  use Pow.Extension.Phoenix.Controller.Base
 
   alias Plug.Conn
   alias PowEmailConfirmation.Plug

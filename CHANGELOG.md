@@ -3,6 +3,7 @@
 ## v1.0.3 (TBA)
 
 * Deprecated `Pow.Extension.Config.underscore_extension/1`
+* Deprecated `:messages_backend_fallback` setting for extension controllers
 * Removed deprecated macro `router_helpers/1` in `Pow.Phoenix.Controller`
 * Fixed bug in `Pow.Extension.Phoenix.Router.Base` and `Pow.Extension.Phoenix.Messages` where the full extension name wasn't used to namespace methods
 
