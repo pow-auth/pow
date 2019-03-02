@@ -31,14 +31,22 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
     args
     |> Pow.parse_options(@switches, @default_opts)
-    |> parse_structure()
+    |> parse()
     |> maybe_run_gen_templates(args)
     |> maybe_run_extensions_gen_templates(args)
     |> print_shell_instructions()
   end
 
-  defp parse_structure({config, _parsed, _invalid}) do
-    Map.put(config, :structure, Phoenix.parse_structure(config))
+  defp parse({config, parsed, _invalid}) do
+    parsed
+    |> case do
+      [schema_name | _rest] ->
+        Map.merge(config, %{schema_name: schema_name})
+
+      _ ->
+        config
+    end
+    |> Map.put(:structure, Phoenix.parse_structure(config))
   end
 
   defp maybe_run_gen_templates(%{templates: true} = config, args) do
@@ -55,10 +63,11 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   end
   defp maybe_run_extensions_gen_templates(config, _args), do: config
 
-  defp print_shell_instructions(%{structure: structure}) do
+  defp print_shell_instructions(%{structure: structure} = config) do
     context_base = structure[:context_base]
     web_base     = structure[:web_module]
     web_prefix   = structure[:web_prefix]
+    schema_name  = Map.get(config, :schema_name, "Users.User")
 
     Mix.shell.info("""
     Pow has been installed in your phoenix app!
@@ -68,7 +77,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     First, append this to `config/config.ex`:
 
     config :#{Macro.underscore(context_base)}, :pow,
-      user: #{inspect(context_base)}.Users.User,
+      user: #{inspect(context_base)}.#{schema_name},
       repo: #{inspect(context_base)}.Repo
 
     Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:

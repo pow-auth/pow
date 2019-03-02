@@ -37,6 +37,21 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
+  test "with schema name" do
+    options = @options ++ ~w(Accounts.User)
+
+    File.cd!(@tmp_path, fn ->
+      Install.run(options)
+
+      assert_received {:mix_shell, :info, [msg]}
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "user: Pow.Accounts.User,"
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
+      assert msg =~ "use Pow.Phoenix.Router"
+      assert msg =~ "pow_routes()"
+    end)
+  end
+
   test "with templates" do
     options = @options ++ ~w(--templates)
 
