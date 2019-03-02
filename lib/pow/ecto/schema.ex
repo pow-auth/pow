@@ -104,6 +104,7 @@ defmodule Pow.Ecto.Schema do
 
       unquote(__MODULE__).__pow_methods__()
       unquote(__MODULE__).__register_fields__()
+      unquote(__MODULE__).__register_assocs__()
       unquote(__MODULE__).__register_user_id_field__()
     end
   end
@@ -159,8 +160,27 @@ defmodule Pow.Ecto.Schema do
   """
   defmacro pow_user_fields do
     quote do
-      @pow_fields
-      |> unquote(__MODULE__).filter_new_fields(@ecto_fields)
+      unquote(__MODULE__).__append_assocs__(@pow_assocs, @ecto_assocs)
+      unquote(__MODULE__).__append_fields__(@pow_fields, @ecto_fields)
+    end
+  end
+
+  defmacro __append_assocs__(assocs, _ecto_assocs) do
+    quote do
+      Enum.each(unquote(assocs), fn
+        {:belongs_to, name, queryable} ->
+          belongs_to(name, queryable)
+
+        {:has_many, name, queryable, opts} ->
+          has_many(name, queryable, opts)
+      end)
+    end
+  end
+
+  defmacro __append_fields__(fields, ecto_fields) do
+    quote do
+      unquote(fields)
+      |> unquote(__MODULE__).filter_new_fields(unquote(ecto_fields))
       |> Enum.each(fn
         {name, type} ->
           field(name, type)
@@ -179,6 +199,13 @@ defmodule Pow.Ecto.Schema do
       for attr <- unquote(__MODULE__).Fields.attrs(@pow_config) do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
       end
+    end
+  end
+
+  @doc false
+  defmacro __register_assocs__ do
+    quote do
+      Module.register_attribute(__MODULE__, :pow_assocs, accumulate: true)
     end
   end
 
