@@ -174,7 +174,7 @@ Create `my_app_web/templates/registration/new.html.eex`:
 Create `my_app_web/templates/session/new.html.eex`:
 
 ```elixir
-<h2>loggin please</h2>
+<h1>Log in</h1>
 
 <%= form_for @changeset, Routes.login_path(@conn, :create), fn f -> %>
   <%= text_input f, :email %>
