@@ -4,7 +4,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
 
   template :new, :html,
   """
-  <h2>Reset password</h2>
+  <h1>Reset password</h1>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:text, {:changeset, :pow_user_id_field}}
@@ -13,7 +13,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
 
   template :edit, :html,
   """
-  <h2>Reset password</h2>
+  <h1>Reset password</h1>
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:password, :password},
