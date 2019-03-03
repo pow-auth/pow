@@ -25,6 +25,7 @@ defmodule Pow.Extension.Phoenix.Router.Base do
 
   @macrocallback routes(Pow.Config.t()) :: Macro.t()
 
+  @doc false
   defmacro __using__(_opts) do
     extension      = __MODULE__.__extension__(__CALLER__.module)
     phoenix_module = Module.concat([extension, "Phoenix"])
@@ -33,6 +34,7 @@ defmodule Pow.Extension.Phoenix.Router.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
+      @doc false
       defmacro scoped_routes(config) do
         phoenix_module = unquote(phoenix_module)
         namespace      = unquote(namespace)
@@ -48,6 +50,7 @@ defmodule Pow.Extension.Phoenix.Router.Base do
     end
   end
 
+  @doc false
   def __extension__(module) do
     [_router, _phoenix | extension] =
       module

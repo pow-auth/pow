@@ -13,6 +13,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
   """
   alias Pow.{Config, Phoenix.Controller}
 
+  @doc false
   defmacro __using__(config) do
     quote do
       use Controller, unquote(config)

@@ -2,6 +2,13 @@ defmodule Pow.Phoenix.View do
   @moduledoc """
   View macros for Pow Phoenix, that calls render methods generated with
   `Pow.Phoenix.Template`.
+
+  ## Usage
+
+      defmodule MyExtension.Phoenix.CustomView do
+        @moduledoc false
+        use Pow.Phoenix.View
+      end
   """
 
   @doc false
@@ -16,7 +23,6 @@ defmodule Pow.Phoenix.View do
   end
 
   @doc false
-  @spec __template_module__(atom()) :: atom()
   def __template_module__(view_module) do
     [name | rest] =
       view_module

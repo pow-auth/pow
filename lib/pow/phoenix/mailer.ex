@@ -32,6 +32,7 @@ defmodule Pow.Phoenix.Mailer do
   @callback cast(Mail.t()) :: any()
   @callback process(any()) :: any()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)

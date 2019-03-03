@@ -2,6 +2,20 @@ defmodule Pow.Phoenix.Controller do
   @moduledoc """
   Used with Pow Phoenix controllers to handle messages, routes and callbacks.
 
+  ## Usage
+
+      defmodule MyPowExtension.Phoenix.MyController do
+        use Pow.Phoenix.Controller
+
+        def process_new(conn, _params) do
+          {:ok, :response, conn}
+        end
+
+        def respond_new({:ok, :response, conn}) do
+          render(conn, "new.html")
+        end
+      end
+
   ## Configuration options
 
     * `:messages_backend` - See `Pow.Phoenix.Messages` for more.

@@ -27,6 +27,8 @@ defmodule Pow.Phoenix.Router do
         # ...
       end
   """
+
+  @doc false
   defmacro __using__(_opts \\ []) do
     quote do
       import unquote(__MODULE__), only: [pow_routes: 0, pow_scope: 1, pow_session_routes: 0, pow_registration_routes: 0]

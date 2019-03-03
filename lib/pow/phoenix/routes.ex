@@ -41,6 +41,7 @@ defmodule Pow.Phoenix.Routes do
   @callback path_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
   @callback url_for(Conn.t(), atom(), atom(), list(), Keyword.t()) :: binary()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)

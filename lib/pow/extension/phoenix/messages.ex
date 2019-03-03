@@ -16,8 +16,9 @@ defmodule Pow.Extension.Phoenix.Messages do
 
     Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.
   """
-  alias Pow.{Config, Extension}
+  alias Pow.Extension
 
+  @doc false
   defmacro __using__(config) do
     quote do
       unquote(config)
@@ -26,11 +27,12 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
-  @spec __messages_modules__(Config.t()) :: [atom()]
+  @doc false
   def __messages_modules__(config) do
     Extension.Config.discover_modules(config, ["Phoenix", "Messages"])
   end
 
+  @doc false
   defmacro __define_message_methods__(extension) do
     quote do
       extension = unquote(extension)
@@ -45,6 +47,7 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
+  @doc false
   defmacro __define_message_method__(extension, method_name, fallback_method) do
     quote bind_quoted: [extension: extension, method_name: method_name, fallback_method: fallback_method] do
       @spec unquote(method_name)(Conn.t()) :: Messages.message()
@@ -56,6 +59,7 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
+  @doc false
   defmacro __define_fallback_module__(extension, methods) do
     quote do
       name   = Module.concat([__MODULE__, unquote(extension)])

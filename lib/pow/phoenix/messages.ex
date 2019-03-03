@@ -28,6 +28,7 @@ defmodule Pow.Phoenix.Messages do
   @callback user_has_been_deleted(Conn.t()) :: message()
   @callback user_could_not_be_deleted(Conn.t()) :: message()
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)
