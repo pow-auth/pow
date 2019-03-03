@@ -23,7 +23,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
     case should_send_email?(user, conn.private[:pow_user_before_update]) do
       true  ->
-        error = ConfirmationController.messages(conn).email_confirmation_required_for_update(conn)
+        error = messages(conn).email_confirmation_required_for_update(conn)
         conn  = Phoenix.Controller.put_flash(conn, :error, error)
 
         send_confirmation_email(user, conn)
@@ -42,8 +42,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     send_confirmation_email(user, conn)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
-    error       = ConfirmationController.messages(conn).email_confirmation_required(conn)
-    path        = ConfirmationController.routes(conn).session_path(conn, :new)
+    error       = messages(conn).email_confirmation_required(conn)
+    path        = routes(conn).session_path(conn, :new)
     conn        =
       conn
       |> Phoenix.Controller.put_flash(:error, error)
@@ -56,7 +56,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do
     token = user.email_confirmation_token
-    url   = ConfirmationController.routes(conn).url_for(conn, ConfirmationController, :show, [token])
+    url   = routes(conn).url_for(conn, ConfirmationController, :show, [token])
     email = Mailer.email_confirmation(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
