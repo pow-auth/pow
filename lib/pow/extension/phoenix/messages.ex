@@ -21,13 +21,13 @@ defmodule Pow.Extension.Phoenix.Messages do
   defmacro __using__(config) do
     quote do
       unquote(config)
-      |> unquote(__MODULE__).__messages_extensions__()
+      |> unquote(__MODULE__).__messages_modules__()
       |> Enum.map(&unquote(__MODULE__).__define_message_methods__/1)
     end
   end
 
-  @spec __messages_extensions__(Config.t()) :: [atom()]
-  def __messages_extensions__(config) do
+  @spec __messages_modules__(Config.t()) :: [atom()]
+  def __messages_modules__(config) do
     Extension.Config.discover_modules(config, ["Phoenix", "Messages"])
   end
 

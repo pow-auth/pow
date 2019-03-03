@@ -52,7 +52,7 @@ defmodule Pow.Extension.Phoenix.Router do
 
     Module.create(router, quote do
       @config unquote(config)
-      @routers Config.discover_modules(@config, ["Phoenix", "Router"])
+      @routers unquote(__MODULE__).__router_modules__(@config)
 
       def routes do
         for router <- @routers do
@@ -69,5 +69,10 @@ defmodule Pow.Extension.Phoenix.Router do
 
   defp __router_module__(module) do
     Module.concat(module, PowExtensionRouter)
+  end
+
+  @doc false
+  def __router_modules__(config) do
+    Config.discover_modules(config, ["Phoenix", "Router"])
   end
 end

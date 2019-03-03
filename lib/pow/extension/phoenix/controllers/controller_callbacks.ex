@@ -17,7 +17,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
     @spec unquote(hook)(atom(), atom(), any(), Config.t()) :: any()
     def unquote(hook)(controller, action, results, config) do
       config
-      |> modules()
+      |> controller_callbacks_modules()
       |> Enum.reduce(results, fn
         _extension, {:halt, conn} -> {:halt, conn}
         extension, results        -> extension.unquote(hook)(controller, action, results, config)
@@ -25,7 +25,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
     end
   end
 
-  defp modules(config) do
+  defp controller_callbacks_modules(config) do
     Extension.Config.discover_modules(config, ["Phoenix", "ControllerCallbacks"])
   end
 end
