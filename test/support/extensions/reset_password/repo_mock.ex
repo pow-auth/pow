@@ -10,6 +10,7 @@ defmodule PowResetPassword.Test.RepoMock do
   def update(%{valid?: true} = changeset) do
     user = Ecto.Changeset.apply_changes(changeset)
 
+    # We store the user in the process because the user is force reloaded with `get!/2`
     Process.put({:user, 1}, user)
 
     {:ok, user}

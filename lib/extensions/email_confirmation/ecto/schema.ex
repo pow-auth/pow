@@ -32,36 +32,31 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   def changeset(changeset, _attrs, _config), do: changeset
 
   @spec confirm_email_changeset(Ecto.Schema.t() | Changeset.t()) :: Changeset.t()
-  def confirm_email_changeset(user_or_changeset) do
-    user_or_changeset
+  def confirm_email_changeset(%Changeset{data: %{unconfirmed_email: unconfirmed_email}} = changeset) when not is_nil(unconfirmed_email) do
+    confirm_email(changeset, unconfirmed_email)
+  end
+  def confirm_email_changeset(%Changeset{data: %{email_confirmed_at: confirmed_at, email: email}} = changeset) when is_nil(confirmed_at) do
+    confirm_email(changeset, email)
+  end
+  def confirm_email_changeset(%Changeset{} = changeset), do: changeset
+  def confirm_email_changeset(user) do
+    user
     |> Changeset.change()
-    |> maybe_confirm_email()
+    |> confirm_email_changeset()
   end
 
-  defp maybe_confirm_email(%{data: %{unconfirmed_email: unconfirmed_email}} = changeset) when not is_nil(unconfirmed_email) do
-    confirm_email(changeset)
-  end
-  defp maybe_confirm_email(%{data: %{email_confirmed_at: confirmed_at}} = changeset) when is_nil(confirmed_at) do
-    confirm_email(changeset)
-  end
-  defp maybe_confirm_email(changeset), do: changeset
-
-  defp confirm_email(changeset) do
-    changes = [
-      email_confirmed_at: Pow.Ecto.Schema.__timestamp_for__(changeset.data.__struct__, :email_confirmed_at),
-      email: changeset.data.unconfirmed_email || changeset.data.email,
-      unconfirmed_email: nil]
+  defp confirm_email(changeset, email) do
+    confirmed_at = Pow.Ecto.Schema.__timestamp_for__(changeset.data.__struct__, :email_confirmed_at)
+    changes      = [email_confirmed_at: confirmed_at, email: email, unconfirmed_email: nil]
 
     changeset
     |> Changeset.change(changes)
-    |> Changeset.validate_required([:email, :email_confirmed_at])
     |> Changeset.unique_constraint(:email)
   end
 
   defp maybe_put_email_confirmation_token(changeset, state, current_email, new_email) when current_email != new_email or state == :built do
     changeset
     |> Changeset.put_change(:email_confirmation_token, UUID.generate())
-    |> Changeset.validate_required([:email_confirmation_token])
     |> Changeset.unique_constraint(:email_confirmation_token)
   end
   defp maybe_put_email_confirmation_token(changeset, _state, _current_email, _new_email), do: changeset

@@ -11,10 +11,16 @@ defmodule PowResetPassword.Plug do
   """
   @spec change_user(Conn.t(), map()) :: map()
   def change_user(conn, params \\ %{}) do
-    config = Plug.fetch_config(conn)
-    user   = reset_password_user(conn) || user_struct(config)
+    user = reset_password_user(conn) || user_struct(conn)
 
-    user.__struct__.pow_password_changeset(user, params)
+    Context.password_changeset(user, params)
+  end
+
+  defp user_struct(conn) do
+    conn
+    |> Plug.fetch_config()
+    |> Context.user_schema_mod()
+    |> struct()
   end
 
   @doc """
@@ -97,12 +103,6 @@ defmodule PowResetPassword.Plug do
   defp expire_token(token, config) do
     {store, store_config} = store(config)
     store.delete(store_config, token)
-  end
-
-  defp user_struct(config) do
-    config
-    |> Context.user_schema_mod()
-    |> struct()
   end
 
   defp reset_password_user(conn) do

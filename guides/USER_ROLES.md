@@ -18,6 +18,12 @@ defmodule MyApp.Users.User do
     timestamp()
   end
 
+  def changeset(user_or_changeset, attrs) do
+    changeset_role
+    |> pow_changeset(attrs)
+    |> changeset_role(attrs)
+  end
+
   def changeset_role(user_or_changeset, attrs) do
     user_or_changeset
     |> Changeset.cast(attrs, [:role])
