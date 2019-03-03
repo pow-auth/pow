@@ -2,7 +2,9 @@
 
 This extension will send an e-mail confirmation link when the user registers, and when the user changes their e-mail. It requires that the user schema has an `:email` field.
 
-Users won't be signed in when they register, and can't sign in until the e-mail has been confirmed. The confirmation e-mail will be sent every time the sign in fails. When users are already registered, the e-mail won't be changed for a user until the user has clicked the e-mail confirmation link.
+Users won't be signed in when they register, and can't sign in until the e-mail has been confirmed. The confirmation e-mail will be sent every time the sign in fails. The user will be redirected to `after_registration_path/1` and `after_sign_in_path/1` accordingly.
+
+When users are already registered, the e-mail won't be changed for a user until the user has clicked the e-mail confirmation link.
 
 ## Installation
 
