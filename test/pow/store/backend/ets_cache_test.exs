@@ -66,11 +66,4 @@ defmodule Pow.Store.Backend.EtsCacheTest do
     assert EtsCache.get(config, "key1") == :not_found
     assert EtsCache.get(config, "key2") == :not_found
   end
-
-  # TODO: Remove by 1.1.0
-  test "backwards compatible" do
-    assert EtsCache.put(@default_config, "key", "value") == :ok
-    :timer.sleep(50)
-    assert EtsCache.keys(@default_config) == [{"key", "value"}]
-  end
 end

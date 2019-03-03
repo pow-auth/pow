@@ -7,7 +7,7 @@ defmodule Pow.MixProject do
     [
       app: :pow,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       compilers: [:phoenix] ++ Mix.compilers(),
@@ -35,8 +35,8 @@ defmodule Pow.MixProject do
 
   defp deps do
     [
-      {:ecto, "~> 2.2 or ~> 3.0"},
-      {:phoenix, "~> 1.3.0 or ~> 1.4.0"},
+      {:ecto, "~> 3.0"},
+      {:phoenix, "~> 1.4.7"},
       {:phoenix_html, ">= 2.0.0 and <= 3.0.0"},
       {:plug, ">= 1.5.0 and < 2.0.0", optional: true},
 

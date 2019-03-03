@@ -236,17 +236,9 @@ defmodule Pow.Ecto.Context do
     end
   end
 
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `Pow.Config.repo!/1` instead"
-  defdelegate repo(config), to: Config, as: :repo!
-
   defp repo_opts(config, opts) do
     config
     |> Config.get(:repo_opts, [])
     |> Keyword.take(opts)
   end
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `Pow.Config.user!/1` instead"
-  defdelegate user_schema_mod(config), to: Config, as: :user!
 end

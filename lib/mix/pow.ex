@@ -16,22 +16,6 @@ defmodule Mix.Pow do
     :ok
   end
 
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `ensure_ecto!` or `ensure_phoenix!` instead"
-  @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok | no_return
-  def ensure_dep!(task, dep, _args) do
-    fetch_deps()
-    |> top_level_dep_in_deps?(dep)
-    |> case do
-      true ->
-        :ok
-
-      false ->
-        Mix.raise("mix #{task} can only be run inside an application directory that has #{inspect dep} as dependency")
-    end
-  end
-
   @doc """
   Raises an exception if application doesn't have Ecto as dependency.
   """
@@ -53,15 +37,7 @@ defmodule Mix.Pow do
     end)
   end
 
-  # TODO: Remove by 1.1.0 and only support Elixir 1.7
-  defp fetch_deps do
-    System.version()
-    |> Version.match?("~> 1.6.0")
-    |> case do
-      true  -> apply(Dep, :loaded, [[]])
-      false -> apply(Dep, :load_on_environment, [[]])
-    end
-  end
+  defp fetch_deps, do: Dep.load_on_environment([])
 
   @doc """
   Raises an exception if application doesn't have Phoenix as dependency.
@@ -147,35 +123,11 @@ defmodule Mix.Pow do
     """)
   end
 
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Please use `Pow.Phoenix.parse_structure/1` instead"
-  @spec context_app :: atom() | no_return
-  def context_app do
-    this_app = otp_app()
-
-    this_app
-    |> Application.get_env(:generators, [])
-    |> Keyword.get(:context_app)
-    |> case do
-      nil          -> this_app
-      false        -> Mix.raise("No context_app configured for current application")
-      {app, _path} -> app
-      app          -> app
-    end
-  end
-
   @doc false
   @spec otp_app :: atom() | no_return
   def otp_app do
     Keyword.fetch!(Mix.Project.config(), :app)
   end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `app_base/1` instead"
-  @spec context_base(atom()) :: atom()
-  def context_base(app), do: app_base(app)
 
   @doc """
   Fetches the context base module for the app.

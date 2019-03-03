@@ -1,11 +1,7 @@
 defmodule Pow.Phoenix.HTML.FormTemplate do
   @moduledoc """
   Module that can build user form templates for Phoenix.
-
-  For Phoenix 1.3, or bootstrap templates, `Pow.Phoenix.HTML.Bootstrap` can be
-  used.
   """
-  alias Pow.Phoenix.HTML.Bootstrap
 
   @template EEx.compile_string(
     """
@@ -32,24 +28,12 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
   ## Options
 
     * `:button_label` - the submit button label, defaults to "Submit".
-    * `:bootstrap` - to render form as bootstrap, defaults to false with
-      phoenix 1.4 and true with phoenix 1.3.
   """
   @spec render(list(), Keyword.t()) :: Macro.t()
   def render(inputs, opts \\ []) do
     button_label = Keyword.get(opts, :button_label, "Submit")
 
-    case bootstrap?(opts) do
-      true -> Bootstrap.render_form(inputs, button_label)
-      _any -> render_form(inputs, button_label)
-    end
-  end
-
-  # TODO: Remove bootstrap support by 1.1.0 and only support Phoenix 1.4.0
-  defp bootstrap?(opts) do
-    bootstrap = Pow.dependency_vsn_match?(:phoenix, "~> 1.3.0")
-
-    Keyword.get(opts, :bootstrap, bootstrap)
+    render_form(inputs, button_label)
   end
 
   defp render_form(inputs, button_label) do

@@ -39,9 +39,4 @@ defmodule PowEmailConfirmation.Ecto.Context do
     |> user_mod.confirm_email_changeset(params)
     |> Context.do_update(config)
   end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use confirm_email/3 instead"
-  def confirm_email(user, config), do: confirm_email(user, %{}, config)
 end

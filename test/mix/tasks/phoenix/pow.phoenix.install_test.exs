@@ -106,7 +106,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
       Mix.Project.in_project(:missing_top_level_phoenix_dep, ".", fn _ ->
         # Insurance that we do test for top level phoenix inclusion
-        assert Enum.any?(deps(), fn
+        assert Enum.any?(Mix.Dep.load_on_environment([]), fn
           %{app: :phoenix} -> true
           _ -> false
         end), "Phoenix not loaded by dependency"
@@ -206,13 +206,5 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         assert File.exists?(Path.join(["lib", "my_app_web", "views", "pow_reset_password"]))
       end)
     end)
-  end
-
-  # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
-  defp deps do
-    case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do
-     true -> apply(Mix.Dep, :load_on_environment, [[]])
-     false -> apply(Mix.Dep, :loaded, [[]])
-    end
   end
 end

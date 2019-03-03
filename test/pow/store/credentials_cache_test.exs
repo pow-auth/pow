@@ -96,29 +96,6 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert ets.get(@backend_config, [CompositePrimaryFieldsUser, :user, [another_id: 2, some_id: 1]]) == user
   end
 
-  # TODO: Remove by 1.1.0
-  test "backwards compatible", %{ets: ets} do
-    user_1 = %User{id: 1}
-    timestamp = :os.system_time(:millisecond)
-
-    ets.put(@backend_config, {"key_1", {user_1, inserted_at: timestamp}})
-
-    assert CredentialsCache.get(@config, @backend_config, "key_1") == {user_1, inserted_at: timestamp}
-    assert CredentialsCache.delete(@config, @backend_config, "key_1") == :ok
-    assert CredentialsCache.get(@config, @backend_config, "key_1") == :not_found
-
-    assert CredentialsCache.user_session_keys(@config, @backend_config, User) == []
-
-    user_2 = %UsernameUser{id: 1}
-
-    CredentialsCache.put(@config, @backend_config, "key_1", {user_1, a: 1})
-    CredentialsCache.put(@config, @backend_config, "key_2", {user_1, a: 1})
-    CredentialsCache.put(@config, @backend_config, "key_3", {user_2, a: 1})
-
-    assert CredentialsCache.user_session_keys(@config, @backend_config, User) == [[Pow.Test.Ecto.Users.User, :user, 1, :session, "key_1"], [Pow.Test.Ecto.Users.User, :user, 1, :session, "key_2"]]
-    assert CredentialsCache.user_session_keys(@config, @backend_config, UsernameUser) == [[Pow.Test.Ecto.Users.UsernameUser, :user, 1, :session, "key_3"]]
-  end
-
   describe "with EtsCache backend" do
     setup do
       start_supervised!({EtsCache, []})

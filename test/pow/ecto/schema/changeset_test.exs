@@ -184,24 +184,6 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.errors[:password_hash] == {"can't be blank", [validation: :required]}
     end
 
-    # TODO: Remove by 1.1.0
-    test "handle `confirm_password` conversion" do
-      params =
-        @valid_params
-        |> Map.delete("password_confirmation")
-        |> Map.put("confirm_password", "secret1234")
-      changeset = User.changeset(%User{}, params)
-
-      assert changeset.valid?
-
-      params    = Map.put(params, "confirm_password", "invalid")
-      changeset = User.changeset(%User{}, params)
-
-      refute changeset.valid?
-      assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
-      refute changeset.errors[:password_confirmation]
-    end
-
     test "can use custom password hash methods" do
       password_hash = &(&1 <> "123")
       password_verify = &(&1 == &2 <> "123")

@@ -112,13 +112,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :timer.sleep(50)
       assert MnesiaCache.get(config, "key") == :not_found
     end
-
-    # TODO: Remove by 1.1.0
-    test "backwards compatible" do
-      assert MnesiaCache.put(@default_config, "key", "value") == :ok
-      :timer.sleep(50)
-      assert MnesiaCache.keys(@default_config) == [{"key", "value"}]
-    end
   end
 
   defp start(config) do
@@ -333,34 +326,5 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   defp connect(node_a, node_b) do
     true = :rpc.call(node_a, Node, :connect, [node_b])
     :timer.sleep(500)
-  end
-
-  # TODO: Remove by 1.1.0
-  describe "backwards compatible" do
-    setup do
-      :mnesia.kill()
-
-      File.rm_rf!("tmp/mnesia")
-      File.mkdir_p!("tmp/mnesia")
-
-      :ok
-    end
-
-    test "removes old entries" do
-      :ok = :mnesia.start()
-      {:atomic, :ok} = :mnesia.change_table_copy_type(:schema, node(), :disc_copies)
-      {:atomic, :ok} = :mnesia.create_table(MnesiaCache, type: :set, disc_copies: [node()])
-      :ok = :mnesia.wait_for_tables([MnesiaCache], :timer.seconds(15))
-
-      key = "#{@default_config[:namespace]}:key1"
-
-      :ok = :mnesia.dirty_write({MnesiaCache, key, {"key1", "test", @default_config, :os.system_time(:millisecond) + 100}})
-
-      :stopped = :mnesia.stop()
-
-      start(@default_config)
-
-      assert :mnesia.dirty_read({MnesiaCache, key}) == []
-    end
   end
 end

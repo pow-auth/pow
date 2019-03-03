@@ -87,7 +87,6 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> maybe_validate_password_hash()
   end
 
-  # TODO: Remove `confirm_password` support by 1.1.0
   @doc """
   Validates the confirm password field.
 
@@ -96,39 +95,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   `nil`.
   """
   @spec confirm_password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def confirm_password_changeset(user_or_changeset, %{confirm_password: password_confirmation} = params, _config) do
-    params =
-      params
-      |> Map.delete(:confirm_password)
-      |> Map.put(:password_confirmation, password_confirmation)
-
-    do_confirm_password_changeset(user_or_changeset, params)
-  end
-  def confirm_password_changeset(user_or_changeset, %{"confirm_password" => password_confirmation} = params, _config) do
-    params =
-      params
-      |> Map.delete("confirm_password")
-      |> Map.put("password_confirmation", password_confirmation)
-
-    convert_confirm_password_param(user_or_changeset, params)
-  end
-  def confirm_password_changeset(user_or_changeset, params, _config),
-    do: do_confirm_password_changeset(user_or_changeset, params)
-
-  # TODO: Remove by 1.1.0
-  defp convert_confirm_password_param(user_or_changeset, params) do
-    IO.warn("warning: passing `confirm_password` value to `#{inspect unquote(__MODULE__)}.confirm_password_changeset/3` has been deprecated, please use `password_confirmation` instead")
-
-    changeset = do_confirm_password_changeset(user_or_changeset, params)
-    errors    = Enum.map(changeset.errors, fn
-      {:password_confirmation, error} -> {:confirm_password, error}
-      error                           -> error
-    end)
-
-    %{changeset | errors: errors}
-  end
-
-  defp do_confirm_password_changeset(user_or_changeset, params) do
+  def confirm_password_changeset(user_or_changeset, params, _config) do
     changeset = Changeset.cast(user_or_changeset, params, [:password])
 
     changeset

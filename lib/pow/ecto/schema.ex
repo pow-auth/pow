@@ -278,10 +278,6 @@ defmodule Pow.Ecto.Schema do
     Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
   end
 
-  # TODO: Remove by 1.1.0
-  @deprecated "No longer public method"
-  def filter_new_fields(fields, existing_fields), do: __filter_new_fields__(fields, existing_fields)
-
   @doc false
   defmacro __register_fields__ do
     quote do

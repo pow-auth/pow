@@ -162,14 +162,4 @@ defmodule Pow.Store.Backend.EtsCache do
 
     Map.delete(invalidators, key)
   end
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `put/2` instead"
-  @doc false
-  def put(config, key, value), do: put(config, {key, value})
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `all/2` instead"
-  @doc false
-  def keys(config), do: all(config, :_)
 end

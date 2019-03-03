@@ -24,7 +24,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
     conn            = run_plug(conn)
-    expected_config = [mod: Session, plug: Session] ++ config
+    expected_config = [plug: Session] ++ config
 
     assert {Cookie, ^expected_config} = conn.private[:pow_persistent_session]
     refute conn.resp_cookies[@cookie_key]
@@ -219,39 +219,6 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> persistent_cookie(@cookie_key, id)
       |> run_plug()
     end
-  end
-
-  # TODO: Remove by 1.1.0
-  test "call/2 is backwards-compatible with just user fetch clause", %{conn: conn, ets: ets} do
-    user = %User{id: 1}
-    id   = store_in_cache(conn, "test", [id: user.id], backend: ets)
-    conn =
-      conn
-      |> persistent_cookie(@cookie_key, id)
-      |> run_plug()
-
-    assert Plug.current_user(conn) == user
-    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
-    refute new_id == id
-    assert get_from_cache(conn, id, backend: ets) == :not_found
-    assert get_from_cache(conn, new_id, backend: ets) == {[id: 1], []}
-  end
-
-  # TODO: Remove by 1.1.0
-  test "call/2 is backwards-compatible with `:session_fingerprint` metadata", %{conn: conn, ets: ets} do
-    user = %User{id: 1}
-    id   = store_in_cache(conn, "test", {[id: user.id], session_fingerprint: "fingerprint"}, backend: ets)
-    conn =
-      conn
-      |> persistent_cookie(@cookie_key, id)
-      |> run_plug()
-
-    assert Plug.current_user(conn) == user
-    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
-    refute new_id == id
-    assert get_from_cache(conn, id, backend: ets) == :not_found
-    assert get_from_cache(conn, new_id, backend: ets) == {[id: 1], session_metadata: [fingerprint: "fingerprint"]}
-    assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
   test "create/3 with custom TTL", %{conn: conn, config: config} do

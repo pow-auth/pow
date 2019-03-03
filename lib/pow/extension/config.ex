@@ -25,28 +25,4 @@ defmodule Pow.Extension.Config do
     |> Enum.filter(&Base.has?(&1, module_list))
     |> Enum.map(&Module.concat([&1] ++ module_list))
   end
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `extension_modules/2` instead"
-  def discover_modules(config, module_list) do
-    config
-    |> extensions()
-    |> extension_modules(module_list)
-  end
-
-  # TODO: Remove by 1.1.0
-  @doc """
-  Returns a binary of the extension atom.
-
-  This is usually used to create extension namespaces for methods to be used
-  in shared modules.
-  """
-  @deprecated "Create the namespace directly in your module"
-  @spec underscore_extension(atom()) :: binary()
-  def underscore_extension(extension) do
-    extension
-    |> Module.split()
-    |> List.first()
-    |> Macro.underscore()
-  end
 end
