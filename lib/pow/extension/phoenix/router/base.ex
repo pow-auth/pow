@@ -21,23 +21,25 @@ defmodule Pow.Extension.Phoenix.Router.Base do
         MyPowExtension.Phoenix.Router.routes(config)
       end
   """
-  alias Pow.Extension.Config
-
   @macrocallback routes(Pow.Config.t()) :: Macro.t()
 
   @doc false
   defmacro __using__(_opts) do
-    extension      = __MODULE__.__extension__(__CALLER__.module)
-    phoenix_module = Module.concat([extension, "Phoenix"])
-    namespace      = Config.underscore_extension(extension)
+    extension = __extension__(__CALLER__.module)
 
     quote do
       @behaviour unquote(__MODULE__)
 
+      unquote(__MODULE__).__create_scope_routes_method__(unquote(extension))
+    end
+  end
+
+  defmacro __create_scope_routes_method__(extension) do
+    quote do
       @doc false
       defmacro scoped_routes(config) do
-        phoenix_module = unquote(phoenix_module)
-        namespace      = unquote(namespace)
+        phoenix_module = unquote(extension).Phoenix
+        namespace      = unquote(__MODULE__).__namespace__(unquote(extension))
 
         quote location: :keep do
           require unquote(__MODULE__)
@@ -51,14 +53,22 @@ defmodule Pow.Extension.Phoenix.Router.Base do
   end
 
   @doc false
-  def __extension__(module) do
-    [_router, _phoenix | extension] =
-      module
+  def __extension__(modules) do
+    ["Router", "Phoenix" | extension] =
+      modules
       |> Module.split()
       |> Enum.reverse()
 
     extension
     |> Enum.reverse()
     |> Module.concat()
+  end
+
+  @doc false
+  def __namespace__(extension) do
+    extension
+    |> Module.split()
+    |> Enum.join()
+    |> Macro.underscore()
   end
 end

@@ -24,19 +24,19 @@ defmodule Pow.Phoenix.View do
 
   @doc false
   def __template_module__(view_module) do
-    [name | rest] =
+    [view_module | context] =
       view_module
       |> Module.split()
       |> Enum.reverse()
 
-    name =
-      name
+    template_module =
+      view_module
       |> String.trim_trailing("View")
       |> Kernel.<>("Template")
 
-    rest
+    context
     |> Enum.reverse()
-    |> Enum.concat([name])
+    |> Enum.concat([template_module])
     |> Module.concat()
   end
 end

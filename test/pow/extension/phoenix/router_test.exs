@@ -49,7 +49,7 @@ defmodule Pow.Extension.Phoenix.RouterTest do
 
   test "has routes" do
     assert unquote(Routes.pow_session_path(@conn, :new)) == "/session/new"
-    assert unquote(Routes.pow_test_path(@conn, :new)) = "/test/new"
+    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :new)) = "/test/new"
   end
 
   test "validates no aliases" do

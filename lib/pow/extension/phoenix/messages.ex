@@ -83,8 +83,20 @@ defmodule Pow.Extension.Phoenix.Messages do
   """
   @spec method_name(atom(), atom()) :: atom()
   def method_name(extension, type) do
-    namespace = Extension.Config.underscore_extension(extension)
+    namespace = namespace(extension)
 
     String.to_atom("#{namespace}_#{type}")
+  end
+
+  defp namespace(extension) do
+    ["Messages", "Phoenix" | base] =
+      extension
+      |> Module.split()
+      |> Enum.reverse()
+
+    base
+    |> Enum.reverse()
+    |> Enum.join()
+    |> Macro.underscore()
   end
 end

@@ -26,12 +26,14 @@ defmodule Pow.Extension.Config do
     |> Enum.filter(&Code.ensure_compiled?/1)
   end
 
+  # TODO: Remove by 1.1.0
   @doc """
   Returns a binary of the extension atom.
 
   This is usually used to create extension namespaces for methods to be used
   in shared modules.
   """
+  @deprecated "Create the namespace directly in your module"
   @spec underscore_extension(atom()) :: binary()
   def underscore_extension(extension) do
     extension
