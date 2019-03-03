@@ -51,17 +51,19 @@ defmodule Pow.Phoenix.ViewHelpers do
   """
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
-    web_module =
-      conn
-      |> Plug.fetch_config()
-      |> Config.get(:web_module)
-
+    web_module = web_module(conn)
     view       = view(conn, web_module)
     layout     = layout(conn, web_module)
 
     conn
     |> Controller.put_view(view)
     |> Controller.put_layout(layout)
+  end
+
+  defp web_module(conn) do
+    conn
+    |> Plug.fetch_config()
+    |> Config.get(:web_module)
   end
 
   defp view(conn, web_module) do
@@ -77,12 +79,15 @@ defmodule Pow.Phoenix.ViewHelpers do
   end
 
   defp web_base(conn) do
-    conn
-    |> Controller.endpoint_module()
-    |> split_module()
+    ["Endpoint" | web_context] =
+      conn
+      |> Controller.endpoint_module()
+      |> Module.split()
+      |> Enum.reverse()
+
+    web_context
     |> Enum.reverse()
-    |> Enum.slice(1..-1)
-    |> Enum.reverse()
+    |> Module.concat()
   end
 
   @doc """
@@ -90,42 +95,27 @@ defmodule Pow.Phoenix.ViewHelpers do
 
   If no `web_module` is provided, the Pow view module is returned.
 
-  When `web_module` is provided, the view module will be changed from e.g.
+  When `web_module` is provided, the view module will be changed from
   `Pow.Phoenix.RegistrationView` to `CustomWeb.Pow.RegistrationView`
   """
   @spec build_view_module(module(), module() | nil) :: module()
-  def build_view_module(pow_view, nil), do: pow_view
-  def build_view_module(pow_view, web_module) when is_atom(web_module) do
-    web_module_pow = web_module_pow(pow_view, web_module)
+  def build_view_module(default_view, nil), do: default_view
+  def build_view_module(default_view, web_module) when is_atom(web_module) do
+    [base, view] = split_default_view(default_view)
 
-    prepend_web_module(pow_view, web_module_pow)
+    Module.concat([web_module, base, view])
   end
 
-  defp web_module_pow(pow_view, web_module) do
-    [pow_base_module | _rest] = split_module(pow_view)
-
-    split_module(web_module) ++ [pow_base_module]
-  end
-
-  defp build_layout({pow_view, template}, web_module) when is_atom(web_module) do
-    build_layout({pow_view, template}, split_module(web_module))
-  end
-  defp build_layout({pow_view, template}, web_module) do
-    view = prepend_web_module(pow_view, web_module)
+  defp build_layout({default_view, template}, web_module) do
+    [_base, view] = split_default_view(default_view)
+    view = Module.concat([web_module, view])
 
     {view, template}
   end
 
-  defp prepend_web_module(pow_view, base) when is_atom(pow_view) do
-    pow_view
-    |> split_module()
-    |> prepend_web_module(base)
+  defp split_default_view(module) do
+    module
+    |> Atom.to_string()
+    |> String.split(".Phoenix.")
   end
-  defp prepend_web_module([_pow_base, "Phoenix" | rest], base) do
-    base
-    |> Enum.concat(rest)
-    |> Module.concat()
-  end
-
-  defp split_module(module) when is_atom(module), do: Module.split(module)
 end

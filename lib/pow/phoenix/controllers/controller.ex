@@ -2,6 +2,20 @@ defmodule Pow.Phoenix.Controller do
   @moduledoc """
   Used with Pow Phoenix controllers to handle messages, routes and callbacks.
 
+  ## Usage
+
+      defmodule MyPowExtension.Phoenix.MyController do
+        use Pow.Phoenix.Controller
+
+        def process_new(conn, _params) do
+          {:ok, :response, conn}
+        end
+
+        def respond_new({:ok, :response, conn}) do
+          render(conn, "new.html")
+        end
+      end
+
   ## Configuration options
 
     * `:messages_backend` - See `Pow.Phoenix.Messages` for more.
@@ -65,9 +79,6 @@ defmodule Pow.Phoenix.Controller do
       end
 
       defoverridable messages: 1, routes: 1
-
-      # TODO: Remove by 1.0.0
-      import unquote(__MODULE__), only: [router_helpers: 1]
     end
   end
 
@@ -123,16 +134,6 @@ defmodule Pow.Phoenix.Controller do
     conn
     |> Plug.fetch_config()
     |> Config.get(:routes_backend, fallback)
-  end
-
-  # TODO: Remove by 1.0.0
-  @doc """
-  Fetches router helpers module from connection.
-  """
-  @deprecated "Call the router module directly instead."
-  @spec router_helpers(Conn.t()) :: atom()
-  def router_helpers(%{private: private}) do
-    Module.concat([private.phoenix_router, Helpers])
   end
 
   @spec route_helper(atom()) :: binary()

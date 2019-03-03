@@ -14,12 +14,14 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
   """
   alias Pow.Config
 
+  @doc false
   defmacro __using__(_opts) do
     quote do
       @before_compile unquote(__MODULE__)
     end
   end
 
+  @doc false
   defmacro __before_compile__(_opts) do
     for hook <- [:before_process, :before_respond] do
       quote do

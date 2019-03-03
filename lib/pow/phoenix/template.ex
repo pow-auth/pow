@@ -13,6 +13,8 @@ defmodule Pow.Phoenix.Template do
 
       MyApp.ResourceTemplate.render("new.html", assigns)
   """
+
+  @doc false
   defmacro __using__(_opts) do
     quote do
       import unquote(__MODULE__)

@@ -16,21 +16,23 @@ defmodule Pow.Extension.Phoenix.Messages do
 
     Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.
   """
-  alias Pow.{Config, Extension}
+  alias Pow.Extension
 
+  @doc false
   defmacro __using__(config) do
     quote do
       unquote(config)
-      |> unquote(__MODULE__).__messages_extensions__()
+      |> unquote(__MODULE__).__messages_modules__()
       |> Enum.map(&unquote(__MODULE__).__define_message_methods__/1)
     end
   end
 
-  @spec __messages_extensions__(Config.t()) :: [atom()]
-  def __messages_extensions__(config) do
+  @doc false
+  def __messages_modules__(config) do
     Extension.Config.discover_modules(config, ["Phoenix", "Messages"])
   end
 
+  @doc false
   defmacro __define_message_methods__(extension) do
     quote do
       extension = unquote(extension)
@@ -45,6 +47,7 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
+  @doc false
   defmacro __define_message_method__(extension, method_name, fallback_method) do
     quote bind_quoted: [extension: extension, method_name: method_name, fallback_method: fallback_method] do
       @spec unquote(method_name)(Conn.t()) :: Messages.message()
@@ -56,6 +59,7 @@ defmodule Pow.Extension.Phoenix.Messages do
     end
   end
 
+  @doc false
   defmacro __define_fallback_module__(extension, methods) do
     quote do
       name   = Module.concat([__MODULE__, unquote(extension)])
@@ -79,8 +83,20 @@ defmodule Pow.Extension.Phoenix.Messages do
   """
   @spec method_name(atom(), atom()) :: atom()
   def method_name(extension, type) do
-    namespace = Extension.Config.underscore_extension(extension)
+    namespace = namespace(extension)
 
     String.to_atom("#{namespace}_#{type}")
+  end
+
+  defp namespace(extension) do
+    ["Messages", "Phoenix" | base] =
+      extension
+      |> Module.split()
+      |> Enum.reverse()
+
+    base
+    |> Enum.reverse()
+    |> Enum.join()
+    |> Macro.underscore()
   end
 end

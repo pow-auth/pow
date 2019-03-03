@@ -30,8 +30,9 @@ defmodule Pow.Extension.Phoenix.Router do
   """
   alias Pow.{Extension.Config, Phoenix.Router}
 
+  @doc false
   defmacro __using__(config \\ []) do
-    __create_routers_module__(__CALLER__.module, config)
+    create_routers_module(__CALLER__.module, config)
 
     quote do
       @pow_extension_config unquote(config)
@@ -44,15 +45,15 @@ defmodule Pow.Extension.Phoenix.Router do
   A macro that will call the router method in all extension router modules.
   """
   defmacro pow_extension_routes do
-    __router_module__(__CALLER__.module).routes()
+    router_module(__CALLER__.module).routes()
   end
 
-  defp __create_routers_module__(module, config) do
-    router = __router_module__(module)
+  defp create_routers_module(module, config) do
+    router = router_module(module)
 
     Module.create(router, quote do
       @config unquote(config)
-      @routers Config.discover_modules(@config, ["Phoenix", "Router"])
+      @routers unquote(__MODULE__).__router_modules__(@config)
 
       def routes do
         for router <- @routers do
@@ -67,7 +68,12 @@ defmodule Pow.Extension.Phoenix.Router do
     end, __ENV__)
   end
 
-  defp __router_module__(module) do
+  defp router_module(module) do
     Module.concat(module, PowExtensionRouter)
+  end
+
+  @doc false
+  def __router_modules__(config) do
+    Config.discover_modules(config, ["Phoenix", "Router"])
   end
 end

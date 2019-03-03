@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.3 (TBA)
+
+* Deprecated `Pow.Extension.Config.underscore_extension/1`
+* Removed deprecated macro `router_helpers/1` in `Pow.Phoenix.Controller`
+* Fixed bug in `Pow.Extension.Phoenix.Router.Base` and `Pow.Extension.Phoenix.Messages` where the full extension name wasn't used to namespace methods
+
 ## v1.0.2 (2019-02-28)
 
 * Added flash error message about e-mail confirmation for when user changes e-mail with PowEmailConfirmation enabled

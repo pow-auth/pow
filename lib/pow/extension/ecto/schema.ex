@@ -49,6 +49,7 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
+  @doc false
   defmacro __register_extension_fields__ do
     quote do
       config = Module.get_attribute(__MODULE__, :pow_extension_config)
@@ -60,6 +61,7 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
+  @doc false
   defmacro __pow_extension_methods__ do
     quote do
       @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
@@ -69,6 +71,7 @@ defmodule Pow.Extension.Ecto.Schema do
     end
   end
 
+  @doc false
   defmacro __register_after_compile_validation__ do
     quote do
       def validate_after_compilation!(env, _bytecode) do
@@ -89,7 +92,7 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec attrs(Config.t()) :: [tuple]
   def attrs(config) do
     config
-    |> __schema_extensions__()
+    |> schema_modules()
     |> Enum.reduce([], fn extension, attrs ->
       extension_attrs = extension.attrs(config)
 
@@ -107,7 +110,7 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec indexes(Config.t()) :: [tuple]
   def indexes(config) do
     config
-    |> __schema_extensions__()
+    |> schema_modules()
     |> Enum.reduce([], fn extension, indexes ->
       extension_indexes = extension.indexes(config)
 
@@ -125,7 +128,7 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
   def changeset(changeset, attrs, config) do
     config
-    |> __schema_extensions__()
+    |> schema_modules()
     |> Enum.reduce(changeset, fn extension, changeset ->
       extension.changeset(changeset, attrs, config)
     end)
@@ -141,17 +144,13 @@ defmodule Pow.Extension.Ecto.Schema do
   @spec validate!(Config.t(), atom()) :: :ok | no_return
   def validate!(config, module) do
     config
-    |> __schema_extensions__()
+    |> schema_modules()
     |> Enum.each(& &1.validate!(config, module))
 
     :ok
   end
 
-  @doc """
-  Fetches all existing Ecto.Schema modules in the extensions.
-  """
-  @spec __schema_extensions__(Config.t()) :: [atom()]
-  def __schema_extensions__(config) do
+  defp schema_modules(config) do
     Extension.Config.discover_modules(config, ["Ecto", "Schema"])
   end
 

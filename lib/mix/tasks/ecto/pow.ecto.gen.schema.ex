@@ -45,18 +45,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
     schema_plural = Map.get(config, :schema_plural, "users")
     schema        = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
     content       = SchemaModule.gen(schema)
-    dir_name      =
-      schema.schema_name
-      |> String.split(".")
-      |> Enum.slice(0..-2)
-      |> Enum.join(".")
-      |> Macro.underscore()
-    file_name    =
-      schema.module
-      |> Module.split()
-      |> List.last()
-      |> Macro.underscore()
-      |> Kernel.<>(".ex")
+    dir_name      = dir_name(schema_name)
+    file_name     = file_name(schema.module)
 
     context_app
     |> Pow.context_lib_path(dir_name)
@@ -64,6 +54,22 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
     |> Path.join(file_name)
     |> ensure_unique()
     |> Generator.create_file(content)
+  end
+
+  defp dir_name(schema_name) do
+    schema_name
+    |> String.split(".")
+    |> Enum.slice(0..-2)
+    |> Enum.join(".")
+    |> Macro.underscore()
+  end
+
+  defp file_name(module) do
+    module
+    |> Module.split()
+    |> List.last()
+    |> Macro.underscore()
+    |> Kernel.<>(".ex")
   end
 
   defp maybe_create_directory(path) do
