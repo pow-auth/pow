@@ -79,9 +79,6 @@ defmodule Pow.Phoenix.Controller do
       end
 
       defoverridable messages: 1, routes: 1
-
-      # TODO: Remove by 1.0.0
-      import unquote(__MODULE__), only: [router_helpers: 1]
     end
   end
 
@@ -137,16 +134,6 @@ defmodule Pow.Phoenix.Controller do
     conn
     |> Plug.fetch_config()
     |> Config.get(:routes_backend, fallback)
-  end
-
-  # TODO: Remove by 1.0.0
-  @doc """
-  Fetches router helpers module from connection.
-  """
-  @deprecated "Call the router module directly instead."
-  @spec router_helpers(Conn.t()) :: atom()
-  def router_helpers(%{private: private}) do
-    Module.concat([private.phoenix_router, Helpers])
   end
 
   @spec route_helper(atom()) :: binary()
