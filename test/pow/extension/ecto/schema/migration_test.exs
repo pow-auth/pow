@@ -17,16 +17,18 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
 
   alias Pow.Extension.Ecto.Schema.Migration
 
+  @extension "PowExtensionEctoSchemaMigrationTest"
+
   test "new/1" do
     schema = Migration.new(__MODULE__, Pow, "users", [])
 
-    assert schema.migration_name == "AddMigrationTestToUsers"
+    assert schema.migration_name == "Add#{@extension}ToUsers"
     assert schema.repo == Pow.Repo
     refute schema.binary_id
 
     schema = Migration.new(__MODULE__, Test, "organizations", binary_id: true)
 
-    assert schema.migration_name == "AddMigrationTestToOrganizations"
+    assert schema.migration_name == "Add#{@extension}ToOrganizations"
     assert schema.repo == Test.Repo
     assert schema.binary_id
   end
@@ -34,13 +36,13 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
   test "gen/1" do
     content = Migration.gen(Migration.new(__MODULE__, Pow, "users"))
 
-    assert content =~ "defmodule Pow.Repo.Migrations.AddMigrationTestToUsers do"
+    assert content =~ "defmodule Pow.Repo.Migrations.Add#{@extension}ToUsers do"
     assert content =~ "alter table(:users)"
     assert content =~ "add :custom_string, :string, null: false"
     assert content =~ "add :custom_at, :utc_datetime"
     assert content =~ "create unique_index(:users, [:custom_string])"
 
     content = Migration.gen(Migration.new(__MODULE__, Test, "users"))
-    assert content =~ "defmodule Test.Repo.Migrations.AddMigrationTestToUsers do"
+    assert content =~ "defmodule Test.Repo.Migrations.Add#{@extension}ToUsers do"
   end
 end

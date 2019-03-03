@@ -37,7 +37,7 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     extension_name =
       extension
       |> Module.split()
-      |> List.last()
+      |> Enum.join()
 
     "Add#{extension_name}To#{Macro.camelize(table)}"
   end
