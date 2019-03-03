@@ -35,7 +35,7 @@ defmodule Pow.Ecto.SchemaTest do
     end
   end
 
-  test "schema/2 with overriden fields" do
+  test "schema/2 with overridden fields" do
     user = %OverrideFieldUser{}
 
     assert Map.has_key?(user, :password_hash)
