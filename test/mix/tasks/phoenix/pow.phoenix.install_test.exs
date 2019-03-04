@@ -43,12 +43,8 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     File.cd!(@tmp_path, fn ->
       Install.run(options)
 
-      assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "config :pow, :pow,"
+      assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
       assert msg =~ "user: Pow.Accounts.User,"
-      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
-      assert msg =~ "use Pow.Phoenix.Router"
-      assert msg =~ "pow_routes()"
     end)
   end
 
