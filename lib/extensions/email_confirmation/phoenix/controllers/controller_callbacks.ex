@@ -6,12 +6,14 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   alias Pow.Plug
   alias PowEmailConfirmation.Phoenix.{ConfirmationController, Mailer}
 
+  @impl true
   def before_process(Pow.Phoenix.RegistrationController, :update, conn, _config) do
     user = Plug.current_user(conn)
 
     Conn.put_private(conn, :pow_user_before_update, user)
   end
 
+  @impl true
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     conn
     |> Plug.current_user()
