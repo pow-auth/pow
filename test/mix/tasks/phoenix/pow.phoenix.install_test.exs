@@ -37,17 +37,6 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
-  test "with schema name" do
-    options = @options ++ ~w(Accounts.User)
-
-    File.cd!(@tmp_path, fn ->
-      Install.run(options)
-
-      assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
-      assert msg =~ "user: Pow.Accounts.User,"
-    end)
-  end
-
   test "with templates" do
     options = @options ++ ~w(--templates)
 

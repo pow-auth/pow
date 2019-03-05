@@ -29,13 +29,9 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   end
 
   defp parse({config, parsed, _invalid}) do
-    case parsed do
-      [_schema_name, schema_plural | _rest] ->
-        Map.merge(config, %{schema_plural: schema_plural})
-
-      _ ->
-        config
-    end
+    parsed
+    |> Pow.schema_options_from_args()
+    |> Map.merge(config)
   end
 
   defp create_migrations_files(config, args) do
@@ -46,9 +42,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
     |> Enum.each(&create_migration_files/1)
   end
 
-  defp create_migration_files(%{repo: repo, binary_id: binary_id} = config) do
+  defp create_migration_files(%{repo: repo, binary_id: binary_id, schema_plural: schema_plural}) do
     context_base  = Pow.context_base(Pow.context_app())
-    schema_plural = Map.get(config, :schema_plural, "users")
     schema        = SchemaMigration.new(context_base, schema_plural, repo: repo, binary_id: binary_id)
     content       = SchemaMigration.gen(schema)
 
