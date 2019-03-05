@@ -1,23 +1,21 @@
 defmodule Mix.Tasks.Pow.Ecto.Install do
-  @shortdoc "Generates user schema module and migrations file"
+  @shortdoc "Generates user schema module and migration file(s)"
 
   @moduledoc """
-  Generates a user schema module and migrations file.
+  Generates a user schema module and migration file(s).
 
       mix pow.ecto.install -r MyApp.Repo
 
       mix pow.ecto.install -r MyApp.Repo Accounts.Organization organizations
 
-  This generator will add the following files to `lib/`:
-
-    * a schema in `lib/my_app/users/user.ex` for `users` table
-    * a migration file in `priv/repo/migrations` for `users` table
+  See `Mix.Tasks.Pow.Ecto.Gen.Schema`, `Mix.Tasks.Pow.Ecto.Gen.Migration`
+  and `Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations` for more.
 
   ## Arguments
 
-    * `--no-migrations` don't generate migration files
-    * `--no-schema` don't generate schema file
-    * `--extension` extension to generate migrations for
+    * `--no-migrations` - don't generate migration files
+    * `--no-schema` - don't generate schema file
+    * `--extension` - extensions to generate migrations for
   """
   use Mix.Task
 
@@ -30,7 +28,7 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
   @default_opts [migrations: true, schema: true]
   @mix_task "pow.ecto.install"
 
-  @doc false
+  @impl true
   def run(args) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_ecto!(@mix_task, args)

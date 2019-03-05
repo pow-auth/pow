@@ -1,14 +1,16 @@
 defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
-  @shortdoc "Generates Pow views and templates"
+  @shortdoc "Generates views and templates"
 
   @moduledoc """
-  Generates pow templates for Phoenix.
+  Generates views and templates.
 
       mix pow.phoenix.gen.templates
 
+      mix pow.phoenix.gen.templates --context-app my_app
+
   ## Arguments
 
-    * `--context-app MyApp` app to use for path and module names
+    * `--context-app` app to use for path and module names
   """
   use Mix.Task
 
@@ -18,8 +20,10 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   @default_opts []
   @mix_task "pow.phoenix.gen.templates"
 
-  @doc false
+  @impl true
   def run(args), do: run(args, Pow.schema_options_from_args())
+
+  @doc false
   def run(args, schema_opts) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_phoenix!(@mix_task, args)

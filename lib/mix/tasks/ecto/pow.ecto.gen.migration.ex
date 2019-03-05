@@ -7,6 +7,14 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
       mix pow.ecto.gen.migration -r MyApp.Repo
 
       mix pow.ecto.gen.migration -r MyApp.Repo Accounts.Organization organizations
+
+  This generator will add a migration file in `priv/repo/migrations` for the
+  `users` table
+
+  ## Arguments
+
+    * `-r`, `--repo` - the repo module
+    * `--binary-id` - use binary id for primary key
   """
   use Mix.Task
 
@@ -17,7 +25,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   @default_opts [binary_id: false]
   @mix_task "pow.ecto.install"
 
-  @doc false
+  @impl true
   def run(args) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_ecto!(@mix_task, args)

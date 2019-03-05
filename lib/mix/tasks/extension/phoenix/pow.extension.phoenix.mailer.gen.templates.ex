@@ -1,23 +1,17 @@
 defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
-  @shortdoc "Generates Pow mailer extension views and templates"
+  @shortdoc "Generates mailer views and templates for extensions"
 
   @moduledoc """
-  Generates Pow mailer extension templates for Phoenix.
+  Generates mailer views and templates for extensions.
 
-  ## Usage
+      mix pow.extension.phoenix.mailer.gen.templates --extension PowEmailConfirmation --extension PowResetPassword
 
-  Install extension mailer templates explicitly:
-
-      mix pow.extension.phoenix.mailer.gen.templates --extension PowEmailConfirmation
-
-  Use the context app configuration environment for extensions:
-
-      mix pow.extension.phoenix.mailer.gen.templates --context-app my_app
+      mix pow.extension.phoenix.mailer.gen.templates --context-app my_app --extension PowEmailConfirmation
 
   ## Arguments
 
-    * `--extension PowResetPassword` extension to include in generation
-    * `--context-app MyApp` app to use for path and module names
+    * `--extension` extension to generate templates for
+    * `--context-app` app to use for path and module names
   """
   use Mix.Task
 
@@ -27,7 +21,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
   @default_opts []
   @mix_task "pow.extension.phoenix.mailer.gen.templates"
 
-  @doc false
+  @impl true
   def run(args) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_phoenix!(@mix_task, args)

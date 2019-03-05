@@ -1,22 +1,18 @@
 defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
-  @shortdoc "Generates user extension migration files"
+  @shortdoc "Generates user migration files for extensions"
 
   @moduledoc """
-  Generates a migration files for extensions.
+  Generates user migration files for extensions.
 
-  ## Usage
+      mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation --extension PowResetPassword
 
-  Install migration files for extensions explicitly:
+      mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation Accounts.Organization organizations
 
-      mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation
+  ## Arguments
 
-      mix pow.extension.ecto.gen.migrations -r MyApp.Repo Accounts.Organization organizations --extension PowEmailConfirmation
-
-  Use the context app configuration environment for extensions:
-
-      mix pow.extension.ecto.gen.migrations -r MyApp.Repo
-
-      mix pow.extension.ecto.gen.migrations -r MyApp.Repo Accounts.Organization organizations
+    * `-r`, `--repo` - the repo module
+    * `--extension` - the extension to generate the migration for
+    * `--binary-id` - use binary id for primary key
   """
   use Mix.Task
 
@@ -27,7 +23,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   @default_opts [binary_id: false]
   @mix_task "pow.extension.ecto.gen.migrations"
 
-  @doc false
+  @impl true
   def run(args) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_ecto!(@mix_task, args)

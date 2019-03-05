@@ -1,18 +1,25 @@
 defmodule Mix.Tasks.Pow.Phoenix.Install do
-  @shortdoc "Generates user schema module, migration files, templates and views"
+  @shortdoc "Prints instructions for setting up Pow with Phoenix"
 
   @moduledoc """
-  Generates a user schema module and migration files.
+  Prints instructions fo setting up Pow with Phoenix.
 
       mix pow.phoenix.install -r MyApp.Repo
 
-  With `--templates` flag, `Mix.Tasks.Pow.Phoenix.Gen.Templates` and
-  `Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates` will be called.
+      mix pow.phoenix.install -r MyApp.Repo --context-app :my_app
+
+      mix pow.phoenix.install -r MyApp.Repo --templates --extension PowResetPassword
+
+  Templates are only generated when `--templates` argument is provided.
+
+  See `Mix.Tasks.Pow.Phoenix.Gen.Templates` and
+  `Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates` for more.
 
   ## Arguments
 
+    * `--context-app` app to use for path and module names
     * `--templates` generate templates and views
-    * `--extension` extension to generatetemplates and views for
+    * `--extension` - extensions to generate templates for
   """
   use Mix.Task
 
@@ -20,12 +27,14 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
   alias Mix.{Pow, Pow.Phoenix}
 
-  @switches [context_app: :string, migrations: :boolean, schema: :boolean, templates: :boolean, extension: :keep]
-  @default_opts [migrations: true, schema: true, templates: false]
+  @switches [context_app: :string, templates: :boolean, extension: :keep]
+  @default_opts [templates: false]
   @mix_task "pow.phoenix.install"
 
-  @doc false
+  @impl true
   def run(args), do: run(args, Pow.schema_options_from_args())
+
+  @doc false
   def run(args, schema_opts) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_phoenix!(@mix_task, args)
