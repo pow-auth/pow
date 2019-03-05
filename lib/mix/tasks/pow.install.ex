@@ -6,6 +6,8 @@ defmodule Mix.Tasks.Pow.Install do
 
       mix pow.install -r MyApp.Repo
 
+      mix pow.install -r MyApp.Repo Accounts.Organization organizations
+
   ## Arguments
 
     * `--templates` generate templates and views
@@ -16,7 +18,7 @@ defmodule Mix.Tasks.Pow.Install do
   use Mix.Task
 
   alias Mix.Project
-  alias Mix.Tasks.Pow.{Ecto, Phoenix}
+  alias Mix.{Pow, Tasks.Pow.Ecto, Tasks.Pow.Phoenix}
 
   @doc false
   def run(args) do
@@ -34,7 +36,16 @@ defmodule Mix.Tasks.Pow.Install do
   end
 
   defp run_phoenix_install(args) do
-    Phoenix.Install.run(args)
+    Phoenix.Install.run(args, schema_opts(args))
+  end
+
+  defp schema_opts({_config, parsed, _invalid}) do
+    Pow.schema_options_from_args(parsed)
+  end
+  defp schema_opts(args) when is_list(args) do
+    args
+    |> Pow.parse_options([], [])
+    |> schema_opts()
   end
 
   defp no_umbrella! do

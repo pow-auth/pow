@@ -19,14 +19,15 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   @mix_task "pow.phoenix.gen.templates"
 
   @doc false
-  def run(args) do
+  def run(args), do: run(args, Pow.schema_options_from_args())
+  def run(args, schema_opts) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_phoenix!(@mix_task, args)
 
     args
     |> Pow.parse_options(@switches, @default_opts)
     |> create_template_files()
-    |> print_shell_instructions()
+    |> print_shell_instructions(schema_opts)
   end
 
   @templates [
@@ -48,14 +49,14 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     %{context_base: context_base, web_module: web_module}
   end
 
-  defp print_shell_instructions(%{context_base: context_base, web_module: web_base}) do
+  defp print_shell_instructions(%{context_base: context_base, web_module: web_base}, %{schema_name: schema_name}) do
     Mix.shell.info("""
     Pow Phoenix templates and views has been generated.
 
     Please add `web_module: #{inspect(web_base)}` to your configuration.
 
     config :#{Macro.underscore(context_base)}, :pow,
-      user: #{inspect(context_base)}.Users.User,
+      user: #{inspect(context_base)}.#{schema_name},
       repo: #{inspect(context_base)}.Repo,
       web_module: #{inspect(web_base)}
     """)

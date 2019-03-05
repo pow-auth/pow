@@ -29,20 +29,14 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   end
 
   defp parse({config, parsed, _invalid}) do
-    case parsed do
-      [schema_name, schema_plural | _rest] ->
-        Map.merge(config, %{schema_name: schema_name, schema_plural: schema_plural})
-
-      _ ->
-        config
-    end
+    parsed
+    |> Pow.schema_options_from_args()
+    |> Map.merge(config)
   end
 
-  defp create_schema_file(%{binary_id: binary_id} = config) do
+  defp create_schema_file(%{binary_id: binary_id, schema_name: schema_name, schema_plural: schema_plural} = config) do
     context_app   = Map.get(config, :context_app, Pow.context_app())
     context_base  = Pow.context_base(context_app)
-    schema_name   = Map.get(config, :schema_name, "Users.User")
-    schema_plural = Map.get(config, :schema_plural, "users")
     schema        = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
     content       = SchemaModule.gen(schema)
     dir_name      = dir_name(schema_name)

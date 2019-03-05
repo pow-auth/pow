@@ -22,6 +22,17 @@ defmodule Mix.Tasks.Pow.InstallTest do
     end)
   end
 
+  test "with schema name and table" do
+    options = ~w(Accounts.Organization users)
+
+    File.cd!(@tmp_path, fn ->
+      Install.run(options)
+
+      assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
+      assert msg =~ "user: Pow.Accounts.Organization"
+    end)
+  end
+
   test "raises error in umbrella app" do
     File.cd!(@tmp_path, fn ->
       File.write!("mix.exs", """

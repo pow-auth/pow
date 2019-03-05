@@ -94,6 +94,14 @@ defmodule Mix.Pow do
     do: config
 
   @doc """
+  Parses arguments into schema name and schema plural.
+  """
+  @spec schema_options_from_args([binary()]) :: map()
+  def schema_options_from_args(_opts \\ [])
+  def schema_options_from_args([schema_name, schema_plural | _rest]), do: %{schema_name: schema_name, schema_plural: schema_plural}
+  def schema_options_from_args(_any), do: %{schema_name: "Users.User", schema_plural: "users"}
+
+  @doc """
   Fetches context app for the project.
   """
   @spec context_app :: atom() | no_return
