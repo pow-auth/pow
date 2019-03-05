@@ -2,6 +2,7 @@
 
 ## v1.0.3 (TBA)
 
+* Correct shell instructions for `mix pow.install` task with custom schema
 * Deprecated `Pow.Extension.Config.underscore_extension/1`
 * Deprecated `:messages_backend_fallback` setting for extension controllers
 * Removed deprecated macro `router_helpers/1` in `Pow.Phoenix.Controller`
