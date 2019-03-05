@@ -1,23 +1,17 @@
 defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
-  @shortdoc "Generates pow extension views and templates"
+  @shortdoc "Generates views and templates for extensions"
 
   @moduledoc """
-  Generates pow extension templates for Phoenix.
+  Generates views and templates for extensions.
 
-  ## Usage
+      mix pow.extension.phoenix.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 
-  Install extension templates explicitly:
-
-      mix pow.extension.phoenix.gen.templates --extension PowResetPassword
-
-  Use the context app configuration environment for extensions:
-
-      mix pow.extension.phoenix.gen.templates --context-app my_app
+      mix pow.extension.phoenix.gen.templates --context-app my_app --extension PowResetPassword
 
   ## Arguments
 
-    * `--extension PowResetPassword` extension to include in generation
-    * `--context-app MyApp` app to use for path and module names
+    * `--extension` - extension to generate templates for
+    * `--context-app` - context app to use for path and module names
   """
   use Mix.Task
 
@@ -27,7 +21,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   @default_opts []
   @mix_task "pow.extension.phoenix.gen.templates"
 
-  @doc false
+  @impl true
   def run(args) do
     Pow.no_umbrella!(@mix_task)
     Pow.ensure_phoenix!(@mix_task, args)

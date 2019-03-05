@@ -1,26 +1,22 @@
 defmodule Mix.Tasks.Pow.Install do
-  @shortdoc "Installs Pow"
+  @shortdoc "Runs install mix tasks for Ecto and Phoenix"
 
   @moduledoc """
-  Will generate pow module files, a user schema module, migrations file.
+  Runs install mix tasks for Ecto and Phoenix.
 
       mix pow.install -r MyApp.Repo
 
       mix pow.install -r MyApp.Repo Accounts.Organization organizations
 
-  ## Arguments
-
-    * `--templates` generate templates and views
-    * `--no-migrations` don't generate migration files
-    * `--no-schema` don't generate schema file
-    * `--extension` extension to generate templates and views for
+  See `Mix.Tasks.Pow.Ecto.Install` and `Mix.Tasks.Pow.Phoenix.Install` for
+  more.
   """
   use Mix.Task
 
   alias Mix.Project
   alias Mix.{Pow, Tasks.Pow.Ecto, Tasks.Pow.Phoenix}
 
-  @doc false
+  @impl true
   def run(args) do
     no_umbrella!()
 

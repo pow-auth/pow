@@ -5,10 +5,11 @@ defmodule Mix.Tasks.Pow do
 
   @moduledoc """
   Prints Pow tasks and their information.
+
       mix pow
   """
 
-  @doc false
+  @impl true
   def run(args) do
     case args do
       [] -> general()
