@@ -17,7 +17,7 @@ for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] 
   web_module = Module.concat([extension, TestWeb])
 
   config :pow, Module.concat([web_module, Phoenix.Endpoint]),
-    render_errors: [view: Module.concat([web_module, Phoenix.ErrorView]), accepts: ~w(html json)],
+    render_errors: [view: Pow.Test.Phoenix.ErrorView, accepts: ~w(html json)],
     secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 end
 

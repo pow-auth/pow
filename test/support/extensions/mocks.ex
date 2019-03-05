@@ -33,8 +33,9 @@ defmodule Pow.Test.ExtensionMocks do
     web_module     = String.to_atom("#{context_module}Web")
     cache_backend  = Pow.Test.EtsCacheMock
     extensions     = opts[:extensions]
-    pow_config     = [
-      user: Module.concat([context_module, Users.User]),
+    user_module    = Module.concat([context_module, Users.User])
+    config         = [
+      user: user_module,
       repo: Module.concat([context_module, RepoMock]),
       cache_store_backend: cache_backend,
       mailer_backend: Pow.Test.Phoenix.MailerMock,
@@ -42,6 +43,20 @@ defmodule Pow.Test.ExtensionMocks do
       extensions: extensions,
       controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks]
 
+    __user_schema__(context_module, extensions)
+    __phoenix_endpoint__(web_module, config, opts)
+    __phoenix_views__(web_module)
+    __conn_case__(web_module, cache_backend)
+    __messages__(web_module, extensions)
+
+    quote do
+      @config unquote(config)
+
+      def pow_config(), do: @config
+    end
+  end
+
+  def __user_schema__(context_module, extensions) do
     module = Module.concat([context_module, Users.User])
     quoted = quote do
       use Ecto.Schema
@@ -61,13 +76,16 @@ defmodule Pow.Test.ExtensionMocks do
         |> pow_extension_changeset(attrs)
       end
     end
-    Module.create(module, quoted, Macro.Env.location(__ENV__))
 
+    Module.create(module, quoted, Macro.Env.location(__ENV__))
+  end
+
+  def __phoenix_endpoint__(web_module, config, opts) do
     module = Module.concat([web_module, Phoenix.Router])
     quoted = quote do
       use Phoenix.Router
       use Pow.Phoenix.Router
-      use Pow.Extension.Phoenix.Router, unquote(pow_config)
+      use Pow.Extension.Phoenix.Router, unquote(config)
 
       pipeline :browser do
         plug :accepts, ["html"]
@@ -84,10 +102,10 @@ defmodule Pow.Test.ExtensionMocks do
         pow_extension_routes()
       end
     end
+
     Module.create(module, quoted, Macro.Env.location(__ENV__))
 
     module = Module.concat([web_module, Phoenix.Endpoint])
-
     quoted = quote do
       use Phoenix.Endpoint, otp_app: :pow
 
@@ -107,7 +125,7 @@ defmodule Pow.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, unquote(pow_config)
+      plug Pow.Plug.Session, unquote(config)
 
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])
@@ -115,8 +133,11 @@ defmodule Pow.Test.ExtensionMocks do
 
       plug unquote(web_module).Phoenix.Router
     end
-    Module.create(module, quoted, Macro.Env.location(__ENV__))
 
+    Module.create(module, quoted, Macro.Env.location(__ENV__))
+  end
+
+  def __conn_case__(web_module, cache_backend) do
     module = Module.concat([web_module, Phoenix.ConnCase])
     quoted = quote do
       use ExUnit.CaseTemplate
@@ -141,22 +162,20 @@ defmodule Pow.Test.ExtensionMocks do
         {:ok, conn: Phoenix.ConnTest.build_conn(), ets: @ets}
       end
     end
-    Module.create(module, quoted, Macro.Env.location(__ENV__))
 
+    Module.create(module, quoted, Macro.Env.location(__ENV__))
+  end
+
+  def __phoenix_views__(web_module) do
     module = Module.concat([web_module, Phoenix.LayoutView])
     quoted = quote do
       use Pow.Test.Phoenix.Web, :view
     end
-    Module.create(module, quoted, Macro.Env.location(__ENV__))
 
-    module = Module.concat([web_module, Phoenix.ErrorView])
-    quoted = quote do
-      def render("500.html", _assigns), do: "500.html"
-      def render("400.html", _assigns), do: "400.html"
-      def render("404.html", _assigns), do: "404.html"
-    end
     Module.create(module, quoted, Macro.Env.location(__ENV__))
+  end
 
+  def __messages__(web_module, extensions) do
     module = Module.concat([web_module, Phoenix.Messages])
     quoted = quote do
       use Pow.Phoenix.Messages
@@ -165,10 +184,7 @@ defmodule Pow.Test.ExtensionMocks do
 
         def signed_in(_conn), do: "signed_in"
     end
-    Module.create(module, quoted, Macro.Env.location(__ENV__))
 
-    quote do
-      def pow_config(), do: unquote(pow_config)
-    end
+    Module.create(module, quoted, Macro.Env.location(__ENV__))
   end
 end
