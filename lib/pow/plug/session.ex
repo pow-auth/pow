@@ -52,6 +52,7 @@ defmodule Pow.Plug.Session do
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
   """
+  @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     conn                  = Conn.fetch_session(conn)
@@ -74,6 +75,7 @@ defmodule Pow.Plug.Session do
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
   """
+  @impl true
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
@@ -100,6 +102,7 @@ defmodule Pow.Plug.Session do
   fetched through `Plug.Conn.get_session/2`. The session in the connection is
   deleted too with `Plug.Conn.delete_session/2`.
   """
+  @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     conn                  = Conn.fetch_session(conn)

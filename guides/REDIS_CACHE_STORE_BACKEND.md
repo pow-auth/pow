@@ -32,8 +32,8 @@ defmodule MyAppWeb.PowRedisCache do
     Redix.noreply_command(@redix_instance_name, command)
   end
 
-  def put_command(key, value, ttl) when is_integer(ttl) and ttl > 0, do: ["SET", key, value, "PX", ttl]
-  def put_command(key, value, _ttl), do: ["SET", key, value]
+  defp put_command(key, value, ttl) when is_integer(ttl) and ttl > 0, do: ["SET", key, value, "PX", ttl]
+  defp put_command(key, value, _ttl), do: ["SET", key, value]
 
   def delete(config, key) do
     key = redis_key(config, key)
@@ -96,9 +96,7 @@ config :my_app, :pow,
 
 And now you've a running Redis cache store backend!
 
-## Test
-
-Here's a test module for your new Redis cache:
+## Test module
 
 ```elixir
 defmodule MyAppWeb.PowRedisCacheTest do

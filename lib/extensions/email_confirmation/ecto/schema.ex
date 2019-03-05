@@ -4,10 +4,12 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   alias Ecto.Changeset
   alias Pow.{Extension.Ecto.Schema, UUID}
 
+  @impl true
   def validate!(_config, module) do
     Schema.require_schema_field!(module, :email, PowEmailConfirmation)
   end
 
+  @impl true
   def attrs(_config) do
     [
       {:email_confirmation_token, :string},
@@ -16,10 +18,12 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     ]
   end
 
+  @impl true
   def indexes(_config) do
     [{:email_confirmation_token, true}]
   end
 
+  @impl true
   def changeset(%{errors: []} = changeset, _attrs, _config) do
     current_email = changeset.data.email
     new_email     = Changeset.get_field(changeset, :email)

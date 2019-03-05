@@ -9,13 +9,14 @@ defmodule Pow.Extension.Ecto.Schema.Base do
       defmodule MyPowExtension.Ecto.Schema do
         use Pow.Extension.Ecto.Schema.Base
 
+        @impl true
         def attrs(_config) do
           [{:custom_field, :string}]
         end
 
+        @impl true
         def changeset(changeset, _config) do
-          changeset
-          |> Ecto.Changeset.validate_required([:custom_field])
+          Ecto.Changeset.validate_required(changeset, [:custom_field])
         end
       end
   """

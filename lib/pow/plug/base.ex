@@ -9,18 +9,21 @@ defmodule Pow.Plug.Base do
       defmodule MyAppWeb.Pow.CustomPlug do
         use Pow.Plug.Base
 
+        @impl true
         def fetch(conn, _config) do
           user = fetch_user_from_cookie(conn)
 
           {conn, user}
         end
 
+        @impl true
         def create(conn, user, _config) do
           conn = update_cookie(conn, user)
 
           {conn, user}
         end
 
+        @impl true
         def delete(conn, _config) do
           delete_cookie(conn)
         end
