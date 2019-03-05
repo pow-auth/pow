@@ -4,6 +4,7 @@ defmodule PowInvitation.Ecto.SchemaTest do
 
   alias PowInvitation.Ecto.Schema
   alias PowInvitation.Test.Users.User
+  alias PowInvitation.PowEmailConfirmation.Test.Users.User, as: UserEmailConfirmation
 
   test "user_schema/1" do
     user = %User{}
@@ -55,6 +56,22 @@ defmodule PowInvitation.Ecto.SchemaTest do
       refute changeset.valid?
       assert changeset.errors[:email]
       assert changeset.errors[:password]
+    end
+
+    test "with PowEmailConfirmation extension" do
+      user = Ecto.put_meta(%UserEmailConfirmation{email: "test@example.com"}, state: :loaded)
+
+      changeset = Schema.accept_invitation_changeset(user, @valid_params)
+
+      assert changeset.valid?
+      refute changeset.changes[:email_confirmation_token]
+      refute changeset.changes[:unconfirmed_email]
+
+      changeset = Schema.accept_invitation_changeset(user, %{@valid_params | email: "new@example.com"})
+
+      assert changeset.valid?
+      assert changeset.changes[:email_confirmation_token]
+      assert changeset.changes[:unconfirmed_email] == "new@example.com"
     end
   end
 end

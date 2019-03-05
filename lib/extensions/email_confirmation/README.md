@@ -29,3 +29,7 @@ To prevent the persistent session from being created when the email hasn't been 
 If you want your user to be automatically confirmed in test and seed, you just have to call: `PowEmailConfirmation.Ecto.Context.confirm_email(user, otp_app: :my_app)`
 
 You can also update or insert the row directly and set `email_confirmed_at: DateTime.utc_now()`.
+
+## Note on PowInvitation
+
+When a user is invited with [PowInvitation](../invitation/README.md), the email will only be required confirmed if the invited user decides to change their email when accepting the invitation.

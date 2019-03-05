@@ -22,23 +22,26 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
     halt_unconfirmed(user, conn, {:ok, user, conn})
   end
-  def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
-    case should_send_email?(user, conn.private[:pow_user_before_update]) do
-      true  ->
-        error = messages(conn).email_confirmation_required_for_update(conn)
-        conn  = Phoenix.Controller.put_flash(conn, :error, error)
+  def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
+  def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
 
-        send_confirmation_email(user, conn)
-
-        {:ok, user, conn}
-
-      false ->
-        {:ok, user, conn}
-    end
+  defp warn_unconfirmed(%{unconfirmed_email: new_email} = user, %{private: %{pow_user_before_update: %{unconfirmed_email: old_email}}} = conn) when new_email != old_email do
+    do_warn_unconfirmed(user, conn)
   end
+  defp warn_unconfirmed(user, %{private: %{pow_user_before_update: _user}} = conn), do: {:ok, user, conn}
+  defp warn_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn) when not is_nil(token) do
+    do_warn_unconfirmed(user, conn)
+  end
+  defp warn_unconfirmed(user, conn), do: {:ok, user, conn}
 
-  defp should_send_email?(%{unconfirmed_email: new_email}, %{unconfirmed_email: old_email}),
-    do: new_email != old_email
+  defp do_warn_unconfirmed(user, conn) do
+    send_confirmation_email(user, conn)
+
+    error = messages(conn).email_confirmation_required_for_update(conn)
+    conn  = Phoenix.Controller.put_flash(conn, :error, error)
+
+    {:ok, user, conn}
+  end
 
   defp halt_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn, _success_response) when not is_nil(token) do
     send_confirmation_email(user, conn)

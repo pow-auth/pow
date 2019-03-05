@@ -80,3 +80,7 @@ You would want to use custom template for the session controller, since by defau
 ### Expire invited users
 
 Invited users will have a token set in the `:invitation_token` field and `:invitation_accepted_at` field set to nil. If you want to expire the invitation link you can run a background task to delete these users a certain time after `:inserted_at`.
+
+## Note on PowEmailConfirmation
+
+[PowEmailConfirmation](../email_confirmation/README.md) will only require email confirmation if the invited user changes their email when accepting their invitation.

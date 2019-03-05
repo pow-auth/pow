@@ -51,9 +51,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
   describe "Pow.Phoenix.RegistrationController.update/2" do
     @token               "token"
+    @params              %{"email" => "test@example.com", "current_password" => @password}
+    @change_email_params %{"email" => "new@example.com", "current_password" => @password}
     @user                %User{id: 1, email: "test@example.com", password_hash: Password.pbkdf2_hash(@password), email_confirmation_token: @token}
-    @params              %{"user" => %{"email" => "test@example.com", "current_password" => @password}}
-    @change_email_params %{"user" => %{"email" => "new@example.com", "current_password" => @password}}
 
     setup %{conn: conn} do
       user = Ecto.put_meta(@user, state: :loaded)
@@ -63,7 +63,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when email changes", %{conn: conn} do
-      conn = put conn, Routes.pow_registration_path(conn, :update, @change_email_params)
+      conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @change_email_params})
       assert %{id: 1, email_confirmation_token: new_token} = Plug.current_user(conn)
 
       assert get_flash(conn, :error) == "You'll need to confirm the e-mail before it's updated. An e-mail confirmation link has been sent to you."
@@ -77,10 +77,40 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when email hasn't changed", %{conn: conn} do
-      conn = put conn, Routes.pow_registration_path(conn, :update, @params)
+      conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @params})
 
       assert get_flash(conn, :info) == "Your account has been updated."
       assert %{id: 1, email_confirmation_token: @token} = Plug.current_user(conn)
+
+      refute_received {:mail_mock, _mail}
+    end
+  end
+
+  alias PowEmailConfirmation.PowInvitation.TestWeb.Phoenix.Router.Helpers, as: PowInvitationRoutes
+  alias PowEmailConfirmation.PowInvitation.TestWeb.Phoenix.Endpoint, as: PowInvitationEndpoint
+
+  defp put_invitation(conn, path) do
+    Phoenix.ConnTest.dispatch(conn, PowInvitationEndpoint, :put, path)
+  end
+
+  describe "PowInvitation.Phoenix.InvitationController.update/2" do
+    @token               "token"
+    @params              %{"email" => "test@example.com", "password" => @password, "confirm_password" => @password}
+    @change_email_params %{"email" => "new@example.com", "password" => @password, "confirm_password" => @password}
+
+    test "when email changes", %{conn: conn} do
+      conn = put_invitation conn, PowInvitationRoutes.pow_invitation_invitation_path(conn, :update, @token, %{"user" => @change_email_params})
+
+      assert %{id: 1, email_confirmation_token: new_token} = Plug.current_user(conn)
+      refute is_nil(new_token)
+
+      assert_received {:mail_mock, _mail}
+    end
+
+    test "when email hasn't changed", %{conn: conn} do
+      conn = put_invitation conn, PowInvitationRoutes.pow_invitation_invitation_path(conn, :update, @token, %{"user" => @params})
+
+      assert %{id: 1, email_confirmation_token: nil} = Plug.current_user(conn)
 
       refute_received {:mail_mock, _mail}
     end
