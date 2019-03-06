@@ -2,6 +2,7 @@
 
 ## v1.0.3 (TBA)
 
+* Added support in `Pow.Ecto.Schema` for Ecto associations fields
 * Correct shell instructions for `mix pow.install` task with custom schema
 * Deprecated `Pow.Extension.Config.underscore_extension/1`
 * Deprecated `:messages_backend_fallback` setting for extension controllers
