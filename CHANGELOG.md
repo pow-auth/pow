@@ -2,12 +2,21 @@
 
 ## v1.0.3 (TBA)
 
+### Changes
+
 * Added support in `Pow.Ecto.Schema` for Ecto associations fields
+
+### Bug fixes
+
 * Correct shell instructions for `mix pow.install` task with custom schema
+* Fixed bug in `Pow.Extension.Phoenix.Router.Base` and `Pow.Extension.Phoenix.Messages` where the full extension name wasn't used to namespace methods
+
+### Deprecations
+
 * Deprecated `Pow.Extension.Config.underscore_extension/1`
+* Deprecated `PowResetPassword.Ecto.Context.password_changeset/2`
 * Deprecated `:messages_backend_fallback` setting for extension controllers
 * Removed deprecated macro `router_helpers/1` in `Pow.Phoenix.Controller`
-* Fixed bug in `Pow.Extension.Phoenix.Router.Base` and `Pow.Extension.Phoenix.Messages` where the full extension name wasn't used to namespace methods
 
 ## v1.0.2 (2019-02-28)
 
