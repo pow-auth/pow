@@ -44,6 +44,7 @@ defmodule Pow.Extension.Ecto.Schema do
       @pow_extension_config Config.merge(@pow_config, unquote(config))
 
       unquote(__MODULE__).__register_extension_fields__()
+      unquote(__MODULE__).__register_extension_assocs__()
       unquote(__MODULE__).__pow_extension_methods__()
       unquote(__MODULE__).__register_after_compile_validation__()
     end
@@ -52,12 +53,22 @@ defmodule Pow.Extension.Ecto.Schema do
   @doc false
   defmacro __register_extension_fields__ do
     quote do
-      config = Module.get_attribute(__MODULE__, :pow_extension_config)
-      extension_attrs = unquote(__MODULE__).attrs(config)
-
-      for attr <- extension_attrs do
+      for attr <- unquote(__MODULE__).attrs(@pow_extension_config) do
         Module.put_attribute(__MODULE__, :pow_fields, attr)
       end
+    end
+  end
+
+  @doc false
+  defmacro __register_extension_assocs__ do
+    quote do
+      @pow_extension_config
+      |> unquote(__MODULE__).assocs()
+      |> Enum.map(fn
+        {:belongs_to, name, :users} -> {:belongs_to, name, __MODULE__}
+        {:has_many, name, :users, opts} -> {:has_many, name, __MODULE__, opts}
+      end)
+      |> Enum.each(&Module.put_attribute(__MODULE__, :pow_assocs, &1))
     end
   end
 
@@ -97,6 +108,25 @@ defmodule Pow.Extension.Ecto.Schema do
       extension_attrs = extension.attrs(config)
 
       Enum.concat(attrs, extension_attrs)
+    end)
+  end
+
+
+  @doc """
+  Merge all extension associations together to one list.
+
+  The extension ecto schema modules is discovered through the `:extensions` key
+  in the configuration, and the attribute list will be in the same order as the
+  extensions list.
+  """
+  @spec assocs(Config.t()) :: [tuple]
+  def assocs(config) do
+    config
+    |> schema_modules()
+    |> Enum.reduce([], fn extension, assocs ->
+      extension_assocs = extension.assocs(config)
+
+      Enum.concat(assocs, extension_assocs)
     end)
   end
 

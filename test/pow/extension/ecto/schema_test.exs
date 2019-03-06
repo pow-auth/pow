@@ -13,6 +13,13 @@ defmodule Pow.Test.Extension.Ecto.Schema.Ecto.Schema do
     [{:custom, :string}]
   end
 
+  def assocs(_config) do
+    [
+      {:belongs_to, :parent, :users},
+      {:has_many, :children, :users, foreign_key: :parent_id}
+    ]
+  end
+
   def changeset(changeset, attrs, _config) do
     changeset = Changeset.cast(changeset, attrs, [:custom])
 
@@ -71,6 +78,11 @@ defmodule Pow.Extension.Ecto.SchemaTest do
   test "has defined fields" do
     user = %User{}
     assert Map.has_key?(user, :custom)
+    assert Map.has_key?(user, :parent)
+    assert Map.has_key?(user, :children)
+
+    assert %Ecto.Association.BelongsTo{queryable: User} = User.__schema__(:association, :parent)
+    assert %Ecto.Association.Has{cardinality: :many, queryable: User, related_key: :parent_id} = User.__schema__(:association, :children)
   end
 
   @password "secret1234"

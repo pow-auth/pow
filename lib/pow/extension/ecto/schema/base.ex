@@ -25,6 +25,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
 
   @callback validate!(Config.t(), atom()) :: :ok | no_return
   @callback attrs(Config.t()) :: [tuple()]
+  @callback assocs(Config.t()) :: [tuple()]
   @callback indexes(Config.t()) :: [tuple()]
   @callback changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
 
@@ -35,8 +36,9 @@ defmodule Pow.Extension.Ecto.Schema.Base do
 
       def validate!(_config, _module), do: :ok
       def attrs(_config), do: []
-      def changeset(changeset, _attrs, _config), do: changeset
+      def assocs(_config), do: []
       def indexes(_config), do: []
+      def changeset(changeset, _attrs, _config), do: changeset
 
       defoverridable unquote(__MODULE__)
     end
