@@ -13,12 +13,4 @@ config :mnesia, dir: 'tmp/mnesia'
 
 config :pow, Pow.Ecto.Schema.Password, iterations: 1
 
-for extension <- [PowEmailConfirmation, PowResetPassword, PowPersistentSession] do
-  web_module = Module.concat([extension, TestWeb])
-
-  config :pow, Module.concat([web_module, Phoenix.Endpoint]),
-    render_errors: [view: Pow.Test.Phoenix.ErrorView, accepts: ~w(html json)],
-    secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-end
-
 config :phoenix, :json_library, Jason
