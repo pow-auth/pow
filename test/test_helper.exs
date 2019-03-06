@@ -19,7 +19,7 @@ Ecto.Adapters.SQL.Sandbox.mode(Pow.Test.Ecto.Repo, :manual)
 
 {:ok, _pid} = Pow.Test.Phoenix.Endpoint.start_link()
 
-for extension <- [PowEmailConfirmation, PowPersistentSession, PowResetPassword] do
+for extension <- Application.get_env(:pow, :extension_test_modules) do
   endpoint_module = Module.concat([extension, TestWeb.Phoenix.Endpoint])
 
   Application.put_env(:pow, endpoint_module,
