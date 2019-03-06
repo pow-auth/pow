@@ -6,6 +6,28 @@ defmodule PowInvitation.Ecto.SchemaTest do
   alias PowInvitation.Test.Users.User
   alias PowInvitation.PowEmailConfirmation.Test.Users.User, as: UserEmailConfirmation
 
+  defmodule OverrideInviteChangesetUser do
+    @moduledoc false
+    use Ecto.Schema
+    use Pow.Ecto.Schema
+    use Pow.Extension.Ecto.Schema,
+      extensions: [PowInvitation]
+
+    schema "users" do
+      field :organization_id, :integer
+
+      pow_user_fields()
+
+      timestamps()
+    end
+
+    def invite_changeset(user_or_changeset, invited_by, params) do
+      user_or_changeset
+      |> pow_invite_changeset(invited_by, params)
+      |> Ecto.Changeset.put_change(:organization_id, 1)
+    end
+  end
+
   test "user_schema/1" do
     user = %User{}
 
@@ -34,6 +56,13 @@ defmodule PowInvitation.Ecto.SchemaTest do
 
       refute changeset.valid?
       assert changeset.errors[:email]
+    end
+
+    test "with overridden method" do
+      changeset = OverrideInviteChangesetUser.invite_changeset(%OverrideInviteChangesetUser{}, @invited_by, @valid_params)
+
+      assert changeset.valid?
+      assert changeset.changes.organization_id == 1
     end
   end
 

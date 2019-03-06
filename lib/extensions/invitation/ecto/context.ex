@@ -11,10 +11,11 @@ defmodule PowInvitation.Ecto.Context do
   """
   @spec create(map(), map(), Config.t()) :: {:ok, map()} | {:error, Changeset.t()}
   def create(inviter_user, params, config) do
-    config
-    |> Context.user_schema_mod()
+    user_mod = Context.user_schema_mod(config)
+
+    user_mod
     |> struct()
-    |> Schema.invite_changeset(inviter_user, params)
+    |> user_mod.invite_changeset(inviter_user, params)
     |> Context.do_insert(config)
   end
 

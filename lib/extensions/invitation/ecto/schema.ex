@@ -25,10 +25,21 @@ defmodule PowInvitation.Ecto.Schema do
     [{:invitation_token, true}]
   end
 
+  @doc false
+  defmacro __using__(_config) do
+    quote do
+      def invite_changeset(changeset, invited_by, attrs), do: pow_invite_changeset(changeset, invited_by, attrs)
+
+      defdelegate pow_invite_changeset(changeset, invited_by, attrs), to: unquote(__MODULE__), as: :invite_changeset
+
+      defoverridable invite_changeset: 3
+    end
+  end
+
   @spec invite_changeset(Ecto.Schema.t() | Changeset.t(), Ecto.Schema.t(), map()) :: Changeset.t()
-  def invite_changeset(%Changeset{data: %user_mod{}} = changeset, invited_by, attrs) do
+  def invite_changeset(%Changeset{data: user} = changeset, invited_by, attrs) do
     changeset
-    |> user_mod.pow_user_id_field_changeset(attrs)
+    |> user.__struct__.pow_user_id_field_changeset(attrs)
     |> invitation_token_changeset()
     |> invited_by_changeset(invited_by)
   end
