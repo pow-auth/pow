@@ -130,6 +130,7 @@ Pow is made so it's easy to extend the functionality with your own complimentary
 * [PowResetPassword](lib/extensions/reset_password/README.md)
 * [PowEmailConfirmation](lib/extensions/email_confirmation/README.md)
 * [PowPersistentSession](lib/extensions/persistent_session/README.md)
+* [PowInvitation](lib/extensions/invitation/README.md)
 
 ### Add extensions support
 

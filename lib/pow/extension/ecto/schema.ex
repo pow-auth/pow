@@ -43,11 +43,25 @@ defmodule Pow.Extension.Ecto.Schema do
     quote do
       @pow_extension_config Config.merge(@pow_config, unquote(config))
 
+      Module.eval_quoted(__MODULE__, unquote(__MODULE__).__use_extensions__(@pow_extension_config))
+
       unquote(__MODULE__).__register_extension_fields__()
       unquote(__MODULE__).__register_extension_assocs__()
       unquote(__MODULE__).__pow_extension_methods__()
       unquote(__MODULE__).__register_after_compile_validation__()
     end
+  end
+
+  @doc false
+  def __use_extensions__(config) do
+    config
+    |> schema_modules()
+    |> Enum.filter(&Kernel.macro_exported?(&1, :__using__, 1))
+    |> Enum.map(fn module ->
+      quote do
+        use unquote(module), unquote(config)
+      end
+    end)
   end
 
   @doc false

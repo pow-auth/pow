@@ -182,7 +182,8 @@ defmodule Pow.Test.ExtensionMocks do
       use Pow.Extension.Phoenix.Messages,
         extensions: unquote(extensions)
 
-        def signed_in(_conn), do: "signed_in"
+      def signed_in(_conn), do: "signed_in"
+      def user_has_been_created(_conn), do: "user_created"
     end
 
     Module.create(module, quoted, Macro.Env.location(__ENV__))

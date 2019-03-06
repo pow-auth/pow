@@ -4,7 +4,9 @@
 
 ### Changes
 
+* Added `PowInvitation` extension
 * Added support in `Pow.Ecto.Schema` for Ecto associations fields
+* Added support for adding custom methods with `Pow.Extension.Ecto.Schema` through `__using__/1` macro in extension ecto schema module
 
 ### Bug fixes
 
