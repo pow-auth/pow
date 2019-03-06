@@ -6,7 +6,7 @@ This extension will allow users to reset the password by sending an e-mail with 
 
 Follow the instructions for extensions in [README.md](../../../README.md), and set `PowResetPassword` in the `:extensions` list.
 
-### Configuration
+## Configuration
 
 Add the following link to your `WEB_PATH/templates/pow/session/new.html.eex` template (you may need to generate the templates first):
 

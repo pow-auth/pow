@@ -20,7 +20,7 @@ defmodule MyAppWeb.Endpoint do
 end
 ```
 
-### Configuration
+## Configuration
 
 By default, the persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex` (you may need to generate the templates first):
 
