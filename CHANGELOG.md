@@ -4,6 +4,7 @@
 
 ### Changes
 
+* Added `PowInvitation` extension
 * Added support in `Pow.Ecto.Schema` for Ecto associations fields
 
 ### Bug fixes
