@@ -28,6 +28,12 @@ defmodule Pow.Test.Extension.Ecto.Schema.Ecto.Schema do
       _       -> changeset
     end
   end
+
+  defmacro __using__(_config) do
+    quote do
+      def custom_method(), do: true
+    end
+  end
 end
 
 defmodule Pow.Test.Extension.Ecto.Schema.User do
@@ -100,6 +106,11 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     changeset = User.changeset(%User{}, Map.put(@valid_params, "custom", "error"))
     refute changeset.valid?
     assert changeset.errors[:custom] == {"custom error", []}
+  end
+
+  test "has custom method definitions" do
+    assert Kernel.function_exported?(User, :custom_method, 0)
+    assert User.custom_method()
   end
 
   test "validates attributes" do
