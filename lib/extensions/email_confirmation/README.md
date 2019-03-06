@@ -22,7 +22,7 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
 
 ## Prevent persistent session sign in
 
-To prevent the persistent session from being created when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.
+To prevent that `PowPeristentSession` creates a new persistent session when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.
 
 ## Test and seed
 
