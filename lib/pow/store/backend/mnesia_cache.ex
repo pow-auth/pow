@@ -23,11 +23,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
     * `:namespace` - string value to use for namespacing keys, defaults to
       "cache".
   """
-  @behaviour Pow.Store.Base
-
   use GenServer
-  alias Pow.Config
+  alias Pow.{Config, Store.Base}
 
+  @behaviour Base
   @mnesia_cache_tab __MODULE__
 
   @spec start_link(Config.t()) :: GenServer.on_start()
@@ -35,21 +34,25 @@ defmodule Pow.Store.Backend.MnesiaCache do
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
+  @impl Base
   @spec put(Config.t(), binary(), any()) :: :ok
   def put(config, key, value) do
     GenServer.cast(__MODULE__, {:cache, config, key, value, ttl(config)})
   end
 
+  @impl Base
   @spec delete(Config.t(), binary()) :: :ok
   def delete(config, key) do
     GenServer.cast(__MODULE__, {:delete, config, key})
   end
 
+  @impl Base
   @spec get(Config.t(), binary()) :: any() | :not_found
   def get(config, key) do
     table_get(config, key)
   end
 
+  @impl Base
   @spec keys(Config.t()) :: [any()]
   def keys(config) do
     table_keys(config)
@@ -57,6 +60,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   # Callbacks
 
+  @impl GenServer
   @spec init(Config.t()) :: {:ok, map()}
   def init(config) do
     table_init(config)
@@ -64,6 +68,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:ok, %{invalidators: init_invalidators(config)}}
   end
 
+  @impl GenServer
   @spec handle_cast({:cache, Config.t(), binary(), any(), integer()}, map()) :: {:noreply, map()}
   def handle_cast({:cache, config, key, value, ttl}, %{invalidators: invalidators} = state) do
     invalidators = update_invalidators(config, invalidators, key, ttl)
@@ -80,6 +85,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
+  @impl GenServer
   @spec handle_info({:invalidate, Config.t(), binary()}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)

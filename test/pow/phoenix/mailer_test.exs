@@ -2,6 +2,7 @@ defmodule Pow.Phoenix.MailerTest.Mailer do
   use Pow.Phoenix.Mailer
 
   def cast(email), do: {:cast, email}
+
   def process({:cast, email}), do: {:process, email}
 end
 

@@ -7,6 +7,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
       defmodule MyPowExtension.Phoenix.ControllerCallbacks do
         use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
+        @impl true
         def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
           {:ok, user, conn}
         end
@@ -14,9 +15,14 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
   """
   alias Pow.{Config, Extension.Phoenix.Controller.Base}
 
+  @callback before_process(atom(), atom(), any(), Config.t()) :: any()
+  @callback before_respond(atom(), atom(), any(), Config.t()) :: any()
+
   @doc false
   defmacro __using__(config) do
     quote do
+      @behaviour unquote(__MODULE__)
+
       import Base, only: [__define_helper_methods__: 1]
 
       __define_helper_methods__(unquote(config))

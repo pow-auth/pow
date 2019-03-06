@@ -8,6 +8,7 @@ defmodule Pow.Phoenix.Routes do
         use Pow.Phoenix.Routes
         alias MyAppWeb.Router.Helpers, as: Routes
 
+        @impl true
         def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
       end
 
@@ -19,6 +20,7 @@ defmodule Pow.Phoenix.Routes do
         use Pow.Phoenix.Routes
         alias MyAppWeb.Router.Helpers, as: Routes
 
+        @impl true
         def url_for(conn, verb, vars \\ [], query_params \\ [])
         def url_for(conn, PowEmailConfirmation.Phoenix.ConfirmationController, :show, [token], _query_params),
           do: Routes.custom_confirmation_url(conn, :new, token)

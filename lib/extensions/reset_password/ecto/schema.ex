@@ -3,6 +3,7 @@ defmodule PowResetPassword.Ecto.Schema do
   use Pow.Extension.Ecto.Schema.Base
   alias Pow.Extension.Ecto.Schema
 
+  @impl true
   def validate!(_config, module) do
     Schema.require_schema_field!(module, :email, PowEmailConfirmation)
   end

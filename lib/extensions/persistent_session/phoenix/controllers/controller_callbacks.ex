@@ -5,12 +5,14 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacks do
   alias Plug.Conn
   alias PowPersistentSession.Plug
 
+  @impl true
   def before_process(Pow.Phoenix.SessionController, :create, conn, _config) do
     store = Map.get(conn.params["user"], "persistent_session", "true")
 
     Conn.put_private(conn, :store_persistent_session?, store)
   end
 
+  @impl true
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     user = Pow.Plug.current_user(conn)
 
@@ -20,6 +22,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacks do
     end
   end
 
+  @impl true
   def before_respond(Pow.Phoenix.SessionController, :delete, {:ok, conn}, _config) do
     {:ok, Plug.delete(conn)}
   end
