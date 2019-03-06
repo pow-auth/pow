@@ -4,7 +4,7 @@ defmodule PowResetPassword.Plug do
   """
   alias Plug.Conn
   alias Pow.{Config, Plug, Store.Backend.EtsCache, UUID}
-  alias PowResetPassword.{Ecto.Context, Store.ResetTokenCache}
+  alias PowResetPassword.{Ecto.Context, Ecto.Schema, Store.ResetTokenCache}
 
   @doc """
   Creates a changeset from the user fetched in the connection.
@@ -13,7 +13,7 @@ defmodule PowResetPassword.Plug do
   def change_user(conn, params \\ %{}) do
     user = reset_password_user(conn) || user_struct(conn)
 
-    Context.password_changeset(user, params)
+    Schema.reset_password_changeset(user, params)
   end
 
   defp user_struct(conn) do

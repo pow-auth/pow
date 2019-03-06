@@ -2,9 +2,17 @@ defmodule PowResetPassword.Ecto.Schema do
   @moduledoc false
   use Pow.Extension.Ecto.Schema.Base
   alias Pow.Extension.Ecto.Schema
+  alias Ecto.Changeset
 
   @impl true
   def validate!(_config, module) do
     Schema.require_schema_field!(module, :email, PowEmailConfirmation)
+  end
+
+  @spec reset_password_changeset(map(), map()) :: Changeset.t()
+  def reset_password_changeset(%user_mod{} = user, params) do
+    user
+    |> user_mod.pow_password_changeset(params)
+    |> Changeset.validate_required([:password])
   end
 end
