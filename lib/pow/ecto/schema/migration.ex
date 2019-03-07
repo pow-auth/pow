@@ -121,8 +121,8 @@ defmodule Pow.Ecto.Schema.Migration do
     assocs =
       Enum.map(assocs, fn {key_id, {:references, source}, _} ->
         key = String.replace(Atom.to_string(key_id), "_id", "")
-        context = Phoenix.Naming.camelize(source)
-        schema = Phoenix.Naming.camelize(key)
+        context = Macro.camelize(source)
+        schema = Macro.camelize(key)
         module = Module.concat([context_base, context, schema])
 
         {String.to_atom(key), key_id, inspect(module), source}
