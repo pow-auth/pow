@@ -13,7 +13,6 @@ module_raised_with =
     e in ArgumentError -> e.message
   end
 
-
 defmodule Pow.Phoenix.RouterTest do
   use ExUnit.Case
   doctest Pow.Phoenix.Router

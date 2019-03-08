@@ -55,8 +55,9 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   def get!(User, 1), do: Process.get({:user, 1})
 
   defmodule Invitation do
-    alias PowEmailConfirmation.Test.RepoMock
+    @moduledoc false
     alias PowEmailConfirmation.PowInvitation.Test.Users.User
+    alias PowEmailConfirmation.Test.RepoMock
 
     def get_by(User, invitation_token: "token"), do: Ecto.put_meta(%User{id: 1, email: "test@example.com"}, state: :loaded)
 

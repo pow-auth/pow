@@ -20,7 +20,6 @@ defmodule Pow.Test.Extension.Phoenix.Router do
   end
 end
 
-
 module_raised_with =
   try do
     defmodule Pow.Test.Extension.Phoenix.RouterAliasScope do

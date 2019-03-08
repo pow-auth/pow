@@ -52,7 +52,7 @@ defmodule Pow.Test.ExtensionMocks do
     quote do
       @config unquote(config)
 
-      def pow_config(), do: @config
+      def pow_config, do: @config
     end
   end
 

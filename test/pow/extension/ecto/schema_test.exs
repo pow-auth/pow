@@ -31,7 +31,7 @@ defmodule Pow.Test.Extension.Ecto.Schema.Ecto.Schema do
 
   defmacro __using__(_config) do
     quote do
-      def custom_method(), do: true
+      def custom_method, do: true
     end
   end
 end

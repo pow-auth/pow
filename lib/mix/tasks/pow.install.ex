@@ -13,8 +13,7 @@ defmodule Mix.Tasks.Pow.Install do
   """
   use Mix.Task
 
-  alias Mix.Project
-  alias Mix.{Pow, Tasks.Pow.Ecto, Tasks.Pow.Phoenix}
+  alias Mix.{Pow, Project, Tasks.Pow.Ecto, Tasks.Pow.Phoenix}
   @mix_task "pow.install"
 
   @impl true

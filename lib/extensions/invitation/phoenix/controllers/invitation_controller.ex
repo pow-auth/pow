@@ -3,8 +3,8 @@ defmodule PowInvitation.Phoenix.InvitationController do
   use Pow.Extension.Phoenix.Controller.Base
 
   alias Plug.Conn
-  alias PowInvitation.{Phoenix.Mailer, Plug}
   alias Pow.Phoenix.{RegistrationController, SessionController}
+  alias PowInvitation.{Phoenix.Mailer, Plug}
 
   plug :require_authenticated when action in [:new, :create, :show]
   plug :require_not_authenticated when action in [:edit, :update]

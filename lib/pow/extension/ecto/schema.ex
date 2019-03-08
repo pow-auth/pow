@@ -125,7 +125,6 @@ defmodule Pow.Extension.Ecto.Schema do
     end)
   end
 
-
   @doc """
   Merge all extension associations together to one list.
 
