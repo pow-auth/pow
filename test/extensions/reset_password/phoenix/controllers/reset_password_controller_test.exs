@@ -64,10 +64,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_token "valid"
     @invalid_token "invalid"
 
-    setup %{conn: conn, ets: ets} do
+    setup %{ets: ets} do
       ResetTokenCache.put([backend: ets], @valid_token, @user)
 
-      {:ok, conn: conn, ets: ets}
+      :ok
     end
 
     test "already signed in", %{conn: conn} do
@@ -105,10 +105,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_params %{"user" => %{"password" => @password, "confirm_password" => @password}}
     @invalid_params %{"user" => %{"password" => @password, "confirm_password" => "invalid"}}
 
-    setup %{conn: conn, ets: ets} do
+    setup %{ets: ets} do
       ResetTokenCache.put([backend: ets], @valid_token, @user)
 
-      {:ok, conn: conn, ets: ets}
+      :ok
     end
 
     test "already signed in", %{conn: conn} do
