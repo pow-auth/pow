@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
   defp parse({config, parsed, _invalid}) do
     parsed
-    |> Pow.schema_options_from_args()
+    |> Pow.validate_schema_args!(@mix_task)
     |> Map.merge(config)
   end
 

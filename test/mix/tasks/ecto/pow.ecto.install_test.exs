@@ -46,6 +46,26 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
     end)
   end
 
+  test "raises error on invalid schema name or table" do
+    File.cd!(@tmp_path, fn ->
+      assert_raise Mix.Error, ~r/Invalid arguments/, fn ->
+        Install.run(~w(Users.User))
+      end
+
+      assert_raise Mix.Error, ~r/Expected the schema argument, "users.user", to be a valid module name/, fn ->
+        Install.run(~w(users.user users))
+      end
+
+      assert_raise Mix.Error, ~r/Expected the plural argument, "Users", to be all lowercase using snake_case convention/, fn ->
+        Install.run(~w(Users.User Users))
+      end
+
+      assert_raise Mix.Error, ~r/Expected the plural argument, "users:", to be all lowercase using snake_case convention/, fn ->
+        Install.run(~w(Users.User users:))
+      end
+    end)
+  end
+
   test "generates with extensions" do
     options = @options ++ ~w(--extension PowResetPassword --extension PowEmailConfirmation)
 
