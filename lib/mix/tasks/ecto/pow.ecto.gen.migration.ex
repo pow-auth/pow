@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
 
   @switches [binary_id: :boolean]
   @default_opts [binary_id: false]
-  @mix_task "pow.ecto.install"
+  @mix_task "pow.ecto.gen.migration"
 
   @impl true
   def run(args) do

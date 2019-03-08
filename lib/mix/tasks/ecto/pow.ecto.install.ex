@@ -41,7 +41,11 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
     |> maybe_run_gen_schema(args)
   end
 
-  defp parse({config, _parsed, _invalid}), do: config
+  defp parse({config, parsed, _invalid}) do
+    Pow.validate_schema_args!(parsed, @mix_task)
+
+    config
+  end
 
   defp maybe_run_gen_migration(%{migrations: true} = config, args) do
     MigrationTask.run(args)

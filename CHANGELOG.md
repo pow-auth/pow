@@ -7,6 +7,7 @@
 * Added `PowInvitation` extension
 * Added support in `Pow.Ecto.Schema` for Ecto associations fields
 * Added support for adding custom methods with `Pow.Extension.Ecto.Schema` through `__using__/1` macro in extension ecto schema module
+* Help information raised with invalid schema arguments for `pow.install`, `pow.ecto.install`, `pow.ecto.gen.migration`, and `pow.ecto.gen.schema` mix tasks
 
 ### Bug fixes
 
