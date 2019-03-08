@@ -19,6 +19,7 @@
 
 * Deprecated `Pow.Extension.Config.underscore_extension/1`
 * Deprecated `PowResetPassword.Ecto.Context.password_changeset/2`
+* Deprecated `Pow.Ecto.Schema.filter_new_fields/2`
 * Deprecated `:messages_backend_fallback` setting for extension controllers
 * Removed deprecated macro `router_helpers/1` in `Pow.Phoenix.Controller`
 

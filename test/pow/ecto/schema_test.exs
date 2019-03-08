@@ -41,4 +41,31 @@ defmodule Pow.Ecto.SchemaTest do
     assert Map.has_key?(user, :password_hash)
     assert OverrideFieldUser.__schema__(:field_source, :password_hash) == :encrypted_password
   end
+
+  defmodule OverrideAssocUser do
+    @moduledoc false
+    use Ecto.Schema
+    use Pow.Ecto.Schema
+
+    @pow_assocs {:has_many, :users, __MODULE__}
+
+    @pow_assocs {:belongs_to, :parent, __MODULE__}
+    @pow_assocs {:has_many, :children, __MODULE__}
+
+    schema "users" do
+      belongs_to :parent, __MODULE__, on_replace: :mark_as_invalid
+      has_many :children, __MODULE__, on_delete: :delete_all
+
+      pow_user_fields()
+
+      timestamps()
+    end
+  end
+
+  test "schema/2 with overridden assocs" do
+    assert %{on_delete: :nothing} = OverrideAssocUser.__schema__(:association, :users)
+
+    assert %{on_replace: :mark_as_invalid} = OverrideAssocUser.__schema__(:association, :parent)
+    assert %{on_delete: :delete_all} = OverrideAssocUser.__schema__(:association, :children)
+  end
 end
