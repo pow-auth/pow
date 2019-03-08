@@ -17,10 +17,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     conn
     |> Plug.current_user()
-    |> halt_unconfirmed(conn, {:ok, conn})
+    |> halt_unconfirmed(conn, {:ok, conn}, :registration)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
-    halt_unconfirmed(user, conn, {:ok, user, conn})
+    halt_unconfirmed(user, conn, {:ok, user, conn}, :session)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
   def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
@@ -43,12 +43,12 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     {:ok, user, conn}
   end
 
-  defp halt_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn, _success_response) when not is_nil(token) do
+  defp halt_unconfirmed(%{email_confirmed_at: nil, email_confirmation_token: token} = user, conn, _success_response, type) when not is_nil(token) do
     send_confirmation_email(user, conn)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     error       = messages(conn).email_confirmation_required(conn)
-    path        = routes(conn).session_path(conn, :new)
+    path        = return_path(conn, type)
     conn        =
       conn
       |> Phoenix.Controller.put_flash(:error, error)
@@ -56,7 +56,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     {:halt, conn}
   end
-  defp halt_unconfirmed(_user, _conn, success_response), do: success_response
+  defp halt_unconfirmed(_user, _conn, success_response, _type), do: success_response
+
+  defp return_path(conn, :registration), do: routes(conn).after_sign_in_path(conn)
+  defp return_path(conn, :session), do: routes(conn).after_sign_in_path(conn)
 
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do
