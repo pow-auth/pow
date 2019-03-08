@@ -165,22 +165,41 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  defmacro __append_assocs__(assocs, _ecto_assocs) do
+  defmacro __append_assocs__(assocs, ecto_assocs) do
     quote do
-      Enum.each(unquote(assocs), fn
+      unquote(assocs)
+      |> unquote(__MODULE__).__filter_new_assocs__(unquote(ecto_assocs))
+      |> Enum.each(fn
         {:belongs_to, name, queryable} ->
           belongs_to(name, queryable)
 
-        {:has_many, name, queryable, opts} ->
-          has_many(name, queryable, opts)
+        {:belongs_to, name, queryable, defaults} ->
+          belongs_to(name, queryable, defaults)
+
+        {:has_many, name, queryable} ->
+          has_many(name, queryable)
+
+        {:has_many, name, queryable, defaults} ->
+          has_many(name, queryable, defaults)
       end)
     end
   end
 
+  @doc false
+  def __filter_new_assocs__(assocs, existing_assocs) do
+    Enum.reject(assocs, fn assoc ->
+      Enum.any?(existing_assocs, &assocs_match?(elem(assoc, 0), elem(assoc, 1), &1))
+    end)
+  end
+
+  defp assocs_match?(:has_many, name, {name, %Ecto.Association.Has{cardinality: :many}}), do: true
+  defp assocs_match?(:belongs_to, name, {name, %Ecto.Association.BelongsTo{}}), do: true
+  defp assocs_match?(_type, _name, _existing_assoc), do: false
+
   defmacro __append_fields__(fields, ecto_fields) do
     quote do
       unquote(fields)
-      |> unquote(__MODULE__).filter_new_fields(unquote(ecto_fields))
+      |> unquote(__MODULE__).__filter_new_fields__(unquote(ecto_fields))
       |> Enum.each(fn
         {name, type} ->
           field(name, type)
@@ -190,6 +209,15 @@ defmodule Pow.Ecto.Schema do
       end)
     end
   end
+
+  @doc false
+  def __filter_new_fields__(fields, existing_fields) do
+    Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
+  end
+
+  # TODO: Remove by 1.1.0
+  @deprecated "No longer public method"
+  def filter_new_fields(fields, existing_fields), do: __filter_new_fields__(fields, existing_fields)
 
   @doc false
   defmacro __register_fields__ do
@@ -236,14 +264,6 @@ defmodule Pow.Ecto.Schema do
     value
     |> String.trim()
     |> String.downcase()
-  end
-
-  @doc """
-  Filters field-type pairs that doesn't already exist in schema.
-  """
-  @spec filter_new_fields([tuple()], [tuple()]) :: [tuple()]
-  def filter_new_fields(fields, existing_fields) when is_list(fields) do
-    Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
   end
 
   @doc false
