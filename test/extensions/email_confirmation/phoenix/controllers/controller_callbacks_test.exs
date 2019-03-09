@@ -13,7 +13,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/after_signed_in"
 
       refute Plug.current_user(conn)
 
@@ -27,7 +27,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "confirmed@example.com")})
 
       assert get_flash(conn, :info) == "signed_in"
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/after_signed_in"
     end
   end
 
@@ -38,7 +38,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/after_registration"
 
       refute Plug.current_user(conn)
 

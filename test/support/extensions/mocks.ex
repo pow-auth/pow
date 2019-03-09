@@ -40,6 +40,7 @@ defmodule Pow.Test.ExtensionMocks do
       cache_store_backend: cache_backend,
       mailer_backend: Pow.Test.Phoenix.MailerMock,
       messages_backend: Module.concat([web_module, Phoenix.Messages]),
+      routes_backend: Module.concat([web_module, Phoenix.Routes]),
       extensions: extensions,
       controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks]
 
@@ -48,6 +49,7 @@ defmodule Pow.Test.ExtensionMocks do
     __phoenix_views__(web_module)
     __conn_case__(web_module, cache_backend)
     __messages__(web_module, extensions)
+    __routes__(web_module)
 
     quote do
       @config unquote(config)
@@ -184,6 +186,18 @@ defmodule Pow.Test.ExtensionMocks do
 
       def signed_in(_conn), do: "signed_in"
       def user_has_been_created(_conn), do: "user_created"
+    end
+
+    Module.create(module, quoted, Macro.Env.location(__ENV__))
+  end
+
+  def __routes__(web_module) do
+    module = Module.concat([web_module, Phoenix.Routes])
+    quoted = quote do
+      use Pow.Phoenix.Routes
+
+      def after_sign_in_path(_conn), do: "/after_signed_in"
+      def after_registration_path(_conn), do: "/after_registration"
     end
 
     Module.create(module, quoted, Macro.Env.location(__ENV__))

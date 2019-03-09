@@ -6,7 +6,9 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
   @spec assert_authenticated_redirect(Plug.Conn.t()) :: no_return
   defmacro assert_authenticated_redirect(conn) do
     quote do
-      assert ConnTest.redirected_to(unquote(conn)) == Routes.after_sign_in_path(unquote(conn))
+      routes = Keyword.get(unquote(conn).private.pow_config, :routes_backend, Routes)
+
+      assert ConnTest.redirected_to(unquote(conn)) == routes.after_sign_in_path(unquote(conn))
       assert ConnTest.get_flash(unquote(conn), :error) == Messages.user_already_authenticated(unquote(conn))
     end
   end
