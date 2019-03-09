@@ -151,7 +151,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     test "with valid params", %{conn: conn} do
       conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params)
 
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/after_registration"
       assert get_flash(conn, :info) == "user_created"
       assert conn.private[:plug_session]["auth"]
     end

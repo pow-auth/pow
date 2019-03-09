@@ -17,10 +17,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     conn
     |> Plug.current_user()
-    |> halt_unconfirmed(conn, {:ok, conn}, :registration)
+    |> halt_unconfirmed(conn, {:ok, conn}, :session)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
-    halt_unconfirmed(user, conn, {:ok, user, conn}, :session)
+    halt_unconfirmed(user, conn, {:ok, user, conn}, :registration)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
   def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config), do: warn_unconfirmed(user, conn)
@@ -58,7 +58,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   end
   defp halt_unconfirmed(_user, _conn, success_response, _type), do: success_response
 
-  defp return_path(conn, :registration), do: routes(conn).after_sign_in_path(conn)
+  defp return_path(conn, :registration), do: routes(conn).after_registration_path(conn)
   defp return_path(conn, :session), do: routes(conn).after_sign_in_path(conn)
 
   @spec send_confirmation_email(map(), Conn.t()) :: any()
