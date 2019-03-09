@@ -132,6 +132,8 @@ Pow is made so it's easy to extend the functionality with your own complimentary
 * [PowPersistentSession](lib/extensions/persistent_session/README.md)
 * [PowInvitation](lib/extensions/invitation/README.md)
 
+Check out the ["Other libraries"](#other-libraries) section for other extensions.
+
 ### Add extensions support
 
 To keep it easy to understand and configure Pow, you'll have to enable the extensions yourself.
