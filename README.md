@@ -31,7 +31,7 @@ Run `mix deps.get` to install it.
 
 ## Getting started (Phoenix)
 
-**Umbrella project:** In an umbrella project run `mix pow.ecto.install` inside your Ecto app instead of `mix pow.install`, and then continue with updating `config.ex`, `endpoint.ex` and `router.ex` inside your Phoenix app.
+**Umbrella project:** In an umbrella project run `mix pow.ecto.install` inside your Ecto app instead of `mix pow.install`, and then continue with updating `config.ex`, `endpoint.ex` and `router.ex` inside your Phoenix app using `:my_app_web` in place of `:my_app` as the otp app.
 
 Install the necessary files:
 

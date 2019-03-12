@@ -7,7 +7,7 @@ defmodule Pow.Ecto.Schema.PasswordTest do
   @password "secret"
 
   test "pbkdf2_hash/1" do
-    assert [algo, iterations, salt, _hash] = String.split(Password.pbkdf2_hash(@password, []), "$", trim: true)
+    assert [algo, iterations, _salt, _hash] = String.split(Password.pbkdf2_hash(@password, []), "$", trim: true)
 
     assert algo == "pbkdf2-sha512"
     assert iterations == "100000"
