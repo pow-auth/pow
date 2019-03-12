@@ -40,29 +40,32 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   ]
 
   defp create_template_files({config, _parsed, _invalid}) do
-    structure    = Phoenix.parse_structure(config)
-    context_base = structure[:context_base]
-    web_module   = structure[:web_module]
-    web_prefix   = structure[:web_prefix]
+    structure  = Phoenix.parse_structure(config)
+    web_module = structure[:web_module]
+    web_prefix = structure[:web_prefix]
 
     Enum.each(@templates, fn {name, actions} ->
       Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix)
       Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
     end)
 
-    %{context_base: context_base, web_module: web_module}
+    %{structure: structure}
   end
 
-  defp print_shell_instructions(%{context_base: context_base, web_module: web_base}, %{schema_name: schema_name}) do
+  defp print_shell_instructions(%{structure: structure}, %{schema_name: schema_name}) do
+    context_base = structure[:context_base]
+    web_app      = structure[:web_app]
+    web_module   = structure[:web_module]
+
     Mix.shell.info("""
     Pow Phoenix templates and views has been generated.
 
-    Please add `web_module: #{inspect(web_base)}` to your configuration.
+    Please add `web_module: #{inspect(web_module)}` to your configuration.
 
-    config :#{Macro.underscore(context_base)}, :pow,
+    config #{inspect(web_app)}, :pow,
       user: #{inspect(context_base)}.#{schema_name},
       repo: #{inspect(context_base)}.Repo,
-      web_module: #{inspect(web_base)}
+      web_module: #{inspect(web_module)}
     """)
   end
 end

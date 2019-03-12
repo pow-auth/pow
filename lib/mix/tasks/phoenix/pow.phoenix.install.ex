@@ -69,6 +69,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
     context_base = structure[:context_base]
     web_base     = structure[:web_module]
     web_prefix   = structure[:web_prefix]
+    web_app      = structure[:web_app]
 
     Mix.shell.info("""
     Pow has been installed in your phoenix app!
@@ -77,23 +78,23 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
     First, append this to `config/config.ex`:
 
-    config :#{Macro.underscore(context_base)}, :pow,
+    config #{inspect(web_app)}, :pow,
       user: #{inspect(context_base)}.#{schema_name},
       repo: #{inspect(context_base)}.Repo
 
     Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:
 
     defmodule #{inspect(web_base)}.Endpoint do
-      use Phoenix.Endpoint, otp_app: :#{Macro.underscore(context_base)}
+      use Phoenix.Endpoint, web_app: #{inspect(web_app)}
 
       # ...
 
       plug Plug.Session,
         store: :cookie,
-        key: "_#{Macro.underscore(context_base)}_key",
+        key: "_#{web_app}_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: :#{Macro.underscore(context_base)}
+      plug Pow.Plug.Session, otp_app: #{inspect(web_app)}
 
       # ...
     end

@@ -4,15 +4,14 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   @moduledoc """
   Generates a user schema.
 
-      mix pow.ecto.gen.schema -r MyApp.Repo
+      mix pow.ecto.gen.schema
 
-      mix pow.ecto.gen.schema -r MyApp.Repo --context-app my_app Accounts.Organization organizations
+      mix pow.ecto.gen.schema --context-app my_app Accounts.Organization organizations
 
   This generator will add a schema module file in `lib/my_app/users/user.ex`.
 
   ## Arguments
 
-    * `-r`, `--repo` - the repo module
     * `--binary-id` - use binary id for primary key and references
     * `--context-app` - context app to use for path and module names
   """
@@ -43,12 +42,12 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   end
 
   defp create_schema_file(%{binary_id: binary_id, schema_name: schema_name, schema_plural: schema_plural} = config) do
-    context_app   = Map.get(config, :context_app, Pow.context_app())
-    context_base  = Pow.context_base(context_app)
-    schema        = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
-    content       = SchemaModule.gen(schema)
-    dir_name      = dir_name(schema_name)
-    file_name     = file_name(schema.module)
+    context_app  = Map.get(config, :context_app) || Pow.otp_app()
+    context_base = Pow.context_base(context_app)
+    schema       = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
+    content      = SchemaModule.gen(schema)
+    dir_name     = dir_name(schema_name)
+    file_name    = file_name(schema.module)
 
     context_app
     |> Pow.context_lib_path(dir_name)

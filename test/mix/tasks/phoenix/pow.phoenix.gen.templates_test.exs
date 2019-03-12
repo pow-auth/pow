@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     "registration" => ["edit.html.eex", "new.html.eex"],
     "session" => ["new.html.eex"]
   }
-  @expected_views @expected_template_files |> Map.keys()
+  @expected_views  Map.keys(@expected_template_files)
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -52,20 +52,20 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     File.cd!(@tmp_path, fn ->
       Templates.run(options)
 
-      templates_path = Path.join(["lib", "test_web", "templates", "pow"])
+      templates_path = Path.join(["lib", "pow", "templates", "pow"])
       dirs           = templates_path |> File.ls!() |> Enum.sort()
 
       assert dirs == Map.keys(@expected_template_files)
 
-      views_path   = Path.join(["lib", "test_web", "views", "pow"])
+      views_path   = Path.join(["lib", "pow", "views", "pow"])
       view_content = views_path |> Path.join("session_view.ex") |> File.read!()
 
-      assert view_content =~ "defmodule TestWeb.Pow.SessionView do"
-      assert view_content =~ "use TestWeb, :view"
+      assert view_content =~ "defmodule Pow.Pow.SessionView do"
+      assert view_content =~ "use Pow, :view"
 
       assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
-      assert msg =~ "config :test, :pow,"
-      assert msg =~ "web_module: TestWeb"
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "web_module: Pow"
     end)
   end
 

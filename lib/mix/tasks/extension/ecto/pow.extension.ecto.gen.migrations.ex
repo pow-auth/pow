@@ -46,9 +46,9 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   end
 
   defp create_migrations_files(config, args) do
-    context_base = Pow.context_base(Pow.context_app())
-    otp_app      = String.to_atom(Macro.underscore(context_base))
-    extensions   = Extension.extensions(config, otp_app)
+    context_base = Pow.context_base(Pow.otp_app())
+    context_app  = String.to_atom(Macro.underscore(context_base))
+    extensions   = Extension.extensions(config, context_app)
 
     args
     |> Ecto.parse_repo()
@@ -56,7 +56,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     |> Enum.map(&Map.put(config, :repo, &1))
     |> Enum.each(&create_extension_migration_files(&1, extensions, context_base))
 
-    %{extensions: extensions, otp_app: otp_app}
+    %{extensions: extensions, context_app: context_app}
   end
 
   defp create_extension_migration_files(config, extensions, context_base) do
@@ -79,8 +79,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     do: true
   defp empty?(_schema), do: false
 
-  defp print_shell_instructions(%{extensions: [], otp_app: otp_app}) do
-    Extension.no_extensions_error(otp_app)
+  defp print_shell_instructions(%{extensions: [], context_app: context_app}) do
+    Extension.no_extensions_error(context_app)
   end
   defp print_shell_instructions(config), do: config
 end

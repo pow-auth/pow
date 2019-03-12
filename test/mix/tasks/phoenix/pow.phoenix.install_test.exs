@@ -3,13 +3,8 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
   alias Mix.Tasks.Pow.Phoenix.Install
 
-  defmodule Repo do
-    def __adapter__, do: true
-    def config, do: [priv: "", otp_app: :pow]
-  end
-
   @tmp_path       Path.join(["tmp", inspect(Install)])
-  @options        ["-r", inspect(Repo)]
+  @options        []
   @web_path       Path.join(["lib", "pow_web"])
   @templates_path Path.join([@web_path, "templates", "pow"])
   @views_path     Path.join([@web_path, "views", "pow"])
@@ -71,7 +66,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       Install.run(options)
 
       assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
-      assert msg =~ "plug Pow.Plug.Session, otp_app: :test"
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "user: Test.Users.User,"
+      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
     end)
   end
 
@@ -91,6 +88,48 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         assert_raise Mix.Error, "mix pow.phoenix.install can only be run inside an application directory that has :phoenix as dependency", fn ->
           Install.run([])
         end
+      end)
+    end)
+  end
+
+  test "uses web app inside Phoenix umbrella app" do
+    options = @options ++ ~w(--templates --extension PowResetPassword --extension PowEmailConfirmation)
+    File.cd!(@tmp_path, fn ->
+      File.write!("mix.exs", """
+      defmodule MyAppWeb.MixProject do
+        use Mix.Project
+
+        def project do
+          [
+            app: :my_app_web,
+            deps: [
+              {:phoenix, ">= 0.0.0"}
+            ]
+          ]
+        end
+      end
+      """)
+
+      Application.put_env(:my_app_web, :generators, context_app: :my_app)
+
+      Mix.Project.in_project(:my_app_web, ".", fn _ ->
+        Install.run(options)
+
+        assert_received {:mix_shell, :info, ["Pow has been installed in your phoenix app!" <> msg]}
+        assert msg =~ "config :my_app_web, :pow,"
+        assert msg =~ "user: MyApp.Users.User,"
+        assert msg =~ "plug Pow.Plug.Session, otp_app: :my_app_web"
+
+        assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
+        assert msg =~ "repo: MyApp.Repo"
+        assert msg =~ "user: MyApp.Users.User"
+        assert msg =~ "web_module: MyAppWeb"
+
+        assert File.exists?(Path.join(["lib", "my_app_web", "templates", "pow"]))
+        assert File.exists?(Path.join(["lib", "my_app_web", "views", "pow"]))
+
+        assert File.exists?(Path.join(["lib", "my_app_web", "templates", "pow_reset_password"]))
+        assert File.exists?(Path.join(["lib", "my_app_web", "views", "pow_reset_password"]))
       end)
     end)
   end

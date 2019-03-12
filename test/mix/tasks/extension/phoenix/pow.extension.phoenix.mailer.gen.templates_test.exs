@@ -77,37 +77,37 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     end)
   end
 
-  describe "with `:context_app` configuration" do
+  describe "with extensions in env config" do
     setup do
-      Application.put_env(:test, :pow, extensions: Enum.map(@expected_template_files, &elem(&1, 0)))
+      Application.put_env(:pow, :pow, extensions: Enum.map(@expected_template_files, &elem(&1, 0)))
       on_exit(fn ->
-        Application.delete_env(:test, :pow)
+        Application.delete_env(:pow, :pow)
       end)
     end
 
     test "generates mailer templates" do
       File.cd!(@tmp_path, fn ->
-        Templates.run(~w(--context-app test))
+        Templates.run([])
 
         for {module, expected_templates} <- @expected_template_files do
-          templates_path = Path.join(["lib", "test_web", "templates", Macro.underscore(module)])
+          templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
           dirs           = templates_path |> File.ls!() |> Enum.sort()
 
           assert dirs == Map.keys(expected_templates)
 
-          views_path          = Path.join(["lib", "test_web", "views", Macro.underscore(module)])
+          views_path          = Path.join(["lib", "pow_web", "views", Macro.underscore(module)])
           [base_name | _rest] = expected_templates |> Map.keys()
           view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
 
-          assert view_content =~ "defmodule TestWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-          assert view_content =~ "use TestWeb, :mailer_view"
+          assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
+          assert view_content =~ "use PowWeb, :mailer_view"
         end
 
         assert_received {:mix_shell, :info, ["Pow mailer templates has been installed in your phoenix app!" <> msg]}
-        assert msg =~ "lib/test_web.ex"
+        assert msg =~ "lib/pow_web.ex"
         assert msg =~ ":mailer_view"
         assert msg =~ "def mailer_view"
-        assert msg =~ "use Phoenix.View, root: \"lib/test_web/templates\""
+        assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
       end)
     end
   end

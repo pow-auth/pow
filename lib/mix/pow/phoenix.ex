@@ -10,27 +10,38 @@ defmodule Mix.Pow.Phoenix do
   """
   @spec parse_structure(map()) :: map()
   def parse_structure(config) do
-    context_app  = Map.get(config, :context_app) || Pow.context_app()
+    otp_app      = Pow.otp_app()
+    context_app  = Map.get(config, :context_app) || context_app(otp_app)
     context_base = Pow.context_base(context_app)
-    web_prefix   = web_path(context_app)
-    web_module   = web_module(context_base, web_prefix)
+    web_base     = web_base(context_app, otp_app, context_base)
+    web_prefix   = web_prefix(context_app, otp_app)
 
     %{
       context_app: context_app,
       context_base: context_base,
-      web_prefix: web_prefix,
-      web_module: web_module
+      web_app: otp_app,
+      web_module: web_base,
+      web_prefix: web_prefix
     }
   end
 
-  defp web_path(this_app), do: Path.join("lib", "#{this_app}_web")
-
-  defp web_module(base, web_prefix) do
-    case String.ends_with?(web_prefix, "_web") do
-      true  -> Module.concat(["#{base}Web"])
-      false -> Module.concat([base])
+  defp context_app(otp_app) do
+    otp_app
+    |> Application.get_env(:generators, [])
+    |> Keyword.get(:context_app)
+    |> case do
+      nil          -> otp_app
+      false        -> Mix.raise("No context_app configured for current application")
+      {app, _path} -> app
+      app          -> app
     end
   end
+
+  defp web_base(this_app, this_app, context_base), do: Module.concat(["#{context_base}Web"])
+  defp web_base(_this_app, web_app, _context_base), do: web_app |> to_string() |> Macro.camelize() |> List.wrap() |> Module.concat()
+
+  defp web_prefix(this_app, this_app), do: Path.join("lib", "#{this_app}_web")
+  defp web_prefix(_context_app, this_app), do: Path.join("lib", "#{this_app}")
 
   @doc """
   Creates a view file for the web module.
