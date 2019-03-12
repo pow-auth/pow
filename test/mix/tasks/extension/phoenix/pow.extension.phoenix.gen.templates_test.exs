@@ -90,4 +90,27 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
   end
 
   defp ls(path), do: path |> File.ls!() |> Enum.sort()
+
+  # This is for insurance that all available templates are being tested
+  test "test all templates" do
+    expected      = Enum.into(@expected_template_files, %{})
+    all_templates =
+      "lib/extensions"
+      |> File.ls!()
+      |> Enum.filter(&File.dir?("lib/extensions/#{&1}/phoenix/views"))
+      |> Enum.map(fn dir ->
+        extension = Module.concat(["Pow#{Macro.camelize(dir)}"])
+        templates =
+          "lib/extensions/#{dir}/phoenix/views"
+          |> File.ls!()
+          |> Enum.map(&String.replace(&1, "_view.ex", ""))
+
+        {extension, templates}
+      end)
+
+    for {extension, templates} <- all_templates do
+      assert Map.has_key?(expected, extension), "Missing template tests for #{inspect(extension)} extension"
+      assert Map.keys(expected[extension]) == templates, "Not all templates are tested for the #{inspect(extension)} extension"
+    end
+  end
 end
