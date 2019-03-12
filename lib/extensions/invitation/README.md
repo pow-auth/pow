@@ -34,7 +34,7 @@ end
 
 ### Limit invitation based on role
 
-If you have different roles (e.g. [admin and user](../../../guides/USER_ROLES.md)), you can limit the type of user who can invite others by setting up a plug in your `router.ex`:
+If you have different roles (e.g. [admin and user](../../../guides/USER_ROLES.md)), you can limit the type of user who can invite others by using a plug and override the routes in your `router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -51,9 +51,11 @@ defmodule MyAppWeb.Router do
     resource "/invitations", PowInvitation.Phoenix.InvitationController, only: [:new, :create, :show]
   end
 
-  # ... you would want `pow_routes/0` to be after
+  # ... you would want `pow_extension_routes/0` with the default routes to be after this
 end
 ```
+
+The routes will override the default ones in `pow_extension_routes/0`.
 
 ### Limit registration
 
