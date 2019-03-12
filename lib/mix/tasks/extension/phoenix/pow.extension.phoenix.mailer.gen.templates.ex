@@ -67,29 +67,27 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
   defp print_shell_instructions(%{extensions: [], web_app: web_app}) do
     Extension.no_extensions_error(web_app)
   end
-  defp print_shell_instructions(%{structure: structure}) do
-    web_base     = structure[:web_module]
-    web_prefix   = structure[:web_prefix]
+  defp print_shell_instructions(%{structure: %{web_module: web_base, web_prefix: web_prefix}}) do
+    Mix.shell.info(
+      """
+      Pow mailer templates has been installed in your phoenix app!
 
-    Mix.shell.info("""
-    Pow mailer templates has been installed in your phoenix app!
+      Remember to set up #{web_prefix}.ex with `mailer_view/0` function if you haven't already:
 
-    You'll need to set up #{web_prefix}.ex with a `:mailer_view` macro:
+      defmodule #{inspect(web_base)} do
+        # ...
 
-    defmodule #{inspect(web_base)} do
-      # ...
+        def mailer_view do
+          quote do
+            use Phoenix.View, root: "#{web_prefix}/templates",
+                              namespace: #{inspect(web_base)}
 
-      def mailer_view do
-        quote do
-          use Phoenix.View, root: "#{web_prefix}/templates",
-                            namespace: #{inspect(web_base)}
-
-          use Phoenix.HTML
+            use Phoenix.HTML
+          end
         end
-      end
 
-      # ...
-    end
-    """)
+        # ...
+      end
+      """)
   end
 end

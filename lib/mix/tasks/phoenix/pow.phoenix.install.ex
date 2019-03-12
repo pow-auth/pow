@@ -23,6 +23,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   """
   use Mix.Task
 
+  alias Pow.Config
   alias Mix.Tasks.Pow.Phoenix.Gen.Templates, as: PhoenixTemplatesTask
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
   alias Mix.{Pow, Pow.Phoenix}
@@ -65,56 +66,65 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   end
   defp maybe_run_extensions_gen_templates(config, _args), do: config
 
-  defp print_shell_instructions(%{structure: structure}, %{schema_name: schema_name}) do
-    context_base = structure[:context_base]
-    web_base     = structure[:web_module]
-    web_prefix   = structure[:web_prefix]
-    web_app      = structure[:web_app]
+  defp print_shell_instructions(%{structure: %{context_base: context_base, web_module: web_base, web_prefix: web_prefix, web_app: web_app}}, %{schema_name: schema_name}) do
+    case config_set?(web_app) do
+      true ->
+        :ok
 
-    Mix.shell.info("""
-    Pow has been installed in your phoenix app!
+      false ->
+        Mix.shell.info(
+          """
+          Pow has been installed in your phoenix app!
 
-    There are three files you'll need to configure first before you can use Pow.
+          There are three files you'll need to configure first before you can use Pow.
 
-    First, append this to `config/config.ex`:
+          First, append this to `config/config.ex`:
 
-    config #{inspect(web_app)}, :pow,
-      user: #{inspect(context_base)}.#{schema_name},
-      repo: #{inspect(context_base)}.Repo
+          config #{inspect(web_app)}, :pow,
+            user: #{inspect(context_base)}.#{schema_name},
+            repo: #{inspect(context_base)}.Repo
 
-    Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:
+          Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:
 
-    defmodule #{inspect(web_base)}.Endpoint do
-      use Phoenix.Endpoint, web_app: #{inspect(web_app)}
+          defmodule #{inspect(web_base)}.Endpoint do
+            use Phoenix.Endpoint, web_app: #{inspect(web_app)}
 
-      # ...
+            # ...
 
-      plug Plug.Session,
-        store: :cookie,
-        key: "_#{web_app}_key",
-        signing_salt: "secret"
+            plug Plug.Session,
+              store: :cookie,
+              key: "_#{web_app}_key",
+              signing_salt: "secret"
 
-      plug Pow.Plug.Session, otp_app: #{inspect(web_app)}
+            plug Pow.Plug.Session, otp_app: #{inspect(web_app)}
 
-      # ...
+            # ...
+          end
+
+          Last, update` #{web_prefix}/router.ex` with the Pow routes:
+
+          defmodule #{inspect(web_base)}.Router do
+            use #{inspect(web_base)}, :router
+            use Pow.Phoenix.Router
+
+            # ... pipelines
+
+            scope "/" do
+              pipe_through :browser
+
+              pow_routes()
+            end
+
+            # ... routes
+          end
+          """)
     end
+  end
 
-    Last, update` #{web_prefix}/router.ex` with the Pow routes:
+  defp config_set?(web_app) do
+    user = Config.get([otp_app: web_app], :user)
+    repo = Config.get([otp_app: web_app], :repo)
 
-    defmodule #{inspect(web_base)}.Router do
-      use #{inspect(web_base)}, :router
-      use Pow.Phoenix.Router
-
-      # ... pipelines
-
-      scope "/" do
-        pipe_through :browser
-
-        pow_routes()
-      end
-
-      # ... routes
-    end
-    """)
+    not is_nil(user) && not is_nil(repo)
   end
 end
