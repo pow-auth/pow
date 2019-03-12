@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     "registration" => ["edit.html.eex", "new.html.eex"],
     "session" => ["new.html.eex"]
   }
-  @expected_views @expected_template_files |> Map.keys()
+  @expected_views  Map.keys(@expected_template_files)
 
   setup do
     File.rm_rf!(@tmp_path)

@@ -3,13 +3,8 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
   alias Mix.Tasks.Pow.Phoenix.Install
 
-  defmodule Repo do
-    def __adapter__, do: true
-    def config, do: [priv: "", otp_app: :pow]
-  end
-
   @tmp_path       Path.join(["tmp", inspect(Install)])
-  @options        ["-r", inspect(Repo)]
+  @options        []
   @web_path       Path.join(["lib", "pow_web"])
   @templates_path Path.join([@web_path, "templates", "pow"])
   @views_path     Path.join([@web_path, "views", "pow"])
