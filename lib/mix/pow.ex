@@ -131,9 +131,9 @@ defmodule Mix.Pow do
     """)
   end
 
-  @doc """
-  Fetches context app for the project.
-  """
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Please use `Pow.Phoenix.parse_structure/1` instead"
   @spec context_app :: atom() | no_return
   def context_app do
     this_app = otp_app()
@@ -149,7 +149,9 @@ defmodule Mix.Pow do
     end
   end
 
-  defp otp_app do
+  @doc false
+  @spec otp_app :: atom() | no_return
+  def otp_app do
     Keyword.fetch!(Mix.Project.config(), :app)
   end
 

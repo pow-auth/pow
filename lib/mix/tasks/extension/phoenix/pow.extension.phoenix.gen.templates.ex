@@ -44,10 +44,11 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     structure  = Phoenix.parse_structure(config)
     web_module = structure[:web_module]
     web_prefix = structure[:web_prefix]
-    otp_app    = String.to_atom(Macro.underscore(structure[:context_base]))
+    web_app    = structure[:web_app]
+
     extensions =
       config
-      |> Extension.extensions(otp_app)
+      |> Extension.extensions(web_app)
       |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
       |> Enum.map(&{&1, @extension_templates[&1]})
 
@@ -58,11 +59,11 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       end)
     end)
 
-    %{extensions: extensions, otp_app: otp_app, structure: structure}
+    %{extensions: extensions, web_app: web_app, structure: structure}
   end
 
-  defp print_shell_instructions(%{extensions: [], otp_app: otp_app}) do
-    Extension.no_extensions_error(otp_app)
+  defp print_shell_instructions(%{extensions: [], web_app: web_app}) do
+    Extension.no_extensions_error(web_app)
   end
   defp print_shell_instructions(config), do: config
 end
