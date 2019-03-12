@@ -4,6 +4,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates
 
   @tmp_path Path.join(["tmp", inspect(Templates)])
+  @expected_msg "Pow mailer templates has been installed in your phoenix app!"
   @expected_template_files [
     {PowResetPassword, %{
       "mailer" => ["reset_password.html.eex", "reset_password.text.eex"]
@@ -61,9 +62,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         assert view_content =~ "def subject(:#{template}, _assigns), do:"
       end
 
-      assert_receive {:mix_shell, :info, ["Pow mailer templates has been installed in your phoenix app!" <> msg]}
+      assert_receive {:mix_shell, :info, [@expected_msg <> msg]}
       assert msg =~ "lib/pow_web.ex"
-      assert msg =~ ":mailer_view"
+      assert msg =~ "`mailer_view/0`"
       assert msg =~ "def mailer_view"
       assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
     end)
@@ -103,9 +104,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
           assert view_content =~ "use PowWeb, :mailer_view"
         end
 
-        assert_received {:mix_shell, :info, ["Pow mailer templates has been installed in your phoenix app!" <> msg]}
+        assert_received {:mix_shell, :info, [@expected_msg <> msg]}
         assert msg =~ "lib/pow_web.ex"
-        assert msg =~ ":mailer_view"
+        assert msg =~ "`mailer_view/0`"
         assert msg =~ "def mailer_view"
         assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
       end)

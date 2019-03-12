@@ -14,6 +14,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   """
   use Mix.Task
 
+  alias Pow.Config
   alias Mix.{Pow, Pow.Phoenix}
 
   @switches [context_app: :string]
@@ -52,20 +53,29 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     %{structure: structure}
   end
 
-  defp print_shell_instructions(%{structure: structure}, %{schema_name: schema_name}) do
-    context_base = structure[:context_base]
-    web_app      = structure[:web_app]
-    web_module   = structure[:web_module]
+  defp print_shell_instructions(%{structure: %{web_app: web_app, web_module: web_module, context_base: context_base}}, %{schema_name: schema_name}) do
+    case web_module_set?(web_app, web_module) do
+      true ->
+        :ok
 
-    Mix.shell.info("""
-    Pow Phoenix templates and views has been generated.
+      false ->
+        Mix.shell.info(
+          """
+          Pow Phoenix templates and views has been generated.
 
-    Please add `web_module: #{inspect(web_module)}` to your configuration.
+          Please add `web_module: #{inspect(web_module)}` to your configuration.
 
-    config #{inspect(web_app)}, :pow,
-      user: #{inspect(context_base)}.#{schema_name},
-      repo: #{inspect(context_base)}.Repo,
-      web_module: #{inspect(web_module)}
-    """)
+          config #{inspect(web_app)}, :pow,
+            user: #{inspect(context_base)}.#{schema_name},
+            repo: #{inspect(context_base)}.Repo,
+            web_module: #{inspect(web_module)}
+          """)
+    end
+  end
+
+  defp web_module_set?(web_app, web_module) do
+    [otp_app: web_app]
+    |> Config.get(:web_module)
+    |> Kernel.==(web_module)
   end
 end
