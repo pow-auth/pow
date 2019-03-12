@@ -35,6 +35,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
   @extension_templates [
     {PowResetPassword, [
       {"reset_password", ~w(new edit)}
+    ]},
+    {PowInvitation, [
+      {"invitation", ~w(new show edit)}
     ]}
   ]
   defp create_template_files({config, _parsed, _invalid}) do

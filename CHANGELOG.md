@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.4 (TBA)
+
+* Added `PowInvitation` to the `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
+
 ## v1.0.3 (2019-03-09)
 
 ### Changes

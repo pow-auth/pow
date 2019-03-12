@@ -38,6 +38,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     ]},
     {PowEmailConfirmation, [
       {"mailer", ~w(email_confirmation)}
+    ]},
+    {PowInvitation, [
+      {"mailer", ~w(invitation)}
     ]}
   ]
   defp create_template_files({config, _parsed, _invalid}) do

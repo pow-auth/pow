@@ -4,15 +4,18 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates
 
   @tmp_path Path.join(["tmp", inspect(Templates)])
-  @options  ["--extension", "PowResetPassword", "--extension", "PowEmailConfirmation"]
   @expected_template_files [
     {PowResetPassword, %{
       "mailer" => ["reset_password.html.eex", "reset_password.text.eex"]
     }},
     {PowEmailConfirmation, %{
       "mailer" => ["email_confirmation.html.eex", "email_confirmation.text.eex"]
+    }},
+    {PowInvitation, %{
+      "mailer" => ["invitation.html.eex", "invitation.text.eex"]
     }}
   ]
+  @options Enum.flat_map(@expected_template_files, &["--extension", inspect(elem(&1, 0))])
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -76,7 +79,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
   describe "with `:context_app` configuration" do
     setup do
-      Application.put_env(:test, :pow, extensions: [PowResetPassword, PowEmailConfirmation])
+      Application.put_env(:test, :pow, extensions: Enum.map(@expected_template_files, &elem(&1, 0)))
       on_exit(fn ->
         Application.delete_env(:test, :pow)
       end)
