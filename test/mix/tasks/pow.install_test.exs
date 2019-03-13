@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Pow.InstallTest do
       """)
 
       Mix.Project.in_project(:umbrella, ".", fn _ ->
-        assert_raise Mix.Error, "mix pow.install can't be used in umbrella apps. Run mix pow.ecto.install in your ecto app directory, and optionally mix pow.phoenix.install in your phoenix app directory.", fn ->
+        assert_raise Mix.Error, ~r/mix pow.install has to be used inside an application directory/, fn ->
           Install.run([])
         end
       end)
