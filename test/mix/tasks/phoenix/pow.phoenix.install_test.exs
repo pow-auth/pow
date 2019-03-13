@@ -73,19 +73,31 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
-  test "raises error in app with no phoenix dep" do
+  test "raises error in app with no top level phoenix dep" do
     File.cd!(@tmp_path, fn ->
       File.write!("mix.exs", """
       defmodule MyApp.MixProject do
         use Mix.Project
 
         def project do
-          []
+          [
+            deps: [
+              {:phoenix_live_reload, ">= 0.0.0"}
+            ]
+          ]
         end
       end
       """)
 
       Mix.Project.in_project(:my_app, ".", fn _ ->
+        Mix.Tasks.Deps.Get.run([])
+
+        # Insurance that we do test for top level phoenix inclusion
+        assert Enum.any?(deps(), fn
+          %{app: :phoenix} -> true
+          _ -> false
+        end), "Phoenix not loaded by dependency"
+
         assert_raise Mix.Error, "mix pow.phoenix.install can only be run inside an application directory that has :phoenix as dependency", fn ->
           Install.run([])
         end
@@ -150,5 +162,13 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         assert File.exists?(Path.join(["lib", "my_app_web", "views", "pow_reset_password"]))
       end)
     end)
+  end
+
+  # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
+  defp deps() do
+    case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do
+     true -> apply(Mix.Dep, :load_on_environment, [[]])
+     false -> apply(Mix.Dep, :loaded, [[]])
+    end
   end
 end

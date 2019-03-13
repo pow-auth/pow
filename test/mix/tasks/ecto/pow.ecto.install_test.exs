@@ -66,16 +66,36 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
         use Mix.Project
 
         def project do
-          []
+          [
+            deps: [
+              {:ecto_job, ">= 0.0.0"}
+            ]
+          ]
         end
       end
       """)
 
       Mix.Project.in_project(:my_app, ".", fn _ ->
-        assert_raise Mix.Error, "mix pow.ecto.install can only be run inside an application directory that has :ecto as dependency", fn ->
+        Mix.Tasks.Deps.Get.run([])
+
+        # Insurance that we do test for top level ecto inclusion
+        assert Enum.any?(deps(), fn
+          %{app: :phoenix} -> true
+          _ -> false
+        end), "Ecto not loaded by dependency"
+
+        assert_raise Mix.Error, "mix pow.ecto.install can only be run inside an application directory that has :ecto or :ecto_sql as dependency", fn ->
           Install.run([])
         end
       end)
     end)
+  end
+
+  # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
+  defp deps() do
+    case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do
+     true -> apply(Mix.Dep, :load_on_environment, [[]])
+     false -> apply(Mix.Dep, :loaded, [[]])
+    end
   end
 end
