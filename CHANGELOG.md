@@ -5,7 +5,9 @@
 * Added `PowInvitation` to the `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
 * Fixed issue in umbrella projects where extensions wasn't found in environment configuration
 * Shell instructions will only be printed if the configuration is missing
+* Now requires that `:ecto` or `:phoenix` are included in the dependency list for the app to run respective mix tasks
 * Deprecated `Mix.Pow.context_app/0`
+* Deprecated `Mix.Pow.ensure_dep!/3`
 
 ## v1.0.3 (2019-03-09)
 

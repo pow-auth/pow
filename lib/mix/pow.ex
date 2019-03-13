@@ -16,13 +16,13 @@ defmodule Mix.Pow do
     :ok
   end
 
-  @doc """
-  Raises an exception if the application doesn't have the dependency.
-  """
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `ensure_ecto!` or `ensure_phoenix!` instead"
   @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok | no_return
   def ensure_dep!(task, dep, _args) do
     fetch_deps()
-    |> dep_in_deps?(dep)
+    |> top_level_dep_in_deps?(dep)
     |> case do
       true ->
         :ok
@@ -30,6 +30,27 @@ defmodule Mix.Pow do
       false ->
         Mix.raise("mix #{task} can only be run inside an application directory that has #{inspect dep} as dependency")
     end
+  end
+
+  @doc """
+  Raises an exception if application doesn't have Ecto as dependency.
+  """
+  @spec ensure_ecto!(binary(), OptionParser.argv()) :: :ok | no_return
+  def ensure_ecto!(task, _args) do
+    deps = fetch_deps()
+
+    cond do
+      top_level_dep_in_deps?(deps, :ecto) -> :ok
+      top_level_dep_in_deps?(deps, :ecto_sql) -> :ok
+      true -> Mix.raise("mix #{task} can only be run inside an application directory that has :ecto or :ecto_sql as dependency")
+    end
+  end
+
+  defp top_level_dep_in_deps?(deps, dep) do
+    Enum.any?(deps, fn
+      %Mix.Dep{app: ^dep, top_level: true} -> true
+      _any -> false
+    end)
   end
 
   # TODO: Remove by 1.1.0 and only support Elixir 1.7
@@ -42,22 +63,16 @@ defmodule Mix.Pow do
     end
   end
 
-  defp dep_in_deps?(deps, dep) do
-    Enum.any?(deps, fn
-      %Mix.Dep{app: ^dep} -> true
-      _any -> false
-    end)
-  end
-
-  @doc """
-  Raises an exception if application doesn't have Ecto as dependency.
-  """
-  def ensure_ecto!(task, args), do: ensure_dep!(task, :ecto, args)
-
   @doc """
   Raises an exception if application doesn't have Phoenix as dependency.
   """
-  def ensure_phoenix!(task, args), do: ensure_dep!(task, :phoenix, args)
+  @spec ensure_phoenix!(binary(), OptionParser.argv()) :: :ok | no_return
+  def ensure_phoenix!(task, _args) do
+    case top_level_dep_in_deps?(fetch_deps(), :phoenix) do
+      true -> :ok
+      false -> Mix.raise("mix #{task} can only be run inside an application directory that has :phoenix as dependency")
+    end
+  end
 
   @doc """
   Parses argument options into a map.
