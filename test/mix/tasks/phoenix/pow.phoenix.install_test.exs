@@ -122,6 +122,37 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end
   end
 
+  describe "with `:namespace` environment config set" do
+    setup do
+      Application.put_env(:pow, :namespace, POW)
+      on_exit(fn ->
+        Application.delete_env(:pow, :namespace)
+      end)
+    end
+
+    test "uses namespace for context and web module names" do
+      File.cd!(@tmp_path, fn ->
+        Install.run(~w(--templates --extension PowResetPassword))
+
+        assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+        assert msg =~ "user: POW.Users.User,"
+        assert msg =~ "defmodule POWWeb.Endpoint do"
+
+        assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
+        assert msg =~ "user: POW.Users.User"
+        assert msg =~ "web_module: POWWeb"
+
+        view_file = Path.join(["lib", "pow_web", "views", "pow", "session_view.ex"])
+        assert File.exists?(view_file)
+        assert File.read!(view_file) =~ "defmodule POWWeb.Pow.SessionView do"
+
+        view_file = Path.join(["lib", "pow_web", "views", "pow_reset_password", "reset_password_view.ex"])
+        assert File.exists?(view_file)
+        assert File.read!(view_file) =~ "defmodule POWWeb.PowResetPassword.ResetPasswordView do"
+      end)
+    end
+  end
+
   test "uses web app inside Phoenix umbrella app" do
     options = @options ++ ~w(--templates --extension PowResetPassword --extension PowEmailConfirmation)
     File.cd!(@tmp_path, fn ->

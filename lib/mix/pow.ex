@@ -170,11 +170,17 @@ defmodule Mix.Pow do
     Keyword.fetch!(Mix.Project.config(), :app)
   end
 
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `app_base/1` instead"
+  @spec context_base(atom()) :: atom()
+  def context_base(app), do: app_base(app)
+
   @doc """
   Fetches the context base module for the app.
   """
-  @spec context_base(atom()) :: atom()
-  def context_base(app) do
+  @spec app_base(atom()) :: atom()
+  def app_base(app) do
     case Application.get_env(app, :namespace, app) do
       ^app ->
         app

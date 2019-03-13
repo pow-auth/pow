@@ -91,6 +91,23 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
     end)
   end
 
+  describe "with `:namespace` environment config set" do
+    setup do
+      Application.put_env(:pow, :namespace, POW)
+      on_exit(fn ->
+        Application.delete_env(:pow, :namespace)
+      end)
+    end
+
+    test "uses namespace for context module names" do
+      File.cd!(@tmp_path, fn ->
+        Install.run(@options)
+
+        assert File.read!("lib/pow/users/user.ex") =~ "defmodule POW.Users.User do"
+      end)
+    end
+  end
+
   # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
   defp deps() do
     case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do

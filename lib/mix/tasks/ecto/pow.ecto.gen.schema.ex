@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
   defp create_schema_file(%{binary_id: binary_id, schema_name: schema_name, schema_plural: schema_plural} = config) do
     context_app  = Map.get(config, :context_app) || Pow.otp_app()
-    context_base = Pow.context_base(context_app)
+    context_base = Pow.app_base(context_app)
     schema       = SchemaModule.new(context_base, schema_name, schema_plural, binary_id: binary_id)
     content      = SchemaModule.gen(schema)
     dir_name     = dir_name(schema_name)
