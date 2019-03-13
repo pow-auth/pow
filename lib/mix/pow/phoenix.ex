@@ -12,7 +12,7 @@ defmodule Mix.Pow.Phoenix do
   def parse_structure(config) do
     otp_app      = Pow.otp_app()
     context_app  = Map.get(config, :context_app) || context_app(otp_app)
-    context_base = Pow.context_base(context_app)
+    context_base = Pow.app_base(context_app)
     web_base     = web_base(context_app, otp_app, context_base)
     web_prefix   = web_prefix(context_app, otp_app)
 
@@ -38,7 +38,7 @@ defmodule Mix.Pow.Phoenix do
   end
 
   defp web_base(this_app, this_app, context_base), do: Module.concat(["#{context_base}Web"])
-  defp web_base(_this_app, web_app, _context_base), do: web_app |> to_string() |> Macro.camelize() |> List.wrap() |> Module.concat()
+  defp web_base(_this_app, web_app, _context_base), do: Pow.app_base(web_app)
 
   defp web_prefix(this_app, this_app), do: Path.join("lib", "#{this_app}_web")
   defp web_prefix(_context_app, this_app), do: Path.join("lib", "#{this_app}")

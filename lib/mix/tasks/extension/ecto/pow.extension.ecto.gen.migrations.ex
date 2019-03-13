@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   end
 
   defp create_migrations_files(config, args) do
-    context_base = Pow.context_base(Pow.otp_app())
+    context_base = Pow.app_base(Pow.otp_app())
     context_app  = String.to_atom(Macro.underscore(context_base))
     extensions   = Extension.extensions(config, context_app)
 
