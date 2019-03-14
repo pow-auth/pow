@@ -100,6 +100,10 @@ defmodule Pow.MixProject do
           filename: "RedisCacheStoreBackend",
           title: "Redis cache store backend"
         ],
+        "guides/UMBRELLA_PROJECT.md": [
+          filename: "UmbrellaProject",
+          title: "Pow in an umbrella project"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
