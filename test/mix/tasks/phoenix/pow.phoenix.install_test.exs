@@ -76,22 +76,35 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
   test "raises error in app with no top level phoenix dep" do
     File.cd!(@tmp_path, fn ->
       File.write!("mix.exs", """
-      defmodule MyApp.MixProject do
+      defmodule MissingTopLevelPhoenixDep.MixProject do
         use Mix.Project
 
         def project do
           [
             deps: [
-              {:phoenix_live_reload, ">= 0.0.0"}
+              {:phoenix_dep, path: "dep/"}
+            ]
+          ]
+        end
+      end
+      """)
+      File.mkdir!("dep")
+      File.write!("dep/mix.exs", """
+      defmodule PhoenixDep.MixProject do
+        use Mix.Project
+
+        def project do
+          [
+            app: :phoenix_dep,
+            deps: [
+              {:phoenix, ">= 0.0.0"}
             ]
           ]
         end
       end
       """)
 
-      Mix.Project.in_project(:my_app, ".", fn _ ->
-        Mix.Tasks.Deps.Get.run([])
-
+      Mix.Project.in_project(:missing_top_level_phoenix_dep, ".", fn _ ->
         # Insurance that we do test for top level phoenix inclusion
         assert Enum.any?(deps(), fn
           %{app: :phoenix} -> true

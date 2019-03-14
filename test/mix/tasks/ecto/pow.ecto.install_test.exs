@@ -62,25 +62,36 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
   test "raises error in app with no ecto dep" do
     File.cd!(@tmp_path, fn ->
       File.write!("mix.exs", """
-      defmodule MyApp.MixProject do
+      defmodule MissingTopLevelEctoDep.MixProject do
         use Mix.Project
 
         def project do
           [
             deps: [
-              {:ecto_job, ">= 0.0.0"}
+              {:ecto_dep, path: "ecto_dep/"}
             ]
           ]
         end
       end
       """)
+      File.mkdir!("ecto_dep")
+      File.write!("ecto_dep/mix.exs", """
+      defmodule EctoDep.MixProject do
+        use Mix.Project
 
-      Mix.Project.in_project(:my_app, ".", fn _ ->
-        Mix.Tasks.Deps.Get.run([])
+        def project do
+          [
+            app: :ecto_dep,
+            deps: [{:ecto_sql, ">= 0.0.0"}]
+          ]
+        end
+      end
+      """)
 
+      Mix.Project.in_project(:missing_top_level_ecto_dep, ".", fn _ ->
         # Insurance that we do test for top level ecto inclusion
         assert Enum.any?(deps(), fn
-          %{app: :phoenix} -> true
+          %{app: :ecto_sql} -> true
           _ -> false
         end), "Ecto not loaded by dependency"
 
