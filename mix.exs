@@ -88,6 +88,10 @@ defmodule Pow.MixProject do
           filename: "UserRoles",
           title: "How to add user roles"
         ],
+        "guides/LOCK_USERS.md": [
+          filename: "LockUsers",
+          title: "How to disable users"
+        ],
         "guides/CUSTOM_CONTROLLERS.md": [
           filename: "CustomControllers",
           title: "Custom controllers"
