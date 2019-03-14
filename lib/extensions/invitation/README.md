@@ -77,7 +77,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-You would want to use custom template for the session controller, since by default it'll still have the link to registration.
+You need to  use custom template for the session controller, since by default it'll still have the link to registration. Read more in the [Disable registration guide](../../../guides/DISABLE_REGISTRATION.md).
 
 ### Expire invited users
 

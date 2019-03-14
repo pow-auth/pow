@@ -6,10 +6,18 @@ First you should follow the [Modify templates](../README.md#modify-templates) se
 
 ## Templates
 
-Delete the `templates/pow/registration` folder and the `views/pow/registration_view.ex` file. Open up `templates/pow/session/new.html.eex` and remove the `Routes.pow_registration_path` link.
+Open up `templates/pow/session/new.html.eex` and remove the `Routes.pow_registration_path/2` link. Delete the `templates/pow/registration/new.html.eex` file.
 
 ## Routes
 
 Replace `pow_routes()` with `pow_session_routes()` in your router module.
+
+Add the following routes below to enable account updates and deletion:
+
+```elixir
+scope "/", Pow.Phoenix, as: "pow" do
+  resources "/registration", RegistrationController, singleton: true, only: [:edit, :update, :delete]
+end
+```
 
 That's it!
