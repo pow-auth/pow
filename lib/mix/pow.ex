@@ -117,19 +117,19 @@ defmodule Mix.Pow do
   def schema_options_from_args(_any), do: %{schema_name: "Users.User", schema_plural: "users"}
 
   @doc false
-  @spec validate_schema_args!([binary()], binary()) :: map()
+  @spec validate_schema_args!([binary()], binary()) :: map() | no_return()
   def validate_schema_args!([schema, plural | _rest] = args, task) do
     cond do
       not schema_valid?(schema) ->
-        raise_invalid_schema_args_error("Expected the schema argument, #{inspect schema}, to be a valid module name", task)
+        raise_invalid_schema_args_error!("Expected the schema argument, #{inspect schema}, to be a valid module name", task)
       not plural_valid?(plural) ->
-        raise_invalid_schema_args_error("Expected the plural argument, #{inspect plural}, to be all lowercase using snake_case convention", task)
+        raise_invalid_schema_args_error!("Expected the plural argument, #{inspect plural}, to be all lowercase using snake_case convention", task)
       true ->
         schema_options_from_args(args)
     end
   end
   def validate_schema_args!([_schema | _rest], task) do
-    raise_invalid_schema_args_error("Invalid arguments", task)
+    raise_invalid_schema_args_error!("Invalid arguments", task)
   end
   def validate_schema_args!([], _task), do: schema_options_from_args()
 
@@ -137,7 +137,8 @@ defmodule Mix.Pow do
 
   defp plural_valid?(plural), do: plural =~ ~r/^[a-z\_]*$/
 
-  defp raise_invalid_schema_args_error(msg, task) do
+  @spec raise_invalid_schema_args_error!(binary(), binary()) :: no_return()
+  defp raise_invalid_schema_args_error!(msg, task) do
     Mix.raise("""
     #{msg}
 
