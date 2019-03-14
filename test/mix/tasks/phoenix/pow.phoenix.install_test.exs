@@ -62,14 +62,14 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
   end
 
   test "with `:context_app`" do
-    options = @options ++ ~w(--context-app test)
     File.cd!(@tmp_path, fn ->
-      Install.run(options)
+      Install.run(@options ++ ~w(--context-app test --templates))
 
       assert_received {:mix_shell, :info, [@expected_msg <> msg]}
-      assert msg =~ "config :pow, :pow,"
       assert msg =~ "user: Test.Users.User,"
-      assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
+
+      assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated." <> msg]}
+      assert msg =~ "user: Test.Users.User"
     end)
   end
 

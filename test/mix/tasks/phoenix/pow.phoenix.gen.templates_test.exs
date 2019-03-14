@@ -47,29 +47,6 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
     end)
   end
 
-  test "generates with `:context_app`" do
-    options = ~w(--context-app test)
-
-    File.cd!(@tmp_path, fn ->
-      Templates.run(options)
-
-      templates_path = Path.join(["lib", "pow", "templates", "pow"])
-      dirs           = templates_path |> File.ls!() |> Enum.sort()
-
-      assert dirs == Map.keys(@expected_template_files)
-
-      views_path   = Path.join(["lib", "pow", "views", "pow"])
-      view_content = views_path |> Path.join("session_view.ex") |> File.read!()
-
-      assert view_content =~ "defmodule Pow.Pow.SessionView do"
-      assert view_content =~ "use Pow, :view"
-
-      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
-      assert msg =~ "config :pow, :pow,"
-      assert msg =~ "web_module: Pow"
-    end)
-  end
-
   describe "with `:web_module` environment config set" do
     setup do
       Application.put_env(:pow, :pow, web_module: PowWeb)

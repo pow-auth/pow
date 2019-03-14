@@ -13,10 +13,8 @@ defmodule Mix.Tasks.Pow.InstallTest do
   end
 
   test "generates files" do
-    options = ~w(--context-app pow)
-
     File.cd!(@tmp_path, fn ->
-      Install.run(options)
+      Install.run([])
 
       assert File.ls!("lib/pow/users") == ["user.ex"]
     end)
