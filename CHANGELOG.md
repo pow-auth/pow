@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.4 (TBA)
+## v1.0.4 (2019-03-13)
 
 * Added `PowInvitation` to the `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
 * Fixed issue in umbrella projects where extensions wasn't found in environment configuration
