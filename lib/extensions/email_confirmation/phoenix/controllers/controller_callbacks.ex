@@ -37,7 +37,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp do_warn_unconfirmed(user, conn) do
     send_confirmation_email(user, conn)
 
-    error = messages(conn).email_confirmation_required_for_update(conn)
+    error = extension_messages(conn).email_confirmation_required_for_update(conn)
     conn  = Phoenix.Controller.put_flash(conn, :error, error)
 
     {:ok, user, conn}
@@ -47,7 +47,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     send_confirmation_email(user, conn)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
-    error       = messages(conn).email_confirmation_required(conn)
+    error       = extension_messages(conn).email_confirmation_required(conn)
     path        = return_path(conn, type)
     conn        =
       conn
@@ -63,10 +63,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do
-    token = user.email_confirmation_token
-    url   = routes(conn).url_for(conn, ConfirmationController, :show, [token])
+    url   = confirmation_url(conn, user.email_confirmation_token)
     email = Mailer.email_confirmation(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
+  end
+
+  defp confirmation_url(conn, token) do
+    routes(conn).url_for(conn, ConfirmationController, :show, [token])
   end
 end

@@ -38,7 +38,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
   defp default_respond_create(conn) do
     conn
-    |> put_flash(:info, messages(conn).email_has_been_sent(conn))
+    |> put_flash(:info, extension_messages(conn).email_has_been_sent(conn))
     |> redirect(to: routes(conn).session_path(conn, :new))
   end
 
@@ -62,7 +62,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
   def respond_update({:ok, _user, conn}) do
     conn
-    |> put_flash(:info, messages(conn).password_has_been_reset(conn))
+    |> put_flash(:info, extension_messages(conn).password_has_been_reset(conn))
     |> redirect(to: routes(conn).session_path(conn, :new))
   end
   def respond_update({:error, changeset, conn}) do
@@ -75,7 +75,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     case Plug.user_from_token(conn, token) do
       nil ->
         conn
-        |> put_flash(:error, messages(conn).invalid_token(conn))
+        |> put_flash(:error, extension_messages(conn).invalid_token(conn))
         |> redirect(to: routes(conn).path_for(conn, __MODULE__, :new))
         |> halt()
 
