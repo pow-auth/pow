@@ -13,7 +13,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
         end
       end
   """
-  alias Pow.{Config, Extension.Phoenix.Controller.Base}
+  alias Pow.{Config, Extension.Phoenix.Controller.Base, Phoenix.Controller}
 
   @callback before_process(atom(), atom(), any(), Config.t()) :: any()
   @callback before_respond(atom(), atom(), any(), Config.t()) :: any()
@@ -23,9 +23,11 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
-      import Base, only: [__define_helper_methods__: 1]
+      require Base
+      require Controller
 
-      __define_helper_methods__(unquote(config))
+      Base.__define_helper_methods__(unquote(config))
+      Controller.__define_helper_methods__()
 
       @before_compile unquote(__MODULE__)
     end
