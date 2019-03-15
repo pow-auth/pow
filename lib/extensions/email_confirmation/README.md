@@ -22,6 +22,10 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
 <% end %>
 ```
 
+### Routes
+
+The `PowEmailConfirmation.Phoenix.Routes.after_halted_registration_path/1` and `PowEmailConfirmation.Phoenix.Routes.after_halted_sign_in_path/1` routes are used when halting unconfirmed e-mails registration and sign in. These can be overridden in your custom `MyAppWeb.Pow.Routes` module.
+
 ## Prevent persistent session sign in
 
 To prevent that `PowPeristentSession` creates a new persistent session when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.

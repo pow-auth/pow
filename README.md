@@ -461,13 +461,24 @@ You can customize callback routes by creating the following module:
 ```elixir
 defmodule MyAppWeb.Pow.Routes do
   use Pow.Phoenix.Routes
+  use Pow.Extension.Phoenix.Routes,
+    extensions: [PowEmailConfirmation]
+
   alias MyAppWeb.Router.Helpers, as: Routes
 
   def after_sign_in_path(conn), do: Routes.some_path(conn, :index)
+
+  # Routes methods for extensions has to be prepended with the snake cased
+  # extension name. So the `after_halted_registration_path/1` method from
+  # `PowEmailConfirmation` is written as
+  # `pow_email_confirmation_after_halted_registration_path/1` in your messages
+  # module.
+  def pow_email_confirmation_after_halted_registration_path(conn),
+    do: Routes.some_path(conn, :index)
 end
 ```
 
-Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in [`Pow.Phoenix.Routes`](lib/pow/phoenix/routes.ex).
+Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in [`Pow.Phoenix.Routes`](lib/pow/phoenix/routes.ex) and `[Pow Extension].Phoenix.Routes`.
 
 ### Password hashing function
 

@@ -7,6 +7,8 @@
 * `Pow.Phoenix.Router` will now only add specific routes if there is no matching route already defined
 * Added `Pow.Plug.get_plug/1` and instead of `:mod`, `:plug` is used in config
 * `Pow.Ecto.Context.authenticate/2` now returns nil if user id or password is nil
+* Added `extension_routes/1` to extension controllers and callbacks
+* Added `PowEmailConfirmation.Phoenix.Routes.after_halted_registration_path/1` and `PowEmailConfirmation.Phoenix.Routes.after_halted_sign_in_path/1` routes
 
 ### Bug fixes
 
