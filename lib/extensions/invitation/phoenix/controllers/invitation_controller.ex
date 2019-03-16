@@ -3,7 +3,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
   use Pow.Extension.Phoenix.Controller.Base
 
   alias Plug.Conn
-  alias Pow.Phoenix.{RegistrationController, SessionController}
+  alias Pow.Phoenix.SessionController
   alias PowInvitation.{Phoenix.Mailer, Plug}
 
   plug :require_authenticated when action in [:new, :create, :show]
@@ -34,7 +34,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
     deliver_email(conn, user)
 
     conn
-    |> put_flash(:info, messages(conn).invitation_email_sent(conn))
+    |> put_flash(:info, extension_messages(conn).invitation_email_sent(conn))
     |> redirect(to: routes(conn).path_for(conn, __MODULE__, :new))
   end
   def respond_create({:ok, user, conn}) do
@@ -88,7 +88,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
   @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
   def respond_update({:ok, _user, conn}) do
     conn
-    |> put_flash(:info, RegistrationController.messages(conn).user_has_been_created(conn))
+    |> put_flash(:info, messages(conn).user_has_been_created(conn))
     |> redirect(to: routes(conn).after_registration_path(conn))
   end
   def respond_update({:error, changeset, conn}) do
@@ -101,7 +101,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
     case Plug.invited_user_from_token(conn, token) do
       nil  ->
         conn
-        |> put_flash(:error, messages(conn).invalid_invitation(conn))
+        |> put_flash(:error, extension_messages(conn).invalid_invitation(conn))
         |> redirect(to: routes(conn).path_for(conn, SessionController, :new))
         |> halt()
 

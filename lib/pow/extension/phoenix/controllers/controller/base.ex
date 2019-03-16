@@ -27,7 +27,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
       @messages_fallback unquote(__MODULE__).__messages_fallback__(unquote(config), __MODULE__, __ENV__)
 
       @doc false
-      def messages(conn), do: unquote(__MODULE__).__messages_module__(conn, @messages_fallback)
+      def extension_messages(conn), do: unquote(__MODULE__).__messages_module__(conn, @messages_fallback)
 
       @doc false
       def routes(conn), do: Controller.routes(conn, Routes)

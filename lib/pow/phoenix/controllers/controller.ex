@@ -58,6 +58,13 @@ defmodule Pow.Phoenix.Controller do
 
       defp pow_layout(conn, _config), do: ViewHelpers.layout(conn)
 
+      unquote(__MODULE__).__define_helper_methods__()
+    end
+  end
+
+  @doc false
+  defmacro __define_helper_methods__() do
+    quote do
       @doc """
       See `Pow.Phoenix.Controller.messages/2` for more.
 

@@ -11,12 +11,12 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   @spec respond_show({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_show({:ok, _user, conn}) do
     conn
-    |> put_flash(:info, messages(conn).email_has_been_confirmed(conn))
+    |> put_flash(:info, extension_messages(conn).email_has_been_confirmed(conn))
     |> redirect(to: redirect_to(conn))
   end
   def respond_show({:error, _changeset, conn}) do
     conn
-    |> put_flash(:error, messages(conn).email_confirmation_failed(conn))
+    |> put_flash(:error, extension_messages(conn).email_confirmation_failed(conn))
     |> redirect(to: redirect_to(conn))
   end
 

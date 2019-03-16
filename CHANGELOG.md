@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.5 (TBA)
+
+* Added `extension_messages/1` to extension controllers and callbacks
+
 ## v1.0.4 (2019-03-13)
 
 * Added `PowInvitation` to the `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
