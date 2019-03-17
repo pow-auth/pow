@@ -10,7 +10,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
         # ...
       end
   """
-  alias Pow.{Config, Phoenix.Controller, Phoenix.Routes}
+  alias Pow.{Config, Phoenix.Controller}
 
   @doc false
   defmacro __using__(config) do
@@ -28,9 +28,6 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
 
       @doc false
       def extension_messages(conn), do: unquote(__MODULE__).__messages_module__(conn, @messages_fallback)
-
-      @doc false
-      def routes(conn), do: Controller.routes(conn, Routes)
     end
   end
 
