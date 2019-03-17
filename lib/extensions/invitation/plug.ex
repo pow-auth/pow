@@ -3,8 +3,9 @@ defmodule PowInvitation.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.Plug
-  alias PowInvitation.Ecto.{Context, Schema}
+  alias Pow.{Ecto.Context, Plug}
+  alias PowInvitation.Ecto.Context, as: InvitationContext
+  alias PowInvitation.Ecto.Schema
 
   @doc """
   Creates a new invited user by the current user in the connection.
@@ -15,7 +16,7 @@ defmodule PowInvitation.Plug do
 
     conn
     |> Plug.current_user()
-    |> Context.create(params, config)
+    |> InvitationContext.create(params, config)
     |> case do
       {:ok, user}         -> {:ok, user, conn}
       {:error, changeset} -> {:error, changeset, conn}
@@ -51,7 +52,7 @@ defmodule PowInvitation.Plug do
 
     conn
     |> invited_user()
-    |> Context.update(params, config)
+    |> InvitationContext.update(params, config)
     |> case do
       {:ok, user}         -> {:ok, user, Plug.get_mod(config).do_create(conn, user, config)}
       {:error, changeset} -> {:error, changeset, conn}
@@ -67,7 +68,7 @@ defmodule PowInvitation.Plug do
   def invited_user_from_token(conn, token) do
     config = Plug.fetch_config(conn)
 
-    Context.get_by_invitation_token(token, config)
+    InvitationContext.get_by_invitation_token(token, config)
   end
 
   @doc """

@@ -1,8 +1,5 @@
 defmodule PowResetPassword.Ecto.Context do
   @moduledoc false
-  use Pow.Extension.Ecto.Context.Base
-
-  alias Ecto.Changeset
   alias Pow.{Config, Ecto.Context}
   alias PowResetPassword.Ecto.Schema
 

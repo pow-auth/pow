@@ -1,7 +1,5 @@
 defmodule PowEmailConfirmation.Ecto.Context do
   @moduledoc false
-  use Pow.Extension.Ecto.Context.Base
-
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Context}
   alias PowEmailConfirmation.Ecto.Schema

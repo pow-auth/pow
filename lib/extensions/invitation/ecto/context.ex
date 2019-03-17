@@ -1,7 +1,5 @@
 defmodule PowInvitation.Ecto.Context do
   @moduledoc false
-  use Pow.Extension.Ecto.Context.Base
-
   alias Ecto.Changeset
   alias Pow.Ecto.Context
   alias PowInvitation.Ecto.Schema

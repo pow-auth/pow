@@ -3,8 +3,9 @@ defmodule PowResetPassword.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Config, Plug, Store.Backend.EtsCache, UUID}
-  alias PowResetPassword.{Ecto.Context, Ecto.Schema, Store.ResetTokenCache}
+  alias Pow.{Config, Ecto.Context, Plug, Store.Backend.EtsCache, UUID}
+  alias PowResetPassword.Ecto.Context, as: ResetPasswordContext
+  alias PowResetPassword.{Ecto.Schema, Store.ResetTokenCache}
 
   @doc """
   Creates a changeset from the user fetched in the connection.
@@ -41,7 +42,7 @@ defmodule PowResetPassword.Plug do
     user   =
       params
       |> Map.get("email")
-      |> Context.get_by_email(config)
+      |> ResetPasswordContext.get_by_email(config)
 
     maybe_create_reset_token(conn, user, config)
   end
@@ -87,7 +88,7 @@ defmodule PowResetPassword.Plug do
 
     conn
     |> reset_password_user()
-    |> Context.update_password(params, config)
+    |> ResetPasswordContext.update_password(params, config)
     |> maybe_expire_token(conn, token, config)
   end
 
