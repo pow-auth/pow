@@ -32,14 +32,14 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     |> print_shell_instructions()
   end
 
-  @extension_templates [
-    {PowResetPassword, [
+  @extension_templates %{
+    PowResetPassword => [
       {"reset_password", ~w(new edit)}
-    ]},
-    {PowInvitation, [
+    ],
+    PowInvitation => [
       {"invitation", ~w(new show edit)}
-    ]}
-  ]
+    ]
+  }
   defp create_template_files({config, _parsed, _invalid}) do
     structure  = Phoenix.parse_structure(config)
     web_module = structure[:web_module]
@@ -49,17 +49,25 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     extensions =
       config
       |> Extension.extensions(web_app)
-      |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
-      |> Enum.map(&{&1, @extension_templates[&1]})
+      |> Enum.map(fn extension ->
+        templates = Map.get(@extension_templates, extension, [])
 
-    Enum.each(extensions, fn {module, templates} ->
-      Enum.each(templates, fn {name, actions} ->
-        Phoenix.create_view_file(module, name, web_module, web_prefix)
-        Phoenix.create_templates(module, name, web_prefix, actions)
+        create_views_and_templates(extension, templates, web_module, web_prefix)
+
+        extension
       end)
-    end)
 
     %{extensions: extensions, web_app: web_app, structure: structure}
+  end
+
+  defp create_views_and_templates(extension, [], _web_module, _web_prefix) do
+    Mix.shell().info("Warning: No view or template files generated for #{inspect extension} as no templates has been defined for it.")
+  end
+  defp create_views_and_templates(extension, templates, web_module, web_prefix) do
+    Enum.each(templates, fn {name, actions} ->
+      Phoenix.create_view_file(extension, name, web_module, web_prefix)
+      Phoenix.create_templates(extension, name, web_prefix, actions)
+    end)
   end
 
   defp print_shell_instructions(%{extensions: [], web_app: web_app}) do

@@ -30,17 +30,17 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     |> print_shell_instructions()
   end
 
-  @extension_templates [
-    {PowResetPassword, [
+  @extension_templates %{
+    PowResetPassword => [
       {"mailer", ~w(reset_password)}
-    ]},
-    {PowEmailConfirmation, [
+    ],
+    PowEmailConfirmation => [
       {"mailer", ~w(email_confirmation)}
-    ]},
-    {PowInvitation, [
+    ],
+    PowInvitation => [
       {"mailer", ~w(invitation)}
-    ]}
-  ]
+    ]
+  }
   defp create_template_files({config, _parsed, _invalid}) do
     structure  = Phoenix.parse_structure(config)
     web_module = structure[:web_module]
@@ -50,18 +50,28 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     extensions =
       config
       |> Extension.extensions(web_app)
-      |> Enum.filter(&Keyword.has_key?(@extension_templates, &1))
-      |> Enum.map(&{&1, @extension_templates[&1]})
+      |> Enum.map(fn extension ->
+        templates = Map.get(@extension_templates, extension, [])
 
-    Enum.each(extensions, fn {module, templates} ->
-      Enum.each(templates, fn {name, mails} ->
-        mails = Enum.map(mails, &String.to_atom/1)
-        Mailer.create_view_file(module, name, web_module, web_prefix, mails)
-        Mailer.create_templates(module, name, web_prefix, mails)
+        create_views_and_templates(extension, templates, web_module, web_prefix)
+
+        extension
       end)
-    end)
 
     %{extensions: extensions, web_app: web_app, structure: structure}
+  end
+
+
+  defp create_views_and_templates(extension, [], _web_module, _web_prefix) do
+    Mix.shell().info("Warning: No mailer view or template files generated for #{inspect extension} as no mailer templates has been defined for it.")
+  end
+  defp create_views_and_templates(extension, templates, web_module, web_prefix) do
+    Enum.each(templates, fn {name, mails} ->
+      mails = Enum.map(mails, &String.to_atom/1)
+
+      Mailer.create_view_file(extension, name, web_module, web_prefix, mails)
+      Mailer.create_templates(extension, name, web_prefix, mails)
+    end)
   end
 
   defp print_shell_instructions(%{extensions: [], web_app: web_app}) do
