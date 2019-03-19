@@ -6,7 +6,7 @@ Instead of running `mix pow.install`, you should run `mix pow.ecto.install` insi
 
 You can follow the rest of the [README](../README.md#phoenix-app) instructions with the following caveats in mind:
 
-- Use `:my_app_web` instead of `:my_app`
-- `config/config.ex` is the config inside the Phoenix app(s)
 - Run all mix ecto tasks inside the ecto app
 - Run all mix phoenix tasks inside the phoenix app(s)
+- For a project generated with `mix phx.new --umbrella` use `:my_app_web` instead of `:my_app`
+- `config/config.ex` is inside the Phoenix app(s)
