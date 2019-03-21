@@ -120,7 +120,7 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
   end
 
   # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
-  defp deps() do
+  defp deps do
     case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do
      true -> apply(Mix.Dep, :load_on_environment, [[]])
      false -> apply(Mix.Dep, :loaded, [[]])

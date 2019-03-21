@@ -61,7 +61,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     %{extensions: extensions, web_app: web_app, structure: structure}
   end
 
-
   defp create_views_and_templates(extension, [], _web_module, _web_prefix) do
     Mix.shell().info("Warning: No mailer view or template files generated for #{inspect extension} as no mailer templates has been defined for it.")
   end

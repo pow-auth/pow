@@ -63,7 +63,7 @@ defmodule Pow.Phoenix.Controller do
   end
 
   @doc false
-  defmacro __define_helper_methods__() do
+  defmacro __define_helper_methods__ do
     quote do
       @doc """
       See `Pow.Phoenix.Controller.messages/2` for more.
