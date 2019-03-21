@@ -401,7 +401,7 @@ You can add methods for `before_process` (before the action happens) and `before
 
 #### Testing with authenticated users
 
-To autenticate a user in your controller tests, you only need to call `Pow.Plug.assign_current_user(user, otp_app: :my_app)` in your setup callback.
+To authenticate a user in your controller tests, you only need to call `Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)` in your setup callback.
 
 ### I18n
 

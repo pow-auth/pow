@@ -24,7 +24,7 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
     {:ok, conn: conn}
   end
 
-  test "call/2 :not_autenticated", %{conn: conn} do
+  test "call/2 :not_authenticated", %{conn: conn} do
     conn = PlugErrorHandler.call(conn, :not_authenticated)
 
     assert ConnTest.redirected_to(conn) == "/session/new?request_path=%2F"
