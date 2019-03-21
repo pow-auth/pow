@@ -399,6 +399,10 @@ end
 
 You can add methods for `before_process` (before the action happens) and `before_respond` (before parsing the results from the action).
 
+#### Testing with authenticated users
+
+To autenticate a user in your controller tests, you only need to call `Pow.Plug.assign_current_user(user, otp_app: :my_app)` in your setup callback.
+
 ### I18n
 
 All templates can be generated and modified to use your Gettext module.
