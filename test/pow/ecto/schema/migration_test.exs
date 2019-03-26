@@ -44,10 +44,10 @@ defmodule Pow.Ecto.Schema.MigrationTest do
     assert content =~ "create unique_index(:organizations, [:email])"
 
     content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}]))
-    assert content =~ "add :organization_id, references(\"organizations\"), on_delete: :nothing"
+    assert content =~ "add :organization_id, references(\"organizations\", on_delete: :nothing)"
 
     content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}], binary_id: true))
-    assert content =~ "add :organization_id, references(\"organizations\"), on_delete: :nothing, type: :binary_id"
+    assert content =~ "add :organization_id, references(\"organizations\", on_delete: :nothing, type: :binary_id)"
 
     content = Migration.gen(Migration.new(Pow, "users", indexes: [{:key, true}]))
     assert content =~ "create unique_index(:users, [:key])"
