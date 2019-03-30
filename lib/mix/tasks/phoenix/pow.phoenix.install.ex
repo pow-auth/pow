@@ -87,7 +87,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
           Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:
 
           defmodule #{inspect(web_base)}.Endpoint do
-            use Phoenix.Endpoint, web_app: #{inspect(web_app)}
+            use Phoenix.Endpoint, otp_app: #{inspect(web_app)}
 
             # ...
 
