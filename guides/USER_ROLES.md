@@ -19,7 +19,7 @@ defmodule MyApp.Users.User do
   end
 
   def changeset(user_or_changeset, attrs) do
-    changeset_role
+    user_or_changeset
     |> pow_changeset(attrs)
     |> changeset_role(attrs)
   end
