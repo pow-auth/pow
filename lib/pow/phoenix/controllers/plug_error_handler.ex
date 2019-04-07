@@ -23,12 +23,15 @@ defmodule Pow.Phoenix.PlugErrorHandler do
   @spec call(Conn.t(), atom()) :: Conn.t()
   def call(conn, :not_authenticated) do
     conn
-    |> Controller.put_flash(:error, messages(conn, Messages).user_not_authenticated(conn))
+    |> maybe_set_error_flash(messages(conn, Messages).user_not_authenticated(conn))
     |> Controller.redirect(to: routes(conn, Routes).user_not_authenticated_path(conn))
   end
   def call(conn, :already_authenticated) do
     conn
-    |> Controller.put_flash(:error, messages(conn, Messages).user_already_authenticated(conn))
+    |> maybe_set_error_flash(messages(conn, Messages).user_already_authenticated(conn))
     |> Controller.redirect(to: routes(conn, Routes).user_already_authenticated_path(conn))
   end
+
+  defp maybe_set_error_flash(conn, nil), do: conn
+  defp maybe_set_error_flash(conn, error), do: Controller.put_flash(conn, :error, error)
 end
