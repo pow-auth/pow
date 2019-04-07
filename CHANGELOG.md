@@ -5,6 +5,7 @@
 * Added `extension_messages/1` to extension controllers and callbacks
 * Improved feedback for when no templates are generated for an extension with `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
 * Fixed bug in the migration generator where `references/2` wasn't called with options
+* Support any `:plug` version below `2.0.0`
 * Deprecated `Pow.Extension.Ecto.Context.Base`
 
 ## v1.0.4 (2019-03-13)
