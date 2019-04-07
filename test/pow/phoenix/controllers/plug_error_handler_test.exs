@@ -31,6 +31,17 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
     assert ConnTest.get_flash(conn, :error) == :not_authenticated
   end
 
+  test "call/2 :not_authenticated doesn't override flash if message is nil", %{conn: conn} do
+    conn =
+      conn
+      |> Conn.put_private(:pow_config, [])
+      |> Phoenix.Controller.put_flash(:error, "Existing error")
+      |> PlugErrorHandler.call(:not_authenticated)
+
+    assert ConnTest.redirected_to(conn) == "/session/new?request_path=%2F"
+    assert ConnTest.get_flash(conn, :error) == "Existing error"
+  end
+
   test "call/2 :already_authenticated", %{conn: conn} do
     conn = PlugErrorHandler.call(conn, :already_authenticated)
 
