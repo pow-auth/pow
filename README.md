@@ -21,7 +21,7 @@ Add Pow to your list of dependencies in `mix.exs`:
 def deps do
   [
     # ...
-    {:pow, "~> 1.0.4"}
+    {:pow, "~> 1.0.5"}
     # ...
   ]
 end

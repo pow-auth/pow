@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.5 (TBA)
+## v1.0.5 (2019-04-09)
 
 * Added `extension_messages/1` to extension controllers and callbacks
 * Improved feedback for when no templates are generated for an extension with `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
