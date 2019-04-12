@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.6 (TBA)
+
+* Fixed bug where custom layout setting raised exception in `Pow.Phoenix.ViewHelpers.layout/1`
+
 ## v1.0.5 (2019-04-09)
 
 * Added `extension_messages/1` to extension controllers and callbacks

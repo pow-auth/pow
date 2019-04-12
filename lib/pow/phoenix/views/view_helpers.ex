@@ -106,12 +106,12 @@ defmodule Pow.Phoenix.ViewHelpers do
     Module.concat([web_module, base, view])
   end
 
-  defp build_layout({default_view, template}, web_module) do
-    [_base, view] = split_default_view(default_view)
-    view = Module.concat([web_module, view])
+  defp build_layout({Pow.Phoenix.LayoutView, template}, web_module) do
+    view = Module.concat([web_module, LayoutView])
 
     {view, template}
   end
+  defp build_layout(layout, _web_module), do: layout
 
   defp split_default_view(module) do
     module

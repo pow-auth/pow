@@ -70,4 +70,26 @@ defmodule Pow.Phoenix.ViewHelpersTest do
     assert conn.private[:phoenix_view] == Pow.Test.Phoenix.PowTest.TestView
     assert conn.private[:phoenix_layout] == {Pow.Test.Phoenix.LayoutView, :app}
   end
+
+  test "layout/1 with no layout", %{conn: conn} do
+    conn =
+      conn
+      |> Phoenix.Controller.put_layout(false)
+      |> ViewHelpers.layout()
+
+    assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
+    assert conn.private[:phoenix_view] == Pow.Phoenix.SessionView
+    assert conn.private[:phoenix_layout] == false
+  end
+
+  test "layout/1 with custom layout", %{conn: conn} do
+    conn =
+      conn
+      |> Phoenix.Controller.put_layout({MyAppWeb.LayoutView, :custom})
+      |> ViewHelpers.layout()
+
+    assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
+    assert conn.private[:phoenix_view] == Pow.Phoenix.SessionView
+    assert conn.private[:phoenix_layout] == {MyAppWeb.LayoutView, :custom}
+  end
 end
