@@ -4,7 +4,7 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
 
   alias Pow.Ecto.Schema.Password
   alias PowEmailConfirmation.Ecto.Schema
-  alias PowEmailConfirmation.Test.Users.User
+  alias PowEmailConfirmation.Test.{RepoMock, Users.User}
 
   @password          "secret1234"
   @new_user          %User{}
@@ -60,6 +60,19 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
     refute Ecto.Changeset.get_change(changeset, :unconfirmed_email)
     refute changeset.errors[:email_confirmation_token]
     refute changeset.errors[:unconfirmed_email]
+  end
+
+  test "changeset/2 doesn't update when email already taken by another user" do
+    changeset = User.changeset(@edit_user, Map.put(@valid_edit_params, :email, "taken@example.com"))
+    {:error, changeset} = RepoMock.update(changeset)
+    assert changeset.errors[:email] == {"has already been taken", [validation: :unsafe_unique, fields: [:email]]}
+    assert changeset.changes.email == "taken@example.com"
+    assert changeset.changes.unconfirmed_email == "taken@example.com"
+
+    changeset = User.changeset(@edit_user, Map.put(@valid_edit_params, :email, "new@example.com"))
+    {:ok, user} = RepoMock.update(changeset)
+    assert user.email == "test@example.com"
+    assert user.unconfirmed_email == "new@example.com"
   end
 
   test "confirm_email_changeset/1 updates :email_confirmed_at" do
