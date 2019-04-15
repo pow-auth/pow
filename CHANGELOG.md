@@ -3,6 +3,7 @@
 ## v1.0.6 (TBA)
 
 * Fixed bug where custom layout setting raised exception in `Pow.Phoenix.ViewHelpers.layout/1`
+* Prevent users from changing their email to one already taken when the PowEmailConfirmation extension has been enabled
 
 ## v1.0.5 (2019-04-09)
 

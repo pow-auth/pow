@@ -10,6 +10,13 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     password_hash: Password.pbkdf2_hash("secret1234")
   }
 
+  def one(query) do
+    cond do
+      inspect(query) =~ "from u0 in PowEmailConfirmation.Test.Users.User, where: u0.email == ^\"taken@example.com\"" -> @user
+      true -> false
+    end
+  end
+
   def get_by(User, email: "test@example.com") do
     get_by(User, email_confirmation_token: "valid")
   end
@@ -35,11 +42,23 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     {:error, changeset}
   end
   def update(%{valid?: true} = changeset) do
-    user = Ecto.Changeset.apply_changes(changeset)
+    %{changeset | repo: __MODULE__}
+    |> run_prepare()
+    |> do_update()
+  end
 
+  defp do_update(%{valid?: true} = changeset) do
+    user = Ecto.Changeset.apply_changes(changeset)
     Process.put({:user, user.id}, user)
 
     {:ok, user}
+  end
+  defp do_update(changeset), do: {:error, changeset}
+
+  defp run_prepare(%{prepare: prepare} = changeset) do
+    prepare
+    |> Enum.reverse()
+    |> Enum.reduce(changeset, & &1.(&2))
   end
 
   def insert(%{valid?: true} = changeset) do
