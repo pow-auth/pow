@@ -133,3 +133,66 @@ end
 ```
 
 Add `plug MyAppWeb.EnsureUserNotLockedPlug` to your endpoint or pipeline, and presto!
+
+## Optional: PowResetPassword
+
+The above will prevent any locked users access, but it doesn't prevent them from using features that doesn't require authentication such as resetting their password. Be advised that this is a entirely optional step as this only affects UX.
+
+While there are many different ways of handling this, the most explicit one is to simply override the logic entirely with a custom controller:
+
+```elixir
+defmodule MyAppWeb.ResetPasswordController do
+  use MyAppWeb, :controller
+
+  alias PowResetPassword.{Phoenix.ResetPasswordController, Plug, ResetTokenCache}
+
+  def create(conn, params) do
+    conn
+    |> ResetPasswordController.process_create(params)
+    |> maybe_halt()
+    |> ResetPasswordController.respond_create()
+  end
+
+  defp maybe_halt({:ok, %{token: token, user: %{locked_at: locked_at}}, conn}) when not is_nil(locked_at) do
+    user = Plug.change_user(conn)
+
+    expire_token(conn, token)
+
+    {:error, %{user | action: :update}, conn}
+  end
+  defp maybe_halt(response), do: response
+
+  defp expire_token(conn, token) do
+    backend =
+      conn
+      |> Pow.Plug.fetch_config()
+      |> Pow.Config.get(:cache_store_backend, Pow.Store.Backend.EtsCache)
+
+    ResetTokenCache.delete([backend: backend], token)
+  end
+end
+```
+
+To make the code simpler for us we're leveraging the methods from `PowResetPassword.Phoenix.ResetPasswordController` here.
+
+Now all we got to do is to catch the route before the `pow_extension_routes/0` call:
+
+```elixir
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
+  # ...
+
+  scope "/", MyAppWeb do
+    pipe_through :browser
+
+    post "/reset-password", ResetPasswordController, :create
+  end
+
+  scope "/" do
+    pow_routes()
+    pow_extension_routes()
+  end
+
+  # ...
+end
+```
