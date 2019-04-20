@@ -12,7 +12,7 @@ Follow the instructions for extensions in [README.md](../../../README.md), and s
 
 ## Configuration
 
-Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the e-mail field:
+Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the `pow_user_id_field` field:
 
 ```elixir
 <%= if @changeset.data.unconfirmed_email do %>
