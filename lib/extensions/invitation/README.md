@@ -48,7 +48,7 @@ defmodule MyAppWeb.Router do
   scope "/" do
     pipe_through [:browser, :authenticated, :admin_role]
 
-    resource "/invitations", PowInvitation.Phoenix.InvitationController, only: [:new, :create, :show]
+    resources "/invitations", PowInvitation.Phoenix.InvitationController, only: [:new, :create, :show]
   end
 
   # ... you would want `pow_extension_routes/0` with the default routes to be after this
