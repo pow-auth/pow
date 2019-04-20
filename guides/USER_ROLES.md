@@ -26,8 +26,8 @@ defmodule MyApp.Users.User do
 
   def changeset_role(user_or_changeset, attrs) do
     user_or_changeset
-    |> Changeset.cast(attrs, [:role])
-    |> Changeset.validate_inclusion(:role, ~w(user admin))
+    |> Ecto.Changeset.cast(attrs, [:role])
+    |> Ecto.Changeset.validate_inclusion(:role, ~w(user admin))
   end
 
   # ...
