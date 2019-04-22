@@ -446,14 +446,14 @@ Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find al
 
 ### Password hashing function
 
-You can change the password hashing function easily. For example, this is how you use [comeonin](https://github.com/riverrun/comeonin) with Argon2:
+You can change the password hashing function easily. For example, this is how you use [comeonin with Argon2](https://github.com/riverrun/argon2_elixir):
 
 ```elixir
 defmodule MyApp.Users.User do
   use Ecto.Schema
   use Pow.Ecto.Schema,
-    password_hash_methods: {&Comeonin.Argon2.hashpwsalt/1,
-                            &Comeonin.Argon2.checkpw/2}
+    password_hash_methods: {&Argon2.hash_pwd_salt/1,
+                            &Argon2.verify_pass/2}
 
   # ...
 end
