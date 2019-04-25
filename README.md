@@ -323,26 +323,38 @@ mix pow.extension.phoenix.mailer.gen.templates
 
 ### Authorization plug
 
-Pow ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Guardian](https://github.com/ueberauth/guardian):
+Pow ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Phoenix.Token](https://hexdocs.pm/phoenix/Phoenix.Token.html):
 
 ```elixir
 defmodule MyAppWeb.Pow.Plug do
   use Pow.Plug.Base
 
-  def fetch(conn, config) do
-    user = MyApp.Guardian.Plug.current_resource(conn)
+  @session_key :pow_user_token
+  @salt "user salt"
+  @max_age 86400
 
-    {conn, user}
+  def fetch(conn, config) do
+    token = Plug.Conn.get_session(conn, @session_key)
+
+    MyAppWeb.Endpoint
+    |> Phoenix.Token.verify(@salt, token, max_age: @max_age)
+    |> maybe_load_user()
   end
 
+  defp maybe_load_user({:ok, user_id}, conn), do: {conn, MyApp.Repo.get(User, user_id)}
+  defp maybe_load_user({:error, _any}, conn), do: {conn, nil}
+
   def create(conn, user, config) do
-    conn = MyApp.Guardian.Plug.sign_in(conn, user)
+    token = Phoenix.Token.sign(MyAppWeb.Endpoint, @salt, user.id)
+    conn  = Plug.Conn.put_session(conn, @session_key, token)
 
     {conn, user}
   end
 
   def delete(conn, config) do
-    MyApp.Guardian.Plug.signout(conn)
+    token = get_token_from_session(conn)
+
+    Plug.Conn.delete_session(conn, @session_key)
   end
 end
 
