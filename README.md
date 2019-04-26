@@ -334,11 +334,12 @@ defmodule MyAppWeb.Pow.Plug do
   @max_age 86400
 
   def fetch(conn, config) do
+    conn = Plug.Conn.fetch_session(conn)
     token = Plug.Conn.get_session(conn, @session_key)
 
     MyAppWeb.Endpoint
     |> Phoenix.Token.verify(@salt, token, max_age: @max_age)
-    |> maybe_load_user()
+    |> maybe_load_user(conn)
   end
 
   defp maybe_load_user({:ok, user_id}, conn), do: {conn, MyApp.Repo.get(User, user_id)}
@@ -352,8 +353,6 @@ defmodule MyAppWeb.Pow.Plug do
   end
 
   def delete(conn, config) do
-    token = get_token_from_session(conn)
-
     Plug.Conn.delete_session(conn, @session_key)
   end
 end
@@ -364,6 +363,7 @@ defmodule MyAppWeb.Endpoint do
   plug MyAppWeb.Pow.Plug, otp_app: :my_app
 end
 ```
+A working example can be found [here](https://github.com/Immortalin/pow_token_auth_test).
 
 ### Ecto changeset
 
@@ -470,7 +470,29 @@ defmodule MyApp.Users.User do
   # ...
 end
 ```
+### Login/Logout Routes
+Example `app.html.eex` nav:
+```html
+        <nav role="navigation">
+          <ul>
+            <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
+          </ul>
+          <%= if current_user(@conn) do %>
+            <%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
+          <%else %>
+            <%= link "Sign out", to: Routes.pow_session_path(@conn, :new), method: :get %>
+          <%end%>
+        </nav>
+``` 
 
+`MyApp/lib/MyAppWeb/view/layout_view.ex`:
+```elixir
+defmodule TestWeb.LayoutView do
+  use TestWeb, :view
+  import Pow.Plug, only: [current_user: 1]
+end
+```
+Note the above code are just examples. You are not restricted to any particular view or template element. Just remember to import any necessary functions called in the template files through the view.
 ### Logout link
 
 You can use the following Phoenix link to add logout link to your Phoenix template:
