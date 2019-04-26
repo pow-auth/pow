@@ -478,9 +478,13 @@ Example `app.html.eex` nav:
             <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
           </ul>
           <%= if current_user(@conn) do %>
+          <li>
             <%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
-          <%else %>
+          </li>
+          <% else %>
+          <li>
             <%= link "Sign out", to: Routes.pow_session_path(@conn, :new), method: :get %>
+          </li>
           <%end%>
         </nav>
 ``` 
