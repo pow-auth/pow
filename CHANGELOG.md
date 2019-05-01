@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.7 (TBA)
+## v1.0.7 (2019-05-01)
 
 * Fixed bug with Phoenix 1.4.4 scoped routes
 
