@@ -11,6 +11,8 @@ module_raised_with =
     end
   rescue
     e in ArgumentError -> e.message
+  else
+    _ -> raise "Scope with alias didn't throw any error"
   end
 
 defmodule Pow.Phoenix.RouterTest do
