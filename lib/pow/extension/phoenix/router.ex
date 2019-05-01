@@ -58,7 +58,7 @@ defmodule Pow.Extension.Phoenix.Router do
       def routes do
         for router <- @routers do
           quote do
-            Router.validate_scope!(@phoenix_router_scopes)
+            Router.validate_scope!(__MODULE__)
 
             require unquote(router)
             unquote(router).scoped_routes(@config)

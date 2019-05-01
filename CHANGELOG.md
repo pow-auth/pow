@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.7 (TBA)
+
+* Fixed bug with Phoenix 1.4.4 scoped routes
+
 ## v1.0.6 (2019-04-19)
 
 * Fixed bug where custom layout setting raised exception in `Pow.Phoenix.ViewHelpers.layout/1`

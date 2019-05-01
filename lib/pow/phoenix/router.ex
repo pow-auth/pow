@@ -56,7 +56,7 @@ defmodule Pow.Phoenix.Router do
   @doc false
   defmacro pow_scope(do: context) do
     quote do
-      unquote(__MODULE__).validate_scope!(@phoenix_router_scopes)
+      unquote(__MODULE__).validate_scope!(__MODULE__)
 
       scope "/", Pow.Phoenix, as: "pow" do
         unquote(context)
@@ -82,13 +82,25 @@ defmodule Pow.Phoenix.Router do
     end
   end
 
-  @spec validate_scope!(atom()) :: :ok | no_return
-  def validate_scope!([]), do: :ok
-  def validate_scope!(stack) do
+  @spec validate_scope!(atom() | [%Phoenix.Router.Scope{}]) :: :ok | no_return
+  def validate_scope!(module) when is_atom(module) do
+    module
+    |> Module.get_attribute(:phoenix_top_scopes)
+    |> Kernel.||(Module.get_attribute(module, :phoenix_router_scopes))
+    |> List.wrap()
+    |> validate_scope!()
+  end
+  def validate_scope!([]), do: :ok # After Phoenix 1.4.4 this no longer happens since scope now always initializes with an empty Scopes map
+  def validate_scope!(stack) when is_list(stack) do
     modules =
       stack
       |> Enum.map(& &1.alias)
-      |> Enum.reject(&is_nil/1)
+      |> Enum.reject(fn
+        nil -> true
+        []  -> true
+        _   -> false
+      end)
+      |> List.flatten()
 
     case modules do
       [] ->
