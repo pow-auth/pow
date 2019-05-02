@@ -101,8 +101,16 @@ defmodule Pow.Ecto.Schema.Changeset do
   @spec current_password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
   def current_password_changeset(user_or_changeset, params, config) do
     user_or_changeset
+    |> reset_current_password_field()
     |> Changeset.cast(params, [:current_password])
     |> maybe_validate_current_password(config)
+  end
+
+  defp reset_current_password_field(%{data: user} = changeset) do
+    %{changeset | data: reset_current_password_field(user)}
+  end
+  defp reset_current_password_field(user) do
+    %{user | current_password: nil}
   end
 
   defp maybe_validate_email_format(changeset, :email) do

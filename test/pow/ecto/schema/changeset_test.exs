@@ -91,7 +91,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.errors[:username] == {"has already been taken", [constraint: :unique, constraint_name: "users_username_index"]}
     end
 
-    test "requires password when no password_hash is nil" do
+    test "requires password when password_hash is nil" do
       params = Map.delete(@valid_params, "password")
       changeset = User.changeset(%User{}, params)
 
@@ -161,6 +161,10 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
 
       changeset = User.changeset(user, @valid_params)
+      refute changeset.valid?
+      assert changeset.errors[:current_password] == {"can't be blank", [validation: :required]}
+
+      changeset = User.changeset(%{user | current_password: "secret1234"}, @valid_params)
       refute changeset.valid?
       assert changeset.errors[:current_password] == {"can't be blank", [validation: :required]}
 
