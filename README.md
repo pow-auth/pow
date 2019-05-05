@@ -417,7 +417,16 @@ You can add methods for `before_process` (before the action happens) and `before
 
 #### Testing with authenticated users
 
-To authenticate a user in your controller tests, you only need to call `Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)` in your setup callback.
+To test with authenticated users in your controller tests, you just have to assign the user to the conn in your setup callback:
+
+```elixir
+setup %{conn: conn} do
+  user = %User{email: "test@example.com"}
+  conn = Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)
+
+  {:ok, conn: conn}
+end
+```
 
 ### I18n
 
