@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
   @shortdoc "Generates user migration file"
 
   @moduledoc """
-  Generates a user migrations file.
+  Generates a user migration file.
 
       mix pow.ecto.gen.migration -r MyApp.Repo
 
@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
     args
     |> Pow.parse_options(@switches, @default_opts)
     |> parse()
-    |> create_migrations_files(args)
+    |> create_migration_files(args)
   end
 
   defp parse({config, parsed, _invalid}) do
@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
     |> Map.merge(config)
   end
 
-  defp create_migrations_files(config, args) do
+  defp create_migration_files(config, args) do
     args
     |> Ecto.parse_repo()
     |> Enum.map(&Ecto.ensure_repo(&1, args))
@@ -55,6 +55,6 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
     schema       = SchemaMigration.new(context_base, schema_plural, repo: repo, binary_id: binary_id)
     content      = SchemaMigration.gen(schema)
 
-    Migration.create_migration_files(repo, schema.migration_name, content)
+    Migration.create_migration_file(repo, schema.migration_name, content)
   end
 end

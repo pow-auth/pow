@@ -4,11 +4,16 @@ defmodule Mix.Pow.Ecto.Migration do
   """
   alias Mix.Generator
 
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `create_migration_file/3`"
+  defdelegate create_migration_files(repo, name, content), to: __MODULE__, as: :create_migration_file
+
   @doc """
-  Creates a migration file for the repo.
+  Creates a migration file for a repo.
   """
-  @spec create_migration_files(atom(), binary(), binary()) :: any()
-  def create_migration_files(repo, name, content) do
+  @spec create_migration_file(atom(), binary(), binary()) :: any()
+  def create_migration_file(repo, name, content) do
     base_name = "#{Macro.underscore(name)}.exs"
     path      =
       repo

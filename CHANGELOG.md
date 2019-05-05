@@ -3,6 +3,8 @@
 ## v1.0.8 (TBA)
 
 * Fixed bug in `Pow.Ecto.Schema.Changeset.current_password_changeset/3` where an exception would be thrown if the virtual `:current_password` field of the user struct was set and either the `:current_password` change was blank or identical
+* Rename `Mix.Pow.Ecto.Migration.create_migration_files/3` to `Mix.Pow.Ecto.Migration.create_migration_file/3`
+* Deprecated `Mix.Pow.Ecto.Migration.create_migration_files/3`
 
 ## v1.0.7 (2019-05-01)
 

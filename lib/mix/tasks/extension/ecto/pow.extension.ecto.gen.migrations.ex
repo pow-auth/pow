@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     args
     |> Pow.parse_options(@switches, @default_opts)
     |> parse()
-    |> create_migrations_files(args)
+    |> create_migration_files(args)
     |> print_shell_instructions()
   end
 
@@ -45,7 +45,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
     end
   end
 
-  defp create_migrations_files(config, args) do
+  defp create_migration_files(config, args) do
     context_base = Pow.app_base(Pow.otp_app())
     context_app  = String.to_atom(Macro.underscore(context_base))
     extensions   = Extension.extensions(config, context_app)
@@ -60,18 +60,17 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
   end
 
   defp create_extension_migration_files(config, extensions, context_base) do
-    for extension <- extensions,
-      do: create_migration_files(config, extension, context_base)
+    for extension <- extensions, do: create_migration_file(config, extension, context_base)
   end
 
-  defp create_migration_files(%{repo: repo, binary_id: binary_id} = config, extension, context_base) do
+  defp create_migration_file(%{repo: repo, binary_id: binary_id} = config, extension, context_base) do
     schema_plural = Map.get(config, :schema_plural, "users")
     schema        = SchemaMigration.new(extension, context_base, schema_plural, repo: repo, binary_id: binary_id)
     content       = SchemaMigration.gen(schema)
 
     case empty?(schema) do
       true  -> Mix.shell().info("Warning: No migration file generated for #{inspect extension} as it doesn't require any migrations.")
-      false -> Migration.create_migration_files(repo, schema.migration_name, content)
+      false -> Migration.create_migration_file(repo, schema.migration_name, content)
     end
   end
 
