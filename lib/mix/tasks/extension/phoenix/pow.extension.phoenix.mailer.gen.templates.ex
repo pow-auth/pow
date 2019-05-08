@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
 
   ## Arguments
 
-    * `--extension` extension to generate templates for
-    * `--context-app` app to use for path and module names
+    * `--extension` - extension to generate templates for
+    * `--context-app` - app to use for path and module names
   """
   use Mix.Task
 

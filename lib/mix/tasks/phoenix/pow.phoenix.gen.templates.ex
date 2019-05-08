@@ -10,7 +10,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
 
   ## Arguments
 
-    * `--context-app` app to use for path and module names
+    * `--context-app` - app to use for path and module names
   """
   use Mix.Task
 
