@@ -46,7 +46,7 @@ defmodule MyAppWeb.Router do
   end
 
   scope "/", PowInvitation.Phoenix, as: "pow_invitation" do
-    pipe_through [:browser, :authenticated, :admin_role]
+    pipe_through [:browser, :protected, :admin_role]
 
     resources "/invitations", InvitationController, only: [:new, :create, :show]
   end
