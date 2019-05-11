@@ -45,10 +45,10 @@ defmodule MyAppWeb.Router do
     plug MyAppWeb.EnsureRolePlug, :admin
   end
 
-  scope "/" do
-    pipe_through [:browser, :authenticated, :admin_role]
+  scope "/", PowInvitation.Phoenix, as: "pow_invitation" do
+    pipe_through [:browser, :protected, :admin_role]
 
-    resources "/invitations", PowInvitation.Phoenix.InvitationController, only: [:new, :create, :show]
+    resources "/invitations", InvitationController, only: [:new, :create, :show]
   end
 
   # ... you would want `pow_extension_routes/0` with the default routes to be after this

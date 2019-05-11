@@ -16,6 +16,7 @@ Add the following routes below to enable account updates and deletion:
 
 ```elixir
 scope "/", Pow.Phoenix, as: "pow" do
+  pipe_through [:browser, :protected]
   resources "/registration", RegistrationController, singleton: true, only: [:edit, :update, :delete]
 end
 ```
