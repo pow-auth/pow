@@ -45,7 +45,7 @@ defmodule MyAppWeb.Router do
     plug MyAppWeb.EnsureRolePlug, :admin
   end
 
-  scope "/" do
+  scope "/", as: "pow_invitation" do
     pipe_through [:browser, :authenticated, :admin_role]
 
     resources "/invitations", PowInvitation.Phoenix.InvitationController, only: [:new, :create, :show]
