@@ -1,5 +1,7 @@
 defmodule Pow.Phoenix.SessionControllerTest do
   use Pow.Test.Phoenix.ConnCase
+
+  alias Plug.Conn
   alias Pow.Plug
 
   describe "new/2" do
@@ -30,6 +32,17 @@ defmodule Pow.Phoenix.SessionControllerTest do
 
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_session_path(conn, :create, request_path: "/example")
+    end
+
+    test "shows with username user", %{conn: conn} do
+      conn =
+        conn
+        |> Conn.put_private(:pow_test_config, :username_user)
+        |> get(Routes.pow_session_path(conn, :new))
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_username\">Username</label>"
+      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\">"
     end
   end
 

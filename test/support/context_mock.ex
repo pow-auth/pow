@@ -17,4 +17,10 @@ defmodule Pow.Test.ContextMock do
 
   def delete(%{id: 1}), do: {:ok, %{@user | id: :deleted}}
   def delete(_user), do: {:error, %{User.changeset(%User{}, %{}) | action: :delete}}
+
+  defmodule UsernameUser do
+    alias Pow.Test.Ecto.Users.UsernameUser
+
+    def create(_any), do: {:ok, %UsernameUser{id: 1, username: "test"}}
+  end
 end

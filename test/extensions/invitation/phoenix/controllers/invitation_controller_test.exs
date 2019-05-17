@@ -1,7 +1,8 @@
 defmodule PowInvitation.Phoenix.InvitationControllerTest do
   use PowInvitation.TestWeb.Phoenix.ConnCase
 
-  alias PowInvitation.Test.Users.User
+  alias Plug.Conn
+  alias PowInvitation.Test.Users.{User, UsernameUser}
 
   @user %User{id: 1, email: "test@example.com"}
   @url_regex ~r/http:\/\/localhost\/invitations\/[a-z0-9\-]*\/edit/
@@ -22,6 +23,18 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+    end
+
+    test "shows with username user", %{conn: conn} do
+      conn =
+        conn
+        |> Conn.put_private(:pow_test_config, user: UsernameUser)
+        |> Pow.Plug.assign_current_user(@user, [])
+        |> get(Routes.pow_invitation_invitation_path(conn, :new))
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_username\">Username</label>"
+      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\">"
     end
   end
 
