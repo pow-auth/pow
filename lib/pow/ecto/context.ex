@@ -34,16 +34,16 @@ defmodule Pow.Ecto.Context do
     * `:repo` - the ecto repo module (required)
     * `:user` - the user schema module (required)
   """
-  alias Ecto.Changeset
   alias Pow.Config
   alias Pow.Ecto.Schema
 
   @type user :: map()
+  @type changeset :: map()
 
   @callback authenticate(map()) :: user() | nil
-  @callback create(map()) :: {:ok, user()} | {:error, Changeset.t()}
-  @callback update(user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
-  @callback delete(user()) :: {:ok, user()} | {:error, Changeset.t()}
+  @callback create(map()) :: {:ok, user()} | {:error, changeset()}
+  @callback update(user(), map()) :: {:ok, user()} | {:error, changeset()}
+  @callback delete(user()) :: {:ok, user()} | {:error, changeset()}
   @callback get_by(Keyword.t() | map()) :: user() | nil
 
   @doc false
@@ -91,7 +91,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec authenticate(map(), Config.t()) :: user() | nil
   def authenticate(params, config) do
-    user_mod      = user_schema_mod(config)
+    user_mod      = Config.user!(config)
     user_id_field = user_mod.pow_user_id_field()
     login_value   = params[Atom.to_string(user_id_field)]
     password      = params["password"]
@@ -115,9 +115,9 @@ defmodule Pow.Ecto.Context do
 
   User schema module and repo module will be fetched from config.
   """
-  @spec create(map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec create(map(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def create(params, config) do
-    user_mod = user_schema_mod(config)
+    user_mod = Config.user!(config)
 
     user_mod
     |> struct()
@@ -131,7 +131,7 @@ defmodule Pow.Ecto.Context do
   User schema module will be fetched from provided user and repo will be
   fetched from the config.
   """
-  @spec update(user(), map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec update(user(), map(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def update(user, params, config) do
     user
     |> user.__struct__.changeset(params)
@@ -143,9 +143,9 @@ defmodule Pow.Ecto.Context do
 
   Repo module will be fetched from the config.
   """
-  @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def delete(user, config) do
-    repo(config).delete(user)
+    Config.repo!(config).delete(user)
   end
 
   @doc """
@@ -155,7 +155,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec get_by(Keyword.t() | map(), Config.t()) :: user() | nil
   def get_by(clauses, config) do
-    user_mod = user_schema_mod(config)
+    user_mod = Config.user!(config)
     clauses  = normalize_user_id_field_value(user_mod, clauses)
 
     repo(config).get_by(user_mod, clauses)
@@ -175,10 +175,10 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_insert(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec do_insert(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_insert(changeset, config) do
     changeset
-    |> repo(config).insert()
+    |> Config.repo!(config).insert()
     |> reload_after_write(config)
   end
 
@@ -187,10 +187,10 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_update(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec do_update(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_update(changeset, config) do
     changeset
-    |> repo(config).update()
+    |> Config.repo!(config).update()
     |> reload_after_write(config)
   end
 
@@ -198,34 +198,16 @@ defmodule Pow.Ecto.Context do
   defp reload_after_write({:ok, user}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    user = repo(config).get!(user.__struct__, user.id)
+    user = Config.repo!(config).get!(user.__struct__, user.id)
 
     {:ok, user}
   end
 
-  @doc """
-  Retrieves the repo module from the config, or raises an exception.
-  """
-  @spec repo(Config.t()) :: atom()
-  def repo(config) do
-    Config.get(config, :repo) || raise_no_repo_error()
-  end
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `Pow.Config.repo!/1` instead"
+  defdelegate repo(config), to: Config, as: :repo!
 
-  @doc """
-  Retrieves the user schema module from the config, or raises an exception.
-  """
-  @spec user_schema_mod(Config.t()) :: atom()
-  def user_schema_mod(config) do
-    Config.get(config, :user) || raise_no_user_error()
-  end
-
-  @spec raise_no_repo_error :: no_return
-  defp raise_no_repo_error do
-    Config.raise_error("No :repo configuration option found for users context module.")
-  end
-
-  @spec raise_no_user_error :: no_return
-  defp raise_no_user_error do
-    Config.raise_error("No :user configuration option found for user schema module.")
-  end
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `Pow.Config.user!/1` instead"
+  defdelegate user_schema_mod(config), to: Config, as: :user!
 end

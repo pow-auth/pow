@@ -3,7 +3,7 @@ defmodule PowInvitation.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Ecto.Context, Plug}
+  alias Pow.{Config, Plug}
   alias PowInvitation.Ecto.Context, as: InvitationContext
   alias PowInvitation.Ecto.Schema
 
@@ -37,7 +37,7 @@ defmodule PowInvitation.Plug do
   defp user_struct(conn) do
     conn
     |> Plug.fetch_config()
-    |> Context.user_schema_mod()
+    |> Config.user!()
     |> struct()
   end
 

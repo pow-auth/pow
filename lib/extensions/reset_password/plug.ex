@@ -3,7 +3,7 @@ defmodule PowResetPassword.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Config, Ecto.Context, Plug, Store.Backend.EtsCache, UUID}
+  alias Pow.{Config, Plug, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.Ecto.Context, as: ResetPasswordContext
   alias PowResetPassword.{Ecto.Schema, Store.ResetTokenCache}
 
@@ -20,7 +20,7 @@ defmodule PowResetPassword.Plug do
   defp user_struct(conn) do
     conn
     |> Plug.fetch_config()
-    |> Context.user_schema_mod()
+    |> Config.user!()
     |> struct()
   end
 

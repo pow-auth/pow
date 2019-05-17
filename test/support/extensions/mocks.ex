@@ -58,12 +58,13 @@ defmodule Pow.Test.ExtensionMocks do
     end
   end
 
-  def __user_schema__(context_module, extensions) do
-    module = Module.concat([context_module, Users.User])
+  def __user_schema__(context_module, extensions, opts \\ []) do
+    module = Module.concat(context_module, Keyword.get(opts, :module, Users.User))
+    config = Keyword.take(opts, [:user_id_field]) ++ [extensions: extensions]
+
     quoted = quote do
       use Ecto.Schema
-      use Pow.Ecto.Schema,
-        extensions: unquote(extensions)
+      use Pow.Ecto.Schema, unquote(config)
       use Pow.Extension.Ecto.Schema
 
       schema "users" do
@@ -109,6 +110,14 @@ defmodule Pow.Test.ExtensionMocks do
 
     module = Module.concat([web_module, Phoenix.Endpoint])
     quoted = quote do
+      defmodule SessionPlugHelper do
+        alias Pow.Plug.Session
+
+        def init(config), do: Session.init(config)
+
+        def call(conn, config), do: Session.call(conn, Keyword.merge(config, conn.private[:pow_test_config] || []))
+      end
+
       use Phoenix.Endpoint, otp_app: :pow
 
       plug Plug.RequestId
@@ -127,7 +136,7 @@ defmodule Pow.Test.ExtensionMocks do
         key: "_binaryid_key",
         signing_salt: "secret"
 
-      plug Pow.Plug.Session, unquote(config)
+      plug SessionPlugHelper, unquote(config)
 
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])

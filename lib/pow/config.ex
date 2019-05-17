@@ -54,4 +54,21 @@ defmodule Pow.Config do
   def raise_error(message) do
     raise ConfigError, message: message
   end
+
+
+  @doc """
+  Retrieves the repo module from the config, or raises an exception.
+  """
+  @spec repo!(t()) :: atom() | no_return()
+  def repo!(config) do
+    get(config, :repo) || raise_error("No `:repo` configuration option found.")
+  end
+
+  @doc """
+  Retrieves the user schema module from the config, or raises an exception.
+  """
+  @spec user!(t()) :: atom() | no_return()
+  def user!(config) do
+    get(config, :user) || raise_error("No `:user` configuration option found.")
+  end
 end

@@ -1,5 +1,7 @@
 defmodule Pow.Phoenix.RegistrationControllerTest do
   use Pow.Test.Phoenix.ConnCase
+
+  alias Plug.Conn
   alias Pow.Plug
 
   describe "new/2" do
@@ -24,6 +26,17 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> get(Routes.pow_registration_path(conn, :new))
 
       assert_authenticated_redirect(conn)
+    end
+
+    test "shows with username user", %{conn: conn} do
+      conn =
+        conn
+        |> Conn.put_private(:pow_test_config, :username_user)
+        |> get(Routes.pow_registration_path(conn, :new))
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_username\">Username</label>"
+      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\">"
     end
   end
 
@@ -74,6 +87,18 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<label for=\"user_current_password\">Current password</label>"
       assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
+    end
+
+    test "shows with username user", %{conn: conn} do
+      conn =
+        conn
+        |> Conn.put_private(:pow_test_config, :username_user)
+        |> create_user_and_sign_in()
+        |> get(Routes.pow_registration_path(conn, :edit))
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_username\">Username</label>"
+      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\" value=\"test\">"
     end
 
     test "not signed in", %{conn: conn} do
