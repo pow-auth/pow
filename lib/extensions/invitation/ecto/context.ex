@@ -1,7 +1,7 @@
 defmodule PowInvitation.Ecto.Context do
   @moduledoc false
   alias Ecto.Changeset
-  alias Pow.Ecto.Context
+  alias Pow.{Config, Ecto.Context}
   alias PowInvitation.Ecto.Schema
 
   @doc """
@@ -9,7 +9,7 @@ defmodule PowInvitation.Ecto.Context do
   """
   @spec create(map(), map(), Config.t()) :: {:ok, map()} | {:error, Changeset.t()}
   def create(inviter_user, params, config) do
-    user_mod = Context.user_schema_mod(config)
+    user_mod = Config.user!(config)
 
     user_mod
     |> struct()

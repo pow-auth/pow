@@ -72,7 +72,7 @@ defmodule Pow.PlugTest do
   end
 
   test "authenticate_user/2 with missing user" do
-    assert_raise ConfigError, "No :user configuration option found for user schema module.", fn ->
+    assert_raise ConfigError, "No `:user` configuration option found.", fn ->
       Plug.authenticate_user(conn([]), %{})
     end
   end

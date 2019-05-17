@@ -29,13 +29,13 @@ defmodule Pow.Ecto.ContextTest do
     end
 
     test "requires user schema mod in config" do
-      assert_raise Pow.Config.ConfigError, "No :user configuration option found for user schema module.", fn ->
+      assert_raise Pow.Config.ConfigError, "No `:user` configuration option found.", fn ->
         Context.authenticate(@valid_params, Keyword.delete(@config, :user))
       end
     end
 
     test "requires repo in config" do
-      assert_raise Pow.Config.ConfigError, "No :repo configuration option found for users context module.", fn ->
+      assert_raise Pow.Config.ConfigError, "No `:repo` configuration option found.", fn ->
         Context.authenticate(@valid_params, Keyword.delete(@config, :repo))
       end
     end

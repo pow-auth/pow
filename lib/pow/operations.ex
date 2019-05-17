@@ -11,11 +11,11 @@ defmodule Pow.Operations do
   Build a changeset from a blank user struct.
 
   It'll use the schema module fetched from the config through
-  `Pow.Ecto.Context.user_schema_mod/1`.
+  `Pow.Config.user!/1`.
   """
   @spec changeset(map(), Config.t()) :: map() | nil
   def changeset(params, config) do
-    user_mod = Context.user_schema_mod(config)
+    user_mod = Config.user!(config)
     user     = user_mod.__struct__()
 
     changeset(user, params, config)
