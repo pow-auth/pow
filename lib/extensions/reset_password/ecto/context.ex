@@ -3,10 +3,10 @@ defmodule PowResetPassword.Ecto.Context do
   alias Pow.{Config, Ecto.Context}
   alias PowResetPassword.Ecto.Schema
 
-  @spec get_by_email(binary(), Config.t()) :: map() | nil
+  @spec get_by_email(binary(), Config.t()) :: Context.user() | nil
   def get_by_email(email, config), do: Context.get_by([email: email], config)
 
-  @spec update_password(map(), map(), Config.t()) :: {:ok, map()} | {:error, Changeset.t()}
+  @spec update_password(Context.user(), map(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
   def update_password(user, params, config) do
     user
     |> Schema.reset_password_changeset(params)

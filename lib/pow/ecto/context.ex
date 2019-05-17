@@ -34,16 +34,16 @@ defmodule Pow.Ecto.Context do
     * `:repo` - the ecto repo module (required)
     * `:user` - the user schema module (required)
   """
-  alias Ecto.Changeset
   alias Pow.Config
   alias Pow.Ecto.Schema
 
   @type user :: map()
+  @type changeset :: map()
 
   @callback authenticate(map()) :: user() | nil
-  @callback create(map()) :: {:ok, user()} | {:error, Changeset.t()}
-  @callback update(user(), map()) :: {:ok, user()} | {:error, Changeset.t()}
-  @callback delete(user()) :: {:ok, user()} | {:error, Changeset.t()}
+  @callback create(map()) :: {:ok, user()} | {:error, changeset()}
+  @callback update(user(), map()) :: {:ok, user()} | {:error, changeset()}
+  @callback delete(user()) :: {:ok, user()} | {:error, changeset()}
   @callback get_by(Keyword.t() | map()) :: user() | nil
 
   @doc false
@@ -115,7 +115,7 @@ defmodule Pow.Ecto.Context do
 
   User schema module and repo module will be fetched from config.
   """
-  @spec create(map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec create(map(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def create(params, config) do
     user_mod = Config.user!(config)
 
@@ -131,7 +131,7 @@ defmodule Pow.Ecto.Context do
   User schema module will be fetched from provided user and repo will be
   fetched from the config.
   """
-  @spec update(user(), map(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec update(user(), map(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def update(user, params, config) do
     user
     |> user.__struct__.changeset(params)
@@ -143,7 +143,7 @@ defmodule Pow.Ecto.Context do
 
   Repo module will be fetched from the config.
   """
-  @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def delete(user, config) do
     Config.repo!(config).delete(user)
   end
@@ -175,7 +175,7 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_insert(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec do_insert(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_insert(changeset, config) do
     changeset
     |> Config.repo!(config).insert()
@@ -187,7 +187,7 @@ defmodule Pow.Ecto.Context do
 
   If succesful, the returned row will be reloaded from the database.
   """
-  @spec do_update(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
+  @spec do_update(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_update(changeset, config) do
     changeset
     |> Config.repo!(config).update()
