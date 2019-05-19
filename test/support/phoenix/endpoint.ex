@@ -1,5 +1,6 @@
 defmodule Pow.Test.Phoenix.Endpoint do
   defmodule SessionPlugHelper do
+    @moduledoc false
     alias Pow.Plug.Session
 
     def init(config), do: Session.init(config)

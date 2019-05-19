@@ -111,6 +111,8 @@ defmodule Pow.Test.ExtensionMocks do
     module = Module.concat([web_module, Phoenix.Endpoint])
     quoted = quote do
       defmodule SessionPlugHelper do
+        @moduledoc false
+
         alias Pow.Plug.Session
 
         def init(config), do: Session.init(config)

@@ -11,9 +11,9 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   }
 
   def one(query) do
-    cond do
-      inspect(query) =~ "from u0 in PowEmailConfirmation.Test.Users.User, where: u0.email == ^\"taken@example.com\"" -> @user
-      true -> false
+    case inspect(query) =~ "from u0 in PowEmailConfirmation.Test.Users.User, where: u0.email == ^\"taken@example.com\"" do
+      true  -> @user
+      false -> false
     end
   end
 
