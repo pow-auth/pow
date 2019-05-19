@@ -1,14 +1,22 @@
 language: elixir
-env:
-  - MIX_ENV=test
-matrix:
+elixir: 1.8
+otp_release: 21.0
+jobs:
   include:
-    - elixir: 1.6
+    - stage: test
+      elixir: 1.6
       otp_release: 20.0
-    - elixir: 1.8
-      otp_release: 21.0
-script:
-  - mix deps.compile
-  - mix test
-after_script:
-  - mix credo
+      script: &test_scripts
+        - mix test
+        - MIX_ENV=test mix credo
+    - stage: test
+      script: *test_scripts
+    - stage: deploy
+      script: skip
+      deploy:
+        provider: script
+        script: mix hex.publish --yes
+        skip_cleanup: true
+        on:
+          tags: true
+          all_branches: true
