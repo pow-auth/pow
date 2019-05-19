@@ -8,7 +8,7 @@ jobs:
       otp_release: 20.0
       script: &test_scripts
         - mix test
-        - MIX_ENV=test mix credo
+        - MIX_ENV=test mix credo --ignore design.tagtodo
     - stage: test
       script: *test_scripts
     - stage: deploy
