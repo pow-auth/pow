@@ -279,11 +279,11 @@ config :my_app, :pow,
   web_mailer_module: MyAppWeb
 ```
 
-The generated view files contains the subject lines for the emails.
+The generated view files contain the subject lines for the emails.
 
 ## Configuration
 
-Pow is build to be modular, and easy to configure. The configuration is passed to method calls, and plug options and they will take priority over any environment configuration. It's ideal in case you got an umbrella app with multiple separate user domains.
+Pow is built to be modular, and easy to configure. The configuration is passed to method calls as well as plug options, and they will take priority over any environment configuration. It's ideal in case you got an umbrella app with multiple separate user domains.
 
 The easiest way to use Pow with Phoenix is to use a `:otp_app` in method calls and set the app environment configuration. It will keep a persistent fallback configuration that you configure in one place.
 
@@ -496,7 +496,7 @@ You can use the following Phoenix link to add logout link to your Phoenix templa
 
 ### Pow.Plug.Session
 
-Enables session based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by [`Pow.Plug`](lib/pow/plug.ex)).
+Enables session-based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by [`Pow.Plug`](lib/pow/plug.ex)).
 
 The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to add a plug that reloads the user struct and reassigns it to the connection.
 
