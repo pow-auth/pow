@@ -13,10 +13,8 @@ defmodule Pow.Ecto.Schema.Changeset do
     * `:password_hash_methods` - the password hash and verify methods to use,
       defaults to:
 
-      ```elixir
-      {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
-       &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
-      ```
+          {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
+          &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
