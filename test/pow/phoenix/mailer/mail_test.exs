@@ -24,8 +24,11 @@ defmodule Pow.Phoenix.Mailer.MailTest do
   alias Plug.Conn
   alias Pow.Phoenix.{Mailer.Mail, MailerView}
 
-  test "new/4" do
-    conn = %Conn{private: %{pow_config: []}}
+  setup do
+    {:ok, conn: %Conn{private: %{pow_config: []}}}
+  end
+
+  test "new/4", %{conn: conn} do
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 
     assert mail.user == :user
@@ -35,13 +38,32 @@ defmodule Pow.Phoenix.Mailer.MailTest do
     assert mail.assigns[:value] == "test"
   end
 
-  test "new/4 with `:web_module`" do
-    conn = %Conn{private: %{pow_config: [web_mailer_module: Pow.Test.Phoenix]}}
+  test "new/4 with `:web_module`", %{conn: conn} do
+    conn = Conn.put_private(conn, :pow_config, web_mailer_module: Pow.Test.Phoenix)
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
 
     assert mail.user == :user
     assert mail.subject == ":web_mailer_module subject :user"
     assert mail.html == "<p>:web_mailer_module html mail :user</p>"
     assert mail.text == ":web_mailer_module text mail :user"
+  end
+
+  test "new/4 with `:pow_mailer_layout` setting", %{conn: conn} do
+    conn = Conn.put_private(conn, :pow_mailer_layout, {Pow.Test.Phoenix.LayoutView, :email})
+    assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
+
+    assert mail.user == :user
+    assert mail.html =~ "<h1>Pow e-mail</h1>"
+    assert mail.text =~ "Pow e-mail\n"
+  end
+
+
+  test "new/4 with `:pow_mailer_layout` html only setting", %{conn: conn} do
+    conn = Conn.put_private(conn, :pow_mailer_layout, {Pow.Test.Phoenix.LayoutView, "email.html"})
+    assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")
+
+    assert mail.user == :user
+    assert mail.html =~ "<h1>Pow e-mail</h1>"
+    refute mail.text =~ "Pow e-mail\n"
   end
 end
