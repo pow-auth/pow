@@ -118,4 +118,8 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Atom.to_string()
     |> String.split(".Phoenix.")
   end
+
+  @spec user_id_field(map()) :: atom()
+  def user_id_field(%{data: %struct{}}), do: struct.pow_user_id_field()
+  def user_id_field(_changeset), do: :email
 end
