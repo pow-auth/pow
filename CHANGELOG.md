@@ -4,6 +4,7 @@
 
 * Added support for layout in mails with `Pow.Phoenix.Mailer.Mail` by setting `conn.private[:pow_mailer_layout]` same way as the Phoenix layout with `conn.private[:phoenix_layout]`
 * Fixed bug in `Pow.Ecto.Schema.Changeset.current_password_changeset/3` where an exception would be thrown if the virtual `:current_password` field of the user struct was set and either the `:current_password` change was blank or identical
+* Removed `@changeset.data.__struct__.pow_user_id_field()` in template in favor of using `Pow.Phoenix.ViewHelpers.user_id_field/1`
 * Renamed `Mix.Pow.Ecto.Migration.create_migration_files/3` to `Mix.Pow.Ecto.Migration.create_migration_file/3`
 * Deprecated `Mix.Pow.Ecto.Migration.create_migration_files/3`
 * Deprecated `Pow.Ecto.Context.repo/1` and moved it to `Pow.Config.repo!/1`
