@@ -10,38 +10,40 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     password_hash: Password.pbkdf2_hash("secret1234")
   }
 
-  def one(query) do
+  def one(query, _opts \\ %{}) do
     case inspect(query) =~ "from u0 in PowEmailConfirmation.Test.Users.User, where: u0.email == ^\"taken@example.com\"" do
       true  -> @user
       false -> false
     end
   end
 
-  def get_by(User, email: "test@example.com") do
-    get_by(User, email_confirmation_token: "valid")
+  def get_by(schema, params, opts \\ %{})
+  def get_by(User, [email: "test@example.com"], opts) do
+    get_by(User, [email_confirmation_token: "valid"], opts)
   end
-  def get_by(User, email: "confirmed@example.com") do
-    get_by(User, email_confirmation_token: "valid_confirmed")
+  def get_by(User, [email: "confirmed@example.com"], opts) do
+    get_by(User, [email_confirmation_token: "valid_confirmed"], opts)
   end
-  def get_by(User, email_confirmation_token: "valid"),
+  def get_by(User, [email_confirmation_token: "valid"], _opts),
     do: Ecto.put_meta(@user, state: :loaded)
-  def get_by(User, email_confirmation_token: "invalid"),
+  def get_by(User, [email_confirmation_token: "invalid"], _opts),
     do: nil
-  def get_by(User, email_confirmation_token: "valid_confirmed") do
-    %{get_by(User, email_confirmation_token: "valid") | email_confirmed_at: DateTime.utc_now()}
+  def get_by(User, [email_confirmation_token: "valid_confirmed"], opts) do
+    %{get_by(User, [email_confirmation_token: "valid"], opts) | email_confirmed_at: DateTime.utc_now()}
   end
-  def get_by(User, email_confirmation_token: "valid_unconfirmed_email") do
-    user = get_by(User, email_confirmation_token: "valid_confirmed")
+  def get_by(User, [email_confirmation_token: "valid_unconfirmed_email"], opts) do
+    user = get_by(User, [email_confirmation_token: "valid_confirmed"], opts)
 
     %{user | unconfirmed_email: "new@example.com"}
   end
 
-  def update(%{changes: %{email: "taken@example.com"}} = changeset) do
+  def update(changeset, opts \\ %{})
+  def update(%{changes: %{email: "taken@example.com"}} = changeset, _opts) do
     changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken")
 
     {:error, changeset}
   end
-  def update(%{valid?: true} = changeset) do
+  def update(%{valid?: true} = changeset, _opts) do
     %{changeset | repo: __MODULE__}
     |> run_prepare()
     |> do_update()
@@ -61,7 +63,7 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     |> Enum.reduce(changeset, & &1.(&2))
   end
 
-  def insert(%{valid?: true} = changeset) do
+  def insert(%{valid?: true} = changeset, _opts \\ %{}) do
     token = Ecto.Changeset.get_field(changeset, :email_confirmation_token)
     email = Ecto.Changeset.get_field(changeset, :email)
     user  = %{@user | email_confirmation_token: token, email: email}
@@ -71,17 +73,17 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     {:ok, user}
   end
 
-  def get!(User, 1), do: Process.get({:user, 1})
+  def get!(User, 1, _opts \\ %{}), do: Process.get({:user, 1})
 
   defmodule Invitation do
     @moduledoc false
     alias PowEmailConfirmation.PowInvitation.Test.Users.User
     alias PowEmailConfirmation.Test.RepoMock
 
-    def get_by(User, invitation_token: "token"), do: Ecto.put_meta(%User{id: 1, email: "test@example.com"}, state: :loaded)
+    def get_by(User, [invitation_token: "token"], _opts \\ %{}), do: Ecto.put_meta(%User{id: 1, email: "test@example.com"}, state: :loaded)
 
-    def update(changeset), do: RepoMock.update(changeset)
+    def update(changeset, _opts \\ %{}), do: RepoMock.update(changeset)
 
-    def get!(User, 1), do: Process.get({:user, 1})
+    def get!(User, 1, _opts \\ %{}), do: Process.get({:user, 1})
   end
 end

@@ -45,12 +45,32 @@ defmodule Pow.Plug do
   end
 
   @doc """
+  Fetch configuration for multi-tenancy from the private key in the connection.
+
+  It'll raise an error if configuration hasn't been set as a private key.
+  """
+  @spec fetch_config(Conn.t(%{required(:private) => map(), required(:assigns) => %{required(:current_tenant) => String.t()}})) :: Config.t()
+  def fetch_config(%Conn{private: private, assigns: %{current_tenant: current_tenant}}) do
+    Keyword.put(fetch_config(private), :prefix, current_tenant)
+  end
+
+  @doc """
   Fetch configuration from the private key in the connection.
 
   It'll raise an error if configuration hasn't been set as a private key.
   """
-  @spec fetch_config(Conn.t()) :: Config.t()
+  @spec fetch_config(Conn.t(%{required(:private) => map()})) :: Config.t()
   def fetch_config(%Conn{private: private}) do
+    fetch_config(private)
+  end
+
+  @doc """
+  Fetch configuration from the private key in a map.
+
+  It'll raise an error if configuration hasn't been set as a private key.
+  """
+  @spec fetch_config(map()) :: Config.t()
+  def fetch_config(private) do
     private[@private_config_key] || no_config_error()
   end
 

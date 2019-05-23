@@ -145,7 +145,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def delete(user, config) do
-    Config.repo!(config).delete(user)
+    Config.repo!(config).delete(user, prefix: config[:prefix])
   end
 
   @doc """
@@ -158,7 +158,7 @@ defmodule Pow.Ecto.Context do
     user_mod = Config.user!(config)
     clauses  = normalize_user_id_field_value(user_mod, clauses)
 
-    repo(config).get_by(user_mod, clauses)
+    repo(config).get_by(user_mod, clauses, prefix: config[:prefix])
   end
 
   defp normalize_user_id_field_value(user_mod, clauses) do
@@ -178,7 +178,7 @@ defmodule Pow.Ecto.Context do
   @spec do_insert(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_insert(changeset, config) do
     changeset
-    |> Config.repo!(config).insert()
+    |> Config.repo!(config).insert(prefix: config[:prefix])
     |> reload_after_write(config)
   end
 
@@ -190,7 +190,7 @@ defmodule Pow.Ecto.Context do
   @spec do_update(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_update(changeset, config) do
     changeset
-    |> Config.repo!(config).update()
+    |> Config.repo!(config).update(prefix: config[:prefix])
     |> reload_after_write(config)
   end
 
@@ -198,7 +198,7 @@ defmodule Pow.Ecto.Context do
   defp reload_after_write({:ok, user}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    user = Config.repo!(config).get!(user.__struct__, user.id)
+    user = Config.repo!(config).get!(user.__struct__, user.id, prefix: config[:prefix])
 
     {:ok, user}
   end
