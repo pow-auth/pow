@@ -26,7 +26,7 @@ defmodule Pow.Phoenix.Mailer do
         end
       end
 
-    Remember to update configuration with `mailer_backend: MyAppWeb.Pow.Mailer`
+  Remember to update configuration with `mailer_backend: MyAppWeb.Pow.Mailer`
   """
   alias Plug.Conn
   alias Pow.{Config, Phoenix.Mailer.Mail, Plug}

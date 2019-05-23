@@ -11,8 +11,8 @@ defmodule Pow.Phoenix.Messages do
         def signed_out(_conn), do: gettext("Signed out successfullly.")
       end
 
-    Remember to add `messages_backend: MyAppWeb.Pow.Messages` to your
-    configuration.
+  Remember to add `messages_backend: MyAppWeb.Pow.Messages` to your
+  configuration.
   """
   alias Plug.Conn
 

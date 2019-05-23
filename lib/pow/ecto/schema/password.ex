@@ -14,6 +14,7 @@ defmodule Pow.Ecto.Schema.Password do
   the returned binary. The hash and salt are Base64 encoded.
 
   ## Options
+
     * `:iterations`  - defaults to 100_000;
     * `:length`      - a length in octets for the derived key. Defaults to 64;
     * `:digest`      - an hmac function to use as the pseudo-random function. Defaults to `:sha512`;
@@ -42,6 +43,7 @@ defmodule Pow.Ecto.Schema.Password do
   encoded binaries.
 
   ## Options
+
     * `:length` - a length in octets for the derived key. Defaults to 64;
   """
   @spec pbkdf2_verify(binary(), binary(), Keyword.t()) :: boolean()

@@ -12,9 +12,9 @@ defmodule Pow.Phoenix.Routes do
         def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
       end
 
-    Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
+  Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
 
-    You can also customize path generation:
+  You can also customize path generation:
 
       defmodule MyAppWeb.Pow.Routes do
         use Pow.Phoenix.Routes
