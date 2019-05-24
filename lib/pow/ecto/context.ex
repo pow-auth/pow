@@ -162,7 +162,7 @@ defmodule Pow.Ecto.Context do
     clauses  = normalize_user_id_field_value(user_mod, clauses)
     opts     = prefix_opts(config)
 
-    repo(config).get_by(user_mod, clauses, opts)
+    Config.repo!(config).get_by(user_mod, clauses, opts)
   end
 
   defp normalize_user_id_field_value(user_mod, clauses) do
