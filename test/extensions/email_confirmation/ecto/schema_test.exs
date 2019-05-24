@@ -64,13 +64,13 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
 
   test "changeset/2 doesn't update when email already taken by another user" do
     changeset = User.changeset(@edit_user, Map.put(@valid_edit_params, :email, "taken@example.com"))
-    {:error, changeset} = RepoMock.update(changeset)
+    {:error, changeset} = RepoMock.update(changeset, [])
     assert changeset.errors[:email] == {"has already been taken", [validation: :unsafe_unique, fields: [:email]]}
     assert changeset.changes.email == "taken@example.com"
     assert changeset.changes.unconfirmed_email == "taken@example.com"
 
     changeset = User.changeset(@edit_user, Map.put(@valid_edit_params, :email, "new@example.com"))
-    {:ok, user} = RepoMock.update(changeset)
+    {:ok, user} = RepoMock.update(changeset, [])
     assert user.email == "test@example.com"
     assert user.unconfirmed_email == "new@example.com"
   end
