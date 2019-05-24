@@ -75,6 +75,6 @@ defmodule Pow.Phoenix.HTML.FormTemplate do
 
   @doc false
   @spec inspect_key(any()) :: binary()
-  def inspect_key({:changeset, :pow_user_id_field}), do: "Pow.Phoenix.ViewHelpers.user_id_field(@changeset)"
+  def inspect_key({:changeset, :pow_user_id_field}), do: "Pow.Ecto.Schema.user_id_field(@changeset)"
   def inspect_key(key), do: inspect(key)
 end

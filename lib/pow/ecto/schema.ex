@@ -246,12 +246,15 @@ defmodule Pow.Ecto.Schema do
   end
 
   @doc """
-  Get user id field key from configuration.
+  Get user id field key from changeset or configuration.
 
   Defaults to `:email`.
   """
-  @spec user_id_field(Config.t()) :: atom()
-  def user_id_field(config \\ []), do: Config.get(config, :user_id_field, :email)
+  @default_user_id_field :email
+  @spec user_id_field(Changeset.t() | Config.t()) :: atom()
+  def user_id_field(%Changeset{data: %user_mod{}}), do: user_mod.pow_user_id_field()
+  def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, @default_user_id_field)
+  def user_id_field(_any), do: @default_user_id_field
 
   @doc """
   Normalizes the user id field.
