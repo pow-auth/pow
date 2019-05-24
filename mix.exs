@@ -108,6 +108,10 @@ defmodule Pow.MixProject do
           filename: "UmbrellaProject",
           title: "Pow in an umbrella project"
         ],
+        "guides/MULTITENANCY.md": [
+          filename: "Multitenancy",
+          title: "Multitenancy with Pow"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
