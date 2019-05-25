@@ -2,6 +2,7 @@
 
 ## v1.0.9 (TBA)
 
+* `Pow.Phoenix.Router` will now only add specific routes if there is no matching route already defined
 * Removed call to `Pow.Ecto.Context.repo/1`
 
 ## v1.0.8 (2019-05-24)

@@ -68,7 +68,7 @@ defmodule Pow.Phoenix.Router do
   defmacro pow_session_routes do
     quote location: :keep do
       pow_scope do
-        resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
+        unquote(__MODULE__).pow_resources "/session", SessionController, singleton: true, only: [:new, :create, :delete]
       end
     end
   end
@@ -77,7 +77,43 @@ defmodule Pow.Phoenix.Router do
   defmacro pow_registration_routes do
     quote location: :keep do
       pow_scope do
-        resources "/registration", RegistrationController, singleton: true, only: [:new, :create, :edit, :update, :delete]
+        unquote(__MODULE__).pow_resources "/registration", RegistrationController, singleton: true, only: [:new, :create, :edit, :update, :delete]
+      end
+    end
+  end
+
+  @doc false
+  defmacro pow_resources(path, controller, opts) do
+    quote location: :keep do
+      opts = unquote(__MODULE__).__filter_resource_actions__(@phoenix_routes, __ENV__.line, __ENV__.module, unquote(path), unquote(controller), unquote(opts))
+
+      resources unquote(path), unquote(controller), unquote(opts)
+    end
+  end
+
+  @doc false
+  def __filter_resource_actions__(phoenix_routes, line, module, path, controller, options) do
+    resource     = Phoenix.Router.Resource.build(path, controller, options)
+    action_verbs = [index: :get, new: :get, create: :post, show: :get, edit: :get, update: :patch]
+    only         = Enum.reject(resource.actions, &__route_defined__(phoenix_routes, line, module, action_verbs[&1], path, controller, &1, options))
+
+    Keyword.put(options, :only, only)
+  end
+
+  @doc false
+  def __route_defined__(phoenix_routes, line, module, verb, path, plug, plug_opts, options) do
+    matching_params =
+      line
+      |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
+      |> Map.take([:opts, :helper])
+
+    Enum.any?(phoenix_routes, &Map.take(&1, [:opts, :helper]) == matching_params)
+  end
+
+  defmacro pow_route(verb, path, plug, plug_opts, options \\ []) do
+    quote location: :keep do
+      unless unquote(__MODULE__).__route_defined__(@phoenix_routes, __ENV__.line, __ENV__.module, unquote(verb), unquote(path), unquote(plug), unquote(plug_opts), unquote(options)) do
+        unquote(verb)(unquote(path), unquote(plug), unquote(plug_opts), unquote(options))
       end
     end
   end
