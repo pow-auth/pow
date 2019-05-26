@@ -55,6 +55,13 @@ defmodule Pow.Ecto.ContextTest do
       assert Context.authenticate(%{"username" => "JOHN.doE", "password" => @password}, @username_config) == username_user
     end
 
+    test "handles nil values" do
+      refute Context.authenticate(%{"password" => @password}, @config)
+      refute Context.authenticate(%{"email" => nil, "password" => @password}, @config)
+      refute Context.authenticate(%{"email" => "test@example.com"}, @config)
+      refute Context.authenticate(%{"email" => "test@example.com", "password" => nil}, @config)
+    end
+
     test "authenticates with extra trailing and leading whitespace for user id field", %{user: user, username_user: username_user} do
       assert Context.authenticate(%{"email" => " test@example.com ", "password" => @password}, @config) == user
       assert Context.authenticate(%{"username" => " john.doe ", "password" => @password}, @username_config) == username_user
@@ -171,6 +178,12 @@ defmodule Pow.Ecto.ContextTest do
 
       get_by_user = Context.get_by([username: "JOHN.DOE"], @username_config)
       assert get_by_user.id == username_user.id
+    end
+
+    test "handles nil value before normalization of user id field value" do
+      assert_raise ArgumentError, ~r/Comparison with nil is forbidden as it is unsafe/, fn ->
+        Context.get_by([email: nil], @config)
+      end
     end
 
     test "as `use Pow.Ecto.Context`", %{user: user} do
