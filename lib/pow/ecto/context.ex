@@ -89,6 +89,8 @@ defmodule Pow.Ecto.Context do
 
   User schema module and repo module will be fetched from the config. The user
   id field is fetched from the user schema module.
+
+  The method will return nil if either the user id or password is nil.
   """
   @spec authenticate(map(), Config.t()) :: user() | nil
   def authenticate(params, config) do
@@ -97,14 +99,19 @@ defmodule Pow.Ecto.Context do
     login_value   = params[Atom.to_string(user_id_field)]
     password      = params["password"]
 
-    [{user_id_field, login_value}]
-    |> get_by(config)
-    |> maybe_verify_password(password)
+    do_authenticate(user_id_field, login_value, password, config)
   end
 
-  defp maybe_verify_password(nil, _password),
-    do: nil
-  defp maybe_verify_password(user, password) do
+  defp do_authenticate(_user_id_field, nil, _password, _config), do: nil
+  defp do_authenticate(user_id_field, login_value, password, config) do
+    [{user_id_field, login_value}]
+    |> get_by(config)
+    |> verify_password(password)
+  end
+
+  defp verify_password(nil, _password), do: nil
+  defp verify_password(_user, nil), do: nil
+  defp verify_password(user, password) do
     case user.__struct__.verify_password(user, password) do
       true -> user
       _    -> nil
@@ -169,7 +176,7 @@ defmodule Pow.Ecto.Context do
     user_id_field = user_mod.pow_user_id_field()
 
     Enum.map(clauses, fn
-      {^user_id_field, value} -> {user_id_field, Schema.normalize_user_id_field_value(value)}
+      {^user_id_field, value} when is_binary(value) -> {user_id_field, Schema.normalize_user_id_field_value(value)}
       any -> any
     end)
   end
