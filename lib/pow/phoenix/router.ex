@@ -87,7 +87,7 @@ defmodule Pow.Phoenix.Router do
     quote location: :keep do
       opts = unquote(__MODULE__).__filter_resource_actions__(@phoenix_routes, __ENV__.line, __ENV__.module, unquote(path), unquote(controller), unquote(opts))
 
-      resources unquote(path), unquote(controller), unquote(opts)
+      resources unquote(path), unquote(controller), opts
     end
   end
 
