@@ -34,7 +34,7 @@ defmodule PowEmailConfirmation.Plug do
 
   defp maybe_renew_conn(conn, %{id: user_id} = user, config) do
     case Plug.current_user(conn, config) do
-      %{id: ^user_id} -> Plug.get_mod(config).do_create(conn, user, config)
+      %{id: ^user_id} -> Plug.get_plug(config).do_create(conn, user, config)
       _any            -> conn
     end
   end
