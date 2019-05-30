@@ -2,6 +2,14 @@ defmodule Pow.Phoenix.Router do
   @moduledoc """
   Handles Phoenix routing for Pow.
 
+  Resources are build with `pow_resources/3` and individual routes are build
+  with `pow_route/5`. The Pow routes will be filtered if a route has already
+  been defined with the same action and router helper alias. This makes it easy
+  to override pow routes with no conflicts.
+
+  The scope will be validated to ensure that there is no aliases. An exception
+  will be raised if an alias was defined in any scope around the pow routes.
+
   ## Usage
 
   Configure `lib/my_project_web/router.ex` the following way:
@@ -36,9 +44,10 @@ defmodule Pow.Phoenix.Router do
   end
 
   @doc """
-  Pow router macro.
+  Pow routes macro.
 
-  Use this macro to define the Pow routes.
+  Use this macro to define the Pow routes. This will call
+  `pow_session_routes/0` and `pow_registration_routes/0`.
 
   ## Example
 
