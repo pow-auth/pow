@@ -2,11 +2,21 @@
 
 ## v1.0.9 (TBA)
 
+### Changes
+
 * `Pow.Phoenix.Router` will now only add specific routes if there is no matching route already defined
-* Removed call to `Pow.Ecto.Context.repo/1`
+* Added `Pow.Plug.get_plug/1` and instead of `:mod`, `:plug` is used in config
+* `Pow.Ecto.Context.authenticate/2` now returns nil if user id or password is nil
+
+### Bug fixes
+
 * Fixed bug with exception raised in `Pow.Ecto.Schema.normalize_user_id_field_value/1` when calling `Pow.Ecto.Context.get_by/2` with a non binary user id
 * Fixed bug with exception raised in `Pow.Ecto.Schema.normalize_user_id_field_value/1` when calling `Pow.Ecto.Context.authenticate/2` with a non binary user id
-* `Pow.Ecto.Context.authenticate/2` now returns nil if user id or password is nil
+
+### Deprecations
+
+* Deprecated `Pow.Plug.get_mod/1`
+* Removed call to `Pow.Ecto.Context.repo/1`
 
 ## v1.0.8 (2019-05-24)
 

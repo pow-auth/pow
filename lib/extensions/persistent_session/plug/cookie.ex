@@ -129,7 +129,7 @@ defmodule PowPersistentSession.Plug.Cookie do
         conn
         |> delete(config)
         |> create(user, config)
-        |> Plug.get_mod(config).do_create(user, config)
+        |> Plug.get_plug(config).do_create(user, config)
     end
   end
 

@@ -3,7 +3,7 @@ defmodule Pow.Plug.SessionTest do
   doctest Pow.Plug.Session
 
   alias Plug.Conn
-  alias Pow.{Config, Plug, Plug.Session, Store.CredentialsCache}
+  alias Pow.{Plug, Plug.Session, Store.CredentialsCache}
   alias Pow.Test.ConnHelpers
 
   @ets Pow.Test.EtsCacheMock
@@ -24,12 +24,13 @@ defmodule Pow.Plug.SessionTest do
     {:ok, %{conn: conn}}
   end
 
-  test "call/2 sets mod in :pow_config", %{conn: conn} do
+  test "call/2 sets plug in :pow_config", %{conn: conn} do
     opts = Session.init(@default_opts)
     conn = Session.call(conn, opts)
+    expected_config = [mod: Session, plug: Session] ++ @default_opts
 
     assert is_nil(conn.assigns[:current_user])
-    assert conn.private[:pow_config] == Config.put(@default_opts, :mod, Session)
+    assert conn.private[:pow_config] == expected_config
   end
 
   test "call/2 with assigned current_user", %{conn: conn} do

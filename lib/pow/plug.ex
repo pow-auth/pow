@@ -82,7 +82,7 @@ defmodule Pow.Plug do
     |> Operations.authenticate(config)
     |> case do
       nil  -> {:error, conn}
-      user -> {:ok, get_mod(config).do_create(conn, user, config)}
+      user -> {:ok, get_plug(config).do_create(conn, user, config)}
     end
   end
 
@@ -93,7 +93,7 @@ defmodule Pow.Plug do
   def clear_authenticated_user(conn) do
     config = fetch_config(conn)
 
-    {:ok, get_mod(config).do_delete(conn, config)}
+    {:ok, get_plug(config).do_delete(conn, config)}
   end
 
   @doc """
@@ -151,23 +151,36 @@ defmodule Pow.Plug do
     |> current_user(config)
     |> Operations.delete(config)
     |> case do
-      {:ok, user}         -> {:ok, user, get_mod(config).do_delete(conn, config)}
+      {:ok, user}         -> {:ok, user, get_plug(config).do_delete(conn, config)}
       {:error, changeset} -> {:error, changeset, conn}
     end
   end
 
   defp maybe_create_auth({:ok, user}, conn, config) do
-    {:ok, user, get_mod(config).do_create(conn, user, config)}
+    {:ok, user, get_plug(config).do_create(conn, user, config)}
   end
   defp maybe_create_auth({:error, changeset}, conn, _config) do
     {:error, changeset, conn}
   end
 
-  @spec get_mod(Config.t()) :: atom() | nil
-  def get_mod(config), do: config[:mod]
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `get_plug/1` instead"
+  @spec get_mod(Config.t()) :: atom()
+  def get_mod(config), do: get_plug(config)
+
+  @spec get_plug(Config.t()) :: atom()
+  def get_plug(config) do
+    config[:plug] || no_plug_error()
+  end
 
   @spec no_config_error :: no_return
   defp no_config_error do
     Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
+  end
+
+  @spec no_plug_error :: no_return
+  defp no_plug_error do
+    Config.raise_error("Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.")
   end
 end

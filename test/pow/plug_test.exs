@@ -83,6 +83,12 @@ defmodule Pow.PlugTest do
     end
   end
 
+  test "authenticate_user/2 with missing plug config" do
+    assert_raise ConfigError, "Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.", fn ->
+      Plug.authenticate_user(conn(), %{"email" => "test@example.com", "password" => "secret"})
+    end
+  end
+
   test "clear_authenticated_user/1" do
     @ets.init()
 

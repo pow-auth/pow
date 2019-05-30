@@ -51,18 +51,24 @@ defmodule Pow.Plug.Base do
       @doc """
       Initializes the connection for Pow, and assigns current user.
 
-      If a user is not already assigned, `do_fetch/2` will be called. `:mod` is
+      If a user is not already assigned, `do_fetch/2` will be called. `:plug` is
       added to the private pow configuration key, so it can be used in
       subsequent calls to create, update and delete user credentials from the
       connection.
       """
       def call(conn, config) do
-        config = Config.put(config, :mod, __MODULE__)
+        config = put_plug(config)
         conn   = Plug.put_config(conn, config)
 
         conn
         |> Plug.current_user(config)
         |> maybe_fetch_user(conn, config)
+      end
+
+      defp put_plug(config) do
+        config
+        |> Config.put(:plug, __MODULE__)
+        |> Config.put(:mod, __MODULE__) # TODO: Remove by 1.1.0, this is only for backwards compability
       end
 
       @doc """
