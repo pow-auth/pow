@@ -2,6 +2,7 @@
 
 ## v1.0.9 (TBA)
 
+* `Pow.Phoenix.Router` will now only add specific routes if there is no matching route already defined
 * Removed call to `Pow.Ecto.Context.repo/1`
 * Fixed bug with exception raised in `Pow.Ecto.Schema.normalize_user_id_field_value/1` when calling `Pow.Ecto.Context.get_by/2` with a non binary user id
 * Fixed bug with exception raised in `Pow.Ecto.Schema.normalize_user_id_field_value/1` when calling `Pow.Ecto.Context.authenticate/2` with a non binary user id
