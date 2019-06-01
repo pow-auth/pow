@@ -58,8 +58,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   end
   defp halt_unconfirmed(_user, _conn, success_response, _type), do: success_response
 
-  defp return_path(conn, :registration), do: routes(conn).after_registration_path(conn)
-  defp return_path(conn, :session), do: routes(conn).after_sign_in_path(conn)
+  defp return_path(conn, :registration), do: extension_routes(conn).after_halted_registration_path(conn)
+  defp return_path(conn, :session), do: extension_routes(conn).after_halted_sign_in_path(conn)
 
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do

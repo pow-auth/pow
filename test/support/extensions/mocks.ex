@@ -49,7 +49,7 @@ defmodule Pow.Test.ExtensionMocks do
     __phoenix_views__(web_module)
     __conn_case__(web_module, cache_backend)
     __messages__(web_module, extensions)
-    __routes__(web_module)
+    __routes__(web_module, extensions)
 
     quote do
       @config unquote(config)
@@ -202,10 +202,12 @@ defmodule Pow.Test.ExtensionMocks do
     Module.create(module, quoted, Macro.Env.location(__ENV__))
   end
 
-  def __routes__(web_module) do
+  def __routes__(web_module, extensions) do
     module = Module.concat([web_module, Phoenix.Routes])
     quoted = quote do
       use Pow.Phoenix.Routes
+      use Pow.Extension.Phoenix.Routes,
+        extensions: unquote(extensions)
 
       def after_sign_in_path(_conn), do: "/after_signed_in"
       def after_registration_path(_conn), do: "/after_registration"
