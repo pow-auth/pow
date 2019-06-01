@@ -153,7 +153,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def delete(user, config) do
-    opts = prefix_opts(config)
+    opts = repo_opts(config, [:prefix])
 
     Config.repo!(config).delete(user, opts)
   end
@@ -167,7 +167,7 @@ defmodule Pow.Ecto.Context do
   def get_by(clauses, config) do
     user_mod = Config.user!(config)
     clauses  = normalize_user_id_field_value(user_mod, clauses)
-    opts     = prefix_opts(config)
+    opts     = repo_opts(config, [:prefix])
 
     Config.repo!(config).get_by(user_mod, clauses, opts)
   end
@@ -188,7 +188,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec do_insert(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_insert(changeset, config) do
-    opts = prefix_opts(config)
+    opts = repo_opts(config, [:prefix])
 
     changeset
     |> Config.repo!(config).insert(opts)
@@ -202,7 +202,7 @@ defmodule Pow.Ecto.Context do
   """
   @spec do_update(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_update(changeset, config) do
-    opts = prefix_opts(config)
+    opts = repo_opts(config, [:prefix])
 
     changeset
     |> Config.repo!(config).update(opts)
@@ -213,7 +213,7 @@ defmodule Pow.Ecto.Context do
   defp reload_after_write({:ok, user}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    opts = prefix_opts(config)
+    opts = repo_opts(config, [:prefix])
     user = Config.repo!(config).get!(user.__struct__, user.id, opts)
 
     {:ok, user}
@@ -223,14 +223,10 @@ defmodule Pow.Ecto.Context do
   @deprecated "Use `Pow.Config.repo!/1` instead"
   defdelegate repo(config), to: Config, as: :repo!
 
-  defp prefix_opts(config) do
+  defp repo_opts(config, opts) do
     config
     |> Config.get(:repo_opts, [])
-    |> Keyword.get(:prefix, nil)
-    |> case do
-      nil    -> []
-      prefix -> [prefix: prefix]
-    end
+    |> Keyword.take(opts)
   end
 
   # TODO: Remove by 1.1.0
