@@ -1,6 +1,6 @@
 language: elixir
 elixir: 1.8
-otp_release: 21.0
+otp_release: 22.0
 jobs:
   include:
     - stage: test
