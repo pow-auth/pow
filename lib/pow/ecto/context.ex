@@ -210,13 +210,13 @@ defmodule Pow.Ecto.Context do
   end
 
   defp reload_after_write({:error, changeset}, _config), do: {:error, changeset}
-  defp reload_after_write({:ok, user}, config) do
+  defp reload_after_write({:ok, struct}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
     opts = repo_opts(config, [:prefix])
-    user = Config.repo!(config).get!(user.__struct__, user.id, opts)
+    struct = Config.repo!(config).get!(struct.__struct__, struct.id, opts)
 
-    {:ok, user}
+    {:ok, struct}
   end
 
   # TODO: Remove by 1.1.0
