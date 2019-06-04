@@ -10,6 +10,9 @@ jobs:
         - mix test
         - MIX_ENV=test mix credo --ignore design.tagtodo
     - stage: test
+      elixir: 1.9.0-rc.0
+      script: *test_scripts
+    - stage: test
       script: *test_scripts
     - stage: deploy
       script: skip
