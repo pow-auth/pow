@@ -1,79 +1,93 @@
 # How to sync changes to the user made by actions outside of Pow
 
-Let's say you added a `plan` column on your `users` table and have the following controller which updates the plan your user is subscribed to:
+It's very important to understand that the cached user credentials that Pow fetches in `Pow.Plug.current_user/2` is always to be considered out of date since it's a cached object.
+
+In the following examples we'll imagine that you've added a `plan` column on your `users` table. We may want to use that `plan` to give them access to a certain controller actions. In this case, it's paramount that you load the user from the database.
+
+## Reload the user
 
 ```elixir
-def update_plan(conn, %{"plan" => plan}) do
-  case Users.update_plan(conn.assigns.current_user, plan) do
-    {:ok, user} ->
-      conn
-      |> put_flash(:info, "Plan updated successfully.")
-      |> redirect(to: Routes.profile_path(conn, :show))
+defmodule MyAppWeb.ProPlanController do
+  # ...
+  plug :reload_user
 
-    {:error, %Ecto.Changeset{} = changeset} ->
-      render(conn, "plan.html", changeset: changeset)
+  # ...
+
+  defp reload_user(conn, _opts) do
+    config        = Pow.Plug.fetch_config(conn)
+    user          = Pow.Plug.current_user(conn, config)
+    reloaded_user = MyApp.Repo.get!(MyApp.User, user.id)
+
+    Pow.Plug.assign_current_user(conn, reloaded_user, config)
   end
 end
 ```
 
-The change in the `plan` will not be reflected in `conn.assigns.user` because it is cached. In order to fix this you can notify the `EnsureUserInSync` plug of the change by setting the `:sync_user` session property to true:
+This should always be done for any authorization actions, or any other actions that requires the actual value to be known.
+
+## Update user in credentials cache
+
+Let's say that you want to show the user `plan` on most pages. In this case we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions uses the below method.
+
+We can use `do_create/3` defined in the `Pow.Plug.Base` macro to update the cached credentials.
+
+First we'll make a helper and import it to our controllers:
 
 ```elixir
-def update_plan(conn, %{"plan" => plan}) do
-  case Users.update_plan(conn.assigns.current_user, plan) do
-    {:ok, user} ->
-      conn
-      |> put_session(:sync_user, true)
-      |> put_flash(:info, "Plan updated successfully.")
-      |> redirect(to: Routes.profile_path(conn, :show))
-
-    {:error, %Ecto.Changeset{} = changeset} ->
-      render(conn, "plan.html", changeset: changeset)
-  end
-end
-```
-
-## Add ensure user in sync plug
-
-```elixir
-defmodule MyAppWeb.EnsureUserInSync do
-  @moduledoc """
-  This plug ensures that the current user in the session is in sync with the database.
-
-  ## Example
-
-      plug MyAppWeb.EnsureUserInSync
-  """
-
-  alias Plug.Conn
-
-  @doc false
-  @spec init(any()) :: any()
-  def init(config), do: config
-
-  @doc false
-  @spec call(Conn.t(), list) :: Conn.t()
-  def call(conn, config) do
-    conn
-    |> Conn.get_session(:sync_user)
-    |> maybe_sync_user(conn)
-  end
-
-  defp maybe_sync_user(true, %{assigns: %{current_user: %{id: user_id}}} = conn) do
+defmodule MyAppWeb.PowHelper do
+  @spec sync_user(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def sync_user(conn, user) do
     config = Pow.Plug.fetch_config(conn)
-    user   = Pow.Ecto.Context.get_by([id: user_id], config)
+    plug   = Pow.Plug.get_plug(config)
 
-    conn
-    |> Conn.delete_session(:sync_user)
-    |> Pow.Plug.Session.do_create(user, config)
+    plug.do_create(conn, user, config)
   end
-  defp maybe_sync_user(_, conn), do: conn
 end
 ```
 
-Add `plug MyAppWeb.EnsureUserInSync` to your pipeline under `lib/myapp_web/endpoint.ex`:
+```elixir
+defmodule MyAppWeb do
+  # ...
+
+  def controller do
+    quote do
+      use Phoenix.Controller, namespace: MyAppWeb
+
+      # ...
+      import MyAppWeb.PowHelper
+    end
+  end
+
+  # ...
+end
+```
+
+Now we can call `sync_user/2` in any controller actions. It could maybe be the update action for your plan controller:
 
 ```elixir
-plug Pow.Plug.Session, otp_app: :my_app
-plug MyAppWeb.EnsureUserInSync
+defmodule MyAppWeb.PlanController do
+  # ...
+
+  def update(conn, %{"plan" => plan}) do
+    conn
+    |> Plug.current_user()
+    |> MyApp.Users.update_plan(plan)
+    |> case do
+      {:ok, user} ->
+        conn
+        |> sync_user(user) # Update the user in the credentials cache
+        |> put_flash(:info, "Plan updated successfully.")
+        |> redirect(to: Routes.profile_path(conn, :show))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        render(conn, "plan.html", changeset: changeset)
+    end
+  end
+
+  # ...
+end
 ```
+
+As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign.
+
+Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action may be).
