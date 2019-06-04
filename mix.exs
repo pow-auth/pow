@@ -113,6 +113,10 @@ defmodule Pow.MixProject do
           filename: "Multitenancy",
           title: "Multitenancy with Pow"
         ],
+        "guides/SYNC_USER.md": [
+          filename: "SyncUser",
+          title: "Synchronize user in credentials cache"
+        ],
         "lib/extensions/email_confirmation/README.md": [
           filename: "PowEmailConfirmation",
           title: "PowEmailConfirmation"
