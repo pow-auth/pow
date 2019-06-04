@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.9 (TBA)
+## v1.0.9 (2019-06-04)
 
 ### Changes
 
