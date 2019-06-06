@@ -66,6 +66,7 @@ defmodule Pow.MixProject do
 
   defp docs do
     [
+      markdown_processor: ExDoc.Pow.Markdown,
       source_ref: "v#{@version}",
       main: "README",
       canonical: "http://hexdocs.pm/pow",
