@@ -11,7 +11,7 @@ Pow is a robust, modular, and extendable authentication and user management solu
 * Per Endpoint/Plug configuration
 * Extendable
 * I18n
-* [And more](guides/WHY_POW.md)
+* [And more](guides/why_pow.md)
 
 ## Installation
 
@@ -33,7 +33,7 @@ Run `mix deps.get` to install it.
 
 ### Phoenix app
 
-**Umbrella project**: Check out the [umbrella project guide](guides/UMBRELLA_PROJECT.md).
+**Umbrella project**: Check out the [umbrella project guide](guides/umbrella_project.md).
 
 Install the necessary files:
 
@@ -239,7 +239,7 @@ config :my_app, :pow,
   mailer_backend: MyAppWeb.PowMailer
 ```
 
-This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh integration, check out the [Swoosh mailer guide](guides/SWOOSH_MAILER.md).
+This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh integration, check out the [Swoosh mailer guide](guides/swoosh_mailer.md).
 
 #### Modify mailer templates
 
@@ -297,7 +297,7 @@ This group will handle the plug connection. The configuration will be assigned t
 
 #### Pow.Ecto
 
-This group contains all modules related to the Ecto based user schema and context. By default, Pow will use the [`Pow.Ecto.Context`](lib/pow/ecto/context.ex) module to authenticate, create, update and delete users with lookups to the database. However, it's straightforward to extend or write your custom user context. You can do this by setting the `:users_context` configuration key.
+This group contains all modules related to the Ecto based user schema and context. By default, Pow will use the `Pow.Ecto.Context` module to authenticate, create, update and delete users with lookups to the database. However, it's straightforward to extend or write your custom user context. You can do this by setting the `:users_context` configuration key.
 
 #### Pow.Phoenix
 
@@ -347,7 +347,7 @@ defmodule MyAppWeb.Pow.Plug do
 
   def create(conn, user, config) do
     token = Phoenix.Token.sign(MyAppWeb.Endpoint, @salt, user.id)
-    conn  = 
+    conn  =
       conn
       |> Plug.Conn.fetch_session()
       |> Plug.Conn.put_session(@session_key, token)
@@ -397,7 +397,7 @@ end
 
 ### Phoenix controllers
 
-Controllers in Pow are very slim and consists of just one [`Pow.Plug`](lib/pow/plug.ex) method call with response methods. If you wish to change the flow of the [`RegistrationController`](lib/pow/phoenix/controllers/registration_controller.ex) and [`SessionController`](lib/pow/phoenix/controllers/session_controller.ex), the best way is to create your own and modify `router.ex`.
+Controllers in Pow are very slim and consists of just one `Pow.Plug` method call with response methods. If you wish to change the flow of the `Pow.Phoenix.RegistrationController` and `Pow.Phoenix.SessionController`, the best way is to create your own and modify `router.ex`.
 
 However, to make it easier to integrate extension, you can add callbacks to the controllers that do some light pre/post-processing of the request:
 
@@ -452,7 +452,7 @@ defmodule MyAppWeb.Pow.Messages do
 end
 ```
 
-Add `messages_backend: MyAppWeb.Pow.Messages` to your configuration. You can find all the messages in [`Pow.Phoenix.Messages`](lib/pow/phoenix/messages.ex) and `[Pow Extension].Phoenix.Messages`.
+Add `messages_backend: MyAppWeb.Pow.Messages` to your configuration. You can find all the messages in `Pow.Phoenix.Messages` and `[Pow Extension].Phoenix.Messages`.
 
 ### Callback routes
 
@@ -467,7 +467,7 @@ defmodule MyAppWeb.Pow.Routes do
 end
 ```
 
-Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in [`Pow.Phoenix.Routes`](lib/pow/phoenix/routes.ex).
+Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find all the routes in `Pow.Phoenix.Routes`.
 
 ### Password hashing function
 
@@ -496,15 +496,15 @@ You can use the following Phoenix link to add logout link to your Phoenix templa
 
 ### Pow.Plug.Session
 
-Enables session-based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by [`Pow.Plug`](lib/pow/plug.ex)).
+Enables session-based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by `Pow.Plug`).
 
-The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to [add a plug](guides/SYNC_USER.md) that reloads the user struct and reassigns it to the connection.
+The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to [add a plug](guides/sync_user.md) that reloads the user struct and reassigns it to the connection.
 
 #### Cache store
 
-By default [`Pow.Store.Backend.EtsCache`](lib/pow/store/backend/ets_cache.ex) is started automatically and can be used in development and test environment.
+By default `Pow.Store.Backend.EtsCache` is started automatically and can be used in development and test environment.
 
-For a production environment, you should use a distributed, persistent cache store. Pow makes this easy with [`Pow.Store.Backend.MnesiaCache`](lib/pow/store/backend/mnesia_cache.ex). To start MnesiaCache in your Phoenix app, add it to your `application.ex` supervisor:
+For a production environment, you should use a distributed, persistent cache store. Pow makes this easy with `Pow.Store.Backend.MnesiaCache`. To start MnesiaCache in your Phoenix app, add it to your `application.ex` supervisor:
 
 ```elixir
 defmodule MyAppWeb.Application do
@@ -530,7 +530,7 @@ Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
 Remember to add `:mnesia` to your `:included_applications` so it'll be available for your release build.
 
-The MnesiaCache requires write access. If you've a read-only file system you should take a look at the [Redis cache backend store guide](guides/REDIS_CACHE_STORE_BACKEND.md).
+The MnesiaCache requires write access. If you've a read-only file system you should take a look at the [Redis cache backend store guide](guides/redis_cache_store_backend.md).
 
 ### Pow.Plug.RequireAuthenticated
 
@@ -542,7 +542,7 @@ Will halt connection if a current user is present in assigns. Expects an `:error
 
 ## Migrating from Coherence
 
-If you're currently using Coherence, you can migrate your app to use Pow instead. Follow the instructions in [COHERENCE_MIGRATION.md](guides/COHERENCE_MIGRATION.md).
+If you're currently using Coherence, you can migrate your app to use Pow instead. Follow the instructions in [Coherence migration guide](guides/coherence_migration.md).
 
 ## Pow security practices
 

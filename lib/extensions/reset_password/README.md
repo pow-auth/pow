@@ -4,7 +4,7 @@ This extension will allow users to reset the password by sending an e-mail with 
 
 ## Installation
 
-Follow the instructions for extensions in [README.md](../../../README.md), and set `PowResetPassword` in the `:extensions` list.
+Follow the instructions for extensions in [README.md](../../../README.md#add-extensions-support), and set `PowResetPassword` in the `:extensions` list.
 
 ## Configuration
 

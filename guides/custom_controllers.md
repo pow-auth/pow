@@ -4,7 +4,7 @@
 
 Pow makes it easy to use custom controllers leveraging the underlying Pow logic. It is ideal for cases where you need to control the flow, e.g., protect the registration process in a certain way.
 
-First you should follow the [Getting Started](../README.md#getting-started-phoenix) section in README until before the `router.ex` modification.
+First you should follow the [Getting Started](../README.md#getting-started) section in README until before the `router.ex` modification.
 
 ## Routes
 

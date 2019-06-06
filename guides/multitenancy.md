@@ -1,6 +1,6 @@
 # Multitenancy with Pow
 
-You are able to pass repo options to the methods used in [`Pow.Ecto.Context`](../lib/pow/ecto/context.ex) by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
+You are able to pass repo options to the methods used in `Pow.Ecto.Context` by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
 
 ```elixir
 config :my_app, :pow,
@@ -33,7 +33,7 @@ end
 
 With the above it will make it very easy to set up multitenency with [Triplex](https://github.com/ateliware/triplex).
 
-First update your `endpoint.ex` using a custom plug rather than the default [`Pow.Plug.Session`](../lib/pow/plug/session.ex):
+First update your `endpoint.ex` using a custom plug rather than the default `Pow.Plug.Session`:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
