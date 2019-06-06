@@ -6,7 +6,7 @@ Invited users are persisted in the database without a password. Only the user id
 
 ## Installation
 
-Follow the instructions for extensions in [README.md](../../../README.md), and set `PowInvitation` in the `:extensions` list.
+Follow the instructions for extensions in [README.md](../../../README.md#add-extensions-support), and set `PowInvitation` in the `:extensions` list.
 
 ## Configuration
 
@@ -34,7 +34,7 @@ end
 
 ### Limit invitation based on role
 
-If you have different roles (e.g. [admin and user](../../../guides/USER_ROLES.md)), you can limit the type of user who can invite others by using a plug and override the routes in your `router.ex`:
+If you have different roles (e.g. [admin and user](../../../guides/user_roles.md)), you can limit the type of user who can invite others by using a plug and override the routes in your `router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -77,7 +77,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-You need to  use custom template for the session controller, since by default it'll still have the link to registration. Read more in the [Disable registration guide](../../../guides/DISABLE_REGISTRATION.md).
+You need to  use custom template for the session controller, since by default it'll still have the link to registration. Read more in the [Disable registration guide](../../../guides/disable_registration.md).
 
 ### Expire invited users
 

@@ -4,6 +4,7 @@ defmodule Pow.Config do
   """
   @type t :: Keyword.t()
   defmodule ConfigError do
+    @moduledoc false
     defexception [:message]
   end
 

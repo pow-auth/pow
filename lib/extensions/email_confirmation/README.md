@@ -8,7 +8,7 @@ When users are already registered, the e-mail won't be changed for a user until 
 
 ## Installation
 
-Follow the instructions for extensions in [README.md](../../../README.md), and set `PowEmailConfirmation` in the `:extensions` list.
+Follow the instructions for extensions in [README.md](../../../README.md#add-extensions-support), and set `PowEmailConfirmation` in the `:extensions` list.
 
 ## Configuration
 

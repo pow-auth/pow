@@ -21,3 +21,7 @@ Only Ecto modules are tested against the database. Plug and Phoenix modules uses
 ## Extension test support
 
 Due to compile-time configuration of Phoenix modules and User schema modules, several modules are dynamically generated with [`Pow.Test.ExtensionMocks`](test/support/extensions/mock.ex).
+
+## Releases
+
+Releases to hex are automatically handled in Travis CI, when a tag is pushed on Github (and a new version has been set in `mix.exs`).

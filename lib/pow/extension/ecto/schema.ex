@@ -35,6 +35,7 @@ defmodule Pow.Extension.Ecto.Schema do
   alias Pow.{Config, Extension}
 
   defmodule SchemaError do
+    @moduledoc false
     defexception [:message]
   end
 

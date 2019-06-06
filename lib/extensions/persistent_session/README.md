@@ -4,7 +4,7 @@ This extension will permit reissuing sessions, by setting a cookie with a 30-day
 
 ## Installation
 
-Follow the instructions for extensions in [README.md](../../../README.md), and set `PowPersistentSession` in the `:extensions` list.
+Follow the instructions for extensions in [README.md](../../../README.md#add-extensions-support), and set `PowPersistentSession` in the `:extensions` list.
 
 Add the following plug after the pow session plug in your `endpoint.ex`:
 

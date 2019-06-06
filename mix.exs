@@ -66,73 +66,30 @@ defmodule Pow.MixProject do
 
   defp docs do
     [
+      markdown_processor: ExDoc.Pow.Markdown,
       source_ref: "v#{@version}",
-      main: "Pow",
+      main: "README",
       canonical: "http://hexdocs.pm/pow",
       source_url: "https://github.com/danschultzer/pow",
       extras: [
-        "README.md": [filename: "Pow", title: "Pow"],
-        "CONTRIBUTING.md": [filename: "Contributing", title: "Contributing"],
-        "guides/COHERENCE_MIGRATION.md": [
-          filename: "CoherenceMigration",
-          title: "Migrating from Coherence"
-        ],
-        "guides/SWOOSH_MAILER.md": [
-          filename: "SwooshMailer",
-          title: "Swoosh mailer"
-        ],
-        "guides/WHY_POW.md": [
-          filename: "WhyPow",
-          title: "Why use Pow?"
-        ],
-        "guides/USER_ROLES.md": [
-          filename: "UserRoles",
-          title: "How to add user roles"
-        ],
-        "guides/LOCK_USERS.md": [
-          filename: "LockUsers",
-          title: "How to disable users"
-        ],
-        "guides/CUSTOM_CONTROLLERS.md": [
-          filename: "CustomControllers",
-          title: "Custom controllers"
-        ],
-        "guides/DISABLE_REGISTRATION.md": [
-          filename: "DisableRegistration",
-          title: "Disable registration"
-        ],
-        "guides/REDIS_CACHE_STORE_BACKEND.md": [
-          filename: "RedisCacheStoreBackend",
-          title: "Redis cache store backend"
-        ],
-        "guides/UMBRELLA_PROJECT.md": [
-          filename: "UmbrellaProject",
-          title: "Pow in an umbrella project"
-        ],
-        "guides/MULTITENANCY.md": [
-          filename: "Multitenancy",
-          title: "Multitenancy with Pow"
-        ],
-        "guides/SYNC_USER.md": [
-          filename: "SyncUser",
-          title: "Synchronize user in credentials cache"
-        ],
-        "lib/extensions/email_confirmation/README.md": [
-          filename: "PowEmailConfirmation",
-          title: "PowEmailConfirmation"
-        ],
-        "lib/extensions/invitation/README.md": [
-          filename: "PowInvitation",
-          title: "PowInvitation"
-        ],
-        "lib/extensions/persistent_session/README.md": [
-          filename: "PowPersistentSession",
-          title: "PowPersistentSession"
-        ],
-        "lib/extensions/reset_password/README.md": [
-          filename: "PowResetPassword",
-          title: "PowResetPassword"
-        ]
+        "README.md": [filename: "README"],
+        "CONTRIBUTING.md": [filename: "CONTRIBUTING"],
+        "CHANGELOG.md": [filename: "CHANGELOG"],
+        "guides/coherence_migration.md": [],
+        "guides/swoosh_mailer.md": [],
+        "guides/why_pow.md": [],
+        "guides/user_roles.md": [],
+        "guides/lock_users.md": [],
+        "guides/custom_controllers.md": [],
+        "guides/disable_registration.md": [],
+        "guides/redis_cache_store_backend.md": [],
+        "guides/umbrella_project.md": [],
+        "guides/multitenancy.md": [],
+        "guides/sync_user.md": [],
+        "lib/extensions/email_confirmation/README.md": [filename: "pow_email_confirmation"],
+        "lib/extensions/invitation/README.md": [filename: "pow_invitation"],
+        "lib/extensions/persistent_session/README.md": [filename: "pow_persistent_session"],
+        "lib/extensions/reset_password/README.md": [filename: "pow_reset_password"]
       ],
       groups_for_modules: [
         Plug: ~r/^Pow.Plug/,

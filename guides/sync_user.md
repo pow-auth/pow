@@ -1,6 +1,6 @@
-# How to sync changes to the user made by actions outside of Pow
+# Update cached user credentials
 
-It's very important to understand that the cached user credentials that Pow fetches in `Pow.Plug.current_user/2` is always to be considered out of date since it's a cached object.
+You may want to update the cached user credentials when an action outside of Pow has updated the user. It's very important to understand that the cached user credentials that Pow fetches in `Pow.Plug.current_user/2` is always to be considered out of date since it's a cached object.
 
 In the following examples we'll imagine that you've added a `plan` column on your `users` table. We may want to use that `plan` to give them access to a certain controller actions. In this case, it's paramount that you load the user from the database.
 

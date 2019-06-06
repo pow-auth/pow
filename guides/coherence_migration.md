@@ -79,6 +79,7 @@ Set up `user.ex` to use Pow:
 Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
  1. Install comeonin for bcrypt in `mix.exs`:
+
     ```elixir
     {:comeonin, "~> 3.0"}
     ```
