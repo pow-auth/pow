@@ -83,7 +83,6 @@ defmodule Pow.Plug.Session do
     session_key           = session_key(config)
     {store, store_config} = store(config)
     value                 = session_value(user)
-    conn                  = delete(conn, config)
 
     store.put(store_config, key, value)
 

@@ -4,6 +4,7 @@
 
 * All links in docs generated with `mix docs` and on [hexdocs.pm](http://hexdocs.pm/pow/) now works
 * Generated docs now uses lower case file name except for `README`, `CONTRIBUTING` and `CHANGELOG`
+* Removed duplicate call for `Pow.Plug.Session.delete/2` in `Pow.Plug.Sesssion.create/3`
 
 ## v1.0.9 (2019-06-04)
 
