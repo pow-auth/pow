@@ -2,6 +2,7 @@
 
 ## v1.0.10 (TBA)
 
+* Prevent browser cache of `Pow.Phoenix.SessionController.new/2`, `Pow.Phoenix.RegistrationController.new/2` and `PowInvitation.Phoenix.InvitationController.edit/2` by setting "Cache-Control" header unless it already has been customized
 * All links in docs generated with `mix docs` and on [hexdocs.pm](http://hexdocs.pm/pow/) now works
 * Generated docs now uses lower case file name except for `README`, `CONTRIBUTING` and `CHANGELOG`
 * Removed duplicate call for `Pow.Plug.Session.delete/2` in `Pow.Plug.Sesssion.create/3`

@@ -11,6 +11,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
   plug :load_user_from_invitation_token when action in [:show, :edit, :update]
   plug :assign_create_path when action in [:new, :create]
   plug :assign_update_path when action in [:edit, :update]
+  plug :put_no_cache_header when action in [:edit]
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do

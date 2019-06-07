@@ -14,6 +14,7 @@ defmodule Pow.Phoenix.SessionController do
   plug :require_authenticated when action in [:delete]
   plug :assign_request_path when action in [:new, :create]
   plug :assign_create_path when action in [:new, :create]
+  plug :put_no_cache_header when action in [:new]
 
   @doc false
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}

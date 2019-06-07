@@ -17,6 +17,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     test "shows", %{conn: conn} do
       conn = get(conn, Routes.pow_session_path(conn, :new))
 
+      assert Conn.get_resp_header(conn, "cache-control") == ["no-cache, no-store, must-revalidate"]
+
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_session_path(conn, :create)
       refute html =~ "request_path="

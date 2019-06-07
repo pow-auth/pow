@@ -9,6 +9,7 @@ defmodule Pow.Phoenix.RegistrationController do
   plug :require_authenticated when action in [:edit, :update, :delete]
   plug :assign_create_path when action in [:new, :create]
   plug :assign_update_path when action in [:edit, :update]
+  plug :put_no_cache_header when action in [:new]
 
   @spec process_new(Conn.t(), map()) :: {:ok, map(), Conn.t()}
   def process_new(conn, _params) do
