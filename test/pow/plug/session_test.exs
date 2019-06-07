@@ -367,6 +367,74 @@ defmodule Pow.Plug.SessionTest do
     assert is_nil(Plug.current_user(conn))
   end
 
+  describe "with telemetry logging" do
+    setup do
+      pid    = self()
+      events = [
+        [:pow, :plug, :session, :create],
+        [:pow, :plug, :session, :delete],
+        [:pow, :plug, :session, :renew]
+      ]
+
+      :telemetry.attach_many("event-handler-#{inspect pid}", events, fn event, measurements, metadata, send_to: pid ->
+        send(pid, {:event, event, measurements, metadata})
+      end, send_to: pid)
+    end
+
+    test "logs create and delete", %{conn: new_conn} do
+      conn =
+        new_conn
+        |> init_plug()
+        |> run_do_create(@user)
+
+      assert session_id = get_session_id(conn)
+
+      assert_receive {:event, [:pow, :plug, :session, :create], _measurements, metadata}
+      assert metadata[:conn]
+      assert session_fingerprint = metadata[:session_fingerprint]
+      assert metadata[:user] == @user
+      assert {@user, session_metadata} = get_from_cache(session_id)
+      assert session_metadata[:fingerprint] == session_fingerprint
+
+      conn
+      |> recycle_session_conn()
+      |> init_plug()
+      |> run_do_delete()
+
+      assert_receive {:event, [:pow, :plug, :session, :delete], _measurements, metadata}
+      assert metadata[:conn]
+      assert metadata[:session_fingerprint] == session_fingerprint
+      assert metadata[:user] == @user
+      assert get_from_cache(session_id) == :not_found
+    end
+
+    test "logs renewal", %{conn: conn} do
+      ttl             = 100
+      config          = Keyword.merge(@default_opts, session_ttl_renewal: ttl)
+      stale_timestamp = :os.system_time(:millisecond) - ttl - 1
+      session_id      = sign_token("token")
+
+      @store_config
+      |> Keyword.put(:namespace, "credentials")
+      |> EtsCacheMock.put({"token", {@user, inserted_at: stale_timestamp, fingerprint: "fingerprint"}})
+
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], session_id)
+      |> run_plug(config)
+
+      assert get_session_id(conn) != session_id
+
+      assert_receive {:event, [:pow, :plug, :session, :renew], _measurements, metadata}
+      assert metadata[:conn]
+      assert metadata[:session_fingerprint] == "fingerprint"
+      assert metadata[:user] == @user
+
+      refute_receive {:event, [:pow, :plug, :session, :delete], _measurements, _metadata}
+      refute_receive {:event, [:pow, :plug, :session, :create], _measurements, _metadata}
+    end
+  end
+
   describe "with EtsCache backend" do
     setup do
       start_supervised!({EtsCache, []})

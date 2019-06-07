@@ -39,6 +39,7 @@ defmodule Pow.MixProject do
       {:phoenix, "~> 1.3.0 or ~> 1.4.0"},
       {:phoenix_html, ">= 2.0.0 and <= 3.0.0"},
       {:plug, ">= 1.5.0 and < 2.0.0", optional: true},
+      {:telemetry, "~> 0.4", optional: true},
 
       {:phoenix_ecto, "~> 4.1.0", only: [:dev, :test]},
       {:credo, "~> 1.2.0", only: [:dev, :test]},

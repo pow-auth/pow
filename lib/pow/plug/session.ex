@@ -17,6 +17,9 @@ defmodule Pow.Plug.Session do
   The session id used in the client is signed using `Pow.Plug.sign_token/4` to
   prevent timing attacks.
 
+  Telemetry events are dispatched for the lifecycle of the sessions. See
+  `Pow.telemetry_event/5` for more.
+
   ## Example
 
       @pow_config [
@@ -112,6 +115,7 @@ defmodule Pow.Plug.Session do
 
   @session_key "auth"
   @session_ttl_renewal :timer.minutes(15)
+  @telemetry_event [:pow, :plug, :session]
 
   @doc """
   Fetches session from credentials cache.
@@ -171,12 +175,13 @@ defmodule Pow.Plug.Session do
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     metadata         = Map.get(conn.private, :pow_session_metadata, [])
+    session_id       = gen_session_id(config)
     {user, metadata} = session_value(user, metadata)
 
     conn =
       conn
       |> delete(config)
-      |> before_send_create({user, metadata}, config)
+      |> before_send_create(session_id, {user, metadata}, config)
       |> Conn.put_private(:pow_session_metadata, metadata)
 
     {conn, user}
@@ -193,15 +198,24 @@ defmodule Pow.Plug.Session do
 
   defp gen_fingerprint(), do: UUID.generate()
 
-  defp before_send_create(conn, value, config) do
+  defp before_send_create(conn, session_id, {user, metadata}, config) do
     {store, store_config} = store(config)
-    session_id            = gen_session_id(config)
+    session_fingerprint   = Keyword.get(metadata, :fingerprint)
 
     register_before_send(conn, fn conn ->
-      store.put(store_config, session_id, value)
+      store.put(store_config, session_id, {user, metadata})
+
+      trigger_telemetry_event(config, :create, %{
+        conn: conn,
+        session_fingerprint: session_fingerprint,
+        user: user})
 
       client_store_put(conn, session_id, config)
     end)
+  end
+
+  defp trigger_telemetry_event(config, action, %{conn: _conn, session_fingerprint: _session_fingerprint, user: _user} = metadata) do
+    Pow.telemetry_event(config, @telemetry_event, action, metadata)
   end
 
   @doc """
@@ -219,6 +233,8 @@ defmodule Pow.Plug.Session do
 
   defp before_send_delete(conn, config) do
     {store, store_config} = store(config)
+    session_fingerprint   = get_session_fingerprint(conn)
+    user                  = Plug.current_user(conn)
 
     register_before_send(conn, fn conn ->
       case client_store_fetch(conn, config) do
@@ -228,9 +244,20 @@ defmodule Pow.Plug.Session do
         {session_id, conn} ->
           store.delete(store_config, session_id)
 
+          trigger_telemetry_event(config, :delete, %{
+            conn: conn,
+            session_fingerprint: session_fingerprint,
+            user: user})
+
           client_store_delete(conn, config)
       end
     end)
+  end
+
+  defp get_session_fingerprint(conn) do
+    conn.private
+    |> Map.get(:pow_session_metadata, [])
+    |> Keyword.get(:fingerprint)
   end
 
   # TODO: Remove by 1.1.0
@@ -249,20 +276,27 @@ defmodule Pow.Plug.Session do
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
     |> case do
-      true  -> lock_create(conn, session_id, user, config)
+      true  -> lock_renew_stale_session(conn, session_id, user, config)
       false -> {conn, user}
     end
   end
 
-  defp lock_create(conn, session_id, user, config) do
+  defp lock_renew_stale_session(conn, session_id, user, config) do
     id    = {[__MODULE__, session_id], self()}
     nodes = Node.list() ++ [node()]
 
     case :global.set_lock(id, nodes, 0) do
       true ->
-        {conn, user} = create(conn, user, config)
+        {conn, user} = create(conn, user, Config.put(config, :log_telemetry?, false))
 
         conn = register_before_send(conn, fn conn ->
+          session_fingerprint = get_session_fingerprint(conn)
+
+          trigger_telemetry_event(config, :renew, %{
+            conn: conn,
+            session_fingerprint: session_fingerprint,
+            user: user})
+
           :global.del_lock(id, nodes)
 
           conn
