@@ -23,7 +23,8 @@ defmodule MyAppWeb.PowMailer do
   end
 
   def process(email) do
-    deliver(email)
+    email
+    |> deliver()
     |> log_warnings()
   end
 
@@ -31,7 +32,7 @@ defmodule MyAppWeb.PowMailer do
     Logger.warn("Mailer backend failed with: #{inspect(reason)}")
   end
 
-  defp log_warnings(ok), do: ok
+  defp log_warnings({:ok, response}), do: {:ok, response}
 end
 ```
 
