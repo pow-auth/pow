@@ -10,6 +10,8 @@ defmodule MyAppWeb.PowMailer do
   use Swoosh.Mailer, otp_app: :my_app
 
   import Swoosh.Email
+  
+  require Logger
 
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     %Swoosh.Email{}
@@ -21,8 +23,16 @@ defmodule MyAppWeb.PowMailer do
   end
 
   def process(email) do
-    deliver(email)
+    email
+    |> deliver()
+    |> log_warnings()
   end
+
+  defp log_warnings({:error, reason}) do
+    Logger.warn("Mailer backend failed with: #{inspect(reason)}")
+  end
+
+  defp log_warnings({:ok, response}), do: {:ok, response}
 end
 ```
 
