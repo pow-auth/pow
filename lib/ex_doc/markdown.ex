@@ -19,7 +19,7 @@ defmodule ExDoc.Pow.Markdown do
 
   def to_html(text, opts) do
     config     = Mix.Project.config()[:docs]
-    source_url = config[:source_url] <> source_ref_pattern(config[:source_url], config[:source_ref])
+    source_url = config[:source_url] <> "/" <> source_ref_pattern(config[:source_url], config[:source_ref])
 
     text
     |> convert_relative_docs_url(source_url)
