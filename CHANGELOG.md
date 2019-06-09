@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.10 (TBA)
+## v1.0.10 (2019-06-09)
 
 * Prevent browser cache of `Pow.Phoenix.SessionController.new/2`, `Pow.Phoenix.RegistrationController.new/2` and `PowInvitation.Phoenix.InvitationController.edit/2` by setting "Cache-Control" header unless it already has been customized
 * All links in docs generated with `mix docs` and on [hexdocs.pm](http://hexdocs.pm/pow/) now works
