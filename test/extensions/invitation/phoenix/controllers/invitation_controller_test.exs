@@ -129,6 +129,8 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     test "shows", %{conn: conn} do
       conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, "valid")
 
+      assert Conn.get_resp_header(conn, "cache-control") == ["no-cache, no-store, must-revalidate"]
+
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"

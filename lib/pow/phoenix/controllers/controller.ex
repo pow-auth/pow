@@ -46,15 +46,9 @@ defmodule Pow.Phoenix.Controller do
         unquote(__MODULE__).action(__MODULE__, conn, conn.params)
       end
 
-      defp require_authenticated(conn, _opts) do
-        opts = Plug.RequireAuthenticated.init(error_handler: PlugErrorHandler)
-        Plug.RequireAuthenticated.call(conn, opts)
-      end
-
-      defp require_not_authenticated(conn, _opts) do
-        opts = Plug.RequireNotAuthenticated.init(error_handler: PlugErrorHandler)
-        Plug.RequireNotAuthenticated.call(conn, opts)
-      end
+      defdelegate require_authenticated(conn, opts), to: unquote(__MODULE__)
+      defdelegate require_not_authenticated(conn, opts), to: unquote(__MODULE__)
+      defdelegate put_no_cache_header(conn, opts), to: unquote(__MODULE__)
 
       defp pow_layout(conn, _config), do: ViewHelpers.layout(conn)
 
@@ -150,5 +144,39 @@ defmodule Pow.Phoenix.Controller do
     base           = Macro.underscore(base)
 
     "#{base}_#{as}"
+  end
+
+  @doc false
+  @spec require_authenticated(Conn.t(), Keyword.t()) :: Conn.t()
+  def require_authenticated(conn, _opts) do
+    opts = Plug.RequireAuthenticated.init(error_handler: PlugErrorHandler)
+    Plug.RequireAuthenticated.call(conn, opts)
+  end
+
+  @doc false
+  @spec require_not_authenticated(Conn.t(), Keyword.t()) :: Conn.t()
+  def require_not_authenticated(conn, _opts) do
+    opts = Plug.RequireNotAuthenticated.init(error_handler: PlugErrorHandler)
+    Plug.RequireNotAuthenticated.call(conn, opts)
+  end
+
+  @default_cache_control_header Conn.get_resp_header(struct(Conn), "cache-control")
+  @no_cache_control_header      "no-cache, no-store, must-revalidate"
+
+  @doc """
+  Ensures that the page can't be cached in browser.
+
+  This will add a "cache-control" header with
+  "no-cache, no-store, must-revalidate" if the cache control header hasn't
+  been changed from the default value in the `Plug.Conn` struct.
+  """
+  @spec put_no_cache_header(Conn.t(), Keyword.t()) :: Conn.t()
+  def put_no_cache_header(conn, _opts) do
+    conn
+    |> Conn.get_resp_header("cache-control")
+    |> case do
+      @default_cache_control_header -> Conn.put_resp_header(conn, "cache-control", @no_cache_control_header)
+      _any                          -> conn
+    end
   end
 end

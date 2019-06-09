@@ -8,6 +8,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     test "shows", %{conn: conn} do
       conn = get(conn, Routes.pow_registration_path(conn, :new))
 
+      assert Conn.get_resp_header(conn, "cache-control") == ["no-cache, no-store, must-revalidate"]
+
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_registration_path(conn, :create)
       assert html =~ "<label for=\"user_email\">Email</label>"
