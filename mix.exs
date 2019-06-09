@@ -76,7 +76,7 @@ defmodule Pow.MixProject do
         "CONTRIBUTING.md": [filename: "CONTRIBUTING"],
         "CHANGELOG.md": [filename: "CHANGELOG"],
         "guides/coherence_migration.md": [],
-        "guides/swoosh_mailer.md": [],
+        "guides/configuring_mailer.md": [],
         "guides/why_pow.md": [],
         "guides/user_roles.md": [],
         "guides/lock_users.md": [],
