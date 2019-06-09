@@ -289,7 +289,7 @@ The easiest way to use Pow with Phoenix is to use a `:otp_app` in method calls a
 
 ### Module groups
 
-Pow has three main groups of modules that each can used individually, or in conjunction with each other:
+Pow has three main groups of modules that each can be used individually, or in conjunction with each other:
 
 #### Pow.Plug
 
