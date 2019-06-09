@@ -323,7 +323,7 @@ mix pow.extension.phoenix.mailer.gen.templates
 
 ### Authorization plug
 
-Pow ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with [Phoenix.Token](https://hexdocs.pm/phoenix/Phoenix.Token.html):
+Pow ships with a session plug module. You can easily switch it out with a different one. As an example, here's how you do that with `Phoenix.Token`:
 
 ```elixir
 defmodule MyAppWeb.Pow.Plug do
@@ -413,7 +413,7 @@ defmodule MyCustomExtension.Phoenix.ControllerCallbacks do
 end
 ```
 
-You can add methods for `before_process` (before the action happens) and `before_respond` (before parsing the results from the action).
+You can add methods for `before_process/4` (before the action happens) and `before_respond/4` (before parsing the results from the action).
 
 #### Testing with authenticated users
 
