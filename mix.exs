@@ -43,7 +43,7 @@ defmodule Pow.MixProject do
       {:phoenix_ecto, "~> 4.0.0", only: [:dev, :test]},
       {:credo, "~> 0.9.3", only: [:dev, :test]},
 
-      {:ex_doc, "~> 0.19.0", only: :dev},
+      {:ex_doc, "~> 0.20.0", only: :dev},
 
       {:ecto_sql, "~> 3.0.0", only: [:test]},
       {:plug_cowboy, "~> 2.0", only: [:test]},
