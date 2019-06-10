@@ -239,7 +239,7 @@ config :my_app, :pow,
   mailer_backend: MyAppWeb.PowMailer
 ```
 
-This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh integration, check out the [Swoosh mailer guide](guides/swoosh_mailer.md).
+This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh or Bamboo integration, check out the [Configuring mailer guide](guides/configuring_mailer.md).
 
 #### Modify mailer templates
 
