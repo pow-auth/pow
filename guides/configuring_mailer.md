@@ -72,11 +72,8 @@ defmodule MyAppWeb.PowMailer do
   end
 
   def process(email) do
-    email
-    |> deliver_now()   
+    deliver_now(email)
   end
-
-
 end
 ```
 
