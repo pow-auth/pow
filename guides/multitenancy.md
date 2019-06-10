@@ -31,7 +31,7 @@ end
 
 ## Triplex
 
-With the above it will make it very easy to set up multitenency with [Triplex](https://github.com/ateliware/triplex).
+With the above it will make it very easy to set up multitenancy with [Triplex](https://github.com/ateliware/triplex).
 
 First update your `endpoint.ex` using a custom plug rather than the default `Pow.Plug.Session`:
 
