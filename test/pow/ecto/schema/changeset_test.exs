@@ -110,11 +110,11 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..9)))
 
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, kind: :min]}
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, kind: :min, type: :string]}
 
       changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..4096)))
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 4096, validation: :length, kind: :max]}
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 4096, validation: :length, kind: :max, type: :string]}
     end
 
     test "can use custom length requirements for password" do
@@ -122,11 +122,11 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
       changeset = Changeset.password_changeset(%User{}, %{"password" => "abcd"}, config)
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 5, validation: :length, kind: :min]}
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 5, validation: :length, kind: :min, type: :string]}
 
       changeset = Changeset.password_changeset(%User{}, %{"password" => "abcdefghijk"}, config)
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max]}
+      assert changeset.errors[:password] == {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max, type: :string]}
     end
 
     test "can confirm and hash password" do
