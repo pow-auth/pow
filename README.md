@@ -511,11 +511,10 @@ defmodule MyAppWeb.Application do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec
-
     children = [
-      supervisor(MyAppWeb.Endpoint, []),
-      worker(Pow.Store.Backend.MnesiaCache, [[nodes: [node()]]])
+      MyApp.Repo,
+      MyAppWeb.Endpoint,
+      {Pow.Store.Backend.MnesiaCache, nodes: [node()])
     ]
 
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
