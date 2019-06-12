@@ -86,6 +86,7 @@ defmodule Pow.MixProject do
         "guides/umbrella_project.md": [],
         "guides/multitenancy.md": [],
         "guides/sync_user.md": [],
+        "guides/distributed_mnesia_cache.md": [],
         "lib/extensions/email_confirmation/README.md": [filename: "pow_email_confirmation"],
         "lib/extensions/invitation/README.md": [filename: "pow_invitation"],
         "lib/extensions/persistent_session/README.md": [filename: "pow_persistent_session"],
