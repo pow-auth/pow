@@ -48,6 +48,6 @@ defmodule Pow.Phoenix.RouterTest do
 
   test "can override routes" do
     assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new)) == "/registration/overidden"
-    assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.opts == :new)) == 1
+    assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.plug_opts == :new)) == 1
   end
 end

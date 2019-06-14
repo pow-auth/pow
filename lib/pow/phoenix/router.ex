@@ -114,9 +114,9 @@ defmodule Pow.Phoenix.Router do
     matching_params =
       line
       |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
-      |> Map.take([:opts, :helper])
+      |> Map.take([:opts, :plug_opts, :helper])
 
-    Enum.any?(phoenix_routes, &Map.take(&1, [:opts, :helper]) == matching_params)
+    Enum.any?(phoenix_routes, &Map.take(&1, [:opts, :plug_opts, :helper]) == matching_params)
   end
 
   defmacro pow_route(verb, path, plug, plug_opts, options \\ []) do
