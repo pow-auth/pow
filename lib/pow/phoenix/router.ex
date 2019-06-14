@@ -111,12 +111,22 @@ defmodule Pow.Phoenix.Router do
 
   @doc false
   def __route_defined__(phoenix_routes, line, module, verb, path, plug, plug_opts, options) do
-    matching_params =
-      line
-      |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
-      |> Map.take([:opts, :helper])
+    line
+    |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
+    |> case do
+      %{plug_opts: plug_opts, helper: helper} -> any_matching_routes?(phoenix_routes, %{plug_opts: plug_opts, helper: helper})
 
-    Enum.any?(phoenix_routes, &Map.take(&1, [:opts, :helper]) == matching_params)
+      # TODO: Remove this match by 1.1.0, and up requirement for Phoenix to minimum 1.4.7
+      %{opts: plug_opts, helper: helper}      -> any_matching_routes?(phoenix_routes, %{opts: plug_opts, helper: helper})
+
+      _any                                    -> false
+    end
+  end
+
+  defp any_matching_routes?(phoenix_routes, needle) do
+    keys = Map.keys(needle)
+
+    Enum.any?(phoenix_routes, &Map.take(&1, keys) == needle)
   end
 
   defmacro pow_route(verb, path, plug, plug_opts, options \\ []) do
