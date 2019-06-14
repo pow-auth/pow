@@ -514,7 +514,7 @@ defmodule MyAppWeb.Application do
     children = [
       MyApp.Repo,
       MyAppWeb.Endpoint,
-      {Pow.Store.Backend.MnesiaCache, nodes: [node()])
+      {Pow.Store.Backend.MnesiaCache, nodes: [node()]}
     ]
 
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
