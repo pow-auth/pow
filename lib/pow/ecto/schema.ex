@@ -76,6 +76,9 @@ defmodule Pow.Ecto.Schema do
           |> new_password_changeset(attrs, @pow_config)
         end
       end
+      
+  Note that @pow_config is set by `use Pow.Ecto.Schema` which should already 
+  exist in your file.
 
   ## Configuration options
 
