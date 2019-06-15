@@ -2,7 +2,7 @@ defmodule Pow.Ecto.Schema do
   @moduledoc """
   Handles the Ecto schema for user.
 
-  The macro will create a `@pow_fields` module attribute, and append fields to
+  `__using__/1` will create a `@pow_fields` module attribute, and append fields to
   it using the attributes from `Pow.Ecto.Schema.Fields.attrs/1`. The
   `pow_user_fields/0` macro will use these attributes to create fields in the
   ecto schema.
@@ -77,8 +77,7 @@ defmodule Pow.Ecto.Schema do
         end
       end
       
-  Note that @pow_config is set by `use Pow.Ecto.Schema` which should already 
-  exist in your file.
+  Note that the `__using__/1` macro creates the `@pow_config` module attribute.
 
   ## Configuration options
 
@@ -91,7 +90,13 @@ defmodule Pow.Ecto.Schema do
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
 
-  @doc false
+  @doc """
+  Scaffolds your schema module. It adds `@pow_fields` and `@pow_config` attributes to the module,
+  and defines default `changeset/2` and `verify_password/2` functions that you can override.
+  It is automatically invoked when calling 
+      use Pow.Ecto.Schema
+  in your module.
+  """
   defmacro __using__(config) do
     quote do
       @behaviour unquote(__MODULE__)
