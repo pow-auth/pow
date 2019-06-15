@@ -2,13 +2,28 @@ defmodule Pow.Ecto.Schema do
   @moduledoc """
   Handles the Ecto schema for user.
 
-  `__using__/1` will create a `@pow_fields` module attribute, and append fields to
-  it using the attributes from `Pow.Ecto.Schema.Fields.attrs/1`. The
-  `pow_user_fields/0` macro will use these attributes to create fields in the
-  ecto schema.
+  The macro will create a `@pow_fields` module attribute, and append fields to
+  it using the attributes from `Pow.Ecto.Schema.Fields.attrs/1`. Likewise, a
+  `@pow_assocs` module attribute is also generated for associations. The
+  `pow_user_fields/0` macro will use these attributes to create fields and
+  associations in the ecto schema.
 
-  A default `changeset/2` method is created, but can be overridden with a
-  custom `changeset/2` method.
+  The macro will add two overridable methods to your module; `changeset/2`
+  and `verify_password/2`. See the customization section below for more.
+
+  The following helper methods are added for changeset customization:
+
+    - `pow_changeset/2`,
+    - `pow_verify_password/2`
+    - `pow_user_id_field_changeset/2`
+    - `pow_password_changeset/2`,
+    - `pow_current_password_changeset/2`,
+
+  Finally `pow_user_id_field/0` method is added to the module that is used to
+  fetch the user id field name.
+
+  A `@pow_config` module attribute is created containing the options that was
+  passed to the macro with the `use Pow.Ecto.Schema, ...` call.
 
   ## Usage
 
@@ -38,6 +53,11 @@ defmodule Pow.Ecto.Schema do
 
   Remember to add `user: MyApp.Users.User` to your configuration.
 
+  ## Configuration options
+
+  * `:user_id_field` - the field to use for user id. This value defaults to
+    `:email`, and the changeset will automatically validate it as an e-mail.
+
   ## Customize Pow fields
 
   Pow fields can be overridden if the field name and type matches:
@@ -56,14 +76,33 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
-  ## Customize Pow changeset
-
-  You can extract individual changeset methods to modify the changeset
-  flow entirely. As an example, this  is how you can remove the validation
-  check for confirm password in the changeset method:
+  The same holds true for associations:
 
       defmodule MyApp.Users.User do
-        # ...
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        @pow_assocs {:belongs_to, :invited_by, __MODULE__}
+        @pow_assocs {:has_many, :invited, __MODULE__}
+
+        schema "users" do
+          belongs_to :invited_by, __MODULE__, foreign_key: :user_id
+
+          pow_user_fields()
+
+          timestamps()
+        end
+      end
+
+  ## Customize Pow changeset
+
+  You can extract individual changeset methods to modify the changeset flow
+  entirely. As an example, this  is how you can remove the validation check for
+  confirm password in the changeset method:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
 
         import Pow.Ecto.Schema.Changeset, only: [new_password_changeset: 3]
 
@@ -76,13 +115,11 @@ defmodule Pow.Ecto.Schema do
           |> new_password_changeset(attrs, @pow_config)
         end
       end
-      
-  Note that the `__using__/1` macro creates the `@pow_config` module attribute.
 
-  ## Configuration options
-
-    * `:user_id_field` - the field to use for user id. This value defaults to
-      `:email`, and the changeset will automatically validate it as an e-mail.
+  Note that the changeset methods in `Pow.Ecto.Schema.Changeset` requires the
+  Pow ecto module configuration that is passed to the
+  `use Pow.Ecto.Schema, ...` call. This can be fetched by using the
+  `@pow_config` module attribute.
   """
   alias Ecto.Changeset
   alias Pow.Config
@@ -90,13 +127,7 @@ defmodule Pow.Ecto.Schema do
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
 
-  @doc """
-  Scaffolds your schema module. It adds `@pow_fields` and `@pow_config` attributes to the module,
-  and defines default `changeset/2` and `verify_password/2` functions that you can override.
-  It is automatically invoked when calling 
-      use Pow.Ecto.Schema
-  in your module.
-  """
+  @doc false
   defmacro __using__(config) do
     quote do
       @behaviour unquote(__MODULE__)
