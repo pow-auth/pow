@@ -22,7 +22,7 @@ defmodule Pow.Ecto.Schema do
   Finally `pow_user_id_field/0` method is added to the module that is used to
   fetch the user id field name.
 
-  A `@pow_config` module attribute is created containing the options that was
+  A `@pow_config` module attribute is created containing the options that were
   passed to the macro with the `use Pow.Ecto.Schema, ...` call.
 
   ## Usage
@@ -97,7 +97,7 @@ defmodule Pow.Ecto.Schema do
   ## Customize Pow changeset
 
   You can extract individual changeset methods to modify the changeset flow
-  entirely. As an example, this  is how you can remove the validation check for
+  entirely. As an example, this is how you can remove the validation check for
   confirm password in the changeset method:
 
       defmodule MyApp.Users.User do
@@ -116,7 +116,7 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
-  Note that the changeset methods in `Pow.Ecto.Schema.Changeset` requires the
+  Note that the changeset methods in `Pow.Ecto.Schema.Changeset` require the
   Pow ecto module configuration that is passed to the
   `use Pow.Ecto.Schema, ...` call. This can be fetched by using the
   `@pow_config` module attribute.
