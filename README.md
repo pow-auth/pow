@@ -484,12 +484,19 @@ defmodule MyApp.Users.User do
 end
 ```
 
-### Logout link
+### Sign in and Sign out links
 
-You can use the following Phoenix link to add logout link to your Phoenix template:
+You can use the following code add a login and logout link to your Phoenix template depending if the `@current_user` is present:
 
 ```elixir
-<%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
+<ul>
+<%= if @current_user do %>
+  <li><%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %></li>
+<% else %>
+  <li><%= link "Register", to: Routes.pow_registration_path(@conn, :new) %></li>
+  <li><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></li>
+<% end %>
+</ul>
 ```
 
 ## Plugs
