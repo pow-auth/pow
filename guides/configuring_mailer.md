@@ -59,8 +59,6 @@ defmodule MyAppWeb.PowMailer do
   use Bamboo.Mailer, otp_app: :my_app
 
   import Bamboo.Email
-  
-  require Logger
 
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     new_email
