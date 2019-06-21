@@ -484,13 +484,22 @@ defmodule MyApp.Users.User do
 end
 ```
 
-### Logout link
+### Current user and sign out link
 
-You can use the following Phoenix link to add logout link to your Phoenix template:
+You can use `Pow.Plug.current_user/1` to fetch the current user from the connection.
+
+This can be used to show sign in or sign out links in your Phoenix template:
 
 ```elixir
-<%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
+<%= if Pow.Plug.current_user(@conn) do %>
+  <span><%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %></span>
+<% else %>
+  <span><%= link "Register", to: Routes.pow_registration_path(@conn, :new) %></span>
+  <span><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></span>
+<% end %>
 ```
+
+The current user can also be fetched by using the template assigns set in the configuration with `:current_user_assigns_key` (defaults to `@current_user`).
 
 ## Plugs
 
