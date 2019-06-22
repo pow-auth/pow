@@ -51,6 +51,8 @@ defmodule MyAppWeb.EnsureRolePlug do
 
       plug MyAppWeb.EnsureRolePlug, ~w(user admin)a
   """
+  import Plug.Conn, only: [halt: 1]
+
   alias MyAppWeb.Router.Helpers, as: Routes
   alias Phoenix.Controller
   alias Plug.Conn
@@ -80,6 +82,7 @@ defmodule MyAppWeb.EnsureRolePlug do
     conn
     |> Controller.put_flash(:error, "Unauthorized access")
     |> Controller.redirect(to: Routes.page_path(conn, :index))
+    |> halt()
   end
 end
 ```
