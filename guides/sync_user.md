@@ -25,6 +25,8 @@ end
 
 This should always be done for any authorization actions, or any other actions that requires the actual value to be known.
 
+Note that this plug only updates the user cache for the current action. If you call an other action, the user cache will be the same as the previous one.
+
 ## Update user in credentials cache
 
 Let's say that you want to show the user `plan` on most pages. In this case we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions uses the below method.
@@ -88,6 +90,6 @@ defmodule MyAppWeb.PlanController do
 end
 ```
 
-As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign.
+As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign. The user cache is being updated once and for all conversely to the previous plug.
 
 Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action may be).
