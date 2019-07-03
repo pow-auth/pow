@@ -9,6 +9,7 @@ In the following examples we'll imagine that you've added a `plan` column on you
 ```elixir
 defmodule MyAppWeb.ProPlanController do
   # ...
+
   plug :reload_user
 
   # ...
@@ -23,9 +24,53 @@ defmodule MyAppWeb.ProPlanController do
 end
 ```
 
-This should always be done for any authorization actions, or any other actions that requires the actual value to be known.
+This should always be done for any authorization actions, or any other actions that requires the actual value to be known. Do note that only the controllers that has the plug will have the reloaded user. In all other controllers, the old cached credentials will be loaded instead.
 
-Note that this plug only updates the user cache for the current action. If you call an other action, the user cache will be the same as the previous one.
+If you would like to always fetch the user as it is in the database across all your controllers, you could instead set up a module plug and add it to your endpoint:
+
+```elixir
+defmodule MyAppWeb.ReloadUserPlug do
+  @doc false
+
+  @spec init(any()) :: any()
+  def init(opts), do: opts
+
+  @doc false
+  @spec call(Conn.t(), atom()) :: Conn.t()
+  def call(conn, _opts) do
+    config = Pow.Plug.fetch_config(conn)
+
+    case Pow.Plug.current_user(conn, config) do
+      nil ->
+        conn
+
+      user ->
+        reloaded_user = MyApp.Repo.get!(MyApp.User, user.id)
+
+        Pow.Plug.assign_current_user(conn, reloaded_user, config)
+    end
+  end
+end
+```
+
+```elixir
+defmodule MyAppWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :my_app
+
+  # ...
+
+  plug Plug.Session,
+    store: :cookie,
+    key: "_my_app_key",
+    signing_salt: "secret"
+
+  plug Pow.Plug.Session, otp_app: :my_app
+
+  plug MyAppWeb.ReloadUserPlug
+
+  # ...
+end
+```
 
 ## Update user in credentials cache
 
@@ -90,6 +135,8 @@ defmodule MyAppWeb.PlanController do
 end
 ```
 
-As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign. The user cache is being updated once and for all conversely to the previous plug.
+As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign.
 
 Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action may be).
+
+You may also update the `plan` field in a background task. In this case you won't have access to any current session, and you would have to use the `Pow.Store.CredentialsCache.put/4` to update the credentials cache. However, since there are some caveats to this, it's instead recommended to find an alternative solution with the above methods.
