@@ -536,7 +536,7 @@ end
 
 Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
-Remember to add `:mnesia` to your `:included_applications` so it'll be available for your release build.
+Remember to add `:mnesia` to your `:extra_applications` so it'll be available for your release build.
 
 The MnesiaCache requires write access. If you've a read-only file system you should take a look at the [Redis cache backend store guide](guides/redis_cache_store_backend.md).
 

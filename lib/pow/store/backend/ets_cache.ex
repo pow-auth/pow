@@ -54,7 +54,7 @@ defmodule Pow.Store.Backend.EtsCache do
   @impl GenServer
   @spec init(Config.t()) :: {:ok, map()}
   def init(_config) do
-    table_init()
+    init_table()
 
     {:ok, %{invalidators: %{}}}
   end
@@ -124,7 +124,7 @@ defmodule Pow.Store.Backend.EtsCache do
 
   defp table_delete(config, key), do: :ets.delete(@ets_cache_tab, ets_key(config, key))
 
-  defp table_init do
+  defp init_table do
     :ets.new(@ets_cache_tab, [:set, :protected, :named_table])
   end
 

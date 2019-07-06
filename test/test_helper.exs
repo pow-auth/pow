@@ -28,3 +28,6 @@ for extension <- Application.get_env(:pow, :extension_test_modules) do
 
   {:ok, _pid} = endpoint_module.start_link()
 end
+
+# Make sure we can run distribution tests
+:os.cmd('epmd -daemon')
