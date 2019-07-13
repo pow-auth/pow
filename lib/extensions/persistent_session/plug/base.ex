@@ -12,6 +12,10 @@ defmodule PowPersistentSession.Plug.Base do
 
     * `:cache_store_backend` - the backend cache store. This value defaults to
       `EtsCache`.
+
+    * `:persistent_session_ttl` - integer value in milliseconds for TTL of
+      persistent session in the backend store. This defaults to 30 days in
+      miliseconds.
   """
 
   alias Plug.Conn
@@ -55,7 +59,13 @@ defmodule PowPersistentSession.Plug.Base do
 
   defp default_store(config) do
     backend = Config.get(config, :cache_store_backend, EtsCache)
+    ttl     = ttl(config)
 
-    {PersistentSessionCache, [backend: backend]}
+    {PersistentSessionCache, [backend: backend, ttl: ttl]}
   end
+
+  @ttl :timer.hours(24) * 30
+
+  @doc false
+  def ttl(config), do: Config.get(config, :persistent_session_ttl, @ttl)
 end

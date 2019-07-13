@@ -28,8 +28,8 @@ defmodule PowPersistentSession.Plug.Cookie do
       "persistent_session_cookie". If `:otp_app` is used it'll automatically
       prepend the key with the `:otp_app` value.
 
-    * `:persistent_session_cookie_max_age` - max age for cookie in seconds. This
-      defaults to 30 days in seconds.
+    * `:persistent_session_ttl` - used for both backend store and max age for
+      cookie. See `PowPersistentSession.Plug.Base` for more.
   """
   use PowPersistentSession.Plug.Base
 
@@ -37,7 +37,6 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
-  @ttl Integer.floor_div(:timer.hours(24) * 30, 1000)
 
   @doc """
   Sets a persistent session cookie with an auto generated token.
@@ -171,8 +170,21 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp session_opts(config) do
-    max_age = Config.get(config, :persistent_session_cookie_max_age, @ttl)
+    [max_age: max_age(config), path: "/"]
+  end
 
-    [max_age: max_age, path: "/"]
+  defp max_age(config) do
+    # TODO: Remove by 1.1.0
+    case Config.get(config, :persistent_session_cookie_max_age) do
+      nil ->
+        config
+        |> PowPersistentSession.Plug.Base.ttl()
+        |> Integer.floor_div(1000)
+
+      max_age ->
+        IO.warn("use of `:persistent_session_cookie_max_age` config value in #{inspect unquote(__MODULE__)} is deprecated, please use `:persistent_session_ttl`")
+
+        max_age
+    end
   end
 end
