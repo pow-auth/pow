@@ -109,4 +109,14 @@ defmodule PowPersistentSession.Plug.CookieTest do
     refute Plug.current_user(conn)
     assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
   end
+
+  test "create/3 with custom TTL", %{conn: conn, config: config} do
+    config = Keyword.put(config, :persistent_session_ttl, 1000)
+    conn   = Cookie.create(conn, %User{id: 1}, config)
+
+    assert_received {:ets, :put, _key, _value, config}
+    assert config[:ttl] == 1000
+
+    assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
+  end
 end

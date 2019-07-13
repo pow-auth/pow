@@ -20,6 +20,7 @@ defmodule Pow.Test.EtsCacheMock do
   end
 
   def put(config, key, value) do
+    send(self(), {:ets, :put, key, value, config})
     :ets.insert(@tab, {ets_key(config, key), value})
   end
 
