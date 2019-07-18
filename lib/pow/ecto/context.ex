@@ -90,7 +90,11 @@ defmodule Pow.Ecto.Context do
   User schema module and repo module will be fetched from the config. The user
   id field is fetched from the user schema module.
 
-  The method will return nil if either the user id or password is nil.
+  The method will return nil if either the fetched user, or password is nil.
+
+  To prevent timing attacks, a blank user struct will be passed to the
+  `verify_password/2` method for the user schema module to ensure that the
+  the response time will be equal as when a password is verified.
   """
   @spec authenticate(map(), Config.t()) :: user() | nil
   def authenticate(params, config) do
@@ -106,12 +110,18 @@ defmodule Pow.Ecto.Context do
   defp do_authenticate(user_id_field, login_value, password, config) do
     [{user_id_field, login_value}]
     |> get_by(config)
-    |> verify_password(password)
+    |> verify_password(password, config)
   end
 
-  defp verify_password(nil, _password), do: nil
-  defp verify_password(_user, nil), do: nil
-  defp verify_password(user, password) do
+  defp verify_password(nil, _password, config) do
+    user_mod = Config.user!(config)
+    user     = struct(user_mod, password_hash: nil)
+    user_mod.verify_password(user, "")
+
+    nil
+  end
+  defp verify_password(_user, nil, _config), do: false
+  defp verify_password(user, password, _config) do
     case user.__struct__.verify_password(user, password) do
       true -> user
       _    -> nil

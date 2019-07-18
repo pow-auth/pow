@@ -141,9 +141,19 @@ defmodule Pow.Ecto.Schema.Changeset do
 
   The password will be verified by using the `:password_hash_methods` in the
   configuration.
+
+  To prevent timing attacks, a blank password will be passed to the hash method
+  in the `:password_hash_methods` configuration option if the `:password_hash`
+  is nil.
   """
   @spec verify_password(Ecto.Schema.t(), binary(), Config.t()) :: boolean()
-  def verify_password(%{password_hash: nil}, _password, _config), do: false
+  def verify_password(%{password_hash: nil}, _password, config) do
+    config
+    |> password_hash_method()
+    |> apply([""])
+
+    false
+  end
   def verify_password(%{password_hash: password_hash}, password, config) do
     config
     |> password_verify_method()

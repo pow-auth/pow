@@ -2,6 +2,28 @@ defmodule Pow.Ecto.ContextTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Ecto.Context
 
+  defmodule TimingAttackUser do
+    @moduledoc false
+    use Ecto.Schema
+    use Pow.Ecto.Schema, password_hash_methods: {&__MODULE__.send_hash_password/1, &__MODULE__.send_verify_password/2}
+
+    schema "users" do
+      pow_user_fields()
+
+      timestamps()
+    end
+
+    def send_hash_password(password) do
+      send(self(), {:password_hash, password})
+      Pow.Ecto.Schema.Password.pbkdf2_hash(password)
+    end
+
+    def send_verify_password(password, password_hash) do
+      send(self(), {:password_verify, password, password_hash})
+      Pow.Ecto.Schema.Password.pbkdf2_verify(password, password_hash)
+    end
+  end
+
   alias Ecto.Changeset
   alias Pow.Ecto.{Context, Schema.Password}
   alias Pow.Test.Ecto.{Repo, Users, Users.User, Users.UsernameUser}
@@ -70,6 +92,17 @@ defmodule Pow.Ecto.ContextTest do
     test "as `use Pow.Ecto.Context`", %{user: user} do
       assert Users.authenticate(@valid_params) == user
       assert Users.authenticate(:test_macro) == :ok
+    end
+
+    test "prevents timing attack" do
+      config = [repo: Repo, user: TimingAttackUser]
+
+      refute Context.authenticate(Map.put(@valid_params, "email", "other@example.com"), config)
+      assert_received {:password_hash, ""}
+      refute Context.authenticate(Map.put(@valid_params, "password", "invalid"), config)
+      assert_received {:password_verify, "invalid", _any}
+      assert Context.authenticate(@valid_params, config)
+      assert_received {:password_verify, "secret1234", _any}
     end
   end
 
