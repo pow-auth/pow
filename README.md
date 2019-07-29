@@ -48,7 +48,7 @@ LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 ```
 
-Add the following to `config/config.ex`:
+Add the following to `config/config.exs`:
 
 ```elixir
 config :my_app, :pow,
