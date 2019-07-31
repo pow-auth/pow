@@ -23,7 +23,7 @@ defmodule MyApp.Users.User do
   def invite_changeset(user_or_changeset, invited_by, attrs) do
     user_or_changeset
     |> pow_invite_changeset(invited_by, attrs)
-    |> changeset_organization(invited_by, attrs)
+    |> changeset_organization(invited_by)
   end
 
   defp changeset_organization(changeset, invited_by) do
