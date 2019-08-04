@@ -2,6 +2,9 @@
 
 ## v1.0.12 (TBA)
 
+* To prevent timing attacks, `Pow.Ecto.Context.authenticate/2` now verifies password on a blank user struct when no user can be found for the provided user id, but will always return nil. The blank user struct has a nil `:password_hash` value. The struct will be passed along with a blank password to the `verify_password/2` method in the user schema module.
+* To prevent timing attacks, when `Pow.Ecto.Schema.Changeset.verify_password/3` receives a struct with a nil `:password_hash` value, it'll hash a blank password, but always return false.
+* To prevent timing attacks, the UUID is always generated in `PowResetPassword.Plug.create_reset_token/2` whether the user exists or not.
 * `PowPersistentSession.Plug.Base` now accepts `:persistent_session_ttl` which will pass the TTL to the cache backend and used for the max age of the sesion cookie in `PowPersistentSession.Plug.Cookie`
 * Deprecated `:persistent_session_cookie_max_age` configuration setting
 

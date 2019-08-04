@@ -184,11 +184,36 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     end
   end
 
-  test "User.verify_password/2" do
-    refute User.verify_password(%User{}, "secret1234")
+  describe "User.verify_password/2" do
+    test "verifies" do
+      refute User.verify_password(%User{}, "secret1234")
 
-    password_hash = Password.pbkdf2_hash("secret1234")
-    refute User.verify_password(%User{password_hash: password_hash}, "invalid")
-    assert User.verify_password(%User{password_hash: password_hash}, "secret1234")
+      password_hash = Password.pbkdf2_hash("secret1234")
+      refute User.verify_password(%User{password_hash: password_hash}, "invalid")
+      assert User.verify_password(%User{password_hash: password_hash}, "secret1234")
+    end
+
+    test "prevents timing attacks" do
+      config = [
+        password_hash_methods: {
+          fn password ->
+            send(self(), {:password_hash, password})
+
+            ""
+          end,
+          fn password, password_hash ->
+            send(self(), {:password_verify, password, password_hash})
+
+            false
+          end
+        }
+      ]
+
+      refute Changeset.verify_password(%User{password_hash: nil}, "secret1234", config)
+      assert_received {:password_hash, ""}
+
+      refute Changeset.verify_password(%User{password_hash: "hash"}, "secret1234", config)
+      assert_received {:password_verify, "secret1234", "hash"}
+    end
   end
 end

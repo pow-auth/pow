@@ -35,24 +35,27 @@ defmodule PowResetPassword.Plug do
   @doc """
   Finds a user for the provided params, creates a token, and stores the user
   for the token.
+
+  To prevent timing attacks, `Pow.UUID.generate/0` is called whether the user
+  exists or not.
   """
   @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_reset_token(conn, params) do
     config = Plug.fetch_config(conn)
+    token  = UUID.generate()
     user   =
       params
       |> Map.get("email")
       |> ResetPasswordContext.get_by_email(config)
 
-    maybe_create_reset_token(conn, user, config)
+      maybe_store_reset_token(conn, user, token, config)
   end
 
-  defp maybe_create_reset_token(conn, nil, _config) do
+  defp maybe_store_reset_token(conn, nil, _token, _config) do
     changeset = change_user(conn)
     {:error, %{changeset | action: :update}, conn}
   end
-  defp maybe_create_reset_token(conn, user, config) do
-    token = UUID.generate()
+  defp maybe_store_reset_token(conn, user, token, config) do
     {store, store_config} = store(config)
 
     store.put(store_config, token, user)

@@ -23,9 +23,7 @@ defmodule PowResetPassword.Ecto.ContextTest do
 
   describe "update_password/2" do
     test "updates with compiled password hash methods" do
-      config = @config ++ [password_hash_methods: {&(&1 <> "123"), &(&1 == &2 <> "123")}]
-
-      assert {:ok, user} = Context.update_password(@user, %{password: @password, confirm_password: @password}, config)
+      assert {:ok, user} = Context.update_password(@user, %{password: @password, confirm_password: @password}, @config)
       assert Password.pbkdf2_verify(@password, user.password_hash)
     end
 
