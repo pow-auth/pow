@@ -27,11 +27,12 @@ defmodule Pow.Plug.Session do
       used it'll automatically prepend the key with the `:otp_app` value.
 
     * `:session_store` - the credentials cache store. This value defaults to
-      `{CredentialsCache, backend: EtsCache}`. The `EtsCache` backend store
-      can be changed with the `:cache_store_backend` option.
+      `{Pow.Store.CredentialsCache, backend: Pow.Store.Backend.EtsCache}`. The
+      `Pow.Store.Backend.EtsCache` backend store can be changed with the
+      `:cache_store_backend` option.
 
     * `:cache_store_backend` - the backend cache store. This value defaults to
-      `EtsCache`.
+      `Pow.Store.Backend.EtsCache`.
 
     * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
       sessions. Defaults to 15 minutes in miliseconds.
