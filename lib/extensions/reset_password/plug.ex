@@ -38,6 +38,12 @@ defmodule PowResetPassword.Plug do
 
   To prevent timing attacks, `Pow.UUID.generate/0` is called whether the user
   exists or not.
+
+  `:reset_password_token_store` can be passed in the config for the conn. This
+  value defaults to
+  `{PowResetPassword.Store.ResetTokenCache, backend: Pow.Store.Backend.EtsCache}`.
+  The `Pow.Store.Backend.EtsCache` backend store can be changed with the
+  `:cache_store_backend` option.
   """
   @spec create_reset_token(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def create_reset_token(conn, params) do
@@ -48,7 +54,7 @@ defmodule PowResetPassword.Plug do
       |> Map.get("email")
       |> ResetPasswordContext.get_by_email(config)
 
-      maybe_store_reset_token(conn, user, token, config)
+    maybe_store_reset_token(conn, user, token, config)
   end
 
   defp maybe_store_reset_token(conn, nil, _token, _config) do
@@ -65,6 +71,9 @@ defmodule PowResetPassword.Plug do
 
   @doc """
   Fetches user from the store by the provided token.
+
+  See `create_reset_token/2` for more on `:reset_password_token_store` config
+  option.
   """
   @spec user_from_token(Conn.t(), binary()) :: map() | nil
   def user_from_token(conn, token) do
@@ -83,6 +92,9 @@ defmodule PowResetPassword.Plug do
 
   @doc """
   Updates the password for the user fetched in the connection.
+
+  See `create_reset_token/2` for more on `:reset_password_token_store` config
+  option.
   """
   @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user_password(conn, params) do
@@ -114,6 +126,13 @@ defmodule PowResetPassword.Plug do
   end
 
   defp store(config) do
+    case Config.get(config, :reset_password_token_store, default_store(config)) do
+      {store, store_config} -> {store, store_config}
+      store                 -> {store, []}
+    end
+  end
+
+  defp default_store(config) do
     backend = Config.get(config, :cache_store_backend, EtsCache)
 
     {ResetTokenCache, [backend: backend]}

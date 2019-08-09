@@ -7,11 +7,13 @@ defmodule PowPersistentSession.Plug.Base do
   ## Configuration options
 
     * `:persistent_session_store` - the persistent session store. This value
-      defaults to `{PersistentSessionCache, backend: EtsCache}`. The `EtsCache`
-      backend store can be changed with the `:cache_store_backend` option.
+      defaults to
+      `{PowPersistentSession.Store.PersistentSessionCache, backend: Pow.Store.Backend.EtsCache}`.
+      The `Pow.Store.Backend.EtsCache` backend store can be changed with the
+      `:cache_store_backend` option.
 
     * `:cache_store_backend` - the backend cache store. This value defaults to
-      `EtsCache`.
+      `Pow.Store.Backend.EtsCache`.
 
     * `:persistent_session_ttl` - integer value in milliseconds for TTL of
       persistent session in the backend store. This defaults to 30 days in
