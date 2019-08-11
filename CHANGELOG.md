@@ -2,6 +2,7 @@
 
 ## v1.0.12 (TBA)
 
+* Added API integration guide
 * Added `:reset_password_token_store` configuration setting
 * To prevent timing attacks, `Pow.Ecto.Context.authenticate/2` now verifies password on a blank user struct when no user can be found for the provided user id, but will always return nil. The blank user struct has a nil `:password_hash` value. The struct will be passed along with a blank password to the `verify_password/2` method in the user schema module.
 * To prevent timing attacks, when `Pow.Ecto.Schema.Changeset.verify_password/3` receives a struct with a nil `:password_hash` value, it'll hash a blank password, but always return false.
