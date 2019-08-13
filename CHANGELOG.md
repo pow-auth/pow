@@ -10,6 +10,7 @@
 * `PowPersistentSession.Plug.Base` now accepts `:persistent_session_ttl` which will pass the TTL to the cache backend and used for the max age of the sesion cookie in `PowPersistentSession.Plug.Cookie`
 * Deprecated `:persistent_session_cookie_max_age` configuration setting
 * `Pow.Store.Backend.MnesiaCache` now handles distributed cluster
+* Removed `:nodes` config option for `Pow.Store.Backend.MnesiaCache`
 
 ## v1.0.11 (2019-06-13)
 

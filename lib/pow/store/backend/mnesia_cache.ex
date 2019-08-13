@@ -30,12 +30,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   ## Initialization options
 
-    * `:nodes` - list of nodes to use. This value defaults to `[node()]`.
-
     * `:extra_db_nodes` - list of nodes in cluster to connect to.
 
     * `:table_opts` - options to add to table definition. This value defaults
-      to `[disc_copies: nodes]`.
+      to `[disc_copies: [node()]]`.
 
     * `:timeout` - timeout value in milliseconds for how long to wait until the
       cache table has initiated. Defaults to 15 seconds.
@@ -57,6 +55,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   @spec start_link(Config.t()) :: GenServer.on_start()
   def start_link(config) do
+    # TODO: Remove by 1.1.0
+    IO.warn("use of `:nodes` config value for #{inspect unquote(__MODULE__)} is no longer used")
+
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
@@ -257,14 +258,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp init_cluster(config) do
-    nodes = nodes(config)
-
-    with :ok <- start_mnesia(nodes),
-         :ok <- change_table_copy_type(config, nodes),
-         :ok <- create_table(config, nodes),
+    with :ok <- start_mnesia(),
+         :ok <- change_table_copy_type(config),
+         :ok <- create_table(config),
          :ok <- wait_for_table(config) do
 
-      Logger.info("[#{inspect __MODULE__}] Mnesia cluster initiated on #{inspect nodes}")
+      Logger.info("[#{inspect __MODULE__}] Mnesia cluster initiated on #{inspect node()}")
     else
       {:error, reason} ->
         Logger.error("[inspect __MODULE__}] Couldn't initialize mnesia cluster because: #{inspect reason}")
@@ -273,15 +272,13 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp join_cluster(config, cluster_nodes) do
-    nodes = nodes(config)
-
-    with :ok <- reset_mnesia(nodes, cluster_nodes),
-         :ok <- connect_to_cluster(nodes, cluster_nodes),
-         :ok <- change_table_copy_type(config, nodes),
-         :ok <- sync_table(config, nodes, cluster_nodes),
+    with :ok <- reset_mnesia(cluster_nodes),
+         :ok <- connect_to_cluster(cluster_nodes),
+         :ok <- change_table_copy_type(config),
+         :ok <- sync_table(config, cluster_nodes),
          :ok <- wait_for_table(config) do
 
-      Logger.info("[#{inspect __MODULE__}] Joined mnesia cluster nodes #{inspect cluster_nodes} for #{inspect nodes}")
+      Logger.info("[#{inspect __MODULE__}] Joined mnesia cluster nodes #{inspect cluster_nodes} for #{inspect node()}")
 
       :ok
     else
@@ -291,41 +288,28 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp nodes(config), do: Config.get(config, :nodes, [node()])
-
-  defp start_mnesia(nodes) when is_list(nodes) do
-    Enum.each(nodes, &:ok = start_mnesia(&1))
-  end
-  defp start_mnesia(node) do
-    node
-    |> block_call(Application, :start, [:mnesia])
-    |> case do
+  defp start_mnesia() do
+    case Application.start(:mnesia) do
       {:error, {:already_started, :mnesia}} -> :ok
       :ok                                   -> :ok
     end
   end
 
-  defp reset_mnesia(nodes, cluster_nodes) when is_list(nodes) do
-    Enum.each(nodes, &:ok = reset_mnesia(&1, cluster_nodes))
-  end
-  defp reset_mnesia(node, [cluster_node | _rest]) do
-    block_call(node, Application, :stop, [:mnesia])
+  defp reset_mnesia([cluster_node | _rest]) do
+    Application.stop(:mnesia)
 
-    :ok = block_call(node, :mnesia, :delete_schema, [[node]])
-    {:atomic, :ok} = block_call(cluster_node, :mnesia, :del_table_copy, [:schema, node])
+    :ok = :mnesia.delete_schema([node()])
+    {:atomic, :ok} = :rpc.block_call(cluster_node, :mnesia, :del_table_copy, [:schema, node()])
 
-    start_mnesia(node)
+    start_mnesia()
 
     :ok
   end
 
-  defp change_table_copy_type(config, nodes) when is_list(nodes) do
-    Enum.each(nodes, &:ok = change_table_copy_type(config, &1))
-  end
-  defp change_table_copy_type(config, node) do
-    copy_type = get_copy_type(config, node)
+  defp change_table_copy_type(config) do
+    copy_type = get_copy_type(config, node())
 
-    case :mnesia.change_table_copy_type(:schema, node, copy_type) do
+    case :mnesia.change_table_copy_type(:schema, node(), copy_type) do
       {:atomic, :ok}                               -> :ok
       {:aborted, {:already_exists, :schema, _, _}} -> :ok
     end
@@ -342,8 +326,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end)
   end
 
-  defp create_table(config, nodes) do
-    table_opts = Config.get(config, :table_opts, [disc_copies: nodes])
+  defp create_table(config) do
+    table_opts = Config.get(config, :table_opts, [disc_copies: [node()]])
     table_def  = Keyword.merge(table_opts, [type: :set])
 
     case :mnesia.create_table(@mnesia_cache_tab, table_def) do
@@ -352,21 +336,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp sync_table(config, nodes, cluster_nodes) when is_list(nodes) do
-    Enum.each(nodes, &{:atomic, :ok} = sync_table(config, &1, cluster_nodes))
-  end
-  defp sync_table(_config, node, [cluster_node | _rest]) do
-    copy_type = block_call(cluster_node, :mnesia, :table_info, [@mnesia_cache_tab, :storage_type])
+  defp sync_table(_config, [cluster_node | _rest]) do
+    copy_type = :rpc.block_call(cluster_node, :mnesia, :table_info, [@mnesia_cache_tab, :storage_type])
 
-    block_call(node, :mnesia, :add_table_copy, [@mnesia_cache_tab, node, copy_type])
-  end
-
-  defp block_call(node, module, method, args) do
-    this_node = node()
-
-    case node do
-      ^this_node -> apply(module, method, args)
-      node       -> :rpc.block_call(node, module, method, args)
+    case :mnesia.add_table_copy(@mnesia_cache_tab, node(), copy_type) do
+      {:atomic, :ok} -> :ok
+      any            -> any
     end
   end
 
@@ -376,13 +351,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
     :mnesia.wait_for_tables([@mnesia_cache_tab], timeout)
   end
 
-  defp connect_to_cluster(nodes, cluster_nodes) when is_list(nodes) do
-    Enum.each(nodes, &:ok = connect_to_cluster(&1, cluster_nodes))
-  end
-  defp connect_to_cluster(node, [cluster_node | _cluster_nodes]) do
-    node
-    |> block_call(:mnesia, :change_config, [:extra_db_nodes, [cluster_node]])
-    |> case do
+  defp connect_to_cluster([cluster_node | _cluster_nodes]) do
+    case :mnesia.change_config(:extra_db_nodes, [cluster_node]) do
       {:ok, _}         -> :ok
       {:error, reason} -> {:error, reason}
     end
