@@ -12,9 +12,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   If you initialize with `extra_db_nodes: Node.list()`, it'll automatically
   connect to the cluster. If there is no other nodes available, the data
-  persisted to disk will be loaded, but if a cluster is running, the persisted
-  data (if any) will be purged on initialization, and the data from the cluster
-  will be loaded to the server.
+  persisted to disk will be loaded, but if a cluster is running, the data in
+  the existing cluster nodes will be loaded instead of the local data.
 
   When a cache key expires, the expiration will be verified before deletion to
   ensure that it hasn't been updated by another node. When a key is updated on
@@ -272,7 +271,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp join_cluster(config, cluster_nodes) do
-    with :ok <- reset_mnesia(cluster_nodes),
+    with :ok <- maybe_set_mnesia_master_nodes(cluster_nodes),
          :ok <- connect_to_cluster(cluster_nodes),
          :ok <- change_table_copy_type(config),
          :ok <- sync_table(config, cluster_nodes),
@@ -295,11 +294,16 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp reset_mnesia([cluster_node | _rest]) do
-    Application.stop(:mnesia)
+  defp maybe_set_mnesia_master_nodes(cluster_nodes) do
+    case :mnesia.system_info(:running_db_nodes) do
+      [] ->
+        :ok
 
-    :ok = :mnesia.delete_schema([node()])
-    {:atomic, :ok} = :rpc.block_call(cluster_node, :mnesia, :del_table_copy, [:schema, node()])
+      _nodes ->
+        Application.stop(:mnesia)
+
+        :mnesia.set_master_nodes(@mnesia_cache_tab, cluster_nodes)
+    end
 
     start_mnesia()
 
@@ -340,8 +344,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
     copy_type = :rpc.block_call(cluster_node, :mnesia, :table_info, [@mnesia_cache_tab, :storage_type])
 
     case :mnesia.add_table_copy(@mnesia_cache_tab, node(), copy_type) do
-      {:atomic, :ok} -> :ok
-      any            -> any
+      {:atomic, :ok}                      -> :ok
+      {:aborted, {:already_exists, _, _}} -> :ok
+      any                                 -> any
     end
   end
 
