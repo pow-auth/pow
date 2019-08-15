@@ -9,7 +9,10 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   oldest disc node and use that to force reload the table into the nodes of the
   other island.
 
-  If a table unrelated to Pow is affected, an error will be returned.
+  If a table unrelated to Pow is affected, an error will be logged and the
+  nodes will stay partitioned. If you don't mind potential data loss for any of
+  your tables, you can set `flush_tables: :all` to force reload all affected
+  tables, or set an exact list of tables you wish to flush.
 
   For fine control, you can use `unsplit` instead of this module and decide
   what to do in each case.
@@ -35,6 +38,11 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
         # ...
       end
+
+  ## Initialization options
+
+    * `:flush_tables` - list of shared tables that should be force reloaded
+      value. Use `:all` if you want all affected tables to be force reloaded.
   """
   use GenServer
   require Logger
@@ -52,16 +60,16 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
   @impl true
   @spec init(Config.t()) :: {:ok, map()}
-  def init(_config) do
+  def init(config) do
     :mnesia.subscribe(:system)
 
-    {:ok, %{}}
+    {:ok, %{config: config}}
   end
 
   @impl true
   @spec handle_info({:mnesia_system_event, {:inconsistent_database, any(), any()}}, map()) :: {:no_reply, map()}
-  def handle_info({:mnesia_system_event, {:inconsistent_database, _context, node}}, state) do
-    :global.trans({__MODULE__, self()}, fn -> autoheal(node) end)
+  def handle_info({:mnesia_system_event, {:inconsistent_database, _context, node}}, %{config: config} = state) do
+    :global.trans({__MODULE__, self()}, fn -> autoheal(node, config) end)
 
     {:noreply, state}
   end
@@ -72,7 +80,10 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     {:noreply, state}
   end
 
-  defp autoheal(node) do
+  @doc false
+  def __heal__(node, config), do: autoheal(node, config)
+
+  defp autoheal(node, config) do
     :running_db_nodes
     |> :mnesia.system_info()
     |> Enum.member?(node)
@@ -85,14 +96,14 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
       false ->
         Logger.warn("[#{inspect __MODULE__}] Detected netsplit on #{inspect node}")
 
-        heal(node)
+        heal(node, config)
     end
   end
 
-  defp heal(node) do
+  defp heal(node, config) do
     node
     |> affected_tables()
-    |> force_reload(node)
+    |> force_reload(node, config)
   end
 
   defp affected_tables(node) do
@@ -116,21 +127,39 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     |> Enum.concat()
   end
 
-  defp force_reload([@mnesia_cache_tab], node) do
+  defp force_reload(tables, node, config) do
+    flush_tables =
+      case Config.get(config, :flush_tables, false) do
+        false  -> [@mnesia_cache_tab]
+        :all   -> tables
+        tables -> Enum.uniq([@mnesia_cache_tab | tables])
+      end
+
+    maybe_force_reload(tables, flush_tables, node)
+  end
+
+  defp maybe_force_reload(tables, flushable_tables, node) do
+    case tables -- flushable_tables do
+      [] ->
+        do_force_reload(tables, node)
+
+      unflushable_tables ->
+        Logger.error("[#{inspect __MODULE__}] Can't force reload unexpected tables #{inspect unflushable_tables}")
+        {:error, {:unexpected_tables, tables}}
+    end
+  end
+
+  defp do_force_reload(tables, node) do
     [master_nodes, nodes] = sorted_cluster_islands(node)
 
     for node <- nodes do
       :stopped = :rpc.call(node, :mnesia, :stop, [])
-      :ok = :rpc.call(node, :mnesia, :set_master_nodes, [@mnesia_cache_tab, master_nodes])
+      for table <- tables, do: :ok = :rpc.call(node, :mnesia, :set_master_nodes, [table, master_nodes])
       :ok = :rpc.block_call(node, :mnesia, :start, [])
+      :ok = :rpc.call(node, :mnesia, :wait_for_tables, [tables, :timer.seconds(15)])
 
       Logger.info("[#{inspect __MODULE__}] #{inspect node} has been healed and joined #{inspect master_nodes}")
     end
-  end
-  defp force_reload(tables, _node) do
-    Logger.error("[#{inspect __MODULE__}] Can't force reload unexpected tables #{inspect tables}")
-
-    {:error, {:unexpected_tables, tables}}
   end
 
   defp sorted_cluster_islands(node) do

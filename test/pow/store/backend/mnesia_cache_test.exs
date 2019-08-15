@@ -191,8 +191,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
 
       # Disconnect the nodes
-      true = :rpc.call(node_b, Node, :disconnect, [node_a])
-      :timer.sleep(50)
+      disconnect(node_b, node_a)
 
       # Continue writing on node a and node b
       assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1", "a"])
@@ -206,8 +205,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1_b"]) == "value"
 
       # Reconnect
-      true = :rpc.call(node_b, Node, :connect, [node_a])
-      :timer.sleep(500)
+      connect(node_b, node_a)
 
       # Node a wins recovery and node b purges its data
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
@@ -219,6 +217,25 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # Isolated tables still works on both nodes
       assert :rpc.call(node_a, :mnesia, :dirty_read, [{:node_a_table, :key}]) == [{:node_a_table, :key, "a"}]
       assert :rpc.call(node_b, :mnesia, :dirty_read, [{:node_b_table, :key}]) == [{:node_b_table, :key, "b"}]
+
+      # Shared tables unrelated to Pow can't reconnect
+      {:atomic, :ok} = :rpc.call(node_a, :mnesia, :create_table, [:shared, [disc_copies: [node_a]]])
+      {:atomic, :ok} = :rpc.call(node_b, :mnesia, :add_table_copy, [:shared, node_b, :disc_copies])
+      disconnect(node_b, node_a)
+      connect(node_b, node_a)
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
+
+      # Can't reconnect if table not defined in flush table
+      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: [:unrelated]]])
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
+
+      # Can reconnect if `:flush_tables` is set as `:all` or with table
+      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: [:shared]]])
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
+      disconnect(node_b, node_a)
+      connect(node_b, node_a)
+      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: :all]])
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
   end
 
@@ -251,10 +268,22 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
+    rpc(node, Logger, :remove_backend, [:console])
+
     node
   end
 
   defp rpc(node, module, function, args) do
     :rpc.block_call(node, module, function, args)
+  end
+
+  defp disconnect(node_a, node_b) do
+    true = :rpc.call(node_a, Node, :disconnect, [node_b])
+    :timer.sleep(50)
+  end
+
+  defp connect(node_a, node_b) do
+    true = :rpc.call(node_a, Node, :connect, [node_b])
+    :timer.sleep(500)
   end
 end
