@@ -27,6 +27,34 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
       config :mnesia, dir: System.get_env("MNESIA_DIR")
 
+  MnesiaCache can also handle netsplit scenarios if you start up
+  `Pow.Store.Backend.MnesiaCache.Unsplit` on your node. The oldest node will be
+  used as the master node, and the data will be force reloaded from that node.
+
+  ## Usage
+
+  To start the GenServer, add it to your application `start/2` method:
+
+      defmodule MyAppWeb.Application do
+        use Application
+
+        def start(_type, _args) do
+          children = [
+            MyApp.Repo,
+            MyAppWeb.Endpoint,
+            Pow.Store.Backend.MnesiaCache
+            # # Or in a distributed system:
+            # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
+            # Pow.Store.Backend.MnesiaCache.Unsplit # Recovers the MnesiaCache from split-brain
+          ]
+
+          opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
+          Supervisor.start_link(children, opts)
+        end
+
+        # ...
+      end
+
   ## Initialization options
 
     * `:extra_db_nodes` - list of nodes in cluster to connect to.

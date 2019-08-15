@@ -524,6 +524,9 @@ defmodule MyAppWeb.Application do
       MyApp.Repo,
       MyAppWeb.Endpoint,
       Pow.Store.Backend.MnesiaCache
+      # # Or in a distributed system:
+      # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
+      # Pow.Store.Backend.MnesiaCache.Unsplit # Recovers the MnesiaCache from split-brain
     ]
 
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]

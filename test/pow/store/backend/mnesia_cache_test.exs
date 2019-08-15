@@ -163,6 +163,63 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :timer.sleep(@startup_wait_time - startup_time + 100)
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == :not_found
     end
+
+    test "recovers from netsplit with MnesiaCache.Unsplit" do
+      node_a = spawn_node("a")
+      :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, @default_config}])
+      :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+
+      # Create isolated table on node a
+      :rpc.call(node_a, :mnesia, :create_table, [:node_a_table, [disc_copies: [node_a]]])
+      :rpc.call(node_a, :mnesia, :wait_for_tables, [[:node_a_table]])
+      :rpc.call(node_a, :mnesia, :dirty_write, [{:node_a_table, :key, "a"}])
+
+      node_b = spawn_node("b")
+      config = @default_config ++ [extra_db_nodes: [node_a]]
+      :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+
+      # Create isolated table on node b
+      :rpc.call(node_b, :mnesia, :create_table, [:node_b_table, [disc_copies: [node_b]]])
+      :rpc.call(node_b, :mnesia, :wait_for_tables, [[:node_b_table]])
+      :rpc.call(node_b, :mnesia, :dirty_write, [{:node_b_table, :key, "b"}])
+
+      # Ensure that data writing on node a is replicated on node b
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1", "value"])
+      :timer.sleep(50)
+      assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
+      assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
+
+      # Disconnect the nodes
+      :rpc.call(node_b, Node, :disconnect, [node_a])
+      :timer.sleep(50)
+
+      # Continue writing on node a and node b
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1", "a"])
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1_a", "value"])
+      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, "key_1", "b"])
+      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, "key_1_b", "value"])
+      :timer.sleep(50)
+      assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
+      assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1_a"]) == "value"
+      assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "b"
+      assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1_b"]) == "value"
+
+      # Reconnect
+      :rpc.call(node_b, Node, :connect, [node_a])
+      :timer.sleep(500)
+
+      # Node a wins recovery and node b purges its data
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
+      assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
+      assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
+      assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1_b"]) == :not_found
+      assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1_a"]) == "value"
+
+      # Isolated tables still works on both nodes
+      assert :rpc.call(node_a, :mnesia, :dirty_read, [{:node_a_table, :key}]) == [{:node_a_table, :key, "a"}]
+      assert :rpc.call(node_b, :mnesia, :dirty_read, [{:node_b_table, :key}]) == [{:node_b_table, :key, "b"}]
+    end
   end
 
   defp spawn_node(sname) do
