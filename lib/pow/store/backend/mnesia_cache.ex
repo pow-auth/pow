@@ -13,23 +13,25 @@ defmodule Pow.Store.Backend.MnesiaCache do
   If you initialize with `extra_db_nodes: Node.list()`, it'll automatically
   connect to the cluster. If there is no other nodes available, the data
   persisted to disk will be loaded, but if a cluster is running, the data in
-  the existing cluster nodes will be loaded instead of the local data.
+  the existing cluster nodes will be loaded instead of the local data. This
+  could potentially cause data loss, but is an accepted risk as all data stored
+  by Pow should be ephemeral.
 
   When a cache key expires, the expiration will be verified before deletion to
   ensure that it hasn't been updated by another node. When a key is updated on
   a node, the node will ping all other nodes to refresh their invalidators so
   the new TTL is used.
 
-  All nodes spun up will by default persist to disk. If you run multiple nodes
-  from the same directory you should make sure that each node has a separate
-  dir path configured. This can be done using different config files, or by
-  using system environment variables:
+  All nodes spun up will by default persist to disk. If you start up multiple
+  nodes from the same physical directory you should make sure that each node
+  has a separate dir path configured. This can be done using different config
+  files, or by using a system environment variable:
 
       config :mnesia, dir: System.get_env("MNESIA_DIR")
 
-  MnesiaCache can also handle netsplit scenarios if you start up
-  `Pow.Store.Backend.MnesiaCache.Unsplit` on your node. The oldest node will be
-  used as the master node, and the data will be force reloaded from that node.
+  You can use `Pow.Store.Backend.MnesiaCache.Unsplit` to automatically recover
+  from network split issues. All partitioned nodes will have their table
+  flushed and reloaded from the oldest node in the cluster.
 
   ## Usage
 
@@ -45,7 +47,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
             Pow.Store.Backend.MnesiaCache
             # # Or in a distributed system:
             # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
-            # Pow.Store.Backend.MnesiaCache.Unsplit # Recovers the MnesiaCache from split-brain
+            # Pow.Store.Backend.MnesiaCache.Unsplit # Recover from netsplit
           ]
 
           opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]

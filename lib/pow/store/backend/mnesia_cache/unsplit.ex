@@ -1,21 +1,20 @@
 defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   @moduledoc """
-  GenServer that handles netsplit recovery for `Pow.Store.Backend.MnesiaCache`.
+  GenServer that handles network split recovery for
+  `Pow.Store.Backend.MnesiaCache`.
 
-  This GenServer should be run on node(s) that has the
-  `Pow.Store.Backend.MnesiaCache` GenServer running. It'll subscribe to the
-  Mnesia system messages, and listen `:inconsistent_database` Mnesia system
-  events. The first node to set the global lock will find the island with the
-  oldest disc node and use that to force reload the table into the nodes of the
-  other island.
+  This should be run on node(s) that has the `Pow.Store.Backend.MnesiaCache`
+  GenServer running. It'll subscribe to the Mnesia system messages, and listen
+  for `:inconsistent_database` system events. The first node to set the global
+  lock will find the island with the oldest node and restore that nodes table
+  into all the partitioned nodes.
 
-  If a table unrelated to Pow is affected, an error will be logged and the
-  nodes will stay partitioned. If you don't mind potential data loss for any of
-  your tables, you can set `flush_tables: :all` to force reload all affected
-  tables, or set an exact list of tables you wish to flush.
+  If a table unrelated to Pow is also affected, an error will be logged and the
+  network will stay partitioned. If you don't mind potential data loss for any
+  of your tables in Mnesia, you can set `flush_tables: :all` to restore all the
+  affected tables from the oldest node in the cluster.
 
-  For fine control, you can use `unsplit` instead of this module and decide
-  what to do in each case.
+  For better control, you can use `unsplit` instead of this module.
 
   ## Usage
 
@@ -41,8 +40,10 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
   ## Initialization options
 
-    * `:flush_tables` - list of shared tables that should be force reloaded
-      value. Use `:all` if you want all affected tables to be force reloaded.
+    * `:flush_tables` - list of tables that may be flushed and restored from
+      the oldest node in the cluster. Defaults to `false` when only the
+      MnesiaCache table will be flushed. Use `:all` if you want to flush all
+      affected tables.
   """
   use GenServer
   require Logger
@@ -128,14 +129,14 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   end
 
   defp force_reload(tables, node, config) do
-    flush_tables =
+    flushable_tables =
       case Config.get(config, :flush_tables, false) do
         false  -> [@mnesia_cache_tab]
         :all   -> tables
         tables -> Enum.uniq([@mnesia_cache_tab | tables])
       end
 
-    maybe_force_reload(tables, flush_tables, node)
+    maybe_force_reload(tables, flushable_tables, node)
   end
 
   defp maybe_force_reload(tables, flushable_tables, node) do
@@ -145,6 +146,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
       unflushable_tables ->
         Logger.error("[#{inspect __MODULE__}] Can't force reload unexpected tables #{inspect unflushable_tables}")
+
         {:error, {:unexpected_tables, tables}}
     end
   end
@@ -160,6 +162,8 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
       Logger.info("[#{inspect __MODULE__}] #{inspect node} has been healed and joined #{inspect master_nodes}")
     end
+
+    :ok
   end
 
   defp sorted_cluster_islands(node) do
