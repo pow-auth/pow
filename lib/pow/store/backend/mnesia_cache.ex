@@ -83,7 +83,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
   @spec start_link(Config.t()) :: GenServer.on_start()
   def start_link(config) do
     # TODO: Remove by 1.1.0
-    IO.warn("use of `:nodes` config value for #{inspect unquote(__MODULE__)} is no longer used")
+    case Config.get(config, :nodes) do
+      nil    -> :ok
+      _nodes -> IO.warn("use of `:nodes` config value for #{inspect unquote(__MODULE__)} is no longer used")
+    end
 
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
