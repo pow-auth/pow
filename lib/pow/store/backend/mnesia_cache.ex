@@ -304,7 +304,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp join_cluster(config, cluster_nodes) do
-    with :ok <- maybe_set_mnesia_master_nodes(cluster_nodes),
+    with :ok <- set_mnesia_master_nodes(cluster_nodes),
+         :ok <- start_mnesia(),
          :ok <- connect_to_cluster(cluster_nodes),
          :ok <- change_table_copy_type(config),
          :ok <- sync_table(config, cluster_nodes),
@@ -327,7 +328,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp maybe_set_mnesia_master_nodes(cluster_nodes) do
+  defp set_mnesia_master_nodes(cluster_nodes) do
     case :mnesia.system_info(:running_db_nodes) do
       [] ->
         :ok
@@ -337,10 +338,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
         :mnesia.set_master_nodes(@mnesia_cache_tab, cluster_nodes)
     end
-
-    start_mnesia()
-
-    :ok
   end
 
   defp change_table_copy_type(config) do

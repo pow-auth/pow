@@ -39,7 +39,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
         # ...
       end
 
-  ## Strategy for multiple libraries using the mnesia instance
+  ## Strategy for multiple libraries using the Mnesia instance
 
   It's strongly recommended to take into account any libraries that will be
   using Mnesia for storage before using this module.
@@ -47,8 +47,8 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   A common example would be a job queue, where a potential solution to prevent
   data loss is to simply keep the job queue table on only one server instead of
   replicating it among all nodes. When a network partition occurs, it won't be
-  part of the affected tables so this module can self-heal without specifying
-  the queue table in `:flush_tables`.
+  part of the affected tables so this module can self-heal without the job
+  queue table set in `:flush_tables`.
 
   ## Initialization options
 

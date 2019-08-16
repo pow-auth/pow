@@ -9,7 +9,7 @@
 * To prevent timing attacks, the UUID is always generated in `PowResetPassword.Plug.create_reset_token/2` whether the user exists or not.
 * `PowPersistentSession.Plug.Base` now accepts `:persistent_session_ttl` which will pass the TTL to the cache backend and used for the max age of the sesion cookie in `PowPersistentSession.Plug.Cookie`
 * Deprecated `:persistent_session_cookie_max_age` configuration setting
-* `Pow.Store.Backend.MnesiaCache` will now auto join distributed clusters
+* `Pow.Store.Backend.MnesiaCache` can now auto join clusters
 * `Pow.Store.Backend.MnesiaCache.Unsplit` module added for self-healing after network split
 * Removed `:nodes` config option for `Pow.Store.Backend.MnesiaCache`
 
