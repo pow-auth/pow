@@ -234,6 +234,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
       disconnect(node_b, node_a)
       connect(node_b, node_a)
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
       :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: :all]])
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
@@ -268,6 +269,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
+    # Remove logger
     rpc(node, Logger, :remove_backend, [:console])
 
     node
