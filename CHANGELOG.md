@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.12 (TBA)
+## v1.0.12 (2019-08-16)
 
 * Added API integration guide
 * Added `:reset_password_token_store` configuration setting
