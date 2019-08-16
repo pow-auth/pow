@@ -14,7 +14,8 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   of your tables in Mnesia, you can set `flush_tables: :all` to restore all the
   affected tables from the oldest node in the cluster.
 
-  For better control, you can use `unsplit` instead of this module.
+  For better control, you can use
+  [`unsplit`](https://github.com/uwiger/unsplit) instead of this module.
 
   ## Usage
 
