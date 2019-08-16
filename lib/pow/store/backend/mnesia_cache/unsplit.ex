@@ -39,12 +39,23 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
         # ...
       end
 
+  ## Strategy for multiple libraries using the mnesia instance
+
+  It's strongly recommended to take into account any libraries that will be
+  using Mnesia for storage before using this module.
+
+  A common example would be a job queue, where a potential solution to prevent
+  data loss is to simply keep the job queue table on only one server instead of
+  replicating it among all nodes. When a network partition occurs, it won't be
+  part of the affected tables so this module can self-heal without specifying
+  the queue table in `:flush_tables`.
+
   ## Initialization options
 
     * `:flush_tables` - list of tables that may be flushed and restored from
       the oldest node in the cluster. Defaults to `false` when only the
       MnesiaCache table will be flushed. Use `:all` if you want to flush all
-      affected tables.
+      affected tables. Be aware that this may cause data loss.
   """
   use GenServer
   require Logger
