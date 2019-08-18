@@ -24,9 +24,9 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   use Mix.Task
 
   alias Pow.Config
-  alias Mix.Tasks.Pow.Phoenix.Gen.Templates, as: PhoenixTemplatesTask
-  alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
   alias Mix.{Pow, Pow.Phoenix}
+  alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates, as: PhoenixExtensionTemplatesTask
+  alias Mix.Tasks.Pow.Phoenix.Gen.Templates, as: PhoenixTemplatesTask
 
   @switches [context_app: :string, templates: :boolean, extension: :keep]
   @default_opts [templates: false]

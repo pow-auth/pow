@@ -252,7 +252,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     |> maybe_remove_namespace(namespace, opts)
   end
 
-  defp sync_all_keys() do
+  defp sync_all_keys do
     {:atomic, keys} = :mnesia.sync_transaction(fn ->
       :mnesia.all_keys(@mnesia_cache_tab)
     end)
@@ -321,7 +321,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     end
   end
 
-  defp start_mnesia() do
+  defp start_mnesia do
     case Application.start(:mnesia) do
       {:error, {:already_started, :mnesia}} -> :ok
       :ok                                   -> :ok

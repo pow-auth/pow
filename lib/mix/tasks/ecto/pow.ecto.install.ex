@@ -19,10 +19,10 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
   """
   use Mix.Task
 
-  alias Mix.Tasks.Pow.Ecto.Gen.Schema, as: SchemaTask
-  alias Mix.Tasks.Pow.Ecto.Gen.Migration, as: MigrationTask
-  alias Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations, as: ExtensionMigrationsTask
   alias Mix.Pow
+  alias Mix.Tasks.Pow.Ecto.Gen.Migration, as: MigrationTask
+  alias Mix.Tasks.Pow.Ecto.Gen.Schema, as: SchemaTask
+  alias Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations, as: ExtensionMigrationsTask
 
   @switches [migrations: :boolean, schema: :boolean, extension: :keep]
   @default_opts [migrations: true, schema: true]

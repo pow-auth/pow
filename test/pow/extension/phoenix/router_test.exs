@@ -25,7 +25,7 @@ defmodule Pow.Test.Extension.Phoenix.Router do
     pow_extension_routes()
   end
 
-  def phoenix_routes(), do: @phoenix_routes
+  def phoenix_routes, do: @phoenix_routes
 end
 
 module_raised_with =
@@ -47,13 +47,12 @@ module_raised_with =
     _ -> raise "Scope with alias didn't throw any error"
   end
 
-
 defmodule Pow.Extension.Phoenix.RouterTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Phoenix.Router
 
-  alias Pow.Test.Extension.Phoenix.Router.Helpers, as: Routes
   alias Phoenix.ConnTest
+  alias Pow.Test.Extension.Phoenix.Router.Helpers, as: Routes
 
   @conn ConnTest.build_conn()
 

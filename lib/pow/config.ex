@@ -56,7 +56,6 @@ defmodule Pow.Config do
     raise ConfigError, message: message
   end
 
-
   @doc """
   Retrieves the repo module from the config, or raises an exception.
   """

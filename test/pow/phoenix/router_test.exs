@@ -29,15 +29,15 @@ defmodule Pow.Test.Phoenix.OverriddenRouteRouter do
     pow_routes()
   end
 
-  def phoenix_routes(), do: @phoenix_routes
+  def phoenix_routes, do: @phoenix_routes
 end
 
 defmodule Pow.Phoenix.RouterTest do
   use ExUnit.Case
   doctest Pow.Phoenix.Router
 
-  alias Pow.Test.Phoenix.OverriddenRouteRouter.Helpers, as: OverriddenRoutes
   alias Phoenix.ConnTest
+  alias Pow.Test.Phoenix.OverriddenRouteRouter.Helpers, as: OverriddenRoutes
 
   @conn ConnTest.build_conn()
 

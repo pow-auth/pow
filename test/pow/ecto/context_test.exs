@@ -7,6 +7,8 @@ defmodule Pow.Ecto.ContextTest do
     use Ecto.Schema
     use Pow.Ecto.Schema, password_hash_methods: {&__MODULE__.send_hash_password/1, &__MODULE__.send_verify_password/2}
 
+    alias Pow.Ecto.Schema.Password
+
     schema "users" do
       pow_user_fields()
 
@@ -15,12 +17,12 @@ defmodule Pow.Ecto.ContextTest do
 
     def send_hash_password(password) do
       send(self(), {:password_hash, password})
-      Pow.Ecto.Schema.Password.pbkdf2_hash(password)
+      Password.pbkdf2_hash(password)
     end
 
     def send_verify_password(password, password_hash) do
       send(self(), {:password_verify, password, password_hash})
-      Pow.Ecto.Schema.Password.pbkdf2_verify(password, password_hash)
+      Password.pbkdf2_verify(password, password_hash)
     end
   end
 

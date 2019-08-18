@@ -35,7 +35,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
   text layout being used.
   """
   alias Plug.Conn
-  alias Pow.{Config, Plug}
+  alias Pow.{Config, Phoenix.ViewHelpers, Plug}
 
   @type t :: %__MODULE__{}
 
@@ -52,7 +52,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
     config       = Plug.fetch_config(conn)
     web_module   = Config.get(config, :web_mailer_module)
     view_assigns = Keyword.merge([conn: conn, user: user], assigns)
-    view_module  = Pow.Phoenix.ViewHelpers.build_view_module(view_module, web_module)
+    view_module  = ViewHelpers.build_view_module(view_module, web_module)
 
     subject = render_subject(view_module, template, view_assigns)
     text    = render(view_module, template, conn, view_assigns, :text)

@@ -57,7 +57,6 @@ defmodule Pow.Phoenix.Mailer.MailTest do
     assert mail.text =~ "Pow e-mail\n"
   end
 
-
   test "new/4 with `:pow_mailer_layout` html only setting", %{conn: conn} do
     conn = Conn.put_private(conn, :pow_mailer_layout, {Pow.Test.Phoenix.LayoutView, "email.html"})
     assert mail = Mail.new(conn, :user, {MailerView, :mail_test}, value: "test")

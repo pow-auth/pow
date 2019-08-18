@@ -86,8 +86,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
   end
 
-  alias PowEmailConfirmation.PowInvitation.TestWeb.Phoenix.Router.Helpers, as: PowInvitationRoutes
   alias PowEmailConfirmation.PowInvitation.TestWeb.Phoenix.Endpoint, as: PowInvitationEndpoint
+  alias PowEmailConfirmation.PowInvitation.TestWeb.Phoenix.Router.Helpers, as: PowInvitationRoutes
 
   defp put_invitation(conn, path) do
     Phoenix.ConnTest.dispatch(conn, PowInvitationEndpoint, :put, path)

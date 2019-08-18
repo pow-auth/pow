@@ -3,8 +3,8 @@ defmodule PowInvitation.Ecto.SchemaTest do
   doctest PowInvitation.Ecto.Schema
 
   alias PowInvitation.Ecto.Schema
-  alias PowInvitation.Test.Users.User
   alias PowInvitation.PowEmailConfirmation.Test.Users.User, as: UserEmailConfirmation
+  alias PowInvitation.Test.Users.User
 
   defmodule OverrideInviteChangesetUser do
     @moduledoc false
