@@ -4,14 +4,12 @@ defmodule Pow.PlugTest do
 
   alias Plug.Conn
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
-  alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User}
+  alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User, EtsCacheMock}
 
-  @ets Pow.Test.EtsCacheMock
-  @ets_config [namespace: "credentials"]
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
-    cache_store_backend: @ets,
+    cache_store_backend: EtsCacheMock,
     user: User
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
@@ -48,7 +46,7 @@ defmodule Pow.PlugTest do
   end
 
   test "authenticate_user/2" do
-    @ets.init()
+    EtsCacheMock.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -90,7 +88,7 @@ defmodule Pow.PlugTest do
   end
 
   test "clear_authenticated_user/1" do
-    @ets.init()
+    EtsCacheMock.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -101,12 +99,12 @@ defmodule Pow.PlugTest do
     assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert user = Plug.current_user(conn)
     assert session_id = conn.private[:plug_session]["auth"]
-    assert {^user, _timestamp} = @ets.get(@ets_config, session_id)
+    assert {^user, _timestamp} = EtsCacheMock.get([namespace: "credentials"], session_id)
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)
     refute conn.private[:plug_session]["auth"]
-    assert @ets.get(@ets_config, session_id) == :not_found
+    assert EtsCacheMock.get([namespace: "credentials"], session_id) == :not_found
   end
 
   test "change_user/2" do
@@ -119,7 +117,7 @@ defmodule Pow.PlugTest do
   end
 
   test "create_user/2" do
-    @ets.init()
+    EtsCacheMock.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -137,7 +135,7 @@ defmodule Pow.PlugTest do
   end
 
   test "update_user/2" do
-    @ets.init()
+    EtsCacheMock.init()
 
     opts = Session.init(@default_config)
     conn =
@@ -161,7 +159,7 @@ defmodule Pow.PlugTest do
   end
 
   test "delete_user/2" do
-    @ets.init()
+    EtsCacheMock.init()
 
     opts = Session.init(@default_config)
     conn =

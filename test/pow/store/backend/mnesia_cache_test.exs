@@ -25,7 +25,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       File.rm_rf!("tmp/mnesia")
       File.mkdir_p!("tmp/mnesia")
 
-      start_supervised!(MnesiaCache)
+      start(@default_config)
 
       :ok
     end
@@ -46,7 +46,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(@default_config, "key") == :not_found
     end
 
-    test "with no `:ttl` opt" do
+    test "with no `:ttl` config option" do
       assert_raise ConfigError, "`:ttl` configuration option is required for Pow.Store.Backend.MnesiaCache", fn ->
         MnesiaCache.put([namespace: "pow:test"], "key", "value")
       end
@@ -78,11 +78,14 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     end
   end
 
+  defp start(config) do
+    start_supervised!({MnesiaCache, config})
+  end
+
   defp restart(config) do
     :ok = stop_supervised(MnesiaCache)
     :mnesia.stop()
-
-    start_supervised!({MnesiaCache, config})
+    start(config)
   end
 
   describe "distributed nodes" do

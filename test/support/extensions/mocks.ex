@@ -168,11 +168,9 @@ defmodule Pow.Test.ExtensionMocks do
         end
       end
 
-      @ets unquote(cache_backend)
-
       setup _tags do
-        @ets.init()
-        {:ok, conn: Phoenix.ConnTest.build_conn(), ets: @ets}
+        unquote(cache_backend).init()
+        {:ok, conn: Phoenix.ConnTest.build_conn(), ets: unquote(cache_backend)}
       end
     end
 

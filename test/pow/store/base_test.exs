@@ -15,30 +15,29 @@ defmodule Pow.Store.BaseTest do
       ttl: :timer.seconds(10)
   end
 
-  test "uses config backend" do
+  test "fetches from custom backend" do
     config = [backend: BackendCacheMock]
 
     assert BaseMock.get(config, :backend) == :mock_backend
-    assert BaseMock.get(config, :config) == [ttl: :timer.seconds(10),
-                                             namespace: "default_namespace"]
+    assert BaseMock.get(config, :config) == [ttl: :timer.seconds(10), namespace: "default_namespace"]
   end
 
-  test "uses passed config" do
-    default_config = []
-    config         = [ttl: 100, namespace: "overridden_namespace"]
+  test "preset config can be overridden" do
+    default_config  = []
+    override_config = [ttl: 100, namespace: "overridden_namespace"]
 
     assert BaseMock.get(default_config, :test) == :not_found
-    assert BaseMock.get(config, :test) == :not_found
+    assert BaseMock.get(override_config, :test) == :not_found
 
     BaseMock.put(default_config, :test, :value)
-    BaseMock.put(config, :test, :value)
+    BaseMock.put(override_config, :test, :value)
     :timer.sleep(50)
 
     assert BaseMock.get(default_config, :test) == :value
-    assert BaseMock.get(config, :test) == :value
+    assert BaseMock.get(override_config, :test) == :value
     :timer.sleep(50)
 
     assert BaseMock.get(default_config, :test) == :value
-    assert BaseMock.get(config, :test) == :not_found
+    assert BaseMock.get(override_config, :test) == :not_found
   end
 end

@@ -107,7 +107,7 @@ defmodule Pow.Phoenix.SessionControllerTest do
       conn = post conn, Routes.pow_session_path(conn, :create, @valid_params)
       assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
-      :timer.sleep(10)
+      assert_receive {:ets, :put, _key, _value, _opts}
 
       conn = delete(conn, Routes.pow_session_path(conn, :delete))
       assert redirected_to(conn) == "/signed_out"

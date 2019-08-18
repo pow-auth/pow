@@ -187,7 +187,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
     assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]
-    :timer.sleep(10)
+    assert_receive {:ets, :put, _key, _value, _opts}
 
     conn
   end

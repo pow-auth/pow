@@ -4,18 +4,18 @@ defmodule Pow.Plug.SessionTest do
 
   alias Plug.Conn
   alias Pow.{Plug, Plug.Session, Store.CredentialsCache}
-  alias Pow.Test.ConnHelpers
+  alias Pow.Test.{ConnHelpers, EtsCacheMock}
 
-  @ets Pow.Test.EtsCacheMock
-  @ets_config [namespace: "credentials"]
+  @backend_config [namespace: "credentials"]
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    cache_store_backend: @ets
+    cache_store_backend: EtsCacheMock
   ]
 
   setup do
-    @ets.init()
+    EtsCacheMock.init()
+
     conn =
       :get
       |> ConnHelpers.conn("/")
@@ -44,7 +44,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    @ets.put(@ets_config, "token", {"cached", :os.system_time(:millisecond)})
+    EtsCacheMock.put(@backend_config, "token", {"cached", :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -57,7 +57,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
-    @ets.put(@ets_config, "token", "cached")
+    EtsCacheMock.put(@backend_config, "token", "cached")
 
     opts = Session.init(@default_opts)
     conn =
@@ -79,7 +79,7 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    @ets.put(@ets_config, "token", {"cached", timestamp})
+    EtsCacheMock.put(@backend_config, "token", {"cached", timestamp})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
@@ -87,7 +87,7 @@ defmodule Pow.Plug.SessionTest do
 
     assert conn.assigns[:current_user] == "cached"
 
-    @ets.put(@ets_config, "token", {"cached", stale_timestamp})
+    EtsCacheMock.put(@backend_config, "token", {"cached", stale_timestamp})
 
     conn = Session.call(init_conn, opts)
 
@@ -97,7 +97,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
-    @ets.put(@ets_config, "token", {"cached", :os.system_time(:millisecond)})
+    EtsCacheMock.put(@backend_config, "token", {"cached", :os.system_time(:millisecond)})
 
     opts =
       @default_opts
@@ -122,7 +122,7 @@ defmodule Pow.Plug.SessionTest do
       |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = @ets.get(@ets_config, session_id)
+    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, session_id)
 
     assert is_binary(session_id)
     assert etc_user == user
@@ -130,11 +130,11 @@ defmodule Pow.Plug.SessionTest do
 
     conn = Session.do_create(conn, user, opts)
     new_session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = @ets.get(@ets_config, new_session_id)
+    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, new_session_id)
 
     assert is_binary(session_id)
     assert new_session_id != session_id
-    assert @ets.get(@ets_config, session_id) == :not_found
+    assert EtsCacheMock.get(@backend_config, session_id) == :not_found
     assert etc_user == user
     assert Plug.current_user(conn) == user
   end
@@ -165,7 +165,7 @@ defmodule Pow.Plug.SessionTest do
       |> Session.do_create(user, opts)
 
     session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = @ets.get(@ets_config, session_id)
+    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, session_id)
 
     assert is_binary(session_id)
     assert etc_user == user
@@ -175,7 +175,7 @@ defmodule Pow.Plug.SessionTest do
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
-    assert @ets.get(@ets_config, session_id) == :not_found
+    assert EtsCacheMock.get(@backend_config, session_id) == :not_found
     assert is_nil(Plug.current_user(conn))
   end
 
