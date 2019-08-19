@@ -7,13 +7,23 @@ defmodule Pow.Plug do
 
   @private_config_key :pow_config
 
+
+  @doc """
+  Get the current user assigned to the conn.
+
+  The config is fetched from the conn. See `current_user/2` for more.
+  """
   @spec current_user(Conn.t()) :: map() | nil
   def current_user(conn) do
     current_user(conn, fetch_config(conn))
   end
 
   @doc """
-  Get the current authenticated user.
+  Get the current user assigned to the conn.
+
+  This will fetch the user from the assigns map in the conn. The key is by
+  default `:current_user`, but it can be overridden with
+  `:current_user_assigns_key` configuration option.
   """
   @spec current_user(Conn.t(), Config.t()) :: map() | nil
   def current_user(%{assigns: assigns}, config) do
@@ -24,6 +34,10 @@ defmodule Pow.Plug do
 
   @doc """
   Assign an authenticated user to the connection.
+
+  This will assign the user to the conn. The key is by default `:current_user`,
+  but it can be overridden with `:current_user_assigns_key` configuration
+  option.
   """
   @spec assign_current_user(Conn.t(), any(), Config.t()) :: Conn.t()
   def assign_current_user(conn, user, config) do
