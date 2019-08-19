@@ -49,12 +49,15 @@ defmodule Pow.Plug.Base do
       def init(config), do: config
 
       @doc """
-      Initializes the connection for Pow, and assigns current user.
+      Configures the connection for Pow, and fetches user.
 
-      If a user is not already assigned, `do_fetch/2` will be called. `:plug` is
-      added to the private pow configuration key, so it can be used in
-      subsequent calls to create, update and delete user credentials from the
-      connection.
+      `:plug` is appended to the passed configuration, so the current plug will
+      be used in any subsequent calls to create, update and delete user
+      credentials from the connection. The configuration is then set for the
+      conn with `Pow.Plug.put_config/2`.
+
+      If a user can't be fetched with `Pow.Plug.current_user/2`, `do_fetch/2`
+      will be called.
       """
       def call(conn, config) do
         config = put_plug(config)
@@ -72,7 +75,9 @@ defmodule Pow.Plug.Base do
       end
 
       @doc """
-      Calls `fetch/2` and assigns the current user.
+      Calls `fetch/2` and assigns the current user to the conn.
+
+      The user is assigned to the conn with `Pow.Plug.assign_current_user/3`.
       """
       @spec do_fetch(Conn.t(), Config.t()) :: Conn.t()
       def do_fetch(conn, config) do
@@ -83,6 +88,8 @@ defmodule Pow.Plug.Base do
 
       @doc """
       Calls `create/3` and assigns the current user.
+
+      The user is assigned to the conn with `Pow.Plug.assign_current_user/3`.
       """
       @spec do_create(Conn.t(), map(), Config.t()) :: Conn.t()
       def do_create(conn, user, config) do
@@ -92,7 +99,10 @@ defmodule Pow.Plug.Base do
       end
 
       @doc """
-      Calls `delete/2` and removes the current user assign.
+      Calls `delete/2` and removes the current user assigned to the conn.
+
+      The user assigned is removed from the conn with
+      `Pow.Plug.assign_current_user/3`.
       """
       @spec do_delete(Conn.t(), Config.t()) :: Conn.t()
       def do_delete(conn, config) do

@@ -36,6 +36,8 @@ defmodule Pow.Phoenix.Controller do
       use Phoenix.Controller,
         namespace: Pow.Phoenix
 
+      import unquote(__MODULE__), only: [require_authenticated: 2, require_not_authenticated: 2, put_no_cache_header: 2]
+
       plug :pow_layout, unquote(config)
 
       @doc """
@@ -45,10 +47,6 @@ defmodule Pow.Phoenix.Controller do
       def action(conn, _opts) do
         unquote(__MODULE__).action(__MODULE__, conn, conn.params)
       end
-
-      defdelegate require_authenticated(conn, opts), to: unquote(__MODULE__)
-      defdelegate require_not_authenticated(conn, opts), to: unquote(__MODULE__)
-      defdelegate put_no_cache_header(conn, opts), to: unquote(__MODULE__)
 
       defp pow_layout(conn, _config), do: ViewHelpers.layout(conn)
 
@@ -146,14 +144,24 @@ defmodule Pow.Phoenix.Controller do
     "#{base}_#{as}"
   end
 
-  @doc false
+  @doc """
+  Ensures that user has been authenticated.
+
+  `Pow.Phoenix.PlugErrorHandler` is used as error handler. See
+  `Pow.Plug.RequireAuthenticated` for more.
+  """
   @spec require_authenticated(Conn.t(), Keyword.t()) :: Conn.t()
   def require_authenticated(conn, _opts) do
     opts = Plug.RequireAuthenticated.init(error_handler: PlugErrorHandler)
     Plug.RequireAuthenticated.call(conn, opts)
   end
 
-  @doc false
+  @doc """
+  Ensures that user hasn't been authenticated.
+
+  `Pow.Phoenix.PlugErrorHandler` is used as error handler. See
+  `Pow.Plug.RequireNotAuthenticated` for more.
+  """
   @spec require_not_authenticated(Conn.t(), Keyword.t()) :: Conn.t()
   def require_not_authenticated(conn, _opts) do
     opts = Plug.RequireNotAuthenticated.init(error_handler: PlugErrorHandler)

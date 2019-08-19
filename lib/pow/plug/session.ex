@@ -52,6 +52,8 @@ defmodule Pow.Plug.Session do
   fetched through `Plug.Conn.get_session/2` session. If the credentials are
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
+
+  See `do_fetch/2` for more.
   """
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
@@ -75,6 +77,8 @@ defmodule Pow.Plug.Session do
 
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
+
+  See `do_create/3` for more.
   """
   @impl true
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
@@ -101,6 +105,8 @@ defmodule Pow.Plug.Session do
   This will delete a session in the credentials cache with the session id
   fetched through `Plug.Conn.get_session/2`. The session in the connection is
   deleted too with `Plug.Conn.delete_session/2`.
+
+  See `do_delete/2` for more.
   """
   @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
