@@ -9,7 +9,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   describe "Pow.Phoenix.SessionController.create/2" do
     @valid_params %{"email" => "test@example.com", "password" => @password}
 
-    test "when email unconfirmed ", %{conn: conn} do
+    test "when current email unconfirmed", %{conn: conn} do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
@@ -21,6 +21,15 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert token = mail.user.email_confirmation_token
       refute mail.user.email_confirmed_at
       assert mail.html =~ "<a href=\"http://localhost/confirm-email/#{token}\">"
+      assert mail.user.email == "test@example.com"
+    end
+
+    test "when changed email unconfirmed", %{conn: conn} do
+      conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "updated@example.com")})
+
+      assert %{id: 1} = Plug.current_user(conn)
+
+      refute_received {:mail_mock, _mail}
     end
 
     test "when email has been confirmed", %{conn: conn} do
@@ -46,6 +55,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert token = mail.user.email_confirmation_token
       refute mail.user.email_confirmed_at
       assert mail.html =~ "<a href=\"http://localhost/confirm-email/#{token}\">"
+      assert mail.user.email == "test@example.com"
     end
   end
 
@@ -74,6 +84,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert mail.subject == "Confirm your email address"
       assert mail.text =~ "\nhttp://localhost/confirm-email/#{new_token}\n"
       assert mail.html =~ "<a href=\"http://localhost/confirm-email/#{new_token}\">"
+      assert mail.user.email == "new@example.com"
     end
 
     test "when email hasn't changed", %{conn: conn} do

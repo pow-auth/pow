@@ -213,6 +213,7 @@ defmodule MyAppWeb.SessionController do
 
       false ->
         conn
+        |> Pow.Plug.clear_authenticated_user()
         |> put_flash(:info, "Your e-mail address has not been confirmed.")
         |> redirect(to: Routes.login_path(conn, :new))
     end

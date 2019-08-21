@@ -2,7 +2,8 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
   use Pow.Test.Ecto.TestCase
   doctest PowEmailConfirmation.Ecto.Context
 
-  alias PowEmailConfirmation.Ecto.Context
+  alias Ecto.Changeset
+  alias PowEmailConfirmation.Ecto.{Context, Schema}
   alias PowEmailConfirmation.Test.{RepoMock, Users.User}
 
   @config [repo: RepoMock, user: User]
@@ -35,5 +36,55 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
       assert {:error, changeset} = Context.confirm_email(user, @config)
       assert changeset.errors[:email] == {"has already been taken", []}
     end
+  end
+
+  @valid_params %{email: "test@example.com", password: "secret1234", confirm_password: "secret1234"}
+
+  test "current_email_unconfirmed?/2" do
+    new_user =
+      %User{}
+      |> User.changeset(@valid_params)
+      |> Changeset.apply_changes()
+
+    assert Context.current_email_unconfirmed?(new_user, @config)
+
+    updated_user =
+      new_user
+      |> Schema.confirm_email_changeset()
+      |> Changeset.apply_changes()
+      |> Ecto.put_meta(state: :loaded)
+
+    refute Context.current_email_unconfirmed?(updated_user, @config)
+
+    updated_user =
+      updated_user
+      |> User.changeset(%{email: "updated@example.com", current_password: "secret1234"})
+      |> Changeset.apply_changes()
+
+    refute Context.current_email_unconfirmed?(updated_user, @config)
+  end
+
+  test "pending_email_change?/2" do
+    new_user =
+      %User{}
+      |> User.changeset(@valid_params)
+      |> Changeset.apply_changes()
+
+    refute Context.pending_email_change?(new_user, @config)
+
+    updated_user =
+      new_user
+      |> Schema.confirm_email_changeset()
+      |> Changeset.apply_changes()
+      |> Ecto.put_meta(state: :loaded)
+
+    refute Context.pending_email_change?(updated_user, @config)
+
+    updated_user =
+      updated_user
+      |> User.changeset(%{email: "updated@example.com", current_password: "secret1234"})
+      |> Changeset.apply_changes()
+
+    assert Context.pending_email_change?(updated_user, @config)
   end
 end

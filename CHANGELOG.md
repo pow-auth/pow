@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.13 (TBA)
+
+* Fixed bug in `PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email/2` where the confirmation e-mail wasn't send to the new e-mail when updating a user
+* Added `PowEmailConfirmation.Ecto.Context.current_email_unconfirmed?/2` and `PowEmailConfirmation.Plug.pending_email_change?/1`
+
 ## v1.0.12 (2019-08-16)
 
 * Added API integration guide
