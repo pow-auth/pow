@@ -15,6 +15,9 @@ defmodule Pow.Ecto.Schema.Changeset do
 
           {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
           &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
+    * `:email_validator`       - the email validation method, defaults to
+      `&Pow.Ecto.Schema.Changeset.validate_email/1`
+
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
@@ -30,7 +33,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   will be validated as an e-mail address too.
   """
   @spec user_id_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def user_id_field_changeset(user_or_changeset, params, _config) do
+  def user_id_field_changeset(user_or_changeset, params, config) do
     user_id_field =
       case user_or_changeset do
         %Changeset{data: %struct{}} -> struct.pow_user_id_field()
@@ -40,7 +43,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     user_or_changeset
     |> Changeset.cast(params, [user_id_field])
     |> Changeset.update_change(user_id_field, &Schema.normalize_user_id_field_value/1)
-    |> maybe_validate_email_format(user_id_field)
+    |> maybe_validate_email_format(user_id_field, config)
     |> Changeset.validate_required([user_id_field])
     |> Changeset.unique_constraint(user_id_field)
   end
@@ -111,10 +114,18 @@ defmodule Pow.Ecto.Schema.Changeset do
     %{user | current_password: nil}
   end
 
-  defp maybe_validate_email_format(changeset, :email) do
-    Changeset.validate_format(changeset, :email, email_regexp())
+  defp maybe_validate_email_format(changeset, :email, config) do
+    validate_method = email_validator(config)
+
+    Changeset.validate_change(changeset, :email, fn :email, email ->
+      case validate_method.(email) do
+        :ok              -> []
+        :error           -> [email: {"has invalid format", validator: validate_method}]
+        {:error, reason} -> [email: {"has invalid format", validator: validate_method, reason: reason}]
+      end
+    end)
   end
-  defp maybe_validate_email_format(changeset, _), do: changeset
+  defp maybe_validate_email_format(changeset, _type, _config), do: changeset
 
   defp maybe_validate_current_password(%{data: %{password_hash: nil}} = changeset, _config),
     do: changeset
@@ -226,6 +237,22 @@ defmodule Pow.Ecto.Schema.Changeset do
     Config.get(config, :password_hash_methods, {&Password.pbkdf2_hash/1, &Password.pbkdf2_verify/2})
   end
 
+  defp email_validator(config) do
+    Config.get(config, :email_validator, &__MODULE__.validate_email/1)
+  end
+
   @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>
-  defp email_regexp, do: @rfc_5332_regexp_no_ip
+
+  @doc """
+  Validates an e-mail.
+
+  Complies to RFC 5332 spec without IP.
+  """
+  @spec validate_email(binary()) :: :ok | :error | {:error, any()}
+  def validate_email(email) do
+    case email =~ @rfc_5332_regexp_no_ip do
+      true  -> :ok
+      false -> :error
+    end
+  end
 end

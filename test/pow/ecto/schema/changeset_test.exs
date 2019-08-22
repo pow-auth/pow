@@ -37,13 +37,26 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     test "validates user id as email" do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "invalid"))
       refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
+      assert changeset.errors[:email] == {"has invalid format", [validator: &Pow.Ecto.Schema.Changeset.validate_email/1]}
 
       changeset = User.changeset(%User{}, Map.put(@valid_params, "email", ".wooly@example.com"))
       refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
+      assert changeset.errors[:email] == {"has invalid format", [validator: &Pow.Ecto.Schema.Changeset.validate_email/1]}
 
       changeset = User.changeset(%User{}, @valid_params)
+      assert changeset.valid?
+    end
+
+    test "can validate with custom e-mail validator" do
+      config    = [email_validator: &{:error, "custom message #{&1}"}]
+      changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"has invalid format", [validator: config[:email_validator], reason: "custom message john.doe@example.com"]}
+
+      config    = [email_validator: fn _email -> :ok end]
+      changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
       assert changeset.valid?
     end
 
