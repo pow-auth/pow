@@ -35,19 +35,6 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
   @doc false
   @impl true
-  def before_process(Pow.Phoenix.RegistrationController, :update, conn, _config) do
-    user = Plug.current_user(conn)
-
-    Conn.put_private(conn, :pow_user_before_update, user)
-  end
-  def before_process(PowInvitation.Phoenix.InvitationController, :update, conn, _config) do
-    user = Plug.current_user(conn)
-
-    Conn.put_private(conn, :pow_user_before_update, user)
-  end
-
-  @doc false
-  @impl true
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
     return_path = routes(conn).after_registration_path(conn)
 
@@ -58,10 +45,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     halt_unconfirmed(conn, {:ok, conn}, return_path)
   end
-  def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, %{private: %{pow_user_before_update: previous_user}} = conn}, _config),
-    do: warn_unconfirmed(conn, user, previous_user)
-  def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, %{private: %{pow_user_before_update: previous_user}} = conn}, _config),
-    do: warn_unconfirmed(conn, user, previous_user)
+  def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config),
+    do: warn_unconfirmed(conn, user)
+  def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config),
+    do: warn_unconfirmed(conn, user)
 
   defp halt_unconfirmed(conn, success_response, return_path) do
     case PowEmailConfirmationPlug.email_unconfirmed?(conn) do
@@ -84,14 +71,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     {:halt, conn}
   end
 
-  defp warn_unconfirmed(conn, %{unconfirmed_email: email} = user, %{unconfirmed_email: email}),
-    do: {:ok, user, conn}
-  defp warn_unconfirmed(conn, user, _previous_user) do
+  defp warn_unconfirmed(%{params: %{"user" => %{"email" => email}}} = conn, %{unconfirmed_email: email} = user) do
     case PowEmailConfirmationPlug.pending_email_change?(conn) do
       true  -> warn_and_send_confirmation_email(conn)
       false -> {:ok, user, conn}
     end
   end
+  defp warn_unconfirmed(conn, user), do: {:ok, user, conn}
 
   defp warn_and_send_confirmation_email(conn) do
     user  = Plug.current_user(conn)

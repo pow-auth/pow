@@ -74,7 +74,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
     test "when email changes", %{conn: conn} do
       conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @change_email_params})
-      assert %{id: 1, email_confirmation_token: new_token} = Plug.current_user(conn)
+      assert %{id: 1, email: "test@example.com", email_confirmation_token: new_token} = Plug.current_user(conn)
 
       assert get_flash(conn, :error) == "You'll need to confirm the e-mail before it's updated. An e-mail confirmation link has been sent to you."
       assert get_flash(conn, :info) == "Your account has been updated."
