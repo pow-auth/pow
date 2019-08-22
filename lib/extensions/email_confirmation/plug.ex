@@ -7,6 +7,30 @@ defmodule PowEmailConfirmation.Plug do
   alias PowEmailConfirmation.Ecto.Context
 
   @doc """
+  Check if the there is a pending email change for the current user.
+  """
+  @spec pending_email_change?(Conn.t()) :: boolean()
+  def pending_email_change?(conn) do
+    config = Plug.fetch_config(conn)
+
+    conn
+    |> Plug.current_user()
+    |> Context.pending_email_change?(config)
+  end
+
+  @doc """
+  Check if the email for the current user is yet to be confirmed.
+  """
+  @spec email_unconfirmed?(Conn.t()) :: boolean()
+  def email_unconfirmed?(conn) do
+    config = Plug.fetch_config(conn)
+
+    conn
+    |> Plug.current_user()
+    |> Context.current_email_unconfirmed?(config)
+  end
+
+  @doc """
   Confirms the e-mail for the user found by the provided confirmation token.
 
   If successful, and a session exists, the session will be regenerated.

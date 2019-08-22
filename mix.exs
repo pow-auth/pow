@@ -101,7 +101,10 @@ defmodule Pow.MixProject do
         "Phoenix extension": ~r/^Pow.Extension.Phoenix/,
         "Store handling": ~r/^Pow.Store/,
         "Mix helpers": ~r/^Mix.Pow/,
-        Extensions: ~r/^(PowEmailConfirmation|PowPersistentSession|PowResetPassword)/
+        "PowEmailConfirmation": ~r/^PowEmailConfirmation/,
+        "PowPersistentSession": ~r/^PowPersistentSession/,
+        "PowResetPassword": ~r/^PowResetPassword/,
+        "PowInvitation": ~r/^PowInvitation/
       ],
       groups_for_extras: [
         Extensions: Path.wildcard("lib/extensions/*/README.md"),

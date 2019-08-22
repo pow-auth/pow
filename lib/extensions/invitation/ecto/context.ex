@@ -1,10 +1,14 @@
 defmodule PowInvitation.Ecto.Context do
-  @moduledoc false
+  @moduledoc """
+  Handles invitation context for user.
+  """
   alias Pow.{Config, Ecto.Context}
   alias PowInvitation.Ecto.Schema
 
   @doc """
-  Creates an invited user
+  Creates an invited user.
+
+  See `PowInvitation.Ecto.Schema.invite_changeset/3`.
   """
   @spec create(Context.user(), map(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
   def create(inviter_user, params, config) do
@@ -18,6 +22,8 @@ defmodule PowInvitation.Ecto.Context do
 
   @doc """
   Updates an invited user and accepts invitation.
+
+  See `PowInvitation.Ecto.Schema.accept_invitation_changeset/2`.
   """
   @spec update(Context.user(), map(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
   def update(user, params, config) do

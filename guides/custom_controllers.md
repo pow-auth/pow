@@ -204,7 +204,7 @@ defmodule MyAppWeb.SessionController do
   defp verify_confirmed({:ok, conn}) do
     conn
     |> Pow.Plug.current_user()
-    |> confirmed?()
+    |> email_confirmed?()
     |> case do
       true ->
         conn
@@ -213,6 +213,7 @@ defmodule MyAppWeb.SessionController do
 
       false ->
         conn
+        |> Pow.Plug.clear_authenticated_user()
         |> put_flash(:info, "Your e-mail address has not been confirmed.")
         |> redirect(to: Routes.login_path(conn, :new))
     end
@@ -225,8 +226,8 @@ defmodule MyAppWeb.SessionController do
     |> render("login.html", changeset: changeset)
   end
 
-  defp confirmed?(%{email_confirmed_at: nil, email_confirmation_token: token}) when not is_nil(token), do: false
-  defp confirmed?(_user), do: true
+  defp email_confirmed?(%{email_confirmed_at: nil, email_confirmation_token: token, unconfirmed_email: nil}) when not is_nil(token), do: false
+  defp email_confirmed?(_user), do: true
   # ...
 end
 ```

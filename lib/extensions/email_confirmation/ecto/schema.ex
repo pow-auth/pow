@@ -1,14 +1,19 @@
 defmodule PowEmailConfirmation.Ecto.Schema do
-  @moduledoc false
+  @moduledoc """
+  Handles the e-mail confirmation schema for user.
+  """
+
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
   alias Pow.{Extension.Ecto.Schema, UUID}
 
+  @doc false
   @impl true
   def validate!(_config, module) do
     Schema.require_schema_field!(module, :email, PowEmailConfirmation)
   end
 
+  @doc false
   @impl true
   def attrs(_config) do
     [
@@ -18,12 +23,24 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     ]
   end
 
+  @doc false
   @impl true
   def indexes(_config) do
     [{:email_confirmation_token, true}]
   end
 
+  @doc """
+  Handles e-mail confirmation if e-mail is updated.
+
+  This will copy the `:email` value to `:unconfirmed_email` if `:email` change
+  value is different from the original `:email` data value. The `:email` will
+  then be reverted to its original value.
+
+  An `:email_confirmation_token` is generated if the `:email` has been changed,
+  or the struct isn't persisted to the database.
+  """
   @impl true
+  @spec changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
   def changeset(%{errors: []} = changeset, _attrs, _config) do
     current_email = changeset.data.email
     new_email     = Changeset.get_field(changeset, :email)
@@ -35,6 +52,15 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   end
   def changeset(changeset, _attrs, _config), do: changeset
 
+  @doc """
+  Sets the e-mail as confirmed.
+
+  This updates `:email_confirmed_at`, and sets `:email_confirmation_token` to
+  nil.
+
+  If `:unconfirmed_email` is set, then the `:email` will be updated with
+  the `:unconfirmed_email` value, and `:unconfirmed_email` will be set to nil.
+  """
   @spec confirm_email_changeset(Ecto.Schema.t() | Changeset.t()) :: Changeset.t()
   def confirm_email_changeset(%Changeset{data: %{unconfirmed_email: unconfirmed_email}} = changeset) when not is_nil(unconfirmed_email) do
     confirm_email(changeset, unconfirmed_email)

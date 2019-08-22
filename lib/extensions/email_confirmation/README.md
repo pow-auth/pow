@@ -4,7 +4,7 @@ This extension will send an e-mail confirmation link when the user registers, an
 
 Users won't be signed in when they register, and can't sign in until the e-mail has been confirmed. The confirmation e-mail will be sent every time the sign in fails. The user will be redirected to `after_registration_path/1` and `after_sign_in_path/1` accordingly.
 
-When users are already registered, the e-mail won't be changed for a user until the user has clicked the e-mail confirmation link.
+When users updates their e-mail, it won't be changed until the user has confirmed the new e-mail by clicking the e-mail confirmation link.
 
 ## Installation
 
@@ -24,7 +24,7 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
 
 ## Prevent persistent session sign in
 
-To prevent that `PowPeristentSession` creates a new persistent session when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.
+To prevent that `PowPersistentSession` creates a new persistent session when the email hasn't been confirmed, `PowEmailConfirmation` should be placed first in the extensions list. It'll halt the connection.
 
 ## Test and seed
 

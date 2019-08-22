@@ -34,10 +34,19 @@ defmodule Pow.Extension.Ecto.Schema.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
+      @doc false
       def validate!(_config, _module), do: :ok
+
+      @doc false
       def attrs(_config), do: []
+
+      @doc false
       def assocs(_config), do: []
+
+      @doc false
       def indexes(_config), do: []
+
+      @doc false
       def changeset(changeset, _attrs, _config), do: changeset
 
       defoverridable unquote(__MODULE__)

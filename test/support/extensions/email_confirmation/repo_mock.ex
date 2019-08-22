@@ -20,6 +20,11 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   def get_by(User, [email: "test@example.com"], opts) do
     get_by(User, [email_confirmation_token: "valid"], opts)
   end
+  def get_by(User, [email: "updated@example.com"], opts) do
+    User
+    |> get_by([email_confirmation_token: "valid"], opts)
+    |> Map.put(:unconfirmed_email, "new@example.com")
+  end
   def get_by(User, [email: "confirmed@example.com"], opts) do
     get_by(User, [email_confirmation_token: "valid_confirmed"], opts)
   end
