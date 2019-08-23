@@ -2,7 +2,12 @@
 
 ## v1.0.13 (TBA)
 
-* Fixed bug in `PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email/2` where the confirmation e-mail wasn't send to the new e-mail when updating a user
+* Updated `PowEmailConfirmation.Ecto.Schema.changeset/3` so;
+  * when `:email` is identical to `:unconfirmed_email` it won't generate new `:email_confirmation_token`
+  * when `:email` is identical to the persisted `:email` value both `:email_confirmation_token` and `:unconfirmed_email` will be set to `nil`
+  * when there is no `:email` value in the params nothing happens
+* Updated `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/1` so now `:email_confirmation_token` is set to `nil`
+* Fixed bug in `PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email/2` where the confirmation e-mail wasn't send to the updated e-mail address
 * Added `PowEmailConfirmation.Ecto.Context.current_email_unconfirmed?/2` and `PowEmailConfirmation.Plug.pending_email_change?/1`
 
 ## v1.0.12 (2019-08-16)

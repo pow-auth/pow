@@ -3,42 +3,33 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   alias Pow.Ecto.Schema.Password
   alias PowEmailConfirmation.Test.Users.User
 
-  @user %User{
-    id: 1,
-    email: "test@example.com",
-    email_confirmation_token: "valid",
-    password_hash: Password.pbkdf2_hash("secret1234")
-  }
+  defp user() do
+    Ecto.put_meta(%User{
+      id: 1,
+      email: "test@example.com",
+      password_hash: Password.pbkdf2_hash("secret1234"),
+      email_confirmation_token: "valid"
+    }, state: :loaded)
+  end
 
   def one(query) do
-    case inspect(query) =~ "from u0 in PowEmailConfirmation.Test.Users.User, where: u0.email == ^\"taken@example.com\"" do
-      true  -> @user
+    case inspect(query) =~ "where: u0.email == ^\"taken@example.com\"" do
+      true  -> user()
       false -> false
     end
   end
 
-  def get_by(User, [email: "test@example.com"], opts) do
-    get_by(User, [email_confirmation_token: "valid"], opts)
+  def get_by(User, [email: "test@example.com"], _opts), do: user()
+  def get_by(User, [email: "with-unconfirmed-changed-email@example.com"], _opts) do
+    %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
   end
-  def get_by(User, [email: "updated@example.com"], opts) do
-    User
-    |> get_by([email_confirmation_token: "valid"], opts)
-    |> Map.put(:unconfirmed_email, "new@example.com")
+  def get_by(User, [email: "confirmed-email@example.com"], _opts) do
+    %{user() | email_confirmed_at: DateTime.utc_now(), email_confirmation_token: nil}
   end
-  def get_by(User, [email: "confirmed@example.com"], opts) do
-    get_by(User, [email_confirmation_token: "valid_confirmed"], opts)
-  end
-  def get_by(User, [email_confirmation_token: "valid"], _opts),
-    do: Ecto.put_meta(@user, state: :loaded)
-  def get_by(User, [email_confirmation_token: "invalid"], _opts),
-    do: nil
-  def get_by(User, [email_confirmation_token: "valid_confirmed"], opts) do
-    %{get_by(User, [email_confirmation_token: "valid"], opts) | email_confirmed_at: DateTime.utc_now()}
-  end
-  def get_by(User, [email_confirmation_token: "valid_unconfirmed_email"], opts) do
-    user = get_by(User, [email_confirmation_token: "valid_confirmed"], opts)
-
-    %{user | unconfirmed_email: "new@example.com"}
+  def get_by(User, [email_confirmation_token: "valid"], _opts), do: user()
+  def get_by(User, [email_confirmation_token: "invalid"], _opts), do: nil
+  def get_by(User, [email_confirmation_token: "valid-with-unconfirmed-changed-email"], _opts) do
+    %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
   end
 
   def update(%{changes: %{email: "taken@example.com"}} = changeset, _opts) do
@@ -67,9 +58,11 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   end
 
   def insert(%{valid?: true} = changeset, _opts) do
-    token = Ecto.Changeset.get_field(changeset, :email_confirmation_token)
-    email = Ecto.Changeset.get_field(changeset, :email)
-    user  = %{@user | email_confirmation_token: token, email: email}
+    user =
+      changeset
+      |> Ecto.Changeset.apply_changes()
+      |> Map.put(:id, 1)
+      |> Ecto.put_meta(state: :loaded)
 
     Process.put({:user, user.id}, user)
 

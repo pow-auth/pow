@@ -30,7 +30,7 @@ defmodule PowEmailConfirmation.Ecto.Context do
   def pending_email_change?(_user, _config), do: false
 
   @doc """
-  Confirms current e-mail, or e-mail change.
+  Confirms e-mail.
 
   See `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/1`.
   """
