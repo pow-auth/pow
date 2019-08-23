@@ -1,6 +1,6 @@
 # How to use Pow in an API
 
-Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefor Pow encourages that you built custom controllers, and uses the plug methods for API integration.
+Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefore Pow encourages that you built custom controllers, and uses the plug methods for API integration.
 
 To get you started, here's the first steps to built a Pow enabled API interface.
 
