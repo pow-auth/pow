@@ -18,7 +18,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
     end
 
     test "confirms with valid token and :unconfirmed_email", %{conn: conn} do
-      conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid_unconfirmed_email")
+      conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid-with-unconfirmed-changed-email")
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "The email address has been confirmed."
 
