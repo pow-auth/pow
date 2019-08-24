@@ -241,18 +241,76 @@ defmodule Pow.Ecto.Schema.Changeset do
     Config.get(config, :email_validator, &__MODULE__.validate_email/1)
   end
 
-  @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>
-
   @doc """
   Validates an e-mail.
 
-  Complies to RFC 5332 spec without IP.
+  This implementation follows the following rules:
+
+  - Split at last `@` occurance into local-part and domain
+  - Local-part may only be 64 octets
+  - Domain may only be 255 octets
+  - Non-quoted and quoted content in local-part has to be dot seperated
+  - No white spaces in local-part or domain
+  - Only letters, digits, and the following characters are allowed outside
+    quoted content in local-part: `!#$%&'*+-/=?^_`{|}~.`
+  - Consecutive dots are not allowed outside quoted content
+  - Only letters, digits, hyphen, and dots are allowed in domain
+  - Unicode characters allowed in both local-part and domain
   """
   @spec validate_email(binary()) :: :ok | :error | {:error, any()}
   def validate_email(email) do
-    case email =~ @rfc_5332_regexp_no_ip do
-      true  -> :ok
-      false -> :error
+    [domain | rest] =
+      email
+      |> String.split("@")
+      |> Enum.reverse()
+
+    local_part =
+      rest
+      |> Enum.reverse()
+      |> Enum.join("@")
+
+    cond do
+      String.length(local_part) > 64 -> {:error, "local-part too long"}
+      String.length(domain) > 255    -> {:error, "domain too long"}
+      local_part == ""               -> {:error, "invalid format"}
+      true                           -> validate_email(local_part, domain)
+    end
+  end
+
+  defp validate_email(local_part, domain) do
+    sanitized_local_part = remove_quotes_from_local_part(local_part)
+
+    cond do
+      local_part_only_quoted?(local_part) ->
+        validate_domain(domain)
+
+      local_part_consective_dots?(sanitized_local_part) ->
+        {:error, "consective dots in local-part"}
+
+      local_part_valid_characters?(sanitized_local_part) ->
+        validate_domain(domain)
+
+      true ->
+        {:error, "invalid characters in local-part"}
+    end
+  end
+
+  defp remove_quotes_from_local_part(local_part),
+    do: Regex.replace(~r/(^\".*\"$)|(^\".*\"\.)|(\.\".*\"$)?/, local_part, "")
+
+  defp local_part_only_quoted?(local_part), do: local_part =~ ~r/^"[^\"]+"$/
+
+  defp local_part_consective_dots?(local_part), do: local_part =~ ~r/\.\./
+
+  defp local_part_valid_characters?(sanitized_local_part),
+    do: sanitized_local_part =~ ~r<^[\p{L}0-9!#$%&'*+-/=?^_`{|}~\.]+$>u
+
+  defp validate_domain(domain) do
+    cond do
+      String.first(domain) == "-"     -> {:error, "domain starts with hyphen"}
+      String.last(domain) == "-"      -> {:error, "domain ends with hyphen"}
+      domain =~ ~r/^[\p{L}0-9-\.]+$/u -> :ok
+      true                            -> {:error, "invalid characters in domain"}
     end
   end
 end

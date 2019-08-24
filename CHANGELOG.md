@@ -7,10 +7,11 @@
   * when `:email` is identical to the persisted `:email` value both `:email_confirmation_token` and `:unconfirmed_email` will be set to `nil`
   * when there is no `:email` value in the params nothing happens
 * Updated `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/1` so now `:email_confirmation_token` is set to `nil`
-* Fixed bug in `PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email/2` where the confirmation e-mail wasn't send to the updated e-mail address
+* Updated `Pow.Ecto.Schema.Changeset.user_id_field_changeset/3` so the e-mail validator now accepts unicode e-mails
 * Added `PowEmailConfirmation.Ecto.Context.current_email_unconfirmed?/2` and `PowEmailConfirmation.Plug.pending_email_change?/1`
 * Added `:email_validator` configuration option to `Pow.Ecto.Schema.Changeset`
 * Added `Pow.Ecto.Schema.Changeset.validate_email/1`
+* Fixed bug in `PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email/2` where the confirmation e-mail wasn't send to the updated e-mail address
 
 ## v1.0.12 (2019-08-16)
 
