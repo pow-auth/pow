@@ -37,13 +37,22 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     test "validates user id as email" do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "email", "invalid"))
       refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
-
-      changeset = User.changeset(%User{}, Map.put(@valid_params, "email", ".wooly@example.com"))
-      refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validation: :format]}
+      assert changeset.errors[:email] == {"has invalid format", [validator: &Pow.Ecto.Schema.Changeset.validate_email/1, reason: "invalid format"]}
 
       changeset = User.changeset(%User{}, @valid_params)
+      assert changeset.valid?
+    end
+
+    test "can validate with custom e-mail validator" do
+      config    = [email_validator: &{:error, "custom message #{&1}"}]
+      changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"has invalid format", [validator: config[:email_validator], reason: "custom message john.doe@example.com"]}
+
+      config    = [email_validator: fn _email -> :ok end]
+      changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
       assert changeset.valid?
     end
 
@@ -215,5 +224,42 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       refute Changeset.verify_password(%User{password_hash: "hash"}, "secret1234", config)
       assert_received {:password_verify, "secret1234", "hash"}
     end
+  end
+
+  test "validate_email/1" do
+    # Format
+    assert Changeset.validate_email("simple@example.com") == :ok
+    assert Changeset.validate_email("very.common@example.com") == :ok
+    assert Changeset.validate_email("disposable.style.email.with+symbol@example.com") == :ok
+    assert Changeset.validate_email("other.email-with-hyphen@example.com") == :ok
+    assert Changeset.validate_email("fully-qualified-domain@example.com") == :ok
+    assert Changeset.validate_email("x@example.com") == :ok
+    assert Changeset.validate_email("example-indeed@strange-example.com") == :ok
+    assert Changeset.validate_email("admin@mailserver1") == :ok
+    assert Changeset.validate_email("example@s.example") == :ok
+    assert Changeset.validate_email("\" \"@example.org") == :ok
+    assert Changeset.validate_email("\"john..doe\"@example.org") == :ok
+
+    assert Changeset.validate_email("Abc.example.com") == {:error, "invalid format"}
+    assert Changeset.validate_email("A@b@c@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("a\"b(c)d,e:f;g<h>i[j\\k]l@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("just\"not\"right@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("this is\"not\\allowed@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("this\\ still\\\"not\\\\allowed@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("1234567890123456789012345678901234567890123456789012345678901234+x@example.com") == {:error, "local-part too long"}
+
+    # Unicode
+    assert Changeset.validate_email("Pelé@example.com") == :ok
+    assert Changeset.validate_email("δοκιμή@παράδειγμα.δοκιμή") == :ok
+    assert Changeset.validate_email("我買@屋企.香港") == :ok
+    assert Changeset.validate_email("二ノ宮@黒川.日本") == :ok
+    assert Changeset.validate_email("медведь@с-балалайкой.рф") == :ok
+
+    # All error cases
+    assert Changeset.validate_email("john..doe@example.com") == {:error, "consective dots in local-part"}
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 256)}") == {:error, "domain too long"}
+    assert Changeset.validate_email("john.doe@-example.com") == {:error, "domain begins with hyphen"}
+    assert Changeset.validate_email("john.doe@example-") == {:error, "domain ends with hyphen"}
+    assert Changeset.validate_email("john.doe@invaliddomain$") == {:error, "invalid characters in domain"}
   end
 end

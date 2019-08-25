@@ -15,6 +15,12 @@ defmodule Pow.Ecto.Schema.Changeset do
 
           {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
           &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
+    * `:email_validator`       - the email validation method, defaults to:
+
+
+          &Pow.Ecto.Schema.Changeset.validate_email/1
+
+        The method should either return `:ok`, `:error`, or `{:error, reason}`.
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
@@ -30,7 +36,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   will be validated as an e-mail address too.
   """
   @spec user_id_field_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
-  def user_id_field_changeset(user_or_changeset, params, _config) do
+  def user_id_field_changeset(user_or_changeset, params, config) do
     user_id_field =
       case user_or_changeset do
         %Changeset{data: %struct{}} -> struct.pow_user_id_field()
@@ -40,7 +46,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     user_or_changeset
     |> Changeset.cast(params, [user_id_field])
     |> Changeset.update_change(user_id_field, &Schema.normalize_user_id_field_value/1)
-    |> maybe_validate_email_format(user_id_field)
+    |> maybe_validate_email_format(user_id_field, config)
     |> Changeset.validate_required([user_id_field])
     |> Changeset.unique_constraint(user_id_field)
   end
@@ -111,10 +117,18 @@ defmodule Pow.Ecto.Schema.Changeset do
     %{user | current_password: nil}
   end
 
-  defp maybe_validate_email_format(changeset, :email) do
-    Changeset.validate_format(changeset, :email, email_regexp())
+  defp maybe_validate_email_format(changeset, :email, config) do
+    validate_method = email_validator(config)
+
+    Changeset.validate_change(changeset, :email, fn :email, email ->
+      case validate_method.(email) do
+        :ok              -> []
+        :error           -> [email: {"has invalid format", validator: validate_method}]
+        {:error, reason} -> [email: {"has invalid format", validator: validate_method, reason: reason}]
+      end
+    end)
   end
-  defp maybe_validate_email_format(changeset, _), do: changeset
+  defp maybe_validate_email_format(changeset, _type, _config), do: changeset
 
   defp maybe_validate_current_password(%{data: %{password_hash: nil}} = changeset, _config),
     do: changeset
@@ -226,6 +240,85 @@ defmodule Pow.Ecto.Schema.Changeset do
     Config.get(config, :password_hash_methods, {&Password.pbkdf2_hash/1, &Password.pbkdf2_verify/2})
   end
 
-  @rfc_5332_regexp_no_ip ~r<\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z>
-  defp email_regexp, do: @rfc_5332_regexp_no_ip
+  defp email_validator(config) do
+    Config.get(config, :email_validator, &__MODULE__.validate_email/1)
+  end
+
+  @doc """
+  Validates an e-mail.
+
+  This implementation has the following rules:
+
+  - Split into local-part and domain at last `@` occurance
+  - Local-part should;
+    - be at most 64 octets
+    - separate quoted and unquoted content with a single dot
+    - only have letters, digits, and the following characters outside quoted
+      content:
+        ```text
+        !#$%&'*+-/=?^_`{|}~.
+        ```
+    - not have any consecutive dots outside quoted content
+  - Domain should;
+    - be at most 255 octets
+    - only have letters, digits, hyphen, and dots
+
+  Unicode characters are permitted in both local-part and domain.
+  """
+  @spec validate_email(binary()) :: :ok | {:error, any()}
+  def validate_email(email) do
+    [domain | rest] =
+      email
+      |> String.split("@")
+      |> Enum.reverse()
+
+    local_part =
+      rest
+      |> Enum.reverse()
+      |> Enum.join("@")
+
+    cond do
+      String.length(local_part) > 64 -> {:error, "local-part too long"}
+      String.length(domain) > 255    -> {:error, "domain too long"}
+      local_part == ""               -> {:error, "invalid format"}
+      true                           -> validate_email(local_part, domain)
+    end
+  end
+
+  defp validate_email(local_part, domain) do
+    sanitized_local_part = remove_quotes_from_local_part(local_part)
+
+    cond do
+      local_part_only_quoted?(local_part) ->
+        validate_domain(domain)
+
+      local_part_consective_dots?(sanitized_local_part) ->
+        {:error, "consective dots in local-part"}
+
+      local_part_valid_characters?(sanitized_local_part) ->
+        validate_domain(domain)
+
+      true ->
+        {:error, "invalid characters in local-part"}
+    end
+  end
+
+  defp remove_quotes_from_local_part(local_part),
+    do: Regex.replace(~r/(^\".*\"$)|(^\".*\"\.)|(\.\".*\"$)?/, local_part, "")
+
+  defp local_part_only_quoted?(local_part), do: local_part =~ ~r/^"[^\"]+"$/
+
+  defp local_part_consective_dots?(local_part), do: local_part =~ ~r/\.\./
+
+  defp local_part_valid_characters?(sanitized_local_part),
+    do: sanitized_local_part =~ ~r<^[\p{L}0-9!#$%&'*+-/=?^_`{|}~\.]+$>u
+
+  defp validate_domain(domain) do
+    cond do
+      String.first(domain) == "-"     -> {:error, "domain begins with hyphen"}
+      String.last(domain) == "-"      -> {:error, "domain ends with hyphen"}
+      domain =~ ~r/^[\p{L}0-9-\.]+$/u -> :ok
+      true                            -> {:error, "invalid characters in domain"}
+    end
+  end
 end
