@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.13 (TBA)
+## v1.0.13 (2019-08-25)
 
 * Updated `PowEmailConfirmation.Ecto.Schema.changeset/3` so;
   * when `:email` is identical to `:unconfirmed_email` it won't generate new `:email_confirmation_token`
