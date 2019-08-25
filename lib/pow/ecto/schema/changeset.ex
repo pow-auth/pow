@@ -307,7 +307,7 @@ defmodule Pow.Ecto.Schema.Changeset do
 
   defp validate_domain(domain) do
     cond do
-      String.first(domain) == "-"     -> {:error, "domain starts with hyphen"}
+      String.first(domain) == "-"     -> {:error, "domain begins with hyphen"}
       String.last(domain) == "-"      -> {:error, "domain ends with hyphen"}
       domain =~ ~r/^[\p{L}0-9-\.]+$/u -> :ok
       true                            -> {:error, "invalid characters in domain"}

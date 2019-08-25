@@ -254,5 +254,12 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     assert Changeset.validate_email("我買@屋企.香港") == :ok
     assert Changeset.validate_email("二ノ宮@黒川.日本") == :ok
     assert Changeset.validate_email("медведь@с-балалайкой.рф") == :ok
+
+    # All error cases
+    assert Changeset.validate_email("john..doe@example.com") == {:error, "consective dots in local-part"}
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 256)}") == {:error, "domain too long"}
+    assert Changeset.validate_email("john.doe@-example.com") == {:error, "domain begins with hyphen"}
+    assert Changeset.validate_email("john.doe@example-") == {:error, "domain ends with hyphen"}
+    assert Changeset.validate_email("john.doe@invaliddomain$") == {:error, "invalid characters in domain"}
   end
 end
