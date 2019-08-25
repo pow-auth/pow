@@ -80,7 +80,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   end
 
   @impl true
-  @spec handle_info({:mnesia_system_event, {:inconsistent_database, any(), any()}}, map()) :: {:no_reply, map()}
+  @spec handle_info({:mnesia_system_event, {:inconsistent_database, any(), any()}} | any(), map()) :: {:noreply, map()}
   def handle_info({:mnesia_system_event, {:inconsistent_database, _context, node}}, %{config: config} = state) do
     :global.trans({__MODULE__, self()}, fn -> autoheal(node, config) end)
 
@@ -88,7 +88,6 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   end
 
   @impl true
-  @spec handle_info(any(), map()) :: {:noreply, map()}
   def handle_info(_event, state) do
     {:noreply, state}
   end
