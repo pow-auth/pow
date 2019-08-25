@@ -8,6 +8,7 @@ Pow is a robust, modular, and extendable authentication and user management solu
 
 * User registration
 * Session based authorization
+* [API Token auth](guides/api.md)
 * Per Endpoint/Plug configuration
 * Extendable
 * I18n
