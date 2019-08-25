@@ -15,9 +15,12 @@ defmodule Pow.Ecto.Schema.Changeset do
 
           {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
           &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
-    * `:email_validator`       - the email validation method, defaults to
-      `&Pow.Ecto.Schema.Changeset.validate_email/1`
+    * `:email_validator`       - the email validation method, defaults to:
 
+
+          &Pow.Ecto.Schema.Changeset.validate_email/1
+
+        The method should either return `:ok`, `:error`, or `{:error, reason}`.
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
@@ -244,20 +247,25 @@ defmodule Pow.Ecto.Schema.Changeset do
   @doc """
   Validates an e-mail.
 
-  This implementation follows the following rules:
+  This implementation has the following rules:
 
-  - Split at last `@` occurance into local-part and domain
-  - Local-part may only be 64 octets
-  - Domain may only be 255 octets
-  - Non-quoted and quoted content in local-part has to be dot seperated
-  - No white spaces in local-part or domain
-  - Only letters, digits, and the following characters are allowed outside
-    quoted content in local-part: `!#$%&'*+-/=?^_`{|}~.`
-  - Consecutive dots are not allowed outside quoted content
-  - Only letters, digits, hyphen, and dots are allowed in domain
-  - Unicode characters allowed in both local-part and domain
+  - Split into local-part and domain at last `@` occurance
+  - Local-part should;
+    - be at most 64 octets
+    - separate quoted and unquoted content with a single dot
+    - only have letters, digits, and the following characters outside quoted
+      content:
+        ```text
+        !#$%&'*+-/=?^_`{|}~.
+        ```
+    - not have any consecutive dots outside quoted content
+  - Domain should;
+    - be at most 255 octets
+    - only have letters, digits, hyphen, and dots
+
+  Unicode characters are permitted in both local-part and domain.
   """
-  @spec validate_email(binary()) :: :ok | :error | {:error, any()}
+  @spec validate_email(binary()) :: :ok | {:error, any()}
   def validate_email(email) do
     [domain | rest] =
       email
