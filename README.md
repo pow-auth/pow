@@ -8,8 +8,12 @@ Pow is a robust, modular, and extendable authentication and user management solu
 
 * User registration
 * Session based authorization
-* Per Endpoint/Plug configuration
-* Extendable
+* [Per Endpoint/Plug configuration](#configuration)
+* [API token authorization](guides/api.md)
+* [Plug n' play self-healing cluster support](#pow-plug-session)
+* [Multitenancy](guides/multitenancy.md)
+* [User roles](guides/user_roles.md)
+* [Extendable](#extensions)
 * I18n
 * [And more](guides/why_pow.md)
 
