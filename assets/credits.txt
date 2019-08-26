@@ -2,7 +2,6 @@ font name: Fertigo_PRO
 font link: https://www.fontspring.com/fonts/exljbris/fertigo-pro/fertigo-pro-regular
 font author: Exljbris
 font author site: https://www.exljbris.com/
-Slogan Font: Fanwood Text.otf
 
 icon designer: Roberto Chiaveri
 icon designer link: /robertochiaveri
