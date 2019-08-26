@@ -1,11 +1,15 @@
-font name: Fertigo_PRO
-font link: https://www.fontspring.com/fonts/exljbris/fertigo-pro/fertigo-pro-regular
-font author: Exljbris
-font author site: https://www.exljbris.com/
-Slogan Font: Fertigo_PRO
+font name: ProzaLibre-ExtraBold
+font link: https://fonts.google.com/specimen/Proza+Libre
+font author: Jasper de Waard
+font author site: http://bureauroffa.com/about-proza-libre
+Slogan Font: WorkSans-Light.ttf
 
 icon designer: Roberto Chiaveri
 icon designer link: /robertochiaveri
         
-{"bg":"transparent","icon-gradient-0":"#0D7CE9","icon-gradient-1":"#15CFF1","font":"#000000","slogan":"#141414"}
+
+fontColor: {"gradient-0":"#0D7CE9","gradient-1":"#28C4E0"}
+bgColor: {"hex":"transparent"}
+iconColor: {"gradient-0":"#0D7CE9","gradient-1":"#28C4E0"}
+sloganColor: {"hex":"#0D7CE9"}
       
