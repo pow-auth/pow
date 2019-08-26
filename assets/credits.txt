@@ -1,0 +1,11 @@
+font name: Fertigo_PRO
+font link: https://www.fontspring.com/fonts/exljbris/fertigo-pro/fertigo-pro-regular
+font author: Exljbris
+font author site: https://www.exljbris.com/
+Slogan Font: Fertigo_PRO
+
+icon designer: Roberto Chiaveri
+icon designer link: /robertochiaveri
+        
+{"bg":"transparent","icon-gradient-0":"#0D7CE9","icon-gradient-1":"#15CFF1","font":"#000000","slogan":"#141414"}
+      

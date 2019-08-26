@@ -71,6 +71,8 @@ defmodule Pow.MixProject do
       main: "README",
       canonical: "http://hexdocs.pm/pow",
       source_url: "https://github.com/danschultzer/pow",
+      logo: "assets/logo.svg",
+      assets: "assets",
       extras: [
         "README.md": [filename: "README"],
         "CONTRIBUTING.md": [filename: "CONTRIBUTING"],
