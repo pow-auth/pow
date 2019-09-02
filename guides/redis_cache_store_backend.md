@@ -5,7 +5,7 @@ For read-only systems, like Heroku, you won't be able to use the built-in Mnesia
 First add Redix to your list of dependencies in `mix.exs`:
 
 ```elixir
-def deps do
+defp deps do
   [
     # ...
     {:redix, "~> 0.9.2"}

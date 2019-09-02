@@ -22,7 +22,7 @@ Pow is a robust, modular, and extendable authentication and user management solu
 Add Pow to your list of dependencies in `mix.exs`:
 
 ```elixir
-def deps do
+defp deps do
   [
     # ...
     {:pow, "~> 1.0.13"}
