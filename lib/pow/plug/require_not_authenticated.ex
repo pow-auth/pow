@@ -7,7 +7,7 @@ defmodule Pow.Plug.RequireNotAuthenticated do
 
   ## Example
 
-      plug Pow.Plug.RequireAuthenticated,
+      plug Pow.Plug.RequireNotAuthenticated,
         error_handler: MyAppWeb.Pow.ErrorHandler
   """
   alias Plug.Conn
