@@ -180,19 +180,14 @@ defmodule Pow.Ecto.Schema.Changeset do
   defp maybe_require_password(changeset), do: changeset
 
   defp maybe_validate_password(changeset, config) do
+    validate_method = password_validator(config)
+
     changeset
     |> Changeset.get_change(:password)
     |> case do
       nil -> changeset
-      _   -> validate_password(changeset, config)
+      _   -> validate_method.(changeset, config)
     end
-  end
-
-  defp validate_password(changeset, config) do
-    password_min_length = Config.get(config, :password_min_length, @password_min_length)
-    password_max_length = Config.get(config, :password_max_length, @password_max_length)
-
-    Changeset.validate_length(changeset, :password, min: password_min_length, max: password_max_length)
   end
 
   defp maybe_validate_confirm_password(changeset) do
@@ -242,6 +237,24 @@ defmodule Pow.Ecto.Schema.Changeset do
 
   defp email_validator(config) do
     Config.get(config, :email_validator, &__MODULE__.validate_email/1)
+  end
+
+  defp password_validator(config) do
+    Config.get(config, :password_validator, &__MODULE__.validate_password/2)
+  end
+
+  @doc """
+  Validates a password.
+
+  This implementation only requires that the password is required to be between
+  be between `:password_min_length` to `:password_max_length` characters long.
+  """
+  @spec validate_password(Ecto.Schema.t() | Changeset.t(), Config.t()) :: Changeset.t()
+  def validate_password(changeset, config) do
+    password_min_length = Config.get(config, :password_min_length, @password_min_length)
+    password_max_length = Config.get(config, :password_max_length, @password_max_length)
+
+    Changeset.validate_length(changeset, :password, min: password_min_length, max: password_max_length)
   end
 
   @doc """
