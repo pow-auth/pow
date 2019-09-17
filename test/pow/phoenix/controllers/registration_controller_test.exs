@@ -69,7 +69,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">should be at least 10 character(s)</span>"
+      assert html =~ "<span class=\"help-block\">should be at least 8 character(s)</span>"
       assert errors = conn.assigns[:changeset].errors
       assert errors[:password]
       refute Plug.current_user(conn)

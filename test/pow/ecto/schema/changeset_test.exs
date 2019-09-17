@@ -116,10 +116,10 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     end
 
     test "validates length of password" do
-      changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..9)))
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..7)))
 
       refute changeset.valid?
-      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 10, validation: :length, kind: :min, type: :string]}
+      assert changeset.errors[:password] == {"should be at least %{count} character(s)", [count: 8, validation: :length, kind: :min, type: :string]}
 
       changeset = User.changeset(%User{}, Map.put(@valid_params, "password", Enum.join(1..4096)))
       refute changeset.valid?

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.14 (TBA)
+
+* Changed minmum password length to 8 (OWASP/NIST recommendations)
+
 ## v1.0.13 (2019-08-25)
 
 * Updated `PowEmailConfirmation.Ecto.Schema.changeset/3` so;
