@@ -5,7 +5,7 @@ defmodule PowEmailConfirmation.Ecto.Schema do
 
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
-  alias Pow.{Extension.Ecto.Schema, UUID}
+  alias Pow.{Config, Extension.Ecto.Schema, UUID}
 
   @doc false
   @impl true
