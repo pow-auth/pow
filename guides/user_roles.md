@@ -87,4 +87,37 @@ defmodule MyAppWeb.EnsureRolePlug do
 end
 ```
 
-Add `plug MyAppWeb.EnsureRolePlug, :admin` to your pipeline, and presto!
+Now you can add `plug MyAppWeb.EnsureRolePlug, :admin` to your pipeline in `router.ex`:
+
+```elixir
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
+  # ...
+
+  pipeline :admin do
+    plug MyAppWeb.EnsureRolePlug, :admin
+  end
+
+  scope "/admin", MyAppWeb do
+    pipe_through [:browser, :admin]
+
+    # ...
+  end
+
+  # ...
+end
+```
+
+Or you can add it to your controller(s):
+
+```elixir
+defmodule MyAppWeb.SomeController do
+  use MyAppWeb, :controller
+
+  # ...
+
+  plug MyAppWeb.EnsureRolePlug, :admin
+
+  # ...
+end
+```
