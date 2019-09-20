@@ -6,6 +6,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
   keys using the `expire` value. If the `expire` datetime is past, it'll
   send call the invalidator immediately.
 
+  Mnesia will create a `Mnesia.Node` directory in the current working directory
+  to write files to. This can be changed by setting the `-mnesia dir` config:
+
+      config :mnesia, dir: '/path/to/dir'
+
+  The directory path should be accessible, otherwise MnesiaCache will crash on
+  startup.
+
   ## Distribution
 
   The MnesiaCache is built to handle multi-node setup.
@@ -23,11 +31,11 @@ defmodule Pow.Store.Backend.MnesiaCache do
   the new TTL is used.
 
   All nodes spun up will by default persist to disk. If you start up multiple
-  nodes from the same physical directory you should make sure that each node
-  has a separate dir path configured. This can be done using different config
-  files, or by using a system environment variable:
+  nodes from the same physical directory you have to make sure that each node
+  has a unique directory path configured. This can be done using different
+  config files, or by using a system environment variable:
 
-      config :mnesia, dir: System.get_env("MNESIA_DIR")
+      config :mnesia, dir: to_charlist(System.get_env("MNESIA_DIR"))
 
   You can use `Pow.Store.Backend.MnesiaCache.Unsplit` to automatically recover
   from network split issues. All partitioned nodes will have their table
