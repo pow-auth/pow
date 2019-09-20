@@ -1,6 +1,31 @@
 defmodule PowInvitation.Ecto.Schema do
   @moduledoc """
   Handles the invitation schema for user.
+
+  ## Customize PowInvitation associations or fields
+
+  If you need to modify any of the associations or fields that `PowInvitation`
+  adds to the user schema, you can override them by defining them before
+  `pow_user_fields/0`:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+        use Pow.Extension.Ecto.Schema,
+          extensions: [PowInvitation]
+
+        schema "users" do
+          belongs_to :invited_by, __MODULE__
+          has_many :invited_users __MODULE__, foreign_key: :invited_by_id, on_delete: delete_all
+
+          field :invitation_token, :string
+          field :invitation_accepted_at, :utc_datetime
+
+          pow_user_fields()
+
+          timestamps()
+        end
+      end
   """
 
   use Pow.Extension.Ecto.Schema.Base

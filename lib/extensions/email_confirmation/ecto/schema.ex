@@ -1,6 +1,29 @@
 defmodule PowEmailConfirmation.Ecto.Schema do
   @moduledoc """
   Handles the e-mail confirmation schema for user.
+
+  ## Customize PowEmailConfirmation fields
+
+  If you need to modify any of the fields that `PowEmailConfirmation` adds to
+  the user schema, you can override them by defining them before
+  `pow_user_fields/0`:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+        use Pow.Extension.Ecto.Schema,
+          extensions: [PowEmailConfirmation]
+
+        schema "users" do
+          field :email_confirmation_token, :string
+          field :email_confirmed_at, :utc_datetime
+          field :unconfirmed_email, :string
+
+          pow_user_fields()
+
+          timestamps()
+        end
+      end
   """
 
   use Pow.Extension.Ecto.Schema.Base
