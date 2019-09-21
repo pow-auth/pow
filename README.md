@@ -426,7 +426,7 @@ To test with authenticated users in your controller tests, you just have to assi
 ```elixir
 setup %{conn: conn} do
   user = %User{email: "test@example.com"}
-  conn = Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)
+  conn = Pow.Plug.assign_current_user(build_conn(), user, otp_app: :my_app)
 
   {:ok, conn: conn}
 end
