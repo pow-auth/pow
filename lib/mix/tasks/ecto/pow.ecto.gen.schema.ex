@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
 
       mix pow.ecto.gen.schema
 
-      mix pow.ecto.gen.schema --context-app my_app Accounts.Organization organizations
+      mix pow.ecto.gen.schema --context-app my_app Accounts.Account accounts
 
   This generator will add a schema module file in `lib/my_app/users/user.ex`.
 

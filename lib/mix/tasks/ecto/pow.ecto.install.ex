@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Pow.Ecto.Install do
 
       mix pow.ecto.install -r MyApp.Repo
 
-      mix pow.ecto.install -r MyApp.Repo Accounts.Organization organizations
+      mix pow.ecto.install -r MyApp.Repo Accounts.Account accounts
 
   See `Mix.Tasks.Pow.Ecto.Gen.Schema`, `Mix.Tasks.Pow.Ecto.Gen.Migration`
   and `Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations` for more.
