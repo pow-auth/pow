@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations do
 
       mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation --extension PowResetPassword
 
-      mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation Accounts.Organization organizations
+      mix pow.extension.ecto.gen.migrations -r MyApp.Repo --extension PowEmailConfirmation Accounts.Account accounts
 
   ## Arguments
 

@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Migration do
 
       mix pow.ecto.gen.migration -r MyApp.Repo
 
-      mix pow.ecto.gen.migration -r MyApp.Repo Accounts.Organization organizations
+      mix pow.ecto.gen.migration -r MyApp.Repo Accounts.Account accounts
 
   This generator will add a migration file in `priv/repo/migrations` for the
   `users` table
