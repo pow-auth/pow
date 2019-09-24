@@ -72,7 +72,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
         :ok
 
       false ->
-        Mix.shell.info(
+        Mix.shell().info(
           """
           Pow has been installed in your phoenix app!
 

@@ -59,7 +59,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
         :ok
 
       false ->
-        Mix.shell.info(
+        Mix.shell().info(
           """
           Pow Phoenix templates and views has been generated.
 

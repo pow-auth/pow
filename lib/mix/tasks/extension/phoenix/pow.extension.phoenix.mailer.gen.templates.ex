@@ -77,7 +77,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     Extension.no_extensions_error(web_app)
   end
   defp print_shell_instructions(%{structure: %{web_module: web_base, web_prefix: web_prefix}}) do
-    Mix.shell.info(
+    Mix.shell().info(
       """
       Pow mailer templates has been installed in your phoenix app!
 
