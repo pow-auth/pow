@@ -26,7 +26,6 @@ defp deps do
   [
     # ...
     {:pow, "~> 1.0.13"}
-    # ...
   ]
 end
 ```
@@ -75,7 +74,7 @@ defmodule MyAppWeb.Endpoint do
 
   plug Pow.Plug.Session, otp_app: :my_app
 
-  # ...
+  plug MyAppWeb.Phoenix.Router
 end
 ```
 

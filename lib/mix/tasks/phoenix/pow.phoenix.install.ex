@@ -84,7 +84,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
             user: #{inspect(context_base)}.#{schema_name},
             repo: #{inspect(context_base)}.Repo
 
-          Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex`:
+          Next, add `Pow.Plug.Session` plug to `#{web_prefix}/endpoint.ex` after `plug Plug.Session`:
 
           defmodule #{inspect(web_base)}.Endpoint do
             use Phoenix.Endpoint, otp_app: #{inspect(web_app)}
@@ -98,7 +98,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
             plug Pow.Plug.Session, otp_app: #{inspect(web_app)}
 
-            # ...
+            plug #{inspect(web_base)}.Router
           end
 
           Last, update `#{web_prefix}/router.ex` with the Pow routes:
