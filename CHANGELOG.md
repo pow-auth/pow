@@ -38,6 +38,7 @@
   * Deprecated `Pow.Store.CredentialsCache.sessions/3`
   * `Pow.Store.CredentialsCache` now adds a session key rather than appending to a list for the user key to prevent race condition
 * Fixed bug where `PowEmailConfirmation.Phoenix.ControllerCallbacks` couldn't deliver email
+* `Pow.Plug.Session` now adds a fingerprint for new sessions that will persist when sessions are renewed
 
 ## v1.0.13 (2019-08-25)
 

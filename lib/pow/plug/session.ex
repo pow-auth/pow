@@ -2,6 +2,13 @@ defmodule Pow.Plug.Session do
   @moduledoc """
   This plug will handle user authorization using session.
 
+  The plug will store user and metadata in the cache store backend. The
+  metadata has a `:inserted_at` and `:fingerprint` key. The `:inserted_at`
+  value is used to determine if the session has to be renewed, while the
+  `:fingerprint` will remain the same across sessions if the session was
+  renewed (deleted and created). Otherwise a random unique id will be generated
+  as fingerprint.
+
   ## Example
 
       plug Plug.Session,
@@ -58,13 +65,10 @@ defmodule Pow.Plug.Session do
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
-    conn                  = Conn.fetch_session(conn)
-    key                   = Conn.get_session(conn, session_key(config))
     {store, store_config} = store(config)
 
-    store_config
-    |> store.get(key)
-    |> convert_old_session_value()
+    conn
+    |> get_session(config, store, store_config)
     |> renew_stale_session(conn, config)
   end
 
@@ -85,10 +89,14 @@ defmodule Pow.Plug.Session do
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
+    {store, store_config} = store(config)
+    prev_fingerprint      =
+      conn
+      |> get_session(config, store, store_config)
+      |> fetch_fingerprint()
+    value                 = session_value(user, prev_fingerprint)
     key                   = session_id(config)
     session_key           = session_key(config)
-    {store, store_config} = store(config)
-    value                 = session_value(user)
 
     store.put(store_config, key, value)
 
@@ -99,6 +107,18 @@ defmodule Pow.Plug.Session do
 
     {conn, user}
   end
+
+  defp fetch_fingerprint({_session_id, {_user, opts}}) when is_list(opts),
+    do: Keyword.get(opts, :fingerprint)
+  defp fetch_fingerprint({_session_id, :not_found}),
+    do: nil
+
+  defp session_value(user, nil),
+    do: session_value(user, gen_fingerprint())
+  defp session_value(user, fingerprint),
+    do: {user, inserted_at: timestamp(), fingerprint: fingerprint}
+
+  defp gen_fingerprint(), do: UUID.generate()
 
   @doc """
   Delete an existing session in the credentials cache.
@@ -122,12 +142,19 @@ defmodule Pow.Plug.Session do
     Conn.delete_session(conn, session_key)
   end
 
+  defp get_session(conn, config, store, store_config) do
+    conn = Conn.fetch_session(conn)
+    key  = Conn.get_session(conn, session_key(config))
+
+    convert_old_session_value({key, store.get(store_config, key)})
+  end
+
   # TODO: Remove by 1.1.0
-  defp convert_old_session_value({user, timestamp}) when is_number(timestamp), do: {user, inserted_at: timestamp}
+  defp convert_old_session_value({key, {user, timestamp}}) when is_number(timestamp), do: {key, {user, inserted_at: timestamp}}
   defp convert_old_session_value(any), do: any
 
-  defp renew_stale_session(:not_found, conn, _config), do: {conn, nil}
-  defp renew_stale_session({user, metadata}, conn, config) when is_list(metadata) do
+  defp renew_stale_session({_key, :not_found}, conn, _config), do: {conn, nil}
+  defp renew_stale_session({_key, {user, metadata}}, conn, config) when is_list(metadata) do
     metadata
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
@@ -159,8 +186,6 @@ defmodule Pow.Plug.Session do
   defp default_session_key(config) do
     Plug.prepend_with_namespace(config, @session_key)
   end
-
-  defp session_value(user), do: {user, inserted_at: timestamp()}
 
   defp store(config) do
     case Config.get(config, :session_store, default_store(config)) do

@@ -80,7 +80,7 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp, fingerprint: "fingerprint"})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
@@ -88,14 +88,17 @@ defmodule Pow.Plug.SessionTest do
 
     assert conn.assigns[:current_user] == @user
 
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp})
-    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp, fingerprint: "fingerprint"})
+    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp, fingerprint: "new_fingerprint"})
 
     conn = Session.call(init_conn, opts)
 
     assert conn.assigns[:current_user] == @user
     assert new_session_id = get_session_id(conn)
     assert new_session_id != session_id
+    assert {_user, metadata} = CredentialsCache.get(@store_config, new_session_id)
+    assert metadata[:inserted_at] != stale_timestamp
+    assert metadata[:fingerprint] == "fingerprint"
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
@@ -148,9 +151,10 @@ defmodule Pow.Plug.SessionTest do
 
       session_id = get_session_id(conn)
 
-      assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
+      assert {@user, metadata} = CredentialsCache.get(@store_config, session_id)
       assert is_binary(session_id)
       assert Plug.current_user(conn) == @user
+      assert metadata[:fingerprint]
 
       assert {_key, metadata} =
         @store_config
@@ -161,11 +165,12 @@ defmodule Pow.Plug.SessionTest do
       conn = Session.do_create(conn, @user, opts)
       new_session_id = get_session_id(conn)
 
-      assert {@user, _metadata} = CredentialsCache.get(@store_config, new_session_id)
+      assert {@user, new_metadata} = CredentialsCache.get(@store_config, new_session_id)
       assert is_binary(session_id)
       assert new_session_id != session_id
       assert CredentialsCache.get(@store_config, session_id) == :not_found
       assert Plug.current_user(conn) == @user
+      assert metadata[:fingerprint] == new_metadata[:fingerprint]
     end
 
     test "creates new session id with `:otp_app` prepended", %{conn: conn} do
