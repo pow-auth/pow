@@ -4,14 +4,15 @@ defmodule Pow.Plug.SessionTest do
 
   alias Plug.Conn
   alias Pow.{Plug, Plug.Session, Store.CredentialsCache}
-  alias Pow.Test.{ConnHelpers, EtsCacheMock}
+  alias Pow.Test.{ConnHelpers, Ecto.Users.User, EtsCacheMock}
 
-  @backend_config [namespace: "credentials"]
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
     cache_store_backend: EtsCacheMock
   ]
+  @store_config [backend: EtsCacheMock]
+  @user %User{id: 1}
 
   setup do
     EtsCacheMock.init()
@@ -44,7 +45,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    EtsCacheMock.put(@backend_config, "token", {"cached", :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -53,11 +54,11 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.put_session(@default_opts[:session_key], "token")
       |> Session.call(opts)
 
-    assert conn.assigns[:current_user] == "cached"
+    assert conn.assigns[:current_user] == @user
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
-    EtsCacheMock.put(@backend_config, "token", "cached")
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -79,25 +80,26 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    EtsCacheMock.put(@backend_config, "token", {"cached", timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
     session_id = get_session_id(conn)
 
-    assert conn.assigns[:current_user] == "cached"
+    assert conn.assigns[:current_user] == @user
 
-    EtsCacheMock.put(@backend_config, "token", {"cached", stale_timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp})
+    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp})
 
     conn = Session.call(init_conn, opts)
 
-    assert conn.assigns[:current_user] == "cached"
+    assert conn.assigns[:current_user] == @user
     assert new_session_id = get_session_id(conn)
     assert new_session_id != session_id
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
-    EtsCacheMock.put(@backend_config, "token", {"cached", :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts =
       @default_opts
@@ -110,94 +112,118 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.put_session("test_app_auth", "token")
       |> Session.call(opts)
 
-    assert conn.assigns[:current_user] == "cached"
+    assert conn.assigns[:current_user] == @user
   end
 
-  test "create/2 creates new session id", %{conn: conn} do
-    user = %{id: 1}
-    opts = Session.init(@default_opts)
+  # TODO: Remove by 1.1.0
+  test "backwards compatible", %{conn: conn} do
+    ttl             = 100
+    config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
+    stale_timestamp = :os.system_time(:millisecond) - ttl - 1
+
+    @store_config
+    |> Keyword.put(:namespace, "credentials")
+    |> EtsCacheMock.put("token", {@user, stale_timestamp})
+
+    opts = Session.init(config)
     conn =
       conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], "token")
       |> Session.call(opts)
-      |> Session.do_create(user, opts)
 
-    session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, session_id)
+    assert new_session_id = get_session_id(conn)
+    assert new_session_id != "token"
 
-    assert is_binary(session_id)
-    assert etc_user == user
-    assert Plug.current_user(conn) == user
-
-    conn = Session.do_create(conn, user, opts)
-    new_session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, new_session_id)
-
-    assert is_binary(session_id)
-    assert new_session_id != session_id
-    assert EtsCacheMock.get(@backend_config, session_id) == :not_found
-    assert etc_user == user
-    assert Plug.current_user(conn) == user
+    assert conn.assigns[:current_user] == @user
   end
 
-  test "create/2 creates new session id with `:otp_app` prepended", %{conn: conn} do
-    opts =
-      @default_opts
-      |> Keyword.delete(:session_key)
-      |> Keyword.put(:otp_app, :test_app)
-      |> Session.init()
-    conn =
-      conn
-      |> Session.call(opts)
-      |> Session.do_create(%{id: 1}, opts)
+  describe "create/2" do
+    test "creates new session id", %{conn: conn} do
+      opts = Session.init(@default_opts)
+      conn =
+        conn
+        |> Session.call(opts)
+        |> Session.do_create(@user, opts)
 
-    refute get_session_id(conn)
+      session_id = get_session_id(conn)
 
-    session_id = conn.private[:plug_session]["test_app_auth"]
-    assert String.starts_with?(session_id, "test_app_")
+      assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
+      assert is_binary(session_id)
+      assert Plug.current_user(conn) == @user
+
+      assert {_key, metadata} =
+        @store_config
+        |> Keyword.put(:namespace, "credentials")
+        |> EtsCacheMock.get(session_id)
+      assert metadata[:inserted_at]
+
+      conn = Session.do_create(conn, @user, opts)
+      new_session_id = get_session_id(conn)
+
+      assert {@user, _metadata} = CredentialsCache.get(@store_config, new_session_id)
+      assert is_binary(session_id)
+      assert new_session_id != session_id
+      assert CredentialsCache.get(@store_config, session_id) == :not_found
+      assert Plug.current_user(conn) == @user
+    end
+
+    test "creates new session id with `:otp_app` prepended", %{conn: conn} do
+      opts =
+        @default_opts
+        |> Keyword.delete(:session_key)
+        |> Keyword.put(:otp_app, :test_app)
+        |> Session.init()
+      conn =
+        conn
+        |> Session.call(opts)
+        |> Session.do_create(@user, opts)
+
+      refute get_session_id(conn)
+
+      session_id = conn.private[:plug_session]["test_app_auth"]
+      assert String.starts_with?(session_id, "test_app_")
+    end
   end
 
   test "delete/1 removes session id", %{conn: conn} do
-    user = %{id: 1}
     opts = Session.init(@default_opts)
     conn =
       conn
       |> Session.call(opts)
-      |> Session.do_create(user, opts)
+      |> Session.do_create(@user, opts)
 
     session_id = get_session_id(conn)
-    {etc_user, _inserted_at} = EtsCacheMock.get(@backend_config, session_id)
 
+    assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
     assert is_binary(session_id)
-    assert etc_user == user
-    assert Plug.current_user(conn) == user
+    assert Plug.current_user(conn) == @user
 
     conn = Session.do_delete(conn, opts)
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
-    assert EtsCacheMock.get(@backend_config, session_id) == :not_found
+    assert CredentialsCache.get(@store_config, session_id) == :not_found
     assert is_nil(Plug.current_user(conn))
   end
 
-  describe "with EtsCache backend" do
-    test "stores through CredentialsCache", %{conn: conn} do
-      sesion_key = "auth"
-      config     = [session_key: sesion_key]
-      token      = "credentials_cache_test"
-      timestamp  = :os.system_time(:millisecond)
-      CredentialsCache.put(config, token, {"cached", timestamp})
+  test "with EtsCache backend", %{conn: conn} do
+    sesion_key = "auth"
+    config     = [session_key: sesion_key]
+    token      = "credentials_cache_test"
+    timestamp  = :os.system_time(:millisecond)
+    CredentialsCache.put(config, token, {@user, inserted_at: timestamp})
 
-      :timer.sleep(100)
+    :timer.sleep(100)
 
-      opts = Session.init(session_key: "auth")
-      conn =
-        conn
-        |> Conn.fetch_session()
-        |> Conn.put_session("auth", token)
-        |> Session.call(opts)
+    opts = Session.init(session_key: "auth")
+    conn =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session("auth", token)
+      |> Session.call(opts)
 
-      assert conn.assigns[:current_user] == "cached"
-    end
+    assert conn.assigns[:current_user] == @user
   end
 
   def get_session_id(conn) do

@@ -15,7 +15,7 @@ defmodule Pow.Store.Backend.EtsCache do
       "cache".
   """
   use GenServer
-  alias Pow.{Config, Store.Base}
+  alias Pow.{Config, Store.Backend.Base}
 
   @behaviour Base
   @ets_cache_tab __MODULE__

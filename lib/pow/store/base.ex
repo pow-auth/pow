@@ -1,6 +1,6 @@
 defmodule Pow.Store.Base do
   @moduledoc """
-  Used to set up API for key-value cache store.
+  Used to set up API for key-value stores.
 
   ## Usage
 
@@ -8,14 +8,19 @@ defmodule Pow.Store.Base do
         use Pow.Store.Base,
           ttl: :timer.minutes(30),
           namespace: "credentials"
+
+        @impl true
+        def put(config, backend_config, key, value) do
+          Pow.Store.Base.put(config, backend_config, key, value)
+        end
       end
   """
   alias Pow.{Config, Store.Backend.EtsCache}
 
-  @callback put(Config.t(), binary(), any()) :: :ok
-  @callback delete(Config.t(), binary()) :: :ok
-  @callback get(Config.t(), binary()) :: any() | :not_found
-  @callback keys(Config.t()) :: [any()]
+  @callback put(Config.t(), Config.t(), binary(), any()) :: :ok
+  @callback delete(Config.t(), Config.t(), binary()) :: :ok
+  @callback get(Config.t(), Config.t(), binary()) :: any() | :not_found
+  @callback keys(Config.t(), Config.t()) :: [any()]
 
   @doc false
   defmacro __using__(defaults) do
@@ -24,19 +29,19 @@ defmodule Pow.Store.Base do
 
       @spec put(Config.t(), binary(), any()) :: :ok
       def put(config, key, value),
-        do: unquote(__MODULE__).put(config, backend_config(config), key, value)
+        do: put(config, backend_config(config), key, value)
 
       @spec delete(Config.t(), binary()) :: :ok
       def delete(config, key),
-        do: unquote(__MODULE__).delete(config, backend_config(config), key)
+        do: delete(config, backend_config(config), key)
 
       @spec get(Config.t(), binary()) :: any() | :not_found
       def get(config, key),
-        do: unquote(__MODULE__).get(config, backend_config(config), key)
+        do: get(config, backend_config(config), key)
 
       @spec keys(Config.t()) :: [any()]
       def keys(config),
-        do: unquote(__MODULE__).keys(config, backend_config(config))
+        do: keys(config, backend_config(config))
 
       defp backend_config(config) do
         [
@@ -45,7 +50,17 @@ defmodule Pow.Store.Base do
         ]
       end
 
+      defdelegate put(config, backend_config, key, value), to: unquote(__MODULE__)
+      defdelegate delete(config, backend_config, key), to: unquote(__MODULE__)
+      defdelegate get(config, backend_config, key), to: unquote(__MODULE__)
+      defdelegate keys(config, backend_config), to: unquote(__MODULE__)
+
       defoverridable unquote(__MODULE__)
+
+      @behaviour Pow.Store.Backend.Base
+
+      # Remove by 1.1.0
+      defoverridable Pow.Store.Backend.Base
     end
   end
 

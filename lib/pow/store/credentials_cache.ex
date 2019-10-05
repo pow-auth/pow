@@ -9,6 +9,10 @@ defmodule Pow.Store.CredentialsCache do
 
   When a key is updated, all expired keys will be pruned from the credentials
   key.
+
+  The credentials are expected to take the form of
+  `{credentials, session_metadata}`, where session metadata is data exclusive
+  to the session id.
   """
   alias Pow.{Config, Store.Base}
 
@@ -47,12 +51,16 @@ defmodule Pow.Store.CredentialsCache do
   This will either create or update the current user credentials in the
   backend store. The session id will be appended to the session list for the
   user credentials.
+
+  The credentials are expected to be in the format of
+  `{credentials, metadata}`.
   """
-  @spec put(Config.t(), Config.t(), binary(), any()) :: :ok
-  def put(config, backend_config, session_id, user) do
+  @impl true
+  @spec put(Config.t(), Config.t(), binary(), {map(), list()}) :: :ok
+  def put(config, backend_config, session_id, {user, metadata}) do
     key = append_to_session_list(config, backend_config, session_id, user)
 
-    Base.put(config, backend_config, session_id, key)
+    Base.put(config, backend_config, session_id, {key, metadata})
   end
 
   @doc """
@@ -63,24 +71,35 @@ defmodule Pow.Store.CredentialsCache do
   session list, the user credentials will be deleted too from the backend
   store.
   """
+  @impl true
   @spec delete(Config.t(), Config.t(), binary()) :: :ok
   def delete(config, backend_config, session_id) do
-    key = Base.get(config, backend_config, session_id)
+    case Base.get(config, backend_config, session_id) do
+      :not_found ->
+        :ok
 
-    Base.delete(config, backend_config, session_id)
-    delete_from_session_list(config, backend_config, session_id, key)
+      {key, _metadata} when is_binary(key) ->
+        Base.delete(config, backend_config, session_id)
+        delete_from_session_list(config, backend_config, session_id, key)
+
+      {user, _metadata} when is_map(user) ->
+        Base.delete(config, backend_config, session_id)
+    end
   end
 
   @doc """
   Fetch user credentials from the backend store from session id.
   """
-  @spec get(Config.t(), Config.t(), binary()) :: any() | :not_found
+  @impl true
+  @spec get(Config.t(), Config.t(), binary()) :: {map(), list()} | :not_found
   def get(config, backend_config, session_id) do
-    key = Base.get(config, backend_config, session_id)
-
-    case Base.get(config, backend_config, key) do
-      %{user: user} -> user
-      :not_found    -> :not_found
+    with {key, metadata} when is_binary(key) <- Base.get(config, backend_config, session_id),
+         %{user: user}                       <- Base.get(config, backend_config, key) do
+      {user, metadata}
+    else
+      # TODO: Remove by 1.1.0
+      {user, metadata} when is_map(user) -> {user, metadata}
+      :not_found -> :not_found
     end
   end
 
@@ -115,7 +134,36 @@ defmodule Pow.Store.CredentialsCache do
     key
   end
 
-  defp user_session_list_key(%struct{id: id}) do
-    "#{Macro.underscore(struct)}_sessions_#{id}"
+  defp user_session_list_key(%struct{} = user) do
+    key_value =
+      case function_exported?(struct, :__schema__, 1) do
+        true  -> key_value_from_primary_keys(user)
+        false -> primary_keys_to_binary!([:id], user)
+      end
+
+    "#{Macro.underscore(struct)}_sessions_#{key_value}"
+  end
+  defp user_session_list_key(_user), do: raise "Only structs can be stored as credentials"
+
+  defp key_value_from_primary_keys(%struct{} = user) do
+    :primary_key
+    |> struct.__schema__()
+    |> Enum.sort()
+    |> primary_keys_to_binary!(user)
+  end
+
+  defp primary_keys_to_binary!([], %struct{}), do: raise "No primary keys found for #{inspect struct}"
+  defp primary_keys_to_binary!([key], user), do: get_primary_key_value!(key, user)
+  defp primary_keys_to_binary!(keys, user) do
+    keys
+    |> Enum.map(&"#{&1}:#{get_primary_key_value!(&1, user)}")
+    |> Enum.join("_")
+  end
+
+  defp get_primary_key_value!(key, %struct{} = user) do
+    case Map.get(user, key) do
+      nil -> raise "Primary key value for key `#{inspect key}` in #{inspect struct} can't be `nil`"
+      val -> val
+    end
   end
 end

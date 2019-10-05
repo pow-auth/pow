@@ -122,12 +122,17 @@ defmodule Pow.Plug.Session do
   end
 
   defp handled_fetched_value(:not_found, conn, _config), do: {conn, nil}
-  defp handled_fetched_value({user, inserted_at}, conn, config) do
-    case session_stale?(inserted_at, config) do
+  defp handled_fetched_value({user, metadata}, conn, config) when is_list(metadata) do
+    metadata
+    |> Keyword.get(:inserted_at)
+    |> session_stale?(config)
+    |> case do
       true  -> create(conn, user, config)
       false -> {conn, user}
     end
   end
+  defp handled_fetched_value({user, inserted_at}, conn, config),
+    do: handled_fetched_value({user, inserted_at: inserted_at}, conn, config)
 
   defp session_stale?(inserted_at, config) do
     ttl = Config.get(config, :session_ttl_renewal, @session_ttl_renewal)
@@ -152,7 +157,7 @@ defmodule Pow.Plug.Session do
     Plug.prepend_with_namespace(config, @session_key)
   end
 
-  defp session_value(user), do: {user, timestamp()}
+  defp session_value(user), do: {user, inserted_at: timestamp()}
 
   defp store(config) do
     case Config.get(config, :session_store, default_store(config)) do

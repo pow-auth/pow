@@ -28,6 +28,13 @@ defmodule PowInvitation.Test.RepoMock do
   def get_by(User, [invitation_token: "valid_but_accepted"], _opts), do: %{@user | invitation_accepted_at: :now}
   def get_by(User, [invitation_token: "invalid"], _opts), do: nil
 
-  def update(%{valid?: true} = changeset, _opts), do: {:ok, Ecto.Changeset.apply_changes(changeset)}
+  def update(%{valid?: true} = changeset, _opts) do
+    user = Ecto.Changeset.apply_changes(changeset)
+
+    # We store the user in the process because the user is force reloaded with `get!/2`
+    Process.put({:user, user.id}, user)
+
+    {:ok, user}
+  end
   def update(%{valid?: false} = changeset, _opts), do: {:error, %{changeset | action: :update}}
 end
