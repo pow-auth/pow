@@ -45,7 +45,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    CredentialsCache.put(@store_config, "token", {@user, :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -58,7 +58,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
-    CredentialsCache.put(@store_config, "token", {@user, :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts = Session.init(@default_opts)
     conn =
@@ -80,7 +80,7 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    CredentialsCache.put(@store_config, "token", {@user, timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
@@ -88,8 +88,8 @@ defmodule Pow.Plug.SessionTest do
 
     assert conn.assigns[:current_user] == @user
 
-    CredentialsCache.put(@store_config, "token", {@user, stale_timestamp})
-    CredentialsCache.put(@store_config, "newer_token", {@user, timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp})
+    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp})
 
     conn = Session.call(init_conn, opts)
 
@@ -99,7 +99,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
-    CredentialsCache.put(@store_config, "token", {@user, :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
     opts =
       @default_opts
@@ -115,6 +115,29 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == @user
   end
 
+  # TODO: Remove by 1.1.0
+  test "backwards compatible", %{conn: conn} do
+    ttl             = 100
+    config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
+    stale_timestamp = :os.system_time(:millisecond) - ttl - 1
+
+    @store_config
+    |> Keyword.put(:namespace, "credentials")
+    |> EtsCacheMock.put("token", {@user, stale_timestamp})
+
+    opts = Session.init(config)
+    conn =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], "token")
+      |> Session.call(opts)
+
+    assert new_session_id = get_session_id(conn)
+    assert new_session_id != "token"
+
+    assert conn.assigns[:current_user] == @user
+  end
+
   describe "create/2" do
     test "creates new session id", %{conn: conn} do
       opts = Session.init(@default_opts)
@@ -125,14 +148,20 @@ defmodule Pow.Plug.SessionTest do
 
       session_id = get_session_id(conn)
 
-      assert {@user, _inserted_at} = CredentialsCache.get(@store_config, session_id)
+      assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
       assert is_binary(session_id)
       assert Plug.current_user(conn) == @user
+
+      assert {_key, metadata} =
+        @store_config
+        |> Keyword.put(:namespace, "credentials")
+        |> EtsCacheMock.get(session_id)
+      assert metadata[:inserted_at]
 
       conn = Session.do_create(conn, @user, opts)
       new_session_id = get_session_id(conn)
 
-      assert {@user, _inserted_at} = CredentialsCache.get(@store_config, new_session_id)
+      assert {@user, _metadata} = CredentialsCache.get(@store_config, new_session_id)
       assert is_binary(session_id)
       assert new_session_id != session_id
       assert CredentialsCache.get(@store_config, session_id) == :not_found
@@ -166,7 +195,7 @@ defmodule Pow.Plug.SessionTest do
 
     session_id = get_session_id(conn)
 
-    assert {@user, _inserted_at} = CredentialsCache.get(@store_config, session_id)
+    assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
     assert is_binary(session_id)
     assert Plug.current_user(conn) == @user
 
@@ -183,7 +212,7 @@ defmodule Pow.Plug.SessionTest do
     config     = [session_key: sesion_key]
     token      = "credentials_cache_test"
     timestamp  = :os.system_time(:millisecond)
-    CredentialsCache.put(config, token, {@user, timestamp})
+    CredentialsCache.put(config, token, {@user, inserted_at: timestamp})
 
     :timer.sleep(100)
 

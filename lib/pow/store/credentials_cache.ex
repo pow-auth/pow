@@ -78,9 +78,12 @@ defmodule Pow.Store.CredentialsCache do
       :not_found ->
         :ok
 
-      {key, _metadata} ->
+      {key, _metadata} when is_binary(key) ->
         Base.delete(config, backend_config, session_id)
         delete_from_session_list(config, backend_config, session_id, key)
+
+      {user, _metadata} when is_map(user) ->
+        Base.delete(config, backend_config, session_id)
     end
   end
 

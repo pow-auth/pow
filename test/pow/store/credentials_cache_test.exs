@@ -115,9 +115,9 @@ defmodule Pow.Store.CredentialsCacheTest do
     user_1 = %User{id: 1}
     timestamp = :os.system_time(:millisecond)
 
-    EtsCacheMock.put(@backend_config, "key_1", {user_1, timestamp})
+    EtsCacheMock.put(@backend_config, "key_1", {user_1, inserted_at: timestamp})
 
-    assert CredentialsCache.get(@config, @backend_config, "key_1") == {user_1, timestamp}
+    assert CredentialsCache.get(@config, @backend_config, "key_1") == {user_1, inserted_at: timestamp}
   end
 
   describe "with EtsCache backend" do

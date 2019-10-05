@@ -4,6 +4,7 @@
 
 * Changed minmum password length to 8 (OWASP/NIST recommendations)
 * Fixed bug where `Pow.Store.CredentialsCache` wasn't used due to how `Pow.Store.Base` macro worked
+* `Pow.Plug.Session` now stores a keyword list with metadata for the session rather than just the timestamp
 
 ## v1.0.13 (2019-08-25)
 
