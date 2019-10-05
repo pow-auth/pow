@@ -64,7 +64,8 @@ defmodule Pow.Plug.Session do
 
     store_config
     |> store.get(key)
-    |> handled_fetched_value(conn, config)
+    |> convert_old_session_value()
+    |> renew_stale_session(conn, config)
   end
 
   @doc """
@@ -121,8 +122,12 @@ defmodule Pow.Plug.Session do
     Conn.delete_session(conn, session_key)
   end
 
-  defp handled_fetched_value(:not_found, conn, _config), do: {conn, nil}
-  defp handled_fetched_value({user, metadata}, conn, config) when is_list(metadata) do
+  # TODO: Remove by 1.1.0
+  defp convert_old_session_value({user, timestamp}) when is_number(timestamp), do: {user, inserted_at: timestamp}
+  defp convert_old_session_value(any), do: any
+
+  defp renew_stale_session(:not_found, conn, _config), do: {conn, nil}
+  defp renew_stale_session({user, metadata}, conn, config) when is_list(metadata) do
     metadata
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
@@ -131,8 +136,6 @@ defmodule Pow.Plug.Session do
       false -> {conn, user}
     end
   end
-  defp handled_fetched_value({user, inserted_at}, conn, config),
-    do: handled_fetched_value({user, inserted_at: inserted_at}, conn, config)
 
   defp session_stale?(inserted_at, config) do
     ttl = Config.get(config, :session_ttl_renewal, @session_ttl_renewal)
