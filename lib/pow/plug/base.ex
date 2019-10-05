@@ -41,9 +41,7 @@ defmodule Pow.Plug.Base do
   @doc false
   defmacro __using__(_opts) do
     quote do
-      alias Pow.Plug.Base
-
-      @behaviour Base
+      @behaviour unquote(__MODULE__)
 
       @doc false
       def init(config), do: config
@@ -118,7 +116,7 @@ defmodule Pow.Plug.Base do
 
       defp remove_current_user(conn, config), do: Plug.assign_current_user(conn, nil, config)
 
-      defoverridable Base
+      defoverridable unquote(__MODULE__)
     end
   end
 end
