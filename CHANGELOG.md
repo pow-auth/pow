@@ -3,6 +3,7 @@
 ## v1.0.14 (TBA)
 
 * Changed minmum password length to 8 (OWASP/NIST recommendations)
+* Fixed bug where `Pow.Store.CredentialsCache` wasn't used due to how `Pow.Store.Base` macro worked
 
 ## v1.0.13 (2019-08-25)
 

@@ -83,7 +83,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
       "cache".
   """
   use GenServer
-  alias Pow.{Config, Store.Base}
+  alias Pow.{Config, Store.Backend.Base}
 
   require Logger
 
