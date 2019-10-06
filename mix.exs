@@ -106,7 +106,8 @@ defmodule Pow.MixProject do
         "PowEmailConfirmation": ~r/^PowEmailConfirmation/,
         "PowPersistentSession": ~r/^PowPersistentSession/,
         "PowResetPassword": ~r/^PowResetPassword/,
-        "PowInvitation": ~r/^PowInvitation/
+        "PowInvitation": ~r/^PowInvitation/,
+        "PowRateLimiter": ~r/^PowRateLimiter/
       ],
       groups_for_extras: [
         Extensions: Path.wildcard("lib/extensions/*/README.md"),

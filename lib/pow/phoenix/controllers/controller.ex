@@ -101,6 +101,7 @@ defmodule Pow.Phoenix.Controller do
     |> respond_action(controller, action)
   end
 
+  defp process_action({:halt, conn}, _controller, _action, _params), do: {:halt, conn}
   defp process_action(conn, controller, action, params) do
     apply(controller, String.to_atom("process_#{action}"), [conn, params])
   end

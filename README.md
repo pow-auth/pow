@@ -136,6 +136,7 @@ Pow is made so it's easy to extend the functionality with your own complimentary
 * [PowEmailConfirmation](lib/extensions/email_confirmation/README.md)
 * [PowPersistentSession](lib/extensions/persistent_session/README.md)
 * [PowInvitation](lib/extensions/invitation/README.md)
+* [PowRateLimiter](lib/extensions/rate_limiter/README.md)
 
 Check out the ["Other libraries"](#other-libraries) section for other extensions.
 
