@@ -1,8 +1,8 @@
 # How to use Pow in an API
 
-Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefore Pow encourages that you built custom controllers, and uses the plug methods for API integration.
+Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefore Pow encourages that you build custom controllers, and use the plug methods for API integration.
 
-To get you started, here's the first steps to built a Pow enabled API interface.
+To get you started, here's the first steps to build a Pow enabled API interface.
 
 We'll set up a [custom authorization plug](../README.md#authorization-plug) where we'll store session tokens with `Pow.Store.CredentialsCache`, and renewal tokens with `PowPersistentSession.Store.PersistentSessionCache`. The session tokens will automatically expire after 30 minutes, whereafter your client should request a new session token with the renewal token.
 
@@ -277,7 +277,7 @@ $ curl -X POST -H "Authorization: RENEW_TOKEN" http://localhost:4000/api/v1/sess
 
 ## OAuth 2.0
 
-You may notice that the renew mechanism looks like refresh tokens in OAuth 2.0, and that's because the above setup is a very similar since we use short lived session ids. In some cases it may make more sense to set up a OAuth 2.0 server rather than using the above setup.
+You may notice that the renew mechanism looks like refresh tokens in OAuth 2.0, and that's because the above setup is very similar since we use short lived session ids. In some cases it may make more sense to set up an OAuth 2.0 server rather than using the above setup.
 
 ## Test modules
 
