@@ -60,16 +60,22 @@ defmodule Pow.Plug.Session do
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
 
+  If a fingerprint is fetched from the session value it'll be set as the
+  `:pow_session_fingerprint` private key in the conn so it can be used in the
+  renewal process.
+
   See `do_fetch/2` for more.
   """
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     {store, store_config} = store(config)
+    conn                  = Conn.fetch_session(conn)
+    key                   = Conn.get_session(conn, session_key(config))
 
-    conn
-    |> get_session(config, store, store_config)
-    |> renew_stale_session(conn, config)
+    {key, store.get(store_config, key)}
+    |> convert_old_session_value()
+    |> handle_fetched_session_value(conn, config)
   end
 
   @doc """
@@ -83,6 +89,10 @@ defmodule Pow.Plug.Session do
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
 
+  If `:pow_session_fingerprint` exists as a private key in the conn, it'll be
+  passed on to as the `:fingerprint` for the session. Otherwise a new random
+  fingerprint is generated.
+
   See `do_create/3` for more.
   """
   @impl true
@@ -90,28 +100,21 @@ defmodule Pow.Plug.Session do
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
     {store, store_config} = store(config)
-    prev_fingerprint      =
-      conn
-      |> get_session(config, store, store_config)
-      |> fetch_fingerprint()
-    value                 = session_value(user, prev_fingerprint)
+    prev_fingerprint      = conn.private[:pow_session_fingerprint]
+    {user, metadata}      = session_value(user, prev_fingerprint)
     key                   = session_id(config)
     session_key           = session_key(config)
 
-    store.put(store_config, key, value)
+    store.put(store_config, key, {user, metadata})
 
     conn =
       conn
       |> delete(config)
+      |> put_fingerprint(metadata)
       |> Conn.put_session(session_key, key)
 
     {conn, user}
   end
-
-  defp fetch_fingerprint({_session_id, {_user, opts}}) when is_list(opts),
-    do: Keyword.get(opts, :fingerprint)
-  defp fetch_fingerprint({_session_id, :not_found}),
-    do: nil
 
   defp session_value(user, nil),
     do: session_value(user, gen_fingerprint())
@@ -142,19 +145,18 @@ defmodule Pow.Plug.Session do
     Conn.delete_session(conn, session_key)
   end
 
-  defp get_session(conn, config, store, store_config) do
-    conn = Conn.fetch_session(conn)
-    key  = Conn.get_session(conn, session_key(config))
-
-    convert_old_session_value({key, store.get(store_config, key)})
-  end
-
   # TODO: Remove by 1.1.0
   defp convert_old_session_value({key, {user, timestamp}}) when is_number(timestamp), do: {key, {user, inserted_at: timestamp}}
   defp convert_old_session_value(any), do: any
 
-  defp renew_stale_session({_key, :not_found}, conn, _config), do: {conn, nil}
-  defp renew_stale_session({_key, {user, metadata}}, conn, config) when is_list(metadata) do
+  defp handle_fetched_session_value({_key, :not_found}, conn, _config), do: {conn, nil}
+  defp handle_fetched_session_value({_key, {user, metadata}}, conn, config) when is_list(metadata) do
+    conn
+    |> put_fingerprint(metadata)
+    |> renew_stale_session(user, metadata, config)
+  end
+
+  defp renew_stale_session(conn, user, metadata, config) do
     metadata
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
@@ -171,6 +173,16 @@ defmodule Pow.Plug.Session do
   defp session_stale?(_inserted_at, _config, nil), do: false
   defp session_stale?(inserted_at, _config, ttl) do
     inserted_at + ttl < timestamp()
+  end
+
+  defp put_fingerprint(conn, metadata) do
+    conn =
+      case Keyword.get(metadata, :fingerprint) do
+        nil -> conn
+        val -> Conn.put_private(conn, :pow_session_fingerprint, val)
+      end
+
+    conn
   end
 
   defp session_id(config) do

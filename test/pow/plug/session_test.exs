@@ -45,7 +45,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond), fingerprint: "fingerprint"})
 
     opts = Session.init(@default_opts)
     conn =
@@ -55,6 +55,7 @@ defmodule Pow.Plug.SessionTest do
       |> Session.call(opts)
 
     assert conn.assigns[:current_user] == @user
+    assert conn.private[:pow_session_fingerprint] == "fingerprint"
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
@@ -99,6 +100,7 @@ defmodule Pow.Plug.SessionTest do
     assert {_user, metadata} = CredentialsCache.get(@store_config, new_session_id)
     assert metadata[:inserted_at] != stale_timestamp
     assert metadata[:fingerprint] == "fingerprint"
+    assert conn.private[:pow_session_fingerprint] == "fingerprint"
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
@@ -154,13 +156,8 @@ defmodule Pow.Plug.SessionTest do
       assert {@user, metadata} = CredentialsCache.get(@store_config, session_id)
       assert is_binary(session_id)
       assert Plug.current_user(conn) == @user
-      assert metadata[:fingerprint]
-
-      assert {_key, metadata} =
-        @store_config
-        |> Keyword.put(:namespace, "credentials")
-        |> EtsCacheMock.get(session_id)
       assert metadata[:inserted_at]
+      assert metadata[:fingerprint]
 
       conn = Session.do_create(conn, @user, opts)
       new_session_id = get_session_id(conn)

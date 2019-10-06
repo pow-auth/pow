@@ -6,6 +6,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   be renewed on every request. The token in the cookie can only be used once to
   create a session.
 
+  If a private `:pow_session_fingerprint` key is assigned to the conn, it'll be
+  set along with the user id as the persistent session value as
+  `{user_id, session_fingerprint: fingerprint}`.
+
   ## Example
 
     defmodule MyAppWeb.Endpoint do
@@ -41,22 +45,31 @@ defmodule PowPersistentSession.Plug.Cookie do
   @doc """
   Sets a persistent session cookie with an auto generated token.
 
-  The token is set as a key in the persistent session cache with
-  the user struct id.
+  The token is set as a key in the persistent session cache with the user
+  struct id. If `:pow_session_fingerprint` has been assign as a private key in
+  the conn, the value will be `{user_id, session_fingerprint: fingerprint}`
+  instead.
 
   The unique cookie id will be prepended by the `:otp_app` configuration
   value, if present.
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
-  def create(conn, %{id: user_id}, config) do
+  def create(conn, user, config) do
     {store, store_config} = store(config)
     cookie_key            = cookie_key(config)
     key                   = cookie_id(config)
-    value                 = user_id
+    value                 = persistent_session_value(conn, user)
     opts                  = session_opts(config)
 
     store.put(store_config, key, value)
     Conn.put_resp_cookie(conn, cookie_key, key, opts)
+  end
+
+  defp persistent_session_value(conn, %{id: id}) do
+    case conn.private[:pow_session_fingerprint] do
+      nil         -> id
+      fingerprint -> {id, session_fingerprint: fingerprint}
+    end
   end
 
   @doc """
@@ -92,6 +105,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   cookie. The old persistent session cookie and session cache credentials will
   be removed.
 
+  If a `:session_fingerprint` is fetched from the persistent session metadata,
+  it'll be assigned as a private key `:pow_session_fingerprint`.
+
   The cookie expiration will automatically be renewed on every request.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
@@ -116,26 +132,37 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp do_authenticate(conn, key_id, config) do
     {store, store_config} = store(config)
+    res                   = store.get(store_config, key_id)
+    plug                  = Plug.get_plug(config)
+    conn                  = delete(conn, config)
 
-    store_config
-    |> store.get(key_id)
-    |> maybe_fetch_user(config)
-    |> case do
-      nil ->
-        delete(conn, config)
-
-      user ->
-        conn
-        |> delete(config)
-        |> create(user, config)
-        |> Plug.get_plug(config).do_create(user, config)
+    case res do
+      :not_found -> conn
+      res        -> fetch_and_auth_user(conn, res, plug, config)
     end
   end
 
-  defp maybe_fetch_user(:not_found, _config), do: nil
-  defp maybe_fetch_user(user_id, config) do
-    Pow.Operations.get_by([id: user_id], config)
+  defp fetch_and_auth_user(conn, {user_id, metadata}, plug, config) do
+    conn =
+      case Keyword.get(metadata, :session_fingerprint) do
+        nil -> conn
+        val -> Conn.put_private(conn, :pow_session_fingerprint, val)
+      end
+
+    [id: user_id]
+    |> Pow.Operations.get_by(config)
+    |> case do
+      nil ->
+        conn
+
+      user ->
+        conn
+        |> create(user, config)
+        |> plug.do_create(user, config)
+    end
   end
+  defp fetch_and_auth_user(conn, user_id, plug, config),
+    do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
 
   defp maybe_renew(conn, config) do
     cookie_key  = cookie_key(config)
