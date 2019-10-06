@@ -47,6 +47,32 @@ defmodule Pow.Plug.Session do
 
     * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
       sessions. Defaults to 15 minutes in miliseconds.
+
+  ## Custom metadata
+
+  The `:pow_session_metadata` key in `conn.private` can be populated with custom
+  metadata. Here's one way to do it:
+
+      def append_to_session_metadata(conn) do
+        client_ip  = to_string(:inet_parse.ntoa(conn.remote_ip))
+        user_agent = get_req_header(conn, "user-agent")
+
+        metadata =
+          conn.private
+          |> Map.get(:pow_session_metadata, [])
+          |> Keyword.put_new(:first_seen_at, DateTime.utc_now())
+          |> Keyword.put(:ip, client_ip)
+          |> Keyword.put(:user_agent, user_agent)
+
+        Plug.Conn.put_private(conn, :pow_session_metadata, metadata)
+      end
+
+  The `:first_seen_at` will only be set if it doesn't already exist in the
+  fetched metadata, while `:ip` and `:user_agent` will be updated each time the
+  session is created/renewed.
+
+  The method should be called after `Pow.Plug.Session.call/2` has been called
+  to ensure that the metadata, if any, has been fetched.
   """
   use Pow.Plug.Base
 
