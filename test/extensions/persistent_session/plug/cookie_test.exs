@@ -136,9 +136,9 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
   end
 
-  test "create/3 with `:pow_session_fingerprint` defined in conn", %{conn: conn, config: config} do
+  test "create/3 with `:pow_session_metadata` with `:fingerprint` defined in conn", %{conn: conn, config: config} do
     conn
-    |> Conn.put_private(:pow_session_fingerprint, "fingerprint")
+    |> Conn.put_private(:pow_session_metadata, fingerprint: "fingerprint")
     |> Cookie.create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, {1, session_fingerprint: "fingerprint"}}], _config}

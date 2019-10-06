@@ -9,6 +9,10 @@ defmodule Pow.Plug.Session do
   renewed (deleted and created). Otherwise a random unique id will be generated
   as fingerprint.
 
+  You can add additional metadata to sessions by setting the
+  `:pow_session_metadata` private key in the conn. The value has to be a
+  keyword list.
+
   ## Example
 
       plug Plug.Session,
@@ -60,9 +64,8 @@ defmodule Pow.Plug.Session do
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
 
-  If a fingerprint is fetched from the session value it'll be set as the
-  `:pow_session_fingerprint` private key in the conn so it can be used in the
-  renewal process.
+  The metadata of the session will be set as the `:pow_session_metadata`
+  private key in the conn so it can be used in the renewal process.
 
   See `do_fetch/2` for more.
   """
@@ -89,9 +92,9 @@ defmodule Pow.Plug.Session do
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
 
-  If `:pow_session_fingerprint` exists as a private key in the conn, it'll be
-  passed on to as the `:fingerprint` for the session. Otherwise a new random
-  fingerprint is generated.
+  If `:pow_session_metadata` exists as a private key in the conn, it'll be
+  passed on as the metadata of the session. If a `:fingerprint` is not set in
+  the metadata a new random `:fingerprint` UUID will be generated.
 
   See `do_create/3` for more.
   """
@@ -100,8 +103,8 @@ defmodule Pow.Plug.Session do
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
     {store, store_config} = store(config)
-    prev_fingerprint      = conn.private[:pow_session_fingerprint]
-    {user, metadata}      = session_value(user, prev_fingerprint)
+    metadata              = Map.get(conn.private, :pow_session_metadata, [])
+    {user, metadata}      = session_value(user, metadata)
     key                   = session_id(config)
     session_key           = session_key(config)
 
@@ -110,18 +113,20 @@ defmodule Pow.Plug.Session do
     conn =
       conn
       |> delete(config)
-      |> put_fingerprint(metadata)
+      |> Conn.put_private(:pow_session_metadata, metadata)
       |> Conn.put_session(session_key, key)
 
     {conn, user}
   end
 
-  defp session_value(user, nil),
-    do: session_value(user, gen_fingerprint())
-  defp session_value(user, fingerprint),
-    do: {user, inserted_at: timestamp(), fingerprint: fingerprint}
+  defp session_value(user, metadata) do
+    metadata =
+      metadata
+      |> Keyword.put_new(:fingerprint, UUID.generate())
+      |> Keyword.put(:inserted_at, timestamp())
 
-  defp gen_fingerprint(), do: UUID.generate()
+    {user, metadata}
+  end
 
   @doc """
   Delete an existing session in the credentials cache.
@@ -152,7 +157,7 @@ defmodule Pow.Plug.Session do
   defp handle_fetched_session_value({_key, :not_found}, conn, _config), do: {conn, nil}
   defp handle_fetched_session_value({_key, {user, metadata}}, conn, config) when is_list(metadata) do
     conn
-    |> put_fingerprint(metadata)
+    |> Conn.put_private(:pow_session_metadata, metadata)
     |> renew_stale_session(user, metadata, config)
   end
 
@@ -173,16 +178,6 @@ defmodule Pow.Plug.Session do
   defp session_stale?(_inserted_at, _config, nil), do: false
   defp session_stale?(inserted_at, _config, ttl) do
     inserted_at + ttl < timestamp()
-  end
-
-  defp put_fingerprint(conn, metadata) do
-    conn =
-      case Keyword.get(metadata, :fingerprint) do
-        nil -> conn
-        val -> Conn.put_private(conn, :pow_session_fingerprint, val)
-      end
-
-    conn
   end
 
   defp session_id(config) do

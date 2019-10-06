@@ -6,7 +6,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   be renewed on every request. The token in the cookie can only be used once to
   create a session.
 
-  If a private `:pow_session_fingerprint` key is assigned to the conn, it'll be
+  If a private `:pow_session_metadata` key is assigned to the conn with a
+  keyword list containing `:fingerprint` key, that fingerprint value will be
   set along with the user id as the persistent session value as
   `{user_id, session_fingerprint: fingerprint}`.
 
@@ -46,9 +47,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   Sets a persistent session cookie with an auto generated token.
 
   The token is set as a key in the persistent session cache with the user
-  struct id. If `:pow_session_fingerprint` has been assign as a private key in
-  the conn, the value will be `{user_id, session_fingerprint: fingerprint}`
-  instead.
+  struct id. If `:pow_session_metadata` has been assign as a private key in
+  the conn as a keyword list with a `:fingerprint` key, the value will be
+  `{user_id, session_fingerprint: fingerprint}` instead.
 
   The unique cookie id will be prepended by the `:otp_app` configuration
   value, if present.
@@ -66,7 +67,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp persistent_session_value(conn, %{id: id}) do
-    case conn.private[:pow_session_fingerprint] do
+    conn.private
+    |> Map.get(:pow_session_metadata, [])
+    |> Keyword.get(:fingerprint)
+    |> case do
       nil         -> id
       fingerprint -> {id, session_fingerprint: fingerprint}
     end
@@ -106,7 +110,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   be removed.
 
   If a `:session_fingerprint` is fetched from the persistent session metadata,
-  it'll be assigned as a private key `:pow_session_fingerprint`.
+  it'll be added as `:fingerprint` to the keyword list of the private key
+  `:pow_session_metadata` of the conn.
 
   The cookie expiration will automatically be renewed on every request.
   """
@@ -143,11 +148,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp fetch_and_auth_user(conn, {user_id, metadata}, plug, config) do
-    conn =
-      case Keyword.get(metadata, :session_fingerprint) do
-        nil -> conn
-        val -> Conn.put_private(conn, :pow_session_fingerprint, val)
-      end
+    conn = update_session_metadata_with_fingerprint(conn, metadata)
 
     [id: user_id]
     |> Pow.Operations.get_by(config)
@@ -163,6 +164,21 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
   defp fetch_and_auth_user(conn, user_id, plug, config),
     do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
+
+  defp update_session_metadata_with_fingerprint(conn, metadata) do
+    case Keyword.get(metadata, :session_fingerprint) do
+      nil ->
+        conn
+
+      fingerprint ->
+        metadata =
+          conn.private
+          |> Map.get(:pow_session_metadata, [])
+          |> Keyword.put(:fingerprint, fingerprint)
+
+        Conn.put_private(conn, :pow_session_metadata, metadata)
+    end
+  end
 
   defp maybe_renew(conn, config) do
     cookie_key  = cookie_key(config)
