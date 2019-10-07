@@ -512,7 +512,7 @@ Enables session-based authorization. The user struct will be collected from a ca
 
 The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to [add a plug](guides/sync_user.md) that reloads the user struct and reassigns it to the connection.
 
-Custom metadata can be set for the session by updating the `:pow_session_metadata` key in `conn.private`. Read the `Pow.Plug.Session` module docs for more details.
+Custom metadata can be set for the session by assigning a private `:pow_session_metadata` key in the conn. Read the `Pow.Plug.Session` module docs for more details.
 
 #### Cache store
 

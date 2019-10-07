@@ -2,16 +2,17 @@ defmodule Pow.Plug.Session do
   @moduledoc """
   This plug will handle user authorization using session.
 
-  The plug will store user and metadata in the cache store backend. The
-  metadata has a `:inserted_at` and `:fingerprint` key. The `:inserted_at`
-  value is used to determine if the session has to be renewed, while the
-  `:fingerprint` will remain the same across sessions if the session was
-  renewed (deleted and created). Otherwise a random unique id will be generated
-  as fingerprint.
+  The plug will store user and session metadata in the cache store backend. The
+  session metadata has at least an `:inserted_at` and a `:fingerprint` key. The
+  `:inserted_at` value is used to determine if the session has to be renewed,
+  and is set each time a session is created. The `:fingerprint` will be a random
+  unique id and will stay the same if a session is renewed.
 
-  You can add additional metadata to sessions by setting the
-  `:pow_session_metadata` private key in the conn. The value has to be a
-  keyword list.
+  When a session is renewed the old session is deleted and a new created.
+
+  You can add additional metadata to sessions by setting or updated the
+  assigned private `:pow_session_metadata` key in the conn. The value has to be
+  a keyword list.
 
   ## Example
 
@@ -50,8 +51,12 @@ defmodule Pow.Plug.Session do
 
   ## Custom metadata
 
-  The `:pow_session_metadata` key in `conn.private` can be populated with custom
-  metadata. Here's one way to do it:
+  The assigned private `:pow_session_metadata` key in the conn can be populated
+  with custom metadata. This data will be stored in the session metadata when
+  the session is created, and fetched in subsequent requests.
+
+  Here's an example of how one could add sign in timestamp, IP, and user agent
+  information to the session metadata:
 
       def append_to_session_metadata(conn) do
         client_ip  = to_string(:inet_parse.ntoa(conn.remote_ip))
@@ -68,8 +73,8 @@ defmodule Pow.Plug.Session do
       end
 
   The `:first_seen_at` will only be set if it doesn't already exist in the
-  fetched metadata, while `:ip` and `:user_agent` will be updated each time the
-  session is created/renewed.
+  session metadata, while `:ip` and `:user_agent` will be updated each time the
+  session is created.
 
   The method should be called after `Pow.Plug.Session.call/2` has been called
   to ensure that the metadata, if any, has been fetched.
@@ -90,8 +95,8 @@ defmodule Pow.Plug.Session do
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
 
-  The metadata of the session will be set as the `:pow_session_metadata`
-  private key in the conn so it can be used in the renewal process.
+  The metadata of the session will be assigned as a private
+  `:pow_session_metadata` key in the conn so it may be used in `create/3`.
 
   See `do_fetch/2` for more.
   """
@@ -118,9 +123,10 @@ defmodule Pow.Plug.Session do
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
 
-  If `:pow_session_metadata` exists as a private key in the conn, it'll be
-  passed on as the metadata of the session. If a `:fingerprint` is not set in
-  the metadata a new random `:fingerprint` UUID will be generated.
+  If an assigned private `:pow_session_metadata` key exists in the conn, it'll
+  be passed on as the metadata for the session. However the `:inserted_at` value
+  will always be overridden. If no `:fingerprint` exists in the metadata a
+  random UUID value will be generated as its value.
 
   See `do_create/3` for more.
   """

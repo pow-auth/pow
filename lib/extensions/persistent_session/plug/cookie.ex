@@ -6,8 +6,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   be renewed on every request. The token in the cookie can only be used once to
   create a session.
 
-  If a private `:pow_session_metadata` key is assigned to the conn with a
-  keyword list containing `:fingerprint` key, that fingerprint value will be
+  If an assigned private `:pow_session_metadata` key exists in the conn with a
+  keyword list containing a `:fingerprint` key, that fingerprint value will be
   set along with the user id as the persistent session value as
   `{user_id, session_fingerprint: fingerprint}`.
 
@@ -46,10 +46,13 @@ defmodule PowPersistentSession.Plug.Cookie do
   @doc """
   Sets a persistent session cookie with an auto generated token.
 
-  The token is set as a key in the persistent session cache with the user
-  struct id. If `:pow_session_metadata` has been assign as a private key in
-  the conn as a keyword list with a `:fingerprint` key, the value will be
-  `{user_id, session_fingerprint: fingerprint}` instead.
+  The token is set as a key in the persistent session cache with the id fetched
+  from the struct.
+
+  If an assigned private `:pow_session_metadata` key exists in the conn with a
+  keyword list containing a `:fingerprint` value, then that value will be set
+  as the `:session_fingerprint` in the metadata. The value will look like:
+  `{user_id, session_fingerprint: fingerprint}`
 
   The unique cookie id will be prepended by the `:otp_app` configuration
   value, if present.
@@ -110,8 +113,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   be removed.
 
   If a `:session_fingerprint` is fetched from the persistent session metadata,
-  it'll be added as `:fingerprint` to the keyword list of the private key
-  `:pow_session_metadata` of the conn.
+  it'll be assigned to the private `:pow_session_metadata` key in the conn as
+  `:fingerprint`.
 
   The cookie expiration will automatically be renewed on every request.
   """

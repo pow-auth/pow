@@ -58,7 +58,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == 1
   end
 
-  test "call/2 assigns user from cookie with fingerprint value set", %{conn: conn, ets: ets} do
+  test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"
     conn =
@@ -71,6 +71,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     refute new_id == id
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
     assert PersistentSessionCache.get([backend: ets], new_id) == {1, session_fingerprint: "fingerprint"}
+    assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
   test "call/2 assigns user from cookie with prepended `:otp_app`", %{config: config, ets: ets} do
@@ -136,7 +137,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
   end
 
-  test "create/3 with `:pow_session_metadata` with `:fingerprint` defined in conn", %{conn: conn, config: config} do
+  test "create/3 with `[:pow_session_metadata][:fingerprint]` defined in conn.private", %{conn: conn, config: config} do
     conn
     |> Conn.put_private(:pow_session_metadata, fingerprint: "fingerprint")
     |> Cookie.create(%User{id: 1}, config)
