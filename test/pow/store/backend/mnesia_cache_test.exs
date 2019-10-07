@@ -150,7 +150,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
 
       # Start node a and join cluster
-      startup_timestamp = :os.system_time(:millisecond)
+      startup_timestamp = System.monotonic_time(:millisecond)
       node_a = spawn_node("a")
       config = @default_config ++ [extra_db_nodes: [node_b]]
       {:ok, _pid} = :rpc.call(node_a, MnesiaCache, :start_link, [config])
@@ -162,7 +162,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :ok = :slave.stop(node_b)
 
       # Node a invalidates short TTL value written on node b
-      startup_time = :os.system_time(:millisecond) - startup_timestamp
+      startup_time = System.monotonic_time(:millisecond) - startup_timestamp
       :timer.sleep(@startup_wait_time - startup_time + 100)
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == :not_found
     end
