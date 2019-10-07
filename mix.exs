@@ -78,6 +78,7 @@ defmodule Pow.MixProject do
         "CONTRIBUTING.md": [filename: "CONTRIBUTING"],
         "CHANGELOG.md": [filename: "CHANGELOG"],
         "guides/why_pow.md": [],
+        "guides/production_checklist.md": [],
         "guides/coherence_migration.md": [],
         "guides/configuring_mailer.md": [],
         "guides/user_roles.md": [],
