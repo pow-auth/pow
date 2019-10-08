@@ -4,8 +4,8 @@ defmodule Pow.Phoenix.Router do
 
   Resources are build with `pow_resources/3` and individual routes are build
   with `pow_route/5`. The Pow routes will be filtered if a route has already
-  been defined with the same action and router helper alias. This makes it easy
-  to override pow routes with no conflicts.
+  been defined with the same action, router helper alias, and number of
+  bindings. This makes it easy to override pow routes with no conflicts.
 
   The scope will be validated to ensure that there is no aliases. An exception
   will be raised if an alias was defined in any scope around the pow routes.
@@ -114,22 +114,27 @@ defmodule Pow.Phoenix.Router do
     line
     |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
     |> case do
-      %{plug_opts: plug_opts, helper: helper} ->
-        any_matching_routes?(phoenix_routes, %{plug_opts: plug_opts, helper: helper})
+      %{plug_opts: _, helper: _} = route ->
+        any_matching_routes?(phoenix_routes, route, [:plug_opts, :helper])
 
       # TODO: Remove this match by 1.1.0, and up requirement for Phoenix to minimum 1.4.7
-      %{opts: plug_opts, helper: helper} ->
-        any_matching_routes?(phoenix_routes, %{opts: plug_opts, helper: helper})
+      %{opts: _, helper: _} = route ->
+        any_matching_routes?(phoenix_routes, route, [:opts, :helper])
 
       _any ->
         false
     end
   end
 
-  defp any_matching_routes?(phoenix_routes, needle) do
-    keys = Map.keys(needle)
+  defp any_matching_routes?(phoenix_routes, route, keys) do
+    needle       = Map.take(route, keys)
+    route_exprs  = Phoenix.Router.Route.exprs(route)
 
-    Enum.any?(phoenix_routes, &Map.take(&1, keys) == needle)
+    Enum.any?(phoenix_routes, &Map.take(&1, keys) == needle && equal_binding_length?(&1, route_exprs))
+  end
+
+  defp equal_binding_length?(route, exprs) do
+    length(exprs.binding) == length(Phoenix.Router.Route.exprs(route).binding)
   end
 
   defmacro pow_route(verb, path, plug, plug_opts, options \\ []) do
