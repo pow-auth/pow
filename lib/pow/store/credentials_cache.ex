@@ -74,16 +74,13 @@ defmodule Pow.Store.CredentialsCache do
   @impl true
   @spec delete(Config.t(), Config.t(), binary()) :: :ok
   def delete(config, backend_config, session_id) do
-    case Base.get(config, backend_config, session_id) do
-      :not_found ->
-        :ok
-
-      {key, _metadata} when is_binary(key) ->
-        Base.delete(config, backend_config, session_id)
-        delete_from_session_list(config, backend_config, session_id, key)
-
-      {user, _metadata} when is_map(user) ->
-        Base.delete(config, backend_config, session_id)
+    with {key, _metadata} when is_binary(key) <- Base.get(config, backend_config, session_id),
+         :ok                                  <- delete_from_session_list(config, backend_config, session_id, key) do
+      Base.delete(config, backend_config, session_id)
+    else
+      # TODO: Remove by 1.1.0
+      {user, _metadata} when is_map(user) -> Base.delete(config, backend_config, session_id)
+      :not_found -> :ok
     end
   end
 
@@ -121,8 +118,13 @@ defmodule Pow.Store.CredentialsCache do
     |> sessions(backend_config, user)
     |> Enum.filter(&(&1 != session_id))
     |> case do
-      []       -> Base.delete(config, backend_config, key)
-      new_list -> update_session_list(config, backend_config, user, new_list)
+      [] ->
+        Base.delete(config, backend_config, key)
+
+      new_list ->
+        update_session_list(config, backend_config, user, new_list)
+
+        :ok
     end
   end
 

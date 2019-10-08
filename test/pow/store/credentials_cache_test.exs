@@ -43,11 +43,11 @@ defmodule Pow.Store.CredentialsCacheTest do
     CredentialsCache.put(@config, @backend_config, "key_2", {%{user_1 | email: :updated}, a: 5})
     assert CredentialsCache.get(@config, @backend_config, "key_1") == {%{user_1 | email: :updated}, a: 1}
 
-    CredentialsCache.delete(@config, @backend_config, "key_1")
+    assert CredentialsCache.delete(@config, @backend_config, "key_1") == :ok
     assert CredentialsCache.get(@config, @backend_config, "key_1") == :not_found
     assert CredentialsCache.sessions(@config, @backend_config, user_1) == ["key_2"]
 
-    CredentialsCache.delete(@config, @backend_config, "key_2")
+    assert CredentialsCache.delete(@config, @backend_config, "key_2") == :ok
     assert CredentialsCache.sessions(@config, @backend_config, user_1) == []
 
     assert EtsCacheMock.get(@backend_config, "#{Macro.underscore(User)}_sessions_1") == :not_found
@@ -118,6 +118,8 @@ defmodule Pow.Store.CredentialsCacheTest do
     EtsCacheMock.put(@backend_config, "key_1", {user_1, inserted_at: timestamp})
 
     assert CredentialsCache.get(@config, @backend_config, "key_1") == {user_1, inserted_at: timestamp}
+    assert CredentialsCache.delete(@config, @backend_config, "key_1") == :ok
+    assert CredentialsCache.get(@config, @backend_config, "key_1") == :not_found
   end
 
   describe "with EtsCache backend" do
