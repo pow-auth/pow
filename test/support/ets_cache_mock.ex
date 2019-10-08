@@ -17,6 +17,8 @@ defmodule Pow.Test.EtsCacheMock do
 
   def delete(config, key) do
     :ets.delete(@tab, ets_key(config, key))
+
+    :ok
   end
 
   def put(config, key, value) do
