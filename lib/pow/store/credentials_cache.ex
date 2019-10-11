@@ -21,17 +21,17 @@ defmodule Pow.Store.CredentialsCache do
     namespace: "credentials"
 
   @doc """
-  List all user session keys stored for a certain user struct.
+  List all user for a certain user struct.
 
-  Each user session key can be used to look up all sessions for that user.
+  Sessions for a user can be looked up with `sessions/3`.
   """
-  @spec user_session_keys(Config.t(), Config.t(), module()) :: [any()]
-  def user_session_keys(config, backend_config, struct) do
-    namespace = "#{Macro.underscore(struct)}_sessions_"
-
+  @spec users(Config.t(), Config.t(), module()) :: [any()]
+  def users(config, backend_config, struct) do
     config
-    |> Base.keys(backend_config)
-    |> Enum.filter(&String.starts_with?(&1, namespace))
+    |> Base.all(backend_config, [struct, :user, :_])
+    |> Enum.map(fn {[^struct, :user, _id], user} ->
+      user
+    end)
   end
 
   @doc """
@@ -39,48 +39,67 @@ defmodule Pow.Store.CredentialsCache do
   """
   @spec sessions(Config.t(), Config.t(), map()) :: [binary()]
   def sessions(config, backend_config, user) do
-    case Base.get(config, backend_config, user_session_list_key(user)) do
-      :not_found            -> []
-      %{sessions: sessions} -> sessions
-    end
+    {struct, id} = user_to_struct_id(user)
+
+    config
+    |> Base.all(backend_config, [struct, :user, id, :session, :_])
+    |> Enum.map(fn {[^struct, :user, ^id, :session, session_id], _value} ->
+      session_id
+    end)
   end
 
   @doc """
   Add user credentials with the session id to the backend store.
 
-  This will either create or update the current user credentials in the
-  backend store. The session id will be appended to the session list for the
-  user credentials.
-
   The credentials are expected to be in the format of
   `{credentials, metadata}`.
+
+  This following three key-value will be inserted:
+
+    - `{session_id, {[user_struct, :user, user_id], metadata}}`
+    - `{[user_struct, :user, user_id], user}`
+    - `{[user_struct, :user, user_id, :session, session_id], inserted_at}`
   """
   @impl true
-  @spec put(Config.t(), Config.t(), binary(), {map(), list()}) :: :ok
   def put(config, backend_config, session_id, {user, metadata}) do
-    key = append_to_session_list(config, backend_config, session_id, user)
+    {struct, id} = user_to_struct_id(user)
+    user_key     = [struct, :user, id]
+    session_key  = [struct, :user, id, :session, session_id]
+    records      = [
+      {session_id, {user_key, metadata}},
+      {user_key, user},
+      {session_key, :os.system_time(:millisecond)}
+    ]
 
-    Base.put(config, backend_config, session_id, {key, metadata})
+    Base.put(config, backend_config, records)
   end
 
   @doc """
-  Delete the sesison id from the backend store.
+  Delete the user credentials data from the backend store.
 
-  This will delete the session id from the session list for the user
-  credentials in the backend store. If the session id is the only one in the
-  session list, the user credentials will be deleted too from the backend
-  store.
+  This following two key-value will be deleted:
+
+  - `{session_id, {[user_struct, :user, user_id], metadata}}`
+  - `{[user_struct, :user, user_id, :session, session_id], inserted_at}`
+
+  The `{[user_struct, :user, user_id], user}` key-value is expected to expire
+  when reaching its TTL.
   """
   @impl true
-  @spec delete(Config.t(), Config.t(), binary()) :: :ok
   def delete(config, backend_config, session_id) do
-    with {key, _metadata} when is_binary(key) <- Base.get(config, backend_config, session_id),
-         :ok                                  <- delete_from_session_list(config, backend_config, session_id, key) do
-      Base.delete(config, backend_config, session_id)
-    else
+    case Base.get(config, backend_config, session_id) do
+      {[struct, :user, key_id], _metadata} ->
+        session_key = [struct, :user, key_id, :session, session_id]
+
+        Base.delete(config, backend_config, session_id)
+        Base.delete(config, backend_config, session_key)
+
       # TODO: Remove by 1.1.0
-      {user, _metadata} when is_map(user) -> Base.delete(config, backend_config, session_id)
-      :not_found -> :ok
+      {user, _metadata} when is_map(user) ->
+        Base.delete(config, backend_config, session_id)
+
+      :not_found ->
+        :ok
     end
   end
 
@@ -90,8 +109,8 @@ defmodule Pow.Store.CredentialsCache do
   @impl true
   @spec get(Config.t(), Config.t(), binary()) :: {map(), list()} | :not_found
   def get(config, backend_config, session_id) do
-    with {key, metadata} when is_binary(key) <- Base.get(config, backend_config, session_id),
-         %{user: user}                       <- Base.get(config, backend_config, key) do
+    with {user_key, metadata} when is_list(user_key) <- Base.get(config, backend_config, session_id),
+         user when is_map(user)                      <- Base.get(config, backend_config, user_key) do
       {user, metadata}
     else
       # TODO: Remove by 1.1.0
@@ -100,72 +119,43 @@ defmodule Pow.Store.CredentialsCache do
     end
   end
 
-  defp append_to_session_list(config, backend_config, session_id, user) do
-    new_list =
-      config
-      |> sessions(backend_config, user)
-      |> Enum.reject(&get(config, backend_config, &1) == :not_found)
-      |> Enum.concat([session_id])
-      |> Enum.uniq()
-
-    update_session_list(config, backend_config, user, new_list)
-  end
-
-  defp delete_from_session_list(config, backend_config, session_id, key) do
-    %{user: user} = Base.get(config, backend_config, key)
-
-    config
-    |> sessions(backend_config, user)
-    |> Enum.filter(&(&1 != session_id))
-    |> case do
-      [] ->
-        Base.delete(config, backend_config, key)
-
-      new_list ->
-        update_session_list(config, backend_config, user, new_list)
-
-        :ok
+  defp user_to_struct_id(%struct{} = user) do
+    key_value = case function_exported?(struct, :__schema__, 1) do
+      true  -> key_value_from_primary_keys(user)
+      false -> primary_keys_to_keyword_list!([:id], user)
     end
+
+    {struct, key_value}
   end
-
-  defp update_session_list(config, backend_config, user, list) do
-    key = user_session_list_key(user)
-
-    Base.put(config, backend_config, key, %{user: user, sessions: list})
-
-    key
-  end
-
-  defp user_session_list_key(%struct{} = user) do
-    key_value =
-      case function_exported?(struct, :__schema__, 1) do
-        true  -> key_value_from_primary_keys(user)
-        false -> primary_keys_to_binary!([:id], user)
-      end
-
-    "#{Macro.underscore(struct)}_sessions_#{key_value}"
-  end
-  defp user_session_list_key(_user), do: raise "Only structs can be stored as credentials"
+  defp user_to_struct_id(_user), do: raise "Only structs can be stored as credentials"
 
   defp key_value_from_primary_keys(%struct{} = user) do
     :primary_key
     |> struct.__schema__()
     |> Enum.sort()
-    |> primary_keys_to_binary!(user)
+    |> primary_keys_to_keyword_list!(user)
   end
 
-  defp primary_keys_to_binary!([], %struct{}), do: raise "No primary keys found for #{inspect struct}"
-  defp primary_keys_to_binary!([key], user), do: get_primary_key_value!(key, user)
-  defp primary_keys_to_binary!(keys, user) do
-    keys
-    |> Enum.map(&"#{&1}:#{get_primary_key_value!(&1, user)}")
-    |> Enum.join("_")
+  defp primary_keys_to_keyword_list!([], %struct{}), do: raise "No primary keys found for #{inspect struct}"
+  defp primary_keys_to_keyword_list!([key], user), do: get_primary_key_value!(user, key)
+  defp primary_keys_to_keyword_list!(keys, user) do
+    Enum.map(keys, &{&1, get_primary_key_value!(user, &1)})
   end
 
-  defp get_primary_key_value!(key, %struct{} = user) do
+  defp get_primary_key_value!(%struct{} = user, key) do
     case Map.get(user, key) do
       nil -> raise "Primary key value for key `#{inspect key}` in #{inspect struct} can't be `nil`"
       val -> val
     end
+  end
+
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `users/3` or `sessions/3` instead"
+  def user_session_keys(config, backend_config, struct) do
+    config
+    |> Base.all(backend_config, [struct, :user, :_, :session, :_])
+    |> Enum.map(fn {key, _value} ->
+      key
+    end)
   end
 end

@@ -11,8 +11,7 @@ defmodule Pow.Store.Backend.EtsCache do
     * `:ttl` - integer value in milliseconds for ttl of records. If this value
       is not provided, or is set to nil, the records will never expire.
 
-    * `:namespace` - string value to use for namespacing keys. Defaults to
-      "cache".
+    * `:namespace` - value to use for namespacing keys. Defaults to "cache".
   """
   use GenServer
   alias Pow.{Config, Store.Backend.Base}
@@ -26,27 +25,23 @@ defmodule Pow.Store.Backend.EtsCache do
   end
 
   @impl Base
-  @spec put(Config.t(), binary(), any()) :: :ok
-  def put(config, key, value) do
-    GenServer.cast(__MODULE__, {:cache, config, key, value})
+  def put(config, record_or_records) do
+    GenServer.cast(__MODULE__, {:cache, config, record_or_records})
   end
 
   @impl Base
-  @spec delete(Config.t(), binary()) :: :ok
   def delete(config, key) do
     GenServer.cast(__MODULE__, {:delete, config, key})
   end
 
   @impl Base
-  @spec get(Config.t(), binary()) :: any() | :not_found
   def get(config, key) do
-    table_get(config, key)
+    table_get(key, config)
   end
 
   @impl Base
-  @spec keys(Config.t()) :: [any()]
-  def keys(config) do
-    table_keys(config)
+  def all(config, match) do
+    table_all(match, config)
   end
 
   # Callbacks
@@ -60,91 +55,121 @@ defmodule Pow.Store.Backend.EtsCache do
   end
 
   @impl GenServer
-  @spec handle_cast({:cache, Config.t(), binary(), any()}, map()) :: {:noreply, map()}
-  def handle_cast({:cache, config, key, value}, %{invalidators: invalidators} = state) do
-    invalidators = update_invalidators(config, invalidators, key)
-    table_update(config, key, value)
+  @spec handle_cast({:cache, Config.t(), Base.record() | [Base.record()]}, map()) :: {:noreply, map()}
+  def handle_cast({:cache, config, record_or_records}, %{invalidators: invalidators} = state) do
+    invalidators =
+      record_or_records
+      |> table_insert(config)
+      |> Enum.reduce(invalidators, &append_invalidator(elem(&1, 0), &2, config))
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:delete, Config.t(), binary()}, map()) :: {:noreply, map()}
+  @spec handle_cast({:delete, Config.t(), Base.key()}, map()) :: {:noreply, map()}
   def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
-    invalidators = clear_invalidator(invalidators, key)
-    table_delete(config, key)
+    invalidators =
+      key
+      |> table_delete(config)
+      |> clear_invalidator(invalidators)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
   @impl GenServer
-  @spec handle_info({:invalidate, Config.t(), binary()}, map()) :: {:noreply, map()}
+  @spec handle_info({:invalidate, Config.t(), Base.key()}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
-    invalidators = clear_invalidator(invalidators, key)
-
-    table_delete(config, key)
+    invalidators =
+      key
+      |> table_delete(config)
+      |> clear_invalidator(invalidators)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  defp update_invalidators(config, invalidators, key) do
-    case Config.get(config, :ttl) do
-      nil ->
-        invalidators
-
-      ttl ->
-        invalidators = clear_invalidator(invalidators, key)
-        invalidator = Process.send_after(self(), {:invalidate, config, key}, ttl)
-
-        Map.put(invalidators, key, invalidator)
-    end
-  end
-
-  defp clear_invalidator(invalidators, key) do
-    case Map.get(invalidators, key) do
-      nil         -> nil
-      invalidator -> Process.cancel_timer(invalidator)
-    end
-
-    Map.drop(invalidators, [key])
-  end
-
-  defp table_get(config, key) do
+  defp table_get(key, config) do
     ets_key = ets_key(config, key)
 
     @ets_cache_tab
     |> :ets.lookup(ets_key)
     |> case do
       [{^ets_key, value} | _rest] -> value
-      []                      -> :not_found
+      []                          -> :not_found
     end
   end
 
-  defp table_update(config, key, value),
-    do: :ets.insert(@ets_cache_tab, {ets_key(config, key), value})
+  defp table_all(key_match, config) do
+    ets_key_match = ets_key(config, key_match)
 
-  defp table_delete(config, key), do: :ets.delete(@ets_cache_tab, ets_key(config, key))
-
-  defp init_table do
-    :ets.new(@ets_cache_tab, [:set, :protected, :named_table])
+    @ets_cache_tab
+    |> :ets.select([{{ets_key_match, :_}, [], [:"$_"]}])
+    |> Enum.map(fn {key, value} -> {unwrap(key), value} end)
   end
 
-  defp table_keys(config) do
-    namespace = ets_key(config, "")
-    length    = String.length(namespace)
+  defp unwrap([_namespace, key]), do: key
+  defp unwrap([_namespace | key]), do: key
 
-    Stream.resource(
-      fn -> :ets.first(@ets_cache_tab) end,
-      fn :"$end_of_table" -> {:halt, nil}
-        previous_key -> {[previous_key], :ets.next(@ets_cache_tab, previous_key)} end,
-      fn _ -> :ok
+  defp table_insert(record_or_records, config) do
+    records     = List.wrap(record_or_records)
+    ets_records = Enum.map(records, fn {key, value} ->
+      {ets_key(config, key), value}
     end)
-    |> Enum.filter(&String.starts_with?(&1, namespace))
-    |> Enum.map(&String.slice(&1, length..-1))
+
+    :ets.insert(@ets_cache_tab, ets_records)
+
+    records
+  end
+
+  defp table_delete(key, config) do
+    ets_key = ets_key(config, key)
+
+    :ets.delete(@ets_cache_tab, ets_key)
+
+    key
+  end
+
+  defp init_table do
+    :ets.new(@ets_cache_tab, [:ordered_set, :protected, :named_table])
   end
 
   defp ets_key(config, key) do
-    namespace = Config.get(config, :namespace, "cache")
-
-    "#{namespace}:#{key}"
+    [namespace(config) | List.wrap(key)]
   end
+
+  defp namespace(config), do: Config.get(config, :namespace, "cache")
+
+  defp append_invalidator(key, invalidators, config) do
+    case Config.get(config, :ttl) do
+      nil ->
+        invalidators
+
+      ttl ->
+        invalidators = clear_invalidator(key, invalidators)
+        invalidator  = trigger_ttl(key, ttl, config)
+
+        Map.put(invalidators, key, invalidator)
+    end
+  end
+
+  defp trigger_ttl(key, ttl, config) do
+    Process.send_after(self(), {:invalidate, config, key}, ttl)
+  end
+
+  defp clear_invalidator(key, invalidators) do
+    case Map.get(invalidators, key) do
+      nil         -> nil
+      invalidator -> Process.cancel_timer(invalidator)
+    end
+
+    Map.delete(invalidators, key)
+  end
+
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `put/2` instead"
+  @doc false
+  def put(config, key, value), do: put(config, {key, value})
+
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `all/2` instead"
+  @doc false
+  def keys(config), do: all(config, :_)
 end

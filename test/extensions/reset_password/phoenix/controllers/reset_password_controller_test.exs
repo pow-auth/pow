@@ -41,7 +41,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
 
     test "with valid params", %{conn: conn, ets: ets} do
       conn    = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @valid_params)
-      [token] = ResetTokenCache.keys([backend: ets])
+      [{token, _}] = ResetTokenCache.all([backend: ets], [:_])
 
       assert_received {:mail_mock, mail}
 

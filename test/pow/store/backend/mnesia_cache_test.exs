@@ -33,7 +33,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     test "can put, get and delete records with persistent storage" do
       assert MnesiaCache.get(@default_config, "key") == :not_found
 
-      MnesiaCache.put(@default_config, "key", "value")
+      MnesiaCache.put(@default_config, {"key", "value"})
       :timer.sleep(100)
       assert MnesiaCache.get(@default_config, "key") == "value"
 
@@ -46,35 +46,78 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(@default_config, "key") == :not_found
     end
 
+    test "can put multiple records" do
+      assert MnesiaCache.get(@default_config, "key") == :not_found
+
+      MnesiaCache.put(@default_config, [{"key1", "1"}, {"key2", "2"}])
+      :timer.sleep(100)
+      assert MnesiaCache.get(@default_config, "key1") == "1"
+      assert MnesiaCache.get(@default_config, "key2") == "2"
+
+      restart(@default_config)
+
+      assert MnesiaCache.get(@default_config, "key1") == "1"
+      assert MnesiaCache.get(@default_config, "key2") == "2"
+    end
+
     test "with no `:ttl` config option" do
       assert_raise ConfigError, "`:ttl` configuration option is required for Pow.Store.Backend.MnesiaCache", fn ->
-        MnesiaCache.put([namespace: "pow:test"], "key", "value")
+        MnesiaCache.put([namespace: "pow:test"], {"key", "value"})
       end
     end
 
-    test "fetch keys" do
-      MnesiaCache.put(@default_config, "key1", "value")
-      MnesiaCache.put(@default_config, "key2", "value")
+    test "can match fetch all" do
+      MnesiaCache.put(@default_config, {"key1", "value"})
+      MnesiaCache.put(@default_config, {"key2", "value"})
+      MnesiaCache.put(@default_config, {["namespace", "key"], "value"})
       :timer.sleep(100)
 
-      assert MnesiaCache.keys(@default_config) == ["key1", "key2"]
+      assert MnesiaCache.all(@default_config, :_) ==  [{"key1", "value"}, {"key2", "value"}]
+      assert MnesiaCache.all(@default_config, ["namespace", :_]) ==  [{["namespace", "key"], "value"}]
     end
 
     test "records auto purge with persistent storage" do
       config = Config.put(@default_config, :ttl, 100)
 
-      MnesiaCache.put(config, "key", "value")
+      MnesiaCache.put(config, {"key", "value"})
+      MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
       :timer.sleep(50)
       assert MnesiaCache.get(config, "key") == "value"
+      assert MnesiaCache.get(config, "key1") == "1"
+      assert MnesiaCache.get(config, "key2") == "2"
       :timer.sleep(100)
       assert MnesiaCache.get(config, "key") == :not_found
+      assert MnesiaCache.get(config, "key1") == :not_found
+      assert MnesiaCache.get(config, "key2") == :not_found
 
-      MnesiaCache.put(config, "key", "value")
+      # After restart
+      MnesiaCache.put(config, {"key", "value"})
+      MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
       :timer.sleep(50)
       restart(config)
       assert MnesiaCache.get(config, "key") == "value"
+      assert MnesiaCache.get(config, "key1") == "1"
+      assert MnesiaCache.get(config, "key2") == "2"
       :timer.sleep(100)
       assert MnesiaCache.get(config, "key") == :not_found
+      assert MnesiaCache.get(config, "key1") == :not_found
+      assert MnesiaCache.get(config, "key2") == :not_found
+
+      # After record expiration updated reschedules
+      MnesiaCache.put(config, {"key", "value"})
+      :timer.sleep(50)
+      :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], {"value", :os.system_time(:millisecond) + 150}})
+      :timer.sleep(100)
+      assert MnesiaCache.get(config, "key") == "value"
+      :timer.sleep(50)
+      assert MnesiaCache.get(config, "key") == :not_found
+    end
+
+    # TODO: Remove by 1.1.0
+    test "backwards compatible" do
+      assert MnesiaCache.put(@default_config, "key", "value") == :ok
+      :timer.sleep(50)
+      assert MnesiaCache.keys(@default_config) == [{"key", "value"}]
     end
   end
 
@@ -110,7 +153,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :table_info, [MnesiaCache, :storage_type]) == :disc_copies
       assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == []
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
-      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_set_on_a", "value"])
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_set_on_a", "value"}])
       :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_set_on_a"]) == "value"
 
@@ -124,13 +167,13 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_set_on_a"]) == "value"
 
       # Write to node b can be fetched on node a
-      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, "key_set_on_b", "value"])
+      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_set_on_b", "value"}])
       :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_set_on_b"]) == "value"
 
       # Set short TTL on node a
       config = Config.put(@default_config, :ttl, 150)
-      assert :rpc.call(node_a, MnesiaCache, :put, [config, "short_ttl_key_set_on_a", "value"])
+      assert :rpc.call(node_a, MnesiaCache, :put, [config, {"short_ttl_key_set_on_a", "value"}])
       :timer.sleep(50)
 
       # Stop node a
@@ -145,7 +188,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Continue writing to node b with short TTL
       config = Config.put(@default_config, :ttl, @startup_wait_time + 100)
-      assert :rpc.call(node_b, MnesiaCache, :put, [config, "short_ttl_key_2_set_on_b", "value"])
+      assert :rpc.call(node_b, MnesiaCache, :put, [config, {"short_ttl_key_2_set_on_b", "value"}])
       :timer.sleep(50)
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
 
@@ -188,7 +231,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :ok = :rpc.call(node_b, :mnesia, :dirty_write, [{:node_b_table, :key, "b"}])
 
       # Ensure that data writing on node a is replicated on node b
-      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1", "value"])
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_1", "value"}])
       :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
@@ -197,10 +240,10 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       disconnect(node_b, node_a)
 
       # Continue writing on node a and node b
-      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1", "a"])
-      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, "key_1_a", "value"])
-      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, "key_1", "b"])
-      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, "key_1_b", "value"])
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_1", "a"}])
+      assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_1_a", "value"}])
+      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_1", "b"}])
+      assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_1_b", "value"}])
       :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1_a"]) == "value"
@@ -290,5 +333,34 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   defp connect(node_a, node_b) do
     true = :rpc.call(node_a, Node, :connect, [node_b])
     :timer.sleep(500)
+  end
+
+  # TODO: Remove by 1.1.0
+  describe "backwards compatible" do
+    setup do
+      :mnesia.kill()
+
+      File.rm_rf!("tmp/mnesia")
+      File.mkdir_p!("tmp/mnesia")
+
+      :ok
+    end
+
+    test "removes old entries" do
+      :ok = :mnesia.start()
+      {:atomic, :ok} = :mnesia.change_table_copy_type(:schema, node(), :disc_copies)
+      {:atomic, :ok} = :mnesia.create_table(MnesiaCache, type: :set, disc_copies: [node()])
+      :ok = :mnesia.wait_for_tables([MnesiaCache], :timer.seconds(15))
+
+      key = "#{@default_config[:namespace]}:key1"
+
+      :ok = :mnesia.dirty_write({MnesiaCache, key, {"key1", "test", @default_config, :os.system_time(:millisecond) + 100}})
+
+      :stopped = :mnesia.stop()
+
+      start(@default_config)
+
+      assert :mnesia.dirty_read({MnesiaCache, key}) == []
+    end
   end
 end

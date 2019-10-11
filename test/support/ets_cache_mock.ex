@@ -2,7 +2,7 @@ defmodule Pow.Test.EtsCacheMock do
   @moduledoc false
   @tab __MODULE__
 
-  def init, do: :ets.new(@tab, [:set, :protected, :named_table])
+  def init, do: :ets.new(@tab, [:ordered_set, :protected, :named_table])
 
   def get(config, key) do
     ets_key = ets_key(config, key)
@@ -21,28 +21,25 @@ defmodule Pow.Test.EtsCacheMock do
     :ok
   end
 
-  def put(config, key, value) do
-    send(self(), {:ets, :put, key, value, config})
-    :ets.insert(@tab, {ets_key(config, key), value})
+  def put(config, record_or_records) do
+    records     = List.wrap(record_or_records)
+    ets_records = Enum.map(records, fn {key, value} ->
+      {ets_key(config, key), value}
+    end)
+
+    send(self(), {:ets, :put, records, config})
+    :ets.insert(@tab, ets_records)
   end
 
-  def keys(config) do
-    namespace = ets_key(config, "")
-    length    = String.length(namespace)
+  def all(config, match) do
+    ets_key_match = ets_key(config, match)
 
-    Stream.resource(
-      fn -> :ets.first(@tab) end,
-      fn :"$end_of_table" -> {:halt, nil}
-        previous_key -> {[previous_key], :ets.next(@tab, previous_key)} end,
-      fn _ -> :ok
-    end)
-    |> Enum.filter(&String.starts_with?(&1, namespace))
-    |> Enum.map(&String.slice(&1, length..-1))
+    @tab
+    |> :ets.select([{{ets_key_match, :_}, [], [:"$_"]}])
+    |> Enum.map(fn {[_namespace | keys], value} -> {keys, value} end)
   end
 
   defp ets_key(config, key) do
-    namespace = Pow.Config.get(config, :namespace, "cache")
-
-    "#{namespace}:#{key}"
+    [Keyword.get(config, :namespace, "cache")] ++ List.wrap(key)
   end
 end

@@ -1,5 +1,7 @@
 Logger.configure(level: :warn)
 
+:ok = Supervisor.terminate_child(Pow.Supervisor, Pow.Store.Backend.EtsCache)
+
 ExUnit.start()
 
 # Ensure that symlink to custom ecto priv directory exists

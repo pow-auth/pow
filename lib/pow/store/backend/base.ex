@@ -12,8 +12,12 @@ defmodule Pow.Store.Backend.Base do
   """
   alias Pow.Config
 
-  @callback put(Config.t(), binary(), any()) :: :ok
-  @callback delete(Config.t(), binary()) :: :ok
-  @callback get(Config.t(), binary()) :: any() | :not_found
-  @callback keys(Config.t()) :: [any()]
+  @type key() :: [binary() | atom()] | binary()
+  @type record() :: {key(), any()}
+  @type key_match() :: [atom() | binary()]
+
+  @callback put(Config.t(), record() | [record()]) :: :ok
+  @callback delete(Config.t(), key()) :: :ok
+  @callback get(Config.t(), key()) :: any() | :not_found
+  @callback all(Config.t(), key_match()) :: [record()]
 end

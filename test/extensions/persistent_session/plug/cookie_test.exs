@@ -114,7 +114,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     config = Keyword.put(config, :persistent_session_ttl, 1000)
     conn   = Cookie.create(conn, %User{id: 1}, config)
 
-    assert_received {:ets, :put, _key, _value, config}
+    assert_received {:ets, :put, [{_key, _value} | _rest], config}
     assert config[:ttl] == 1000
 
     assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
