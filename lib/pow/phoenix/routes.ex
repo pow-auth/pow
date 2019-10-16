@@ -92,10 +92,15 @@ defmodule Pow.Phoenix.Routes do
   redirect users back the the page they first attempted to visit. See
   `after_sign_in_path/1` for how `:request_path` is handled.
 
+  The `:request_path` will only be added if the request uses "GET" method.
+
   See `Pow.Phoenix.SessionController` for more on how this value is handled.
   """
   def user_not_authenticated_path(conn) do
-    session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
+    case conn.method do
+      "GET"   -> session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
+      _method -> session_path(conn, :new)
+    end
   end
 
   @doc """

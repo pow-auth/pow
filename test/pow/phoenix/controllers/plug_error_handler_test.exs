@@ -13,13 +13,16 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
     def user_already_authenticated(_conn), do: :already_authenticated
   end
 
+  defp prepare_conn(conn) do
+    conn
+    |> Conn.put_private(:pow_config, messages_backend: Messages)
+    |> Conn.put_private(:phoenix_flash, %{})
+    |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
+    |> Conn.fetch_query_params()
+  end
+
   setup do
-    conn =
-      ConnTest.build_conn()
-      |> Conn.put_private(:pow_config, messages_backend: Messages)
-      |> Conn.put_private(:phoenix_flash, %{})
-      |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
-      |> Conn.fetch_query_params()
+    conn = prepare_conn(ConnTest.build_conn())
 
     {:ok, conn: conn}
   end
@@ -40,6 +43,26 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
 
     assert ConnTest.redirected_to(conn) == "/session/new?request_path=%2F"
     assert ConnTest.get_flash(conn, :error) == "Existing error"
+  end
+
+  test "call/2 :not_authenticated doesn't set request_path if not GET request" do
+    conn =
+      :post
+      |> ConnTest.build_conn("/", nil)
+      |> prepare_conn()
+      |> PlugErrorHandler.call(:not_authenticated)
+
+    assert ConnTest.redirected_to(conn) == "/session/new"
+    assert ConnTest.get_flash(conn, :error) == :not_authenticated
+
+    conn =
+      :delete
+      |> ConnTest.build_conn("/", nil)
+      |> prepare_conn()
+      |> PlugErrorHandler.call(:not_authenticated)
+
+    assert ConnTest.redirected_to(conn) == "/session/new"
+    assert ConnTest.get_flash(conn, :error) == :not_authenticated
   end
 
   test "call/2 :already_authenticated", %{conn: conn} do
