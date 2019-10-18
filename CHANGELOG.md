@@ -6,6 +6,7 @@
 * Fixed bug where `Pow.Store.CredentialsCache` wasn't used due to how `Pow.Store.Base` macro worked
 * `Pow.Plug.Session` now stores a keyword list with metadata for the session rather than just the timestamp
 * `Pow.Phoenix.Router` now only filters routes that has equal number of bindings
+* `Pow.Phoenix.Routes.user_not_authenticated_path/1` now only puts the `:request_path` param if the request is using "GET" method
 
 ## v1.0.13 (2019-08-25)
 
