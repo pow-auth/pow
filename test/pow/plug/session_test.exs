@@ -3,7 +3,7 @@ defmodule Pow.Plug.SessionTest do
   doctest Pow.Plug.Session
 
   alias Plug.Conn
-  alias Pow.{Plug, Plug.Session, Store.CredentialsCache}
+  alias Pow.{Plug, Plug.Session, Store.Backend.EtsCache, Store.CredentialsCache}
   alias Pow.Test.{ConnHelpers, Ecto.Users.User, EtsCacheMock}
 
   @default_opts [
@@ -123,7 +123,7 @@ defmodule Pow.Plug.SessionTest do
 
     @store_config
     |> Keyword.put(:namespace, "credentials")
-    |> EtsCacheMock.put("token", {@user, stale_timestamp})
+    |> EtsCacheMock.put({"token", {@user, stale_timestamp}})
 
     opts = Session.init(config)
     conn =
@@ -207,23 +207,31 @@ defmodule Pow.Plug.SessionTest do
     assert is_nil(Plug.current_user(conn))
   end
 
-  test "with EtsCache backend", %{conn: conn} do
-    sesion_key = "auth"
-    config     = [session_key: sesion_key]
-    token      = "credentials_cache_test"
-    timestamp  = :os.system_time(:millisecond)
-    CredentialsCache.put(config, token, {@user, inserted_at: timestamp})
+  describe "with EtsCache backend" do
+    setup do
+      start_supervised!({EtsCache, []})
 
-    :timer.sleep(100)
+      :ok
+    end
 
-    opts = Session.init(session_key: "auth")
-    conn =
-      conn
-      |> Conn.fetch_session()
-      |> Conn.put_session("auth", token)
-      |> Session.call(opts)
+    test "call/2", %{conn: conn} do
+      sesion_key = "auth"
+      config     = [session_key: sesion_key]
+      token      = "credentials_cache_test"
+      timestamp  = :os.system_time(:millisecond)
+      CredentialsCache.put(config, token, {@user, inserted_at: timestamp})
 
-    assert conn.assigns[:current_user] == @user
+      :timer.sleep(100)
+
+      opts = Session.init(session_key: "auth")
+      conn =
+        conn
+        |> Conn.fetch_session()
+        |> Conn.put_session("auth", token)
+        |> Session.call(opts)
+
+      assert conn.assigns[:current_user] == @user
+    end
   end
 
   def get_session_id(conn) do

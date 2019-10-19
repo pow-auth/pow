@@ -7,6 +7,36 @@
 * `Pow.Plug.Session` now stores a keyword list with metadata for the session rather than just the timestamp
 * `Pow.Phoenix.Router` now only filters routes that has equal number of bindings
 * `Pow.Phoenix.Routes.user_not_authenticated_path/1` now only puts the `:request_path` param if the request is using "GET" method
+* The stores has been refactored so the command conforms with ETS store. This means that put commands now accept `{key, value}` record element(s), and keys may be list for easier lookup.
+  * `Pow.Store.Backend.Base` behaviour now requires to;
+    * Accept `Pow.Store.Backend.Base.record/0` values for `put/2`
+    * Accept `Pow.Store.Backend.Base.key/0` for `delete/2` and `get/2`
+    * Implement `all/2`
+    * Remove `keys/1`
+    * Remove `put/3`
+  * `Pow.Store.Backend.EtsCache.keys/1` deprecated
+  * `Pow.Store.Backend.EtsCache.put/3` deprecated
+  * `Pow.Store.Backend.EtsCache` now uses `:ordered_set` instead of `:set` for efficiency
+  * `Pow.Store.Backend.MnesiaCache.keys/1` deprecated
+  * `Pow.Store.Backend.MnesiaCache.put/3` deprecated
+  * `Pow.Store.Backend.MnesiaCache` now uses `:ordered_set` instead of `:set` for efficiency
+  * `Pow.Store.Backend.MnesiaCache` will delete all binary key records when initialized
+  * `Pow.Store.Base` behaviour now requires to;
+    * Accept erlang term value for keys in all methods
+    * Implement `put/3` instead of `put/4`
+    * Implement `delete/2` instead of `put/3`
+    * Implement `get/2` instead of `put/3`
+    * Remove `keys/2`
+  * `Pow.Store.Base.all/3` added
+  * `Pow.Store.Base.put/3` added
+  * `Pow.Store.Base.keys/2` deprecated
+  * `Pow.Store.Base.put/4` deprecated
+  * `Pow.Store.Base` will use binary key rather than key list if `all/2` doesn't exist in the backend cache
+  * Added `Pow.Store.CredentialsCache.users/2`
+  * Added `Pow.Store.CredentialsCache.sessions/2`
+  * Deprecated `Pow.Store.CredentialsCache.user_session_keys/3`
+  * Deprecated `Pow.Store.CredentialsCache.sessions/3`
+  * `Pow.Store.CredentialsCache` now adds a session key rather than appending to a list for the user key to prevent race condition
 
 ## v1.0.13 (2019-08-25)
 
