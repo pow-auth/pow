@@ -23,14 +23,19 @@
   * `Pow.Store.Backend.MnesiaCache` will delete all binary key records when initialized
   * `Pow.Store.Base` behaviour now requires to;
     * Accept erlang term value for keys in all methods
+    * Implement `put/3` instead of `put/4`
+    * Implement `delete/2` instead of `put/3`
+    * Implement `get/2` instead of `put/3`
     * Remove `keys/2`
-    * Remove `put/4`
   * `Pow.Store.Base.all/3` added
+  * `Pow.Store.Base.put/3` added
   * `Pow.Store.Base.keys/2` deprecated
   * `Pow.Store.Base.put/4` deprecated
   * `Pow.Store.Base` will use binary key rather than key list if `all/2` doesn't exist in the backend cache
-  * Added `Pow.Store.CredentialsCache.users/3`
+  * Added `Pow.Store.CredentialsCache.users/2`
+  * Added `Pow.Store.CredentialsCache.sessions/2`
   * Deprecated `Pow.Store.CredentialsCache.user_session_keys/3`
+  * Deprecated `Pow.Store.CredentialsCache.sessions/3`
   * `Pow.Store.CredentialsCache` now adds a session key rather than appending to a list for the user key to prevent race condition
 
 ## v1.0.13 (2019-08-25)

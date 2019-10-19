@@ -25,10 +25,10 @@ defmodule Pow.Store.CredentialsCache do
 
   Sessions for a user can be looked up with `sessions/3`.
   """
-  @spec users(Config.t(), Config.t(), module()) :: [any()]
-  def users(config, backend_config, struct) do
+  @spec users(Config.t(), module()) :: [any()]
+  def users(config, struct) do
     config
-    |> Base.all(backend_config, [struct, :user, :_])
+    |> Base.all(backend_config(config), [struct, :user, :_])
     |> Enum.map(fn {[^struct, :user, _id], user} ->
       user
     end)
@@ -37,8 +37,11 @@ defmodule Pow.Store.CredentialsCache do
   @doc """
   List all existing sessions for the user fetched from the backend store.
   """
-  @spec sessions(Config.t(), Config.t(), map()) :: [binary()]
-  def sessions(config, backend_config, user) do
+  @spec sessions(Config.t(), map()) :: [binary()]
+  def sessions(config, user), do: fetch_sessions(config, backend_config(config), user)
+
+  # TODO: Refactor by 1.1.0
+  defp fetch_sessions(config, backend_config, user) do
     {struct, id} = user_to_struct_id(user)
 
     config
@@ -61,7 +64,7 @@ defmodule Pow.Store.CredentialsCache do
     - `{[user_struct, :user, user_id, :session, session_id], inserted_at}`
   """
   @impl true
-  def put(config, backend_config, session_id, {user, metadata}) do
+  def put(config, session_id, {user, metadata}) do
     {struct, id} = user_to_struct_id(user)
     user_key     = [struct, :user, id]
     session_key  = [struct, :user, id, :session, session_id]
@@ -71,7 +74,7 @@ defmodule Pow.Store.CredentialsCache do
       {session_key, :os.system_time(:millisecond)}
     ]
 
-    Base.put(config, backend_config, records)
+    Base.put(config, backend_config(config), records)
   end
 
   @doc """
@@ -86,7 +89,9 @@ defmodule Pow.Store.CredentialsCache do
   when reaching its TTL.
   """
   @impl true
-  def delete(config, backend_config, session_id) do
+  def delete(config, session_id) do
+    backend_config = backend_config(config)
+
     case Base.get(config, backend_config, session_id) do
       {[struct, :user, key_id], _metadata} ->
         session_key = [struct, :user, key_id, :session, session_id]
@@ -107,8 +112,10 @@ defmodule Pow.Store.CredentialsCache do
   Fetch user credentials from the backend store from session id.
   """
   @impl true
-  @spec get(Config.t(), Config.t(), binary()) :: {map(), list()} | :not_found
-  def get(config, backend_config, session_id) do
+  @spec get(Config.t(), binary()) :: {map(), list()} | :not_found
+  def get(config, session_id) do
+    backend_config = backend_config(config)
+
     with {user_key, metadata} when is_list(user_key) <- Base.get(config, backend_config, session_id),
          user when is_map(user)                      <- Base.get(config, backend_config, user_key) do
       {user, metadata}
@@ -150,7 +157,8 @@ defmodule Pow.Store.CredentialsCache do
   end
 
   # TODO: Remove by 1.1.0
-  @deprecated "Use `users/3` or `sessions/3` instead"
+  @doc false
+  @deprecated "Use `users/2` or `sessions/2` instead"
   def user_session_keys(config, backend_config, struct) do
     config
     |> Base.all(backend_config, [struct, :user, :_, :session, :_])
@@ -158,4 +166,9 @@ defmodule Pow.Store.CredentialsCache do
       key
     end)
   end
+
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `sessions/2` instead"
+  def sessions(config, backend_config, user), do: fetch_sessions(config, backend_config, user)
 end

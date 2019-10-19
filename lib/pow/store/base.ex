@@ -22,50 +22,78 @@ defmodule Pow.Store.Base do
   @type record :: Base.record()
   @type key_match :: Base.key_match()
 
-  @callback put(Config.t(), Config.t(), key(), any()) :: :ok
-  @callback delete(Config.t(), Config.t(), key()) :: :ok
-  @callback get(Config.t(), Config.t(), key()) :: any() | :not_found
-  @callback all(Config.t(), Config.t(), key_match()) :: [record()]
+  @callback put(Config.t(), key(), any()) :: :ok
+  @callback delete(Config.t(), key()) :: :ok
+  @callback get(Config.t(), key()) :: any() | :not_found
+  @callback all(Config.t(), key_match()) :: [record()]
 
   @doc false
   defmacro __using__(defaults) do
     quote do
       @behaviour unquote(__MODULE__)
 
-      @spec put(Config.t(), unquote(__MODULE__).key(), any()) :: :ok
-      def put(config, key, value),
-        do: put(config, backend_config(config), key, value)
+      @impl unquote(__MODULE__)
+      def put(config, key, value) do
+        unquote(__MODULE__).put(config, backend_config(config), {key, value})
+      end
 
-      @spec delete(Config.t(), unquote(__MODULE__).key()) :: :ok
-      def delete(config, key),
-        do: delete(config, backend_config(config), key)
+      @impl unquote(__MODULE__)
+      def delete(config, key) do
+        unquote(__MODULE__).delete(config, backend_config(config), key)
+      end
 
-      @spec get(Config.t(), unquote(__MODULE__).key()) :: any() | :not_found
-      def get(config, key),
-        do: get(config, backend_config(config), key)
+      @impl unquote(__MODULE__)
+      def get(config, key) do
+        unquote(__MODULE__).get(config, backend_config(config), key)
+      end
 
-      @spec all(Config.t(), unquote(__MODULE__).key_match()) :: [unquote(__MODULE__).record()]
-      def all(config, key_match),
-        do: all(config, backend_config(config), key_match)
+      @impl unquote(__MODULE__)
+      def all(config, key_match) do
+        unquote(__MODULE__).all(config, backend_config(config), key_match)
+      end
 
-      defp backend_config(config) do
+      @spec backend_config(Config.t()) :: Config.t()
+      def backend_config(config) do
         [
           ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
           namespace: Config.get(config, :namespace, unquote(defaults[:namespace]))
         ]
       end
 
-      @impl unquote(__MODULE__)
-      def put(config, backend_config, key, value), do: unquote(__MODULE__).put(config, backend_config, {key, value})
-
-      defdelegate delete(config, backend_config, key), to: unquote(__MODULE__)
-      defdelegate get(config, backend_config, key), to: unquote(__MODULE__)
-      defdelegate all(config, backend_config, key_match), to: unquote(__MODULE__)
-
       defoverridable unquote(__MODULE__)
 
       # TODO: Remove by 1.1.0
-      defoverridable put: 3, delete: 2, get: 2, all: 2
+      @doc false
+      def put(config, backend_config, key, value) do
+        config
+        |> merge_backend_config(backend_config)
+        |> put(key, value)
+      end
+
+      defp merge_backend_config(config, backend_config) do
+        backend_config = Keyword.take(backend_config, [:ttl, :namespace])
+
+        Keyword.merge(config, backend_config)
+      end
+
+      # TODO: Remove by 1.1.0
+      @doc false
+      def delete(config, backend_config, key) do
+        config
+        |> merge_backend_config(backend_config)
+        |> delete(key)
+      end
+
+      # TODO: Remove by 1.1.0
+      @doc false
+      def get(config, backend_config, key) do
+        config
+        |> merge_backend_config(backend_config)
+        |> get(key)
+      end
+
+      # TODO: Remove by 1.1.0
+      defoverridable put: 4, delete: 3, get: 3
     end
   end
 
