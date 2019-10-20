@@ -213,6 +213,7 @@ defmodule MyAppWeb.API.V1.SessionController do
   use MyAppWeb, :controller
 
   alias MyAppWeb.APIAuthPlug
+  alias Plug.Conn
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => user_params}) do
