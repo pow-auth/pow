@@ -37,6 +37,7 @@
   * Deprecated `Pow.Store.CredentialsCache.user_session_keys/3`
   * Deprecated `Pow.Store.CredentialsCache.sessions/3`
   * `Pow.Store.CredentialsCache` now adds a session key rather than appending to a list for the user key to prevent race condition
+* Fixed bug where `PowEmailConfirmation.Phoenix.ControllerCallbacks` couldn't deliver email
 
 ## v1.0.13 (2019-08-25)
 

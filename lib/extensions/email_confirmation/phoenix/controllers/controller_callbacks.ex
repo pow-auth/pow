@@ -61,12 +61,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     user        = Plug.current_user(conn)
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     error       = extension_messages(conn).email_confirmation_required(conn)
-    conn        =
+
+    send_confirmation_email(user, conn)
+
+    conn =
       conn
       |> Phoenix.Controller.put_flash(:error, error)
       |> Phoenix.Controller.redirect(to: return_path)
-
-    send_confirmation_email(user, conn)
 
     {:halt, conn}
   end
