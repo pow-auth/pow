@@ -69,15 +69,19 @@ defmodule PowPersistentSession.Plug.Cookie do
     Conn.put_resp_cookie(conn, cookie_key, key, opts)
   end
 
-  defp persistent_session_value(conn, %{id: id}) do
+  defp persistent_session_value(conn, user) do
+    clauses = user_to_get_by_clauses(user)
+
     conn.private
     |> Map.get(:pow_session_metadata, [])
     |> Keyword.get(:fingerprint)
     |> case do
-      nil         -> id
-      fingerprint -> {id, session_fingerprint: fingerprint}
+      nil         -> clauses
+      fingerprint -> {clauses, session_fingerprint: fingerprint}
     end
   end
+
+  defp user_to_get_by_clauses(%{id: id}), do: [id: id]
 
   @doc """
   Expires the persistent session cookie.
@@ -150,10 +154,11 @@ defmodule PowPersistentSession.Plug.Cookie do
     end
   end
 
-  defp fetch_and_auth_user(conn, {user_id, metadata}, plug, config) do
+  defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
     conn = update_session_metadata_with_fingerprint(conn, metadata)
 
-    [id: user_id]
+    clauses
+    |> filter_invalid!()
     |> Pow.Operations.get_by(config)
     |> case do
       nil ->
@@ -167,6 +172,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
   defp fetch_and_auth_user(conn, user_id, plug, config),
     do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
+
+  defp filter_invalid!([id: _value] = clauses), do: clauses
+  defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
 
   defp update_session_metadata_with_fingerprint(conn, metadata) do
     case Keyword.get(metadata, :session_fingerprint) do

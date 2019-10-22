@@ -48,14 +48,14 @@ defmodule PowPersistentSession.Plug.CookieTest do
     id   = "test"
     conn =
       conn
-      |> store_persistent(ets, id, user.id)
+      |> store_persistent(ets, id, id: user.id)
       |> Cookie.call(Cookie.init([]))
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     refute new_id == id
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
-    assert PersistentSessionCache.get([backend: ets], new_id) == 1
+    assert PersistentSessionCache.get([backend: ets], new_id) == [id: 1]
   end
 
   test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do
@@ -63,14 +63,14 @@ defmodule PowPersistentSession.Plug.CookieTest do
     id   = "test"
     conn =
       conn
-      |> store_persistent(ets, id, {user.id, session_fingerprint: "fingerprint"})
+      |> store_persistent(ets, id, {[id: user.id], session_fingerprint: "fingerprint"})
       |> Cookie.call(Cookie.init([]))
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     refute new_id == id
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
-    assert PersistentSessionCache.get([backend: ets], new_id) == {1, session_fingerprint: "fingerprint"}
+    assert PersistentSessionCache.get([backend: ets], new_id) == {[id: 1], session_fingerprint: "fingerprint"}
     assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
@@ -81,13 +81,13 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> ConnHelpers.conn("/")
       |> ConnHelpers.init_session()
       |> Session.call(config ++ [otp_app: :test_app])
-      |> store_persistent(ets, "test_app_test", user.id, "test_app_persistent_session_cookie")
+      |> store_persistent(ets, "test_app_test", [id: user.id], "test_app_persistent_session_cookie")
       |> Cookie.call(Cookie.init(config))
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["test_app_persistent_session_cookie"]
     assert String.starts_with?(new_id, "test_app")
-    assert PersistentSessionCache.get([backend: ets], new_id) == 1
+    assert PersistentSessionCache.get([backend: ets], new_id) == [id: 1]
   end
 
   test "call/2 when user already assigned", %{conn: conn, ets: ets} do
@@ -95,13 +95,13 @@ defmodule PowPersistentSession.Plug.CookieTest do
     id   = "test"
     conn =
       conn
-      |> store_persistent(ets, id, user.id)
+      |> store_persistent(ets, id, id: user.id)
       |> Plug.assign_current_user(:user, [])
       |> Cookie.call(Cookie.init([]))
 
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
     assert new_id == id
-    assert PersistentSessionCache.get([backend: ets], id) == 1
+    assert PersistentSessionCache.get([backend: ets], id) == [id: 1]
   end
 
   test "call/2 when user doesn't exist in database", %{conn: conn, ets: ets} do
@@ -109,7 +109,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     id   = "test"
     conn =
       conn
-      |> store_persistent(ets, id, user.id)
+      |> store_persistent(ets, id, [id: user.id])
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
@@ -127,6 +127,17 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
   end
 
+  test "call/2 with invalid stored clauses", %{conn: conn, ets: ets} do
+    user = %User{id: 1}
+    id   = "test"
+
+    assert_raise RuntimeError, "Invalid get_by clauses stored: [id: 1, uid: 2]", fn ->
+      conn
+      |> store_persistent(ets, id, id: user.id, uid: 2)
+      |> Cookie.call(Cookie.init([]))
+    end
+  end
+
   test "create/3 with custom TTL", %{conn: conn, config: config} do
     config = Keyword.put(config, :persistent_session_ttl, 1000)
     conn   = Cookie.create(conn, %User{id: 1}, config)
@@ -142,6 +153,6 @@ defmodule PowPersistentSession.Plug.CookieTest do
     |> Conn.put_private(:pow_session_metadata, fingerprint: "fingerprint")
     |> Cookie.create(%User{id: 1}, config)
 
-    assert_received {:ets, :put, [{_key, {1, session_fingerprint: "fingerprint"}}], _config}
+    assert_received {:ets, :put, [{_key, {[id: 1], session_fingerprint: "fingerprint"}}], _config}
   end
 end
