@@ -42,6 +42,7 @@
 * `Pow.Plug.Session.create/3` will use the metadata found in `conn.private[:pow_session_metadata]` if it exists and otherwise add a randomly unique id for `:fingerprint`
 * `PowPersistentSession.Plug.Cookie.create/3` will use the value of `conn.private[:pow_session_metadata][:fingerprint]` if it exists as `:session_fingerprint` in the persistent session metadata
 * `PowPersistentSession.Plug.Cookie.authenticate/2` will assign `:fingerprint` to `conn.private[:pow_session_metadata]` if it exists in the persistent session metadata
+* `Pow.Store.CredentialsCache.put/3` will invalidate any other sessions with the same `:fingerprint` if any is set in session metadata
 
 ## v1.0.13 (2019-08-25)
 
