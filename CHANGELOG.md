@@ -2,8 +2,9 @@
 
 ## v1.0.14 (TBA)
 
+### Changes
+
 * Changed minmum password length to 8 (OWASP/NIST recommendations)
-* Fixed bug where `Pow.Store.CredentialsCache` wasn't used due to how `Pow.Store.Base` macro worked
 * `Pow.Phoenix.Router` now only filters routes that has equal number of bindings
 * `Pow.Phoenix.Routes.user_not_authenticated_path/1` now only puts the `:request_path` param if the request is using "GET" method
 * The stores has been refactored so the command conforms with ETS store. This means that put commands now accept `{key, value}` record element(s), and keys may be list for easier lookup.
@@ -13,11 +14,7 @@
     * Implement `all/2`
     * Remove `keys/1`
     * Remove `put/3`
-  * `Pow.Store.Backend.EtsCache.keys/1` deprecated
-  * `Pow.Store.Backend.EtsCache.put/3` deprecated
   * `Pow.Store.Backend.EtsCache` now uses `:ordered_set` instead of `:set` for efficiency
-  * `Pow.Store.Backend.MnesiaCache.keys/1` deprecated
-  * `Pow.Store.Backend.MnesiaCache.put/3` deprecated
   * `Pow.Store.Backend.MnesiaCache` now uses `:ordered_set` instead of `:set` for efficiency
   * `Pow.Store.Backend.MnesiaCache` will delete all binary key records when initialized
   * `Pow.Store.Base` behaviour now requires to;
@@ -28,21 +25,32 @@
     * Remove `keys/2`
   * `Pow.Store.Base.all/3` added
   * `Pow.Store.Base.put/3` added
-  * `Pow.Store.Base.keys/2` deprecated
-  * `Pow.Store.Base.put/4` deprecated
   * `Pow.Store.Base` will use binary key rather than key list if `all/2` doesn't exist in the backend cache
   * Added `Pow.Store.CredentialsCache.users/2`
   * Added `Pow.Store.CredentialsCache.sessions/2`
-  * Deprecated `Pow.Store.CredentialsCache.user_session_keys/3`
-  * Deprecated `Pow.Store.CredentialsCache.sessions/3`
   * `Pow.Store.CredentialsCache` now adds a session key rather than appending to a list for the user key to prevent race condition
-* Fixed bug where `PowEmailConfirmation.Phoenix.ControllerCallbacks` couldn't deliver email
 * `Pow.Plug.Session.create/3` now stores a keyword list with metadata for the session rather than just a timestamp
 * `Pow.Plug.Session.fetch/2` and `Pow.Plug.Session.create/3` now assigns `:pow_session_metadata` in `conn.private` with the session metadata
 * `Pow.Plug.Session.create/3` will use the metadata found in `conn.private[:pow_session_metadata]` if it exists and otherwise add a randomly unique id for `:fingerprint`
 * `PowPersistentSession.Plug.Cookie.create/3` will use the value of `conn.private[:pow_session_metadata][:fingerprint]` if it exists as `:session_fingerprint` in the persistent session metadata
 * `PowPersistentSession.Plug.Cookie.authenticate/2` will assign `:fingerprint` to `conn.private[:pow_session_metadata]` if it exists in the persistent session metadata
 * `Pow.Store.CredentialsCache.put/3` will invalidate any other sessions with the same `:fingerprint` if any is set in session metadata
+
+### Bug fixes
+
+* Fixed bug where `Pow.Store.CredentialsCache` wasn't used due to how `Pow.Store.Base` macro worked
+* Fixed bug where `PowEmailConfirmation.Phoenix.ControllerCallbacks` couldn't deliver email
+
+### Deprecations
+
+* Deprecated `Pow.Store.Backend.EtsCache.keys/1`
+* Deprecated `Pow.Store.Backend.EtsCache.put/3`
+* Deprecated `Pow.Store.Backend.MnesiaCache.keys/1`
+* Deprecated `Pow.Store.Backend.MnesiaCache.put/3`
+* Deprecated `Pow.Store.Base.keys/2`
+* Deprecated `Pow.Store.Base.put/4`
+* Deprecated `Pow.Store.CredentialsCache.user_session_keys/3`
+* Deprecated `Pow.Store.CredentialsCache.sessions/3`
 
 ## v1.0.13 (2019-08-25)
 
