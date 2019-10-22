@@ -6,6 +6,11 @@ defmodule PowPersistentSession.Plug.Cookie do
   be renewed on every request. The token in the cookie can only be used once to
   create a session.
 
+  If an assigned private `:pow_session_metadata` key exists in the conn with a
+  keyword list containing a `:fingerprint` key, that fingerprint value will be
+  set along with the user id as the persistent session value as
+  `{user_id, session_fingerprint: fingerprint}`.
+
   ## Example
 
     defmodule MyAppWeb.Endpoint do
@@ -41,23 +46,42 @@ defmodule PowPersistentSession.Plug.Cookie do
   @doc """
   Sets a persistent session cookie with an auto generated token.
 
-  The token is set as a key in the persistent session cache with
-  the user struct id.
+  The token is set as a key in the persistent session cache with the id fetched
+  from the struct.
+
+  If an assigned private `:pow_session_metadata` key exists in the conn with a
+  keyword list containing a `:fingerprint` value, then that value will be set
+  as the `:session_fingerprint` in the metadata. The value will look like:
+  `{user_id, session_fingerprint: fingerprint}`
 
   The unique cookie id will be prepended by the `:otp_app` configuration
   value, if present.
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
-  def create(conn, %{id: user_id}, config) do
+  def create(conn, user, config) do
     {store, store_config} = store(config)
     cookie_key            = cookie_key(config)
     key                   = cookie_id(config)
-    value                 = user_id
+    value                 = persistent_session_value(conn, user)
     opts                  = session_opts(config)
 
     store.put(store_config, key, value)
     Conn.put_resp_cookie(conn, cookie_key, key, opts)
   end
+
+  defp persistent_session_value(conn, user) do
+    clauses = user_to_get_by_clauses(user)
+
+    conn.private
+    |> Map.get(:pow_session_metadata, [])
+    |> Keyword.get(:fingerprint)
+    |> case do
+      nil         -> clauses
+      fingerprint -> {clauses, session_fingerprint: fingerprint}
+    end
+  end
+
+  defp user_to_get_by_clauses(%{id: id}), do: [id: id]
 
   @doc """
   Expires the persistent session cookie.
@@ -92,6 +116,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   cookie. The old persistent session cookie and session cache credentials will
   be removed.
 
+  If a `:session_fingerprint` is fetched from the persistent session metadata,
+  it'll be assigned to the private `:pow_session_metadata` key in the conn as
+  `:fingerprint`.
+
   The cookie expiration will automatically be renewed on every request.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
@@ -116,25 +144,51 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp do_authenticate(conn, key_id, config) do
     {store, store_config} = store(config)
+    res                   = store.get(store_config, key_id)
+    plug                  = Plug.get_plug(config)
+    conn                  = delete(conn, config)
 
-    store_config
-    |> store.get(key_id)
-    |> maybe_fetch_user(config)
-    |> case do
-      nil ->
-        delete(conn, config)
-
-      user ->
-        conn
-        |> delete(config)
-        |> create(user, config)
-        |> Plug.get_plug(config).do_create(user, config)
+    case res do
+      :not_found -> conn
+      res        -> fetch_and_auth_user(conn, res, plug, config)
     end
   end
 
-  defp maybe_fetch_user(:not_found, _config), do: nil
-  defp maybe_fetch_user(user_id, config) do
-    Pow.Operations.get_by([id: user_id], config)
+  defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
+    conn = update_session_metadata_with_fingerprint(conn, metadata)
+
+    clauses
+    |> filter_invalid!()
+    |> Pow.Operations.get_by(config)
+    |> case do
+      nil ->
+        conn
+
+      user ->
+        conn
+        |> create(user, config)
+        |> plug.do_create(user, config)
+    end
+  end
+  defp fetch_and_auth_user(conn, user_id, plug, config),
+    do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
+
+  defp filter_invalid!([id: _value] = clauses), do: clauses
+  defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
+
+  defp update_session_metadata_with_fingerprint(conn, metadata) do
+    case Keyword.get(metadata, :session_fingerprint) do
+      nil ->
+        conn
+
+      fingerprint ->
+        metadata =
+          conn.private
+          |> Map.get(:pow_session_metadata, [])
+          |> Keyword.put(:fingerprint, fingerprint)
+
+        Conn.put_private(conn, :pow_session_metadata, metadata)
+    end
   end
 
   defp maybe_renew(conn, config) do

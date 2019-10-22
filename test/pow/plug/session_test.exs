@@ -45,7 +45,7 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with stored current_user", %{conn: conn} do
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond), fingerprint: "fingerprint"})
 
     opts = Session.init(@default_opts)
     conn =
@@ -55,6 +55,24 @@ defmodule Pow.Plug.SessionTest do
       |> Session.call(opts)
 
     assert conn.assigns[:current_user] == @user
+    assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
+  end
+
+  test "call/2 with stored session and custom metadata", %{conn: conn} do
+    inserted_at = :os.system_time(:millisecond)
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: inserted_at, a: 1})
+
+    opts = Session.init(@default_opts)
+    conn =
+      conn
+      |> Conn.put_private(:pow_session_metadata, b: 2)
+      |> Conn.fetch_session()
+      |> Conn.put_session(@default_opts[:session_key], "token")
+      |> Session.call(opts)
+
+    assert conn.assigns[:current_user] == @user
+    assert conn.private[:pow_session_metadata][:inserted_at] == inserted_at
+    assert conn.private[:pow_session_metadata][:a] == 1
   end
 
   test "call/2 with non existing cached key", %{conn: conn} do
@@ -80,7 +98,7 @@ defmodule Pow.Plug.SessionTest do
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
 
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp, fingerprint: "fingerprint"})
 
     opts = Session.init(config)
     conn = Session.call(init_conn, opts)
@@ -88,14 +106,18 @@ defmodule Pow.Plug.SessionTest do
 
     assert conn.assigns[:current_user] == @user
 
-    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp})
-    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp})
+    CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp, fingerprint: "fingerprint"})
+    CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp, fingerprint: "new_fingerprint"})
 
     conn = Session.call(init_conn, opts)
 
     assert conn.assigns[:current_user] == @user
     assert new_session_id = get_session_id(conn)
     assert new_session_id != session_id
+    assert {_user, metadata} = CredentialsCache.get(@store_config, new_session_id)
+    assert metadata[:inserted_at] != stale_timestamp
+    assert metadata[:fingerprint] == "fingerprint"
+    assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
@@ -148,24 +170,36 @@ defmodule Pow.Plug.SessionTest do
 
       session_id = get_session_id(conn)
 
-      assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
+      assert {@user, metadata} = CredentialsCache.get(@store_config, session_id)
       assert is_binary(session_id)
       assert Plug.current_user(conn) == @user
-
-      assert {_key, metadata} =
-        @store_config
-        |> Keyword.put(:namespace, "credentials")
-        |> EtsCacheMock.get(session_id)
       assert metadata[:inserted_at]
+      assert metadata[:fingerprint]
 
       conn = Session.do_create(conn, @user, opts)
       new_session_id = get_session_id(conn)
 
-      assert {@user, _metadata} = CredentialsCache.get(@store_config, new_session_id)
+      assert {@user, new_metadata} = CredentialsCache.get(@store_config, new_session_id)
       assert is_binary(session_id)
       assert new_session_id != session_id
       assert CredentialsCache.get(@store_config, session_id) == :not_found
       assert Plug.current_user(conn) == @user
+      assert metadata[:fingerprint] == new_metadata[:fingerprint]
+    end
+
+    test "creates with custom metadata", %{conn: conn} do
+      inserted_at = :os.system_time(:millisecond) - 10
+      opts = Session.init(@default_opts)
+      conn =
+        conn
+        |> Conn.put_private(:pow_session_metadata, inserted_at: inserted_at, a: 1)
+        |> Session.call(opts)
+        |> Session.do_create(@user, opts)
+
+      assert conn.assigns[:current_user] == @user
+      assert conn.private[:pow_session_metadata][:inserted_at] != inserted_at
+      assert conn.private[:pow_session_metadata][:fingerprint]
+      assert conn.private[:pow_session_metadata][:a] == 1
     end
 
     test "creates new session id with `:otp_app` prepended", %{conn: conn} do

@@ -60,6 +60,21 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert EtsCacheMock.get(@backend_config, [User, :user, 1, :session, "key_1"]) == :not_found
   end
 
+  test "put/3 invalidates sessions with identical fingerprint" do
+    user = %User{id: 1}
+
+    CredentialsCache.put(@config, "key_1", {user, fingerprint: 1})
+    CredentialsCache.put(@config, "key_2", {user, fingerprint: 2})
+
+    assert CredentialsCache.get(@config, "key_1") == {user, fingerprint: 1}
+
+    CredentialsCache.put(@config, "key_3", {user, fingerprint: 1})
+
+    assert CredentialsCache.get(@config, "key_1") == :not_found
+    assert CredentialsCache.get(@config, "key_2") == {user, fingerprint: 2}
+    assert CredentialsCache.get(@config, "key_3") == {user, fingerprint: 1}
+  end
+
   test "raises for nil primary key value" do
     user_1 = %User{id: nil}
 

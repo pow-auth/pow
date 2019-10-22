@@ -2,6 +2,18 @@ defmodule Pow.Plug.Session do
   @moduledoc """
   This plug will handle user authorization using session.
 
+  The plug will store user and session metadata in the cache store backend. The
+  session metadata has at least an `:inserted_at` and a `:fingerprint` key. The
+  `:inserted_at` value is used to determine if the session has to be renewed,
+  and is set each time a session is created. The `:fingerprint` will be a random
+  unique id and will stay the same if a session is renewed.
+
+  When a session is renewed the old session is deleted and a new created.
+
+  You can add additional metadata to sessions by setting or updated the
+  assigned private `:pow_session_metadata` key in the conn. The value has to be
+  a keyword list.
+
   ## Example
 
       plug Plug.Session,
@@ -36,6 +48,36 @@ defmodule Pow.Plug.Session do
 
     * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
       sessions. Defaults to 15 minutes in miliseconds.
+
+  ## Custom metadata
+
+  The assigned private `:pow_session_metadata` key in the conn can be populated
+  with custom metadata. This data will be stored in the session metadata when
+  the session is created, and fetched in subsequent requests.
+
+  Here's an example of how one could add sign in timestamp, IP, and user agent
+  information to the session metadata:
+
+      def append_to_session_metadata(conn) do
+        client_ip  = to_string(:inet_parse.ntoa(conn.remote_ip))
+        user_agent = get_req_header(conn, "user-agent")
+
+        metadata =
+          conn.private
+          |> Map.get(:pow_session_metadata, [])
+          |> Keyword.put_new(:first_seen_at, DateTime.utc_now())
+          |> Keyword.put(:ip, client_ip)
+          |> Keyword.put(:user_agent, user_agent)
+
+        Plug.Conn.put_private(conn, :pow_session_metadata, metadata)
+      end
+
+  The `:first_seen_at` will only be set if it doesn't already exist in the
+  session metadata, while `:ip` and `:user_agent` will be updated each time the
+  session is created.
+
+  The method should be called after `Pow.Plug.Session.call/2` has been called
+  to ensure that the metadata, if any, has been fetched.
   """
   use Pow.Plug.Base
 
@@ -53,19 +95,21 @@ defmodule Pow.Plug.Session do
   stale (timestamp is older than the `:session_ttl_renewal` value), the session
   will be regenerated with `create/3`.
 
+  The metadata of the session will be assigned as a private
+  `:pow_session_metadata` key in the conn so it may be used in `create/3`.
+
   See `do_fetch/2` for more.
   """
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
+    {store, store_config} = store(config)
     conn                  = Conn.fetch_session(conn)
     key                   = Conn.get_session(conn, session_key(config))
-    {store, store_config} = store(config)
 
-    store_config
-    |> store.get(key)
+    {key, store.get(store_config, key)}
     |> convert_old_session_value()
-    |> renew_stale_session(conn, config)
+    |> handle_fetched_session_value(conn, config)
   end
 
   @doc """
@@ -79,25 +123,41 @@ defmodule Pow.Plug.Session do
   The unique session id will be prepended by the `:otp_app` configuration
   value, if present.
 
+  If an assigned private `:pow_session_metadata` key exists in the conn, it'll
+  be passed on as the metadata for the session. However the `:inserted_at` value
+  will always be overridden. If no `:fingerprint` exists in the metadata a
+  random UUID value will be generated as its value.
+
   See `do_create/3` for more.
   """
   @impl true
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
     conn                  = Conn.fetch_session(conn)
+    {store, store_config} = store(config)
+    metadata              = Map.get(conn.private, :pow_session_metadata, [])
+    {user, metadata}      = session_value(user, metadata)
     key                   = session_id(config)
     session_key           = session_key(config)
-    {store, store_config} = store(config)
-    value                 = session_value(user)
 
-    store.put(store_config, key, value)
+    store.put(store_config, key, {user, metadata})
 
     conn =
       conn
       |> delete(config)
+      |> Conn.put_private(:pow_session_metadata, metadata)
       |> Conn.put_session(session_key, key)
 
     {conn, user}
+  end
+
+  defp session_value(user, metadata) do
+    metadata =
+      metadata
+      |> Keyword.put_new(:fingerprint, UUID.generate())
+      |> Keyword.put(:inserted_at, timestamp())
+
+    {user, metadata}
   end
 
   @doc """
@@ -123,11 +183,17 @@ defmodule Pow.Plug.Session do
   end
 
   # TODO: Remove by 1.1.0
-  defp convert_old_session_value({user, timestamp}) when is_number(timestamp), do: {user, inserted_at: timestamp}
+  defp convert_old_session_value({key, {user, timestamp}}) when is_number(timestamp), do: {key, {user, inserted_at: timestamp}}
   defp convert_old_session_value(any), do: any
 
-  defp renew_stale_session(:not_found, conn, _config), do: {conn, nil}
-  defp renew_stale_session({user, metadata}, conn, config) when is_list(metadata) do
+  defp handle_fetched_session_value({_key, :not_found}, conn, _config), do: {conn, nil}
+  defp handle_fetched_session_value({_key, {user, metadata}}, conn, config) when is_list(metadata) do
+    conn
+    |> Conn.put_private(:pow_session_metadata, metadata)
+    |> renew_stale_session(user, metadata, config)
+  end
+
+  defp renew_stale_session(conn, user, metadata, config) do
     metadata
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
@@ -159,8 +225,6 @@ defmodule Pow.Plug.Session do
   defp default_session_key(config) do
     Plug.prepend_with_namespace(config, @session_key)
   end
-
-  defp session_value(user), do: {user, inserted_at: timestamp()}
 
   defp store(config) do
     case Config.get(config, :session_store, default_store(config)) do
