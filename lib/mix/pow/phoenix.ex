@@ -56,6 +56,8 @@ defmodule Mix.Pow.Phoenix do
     """
 
     Generator.create_file(path, content)
+
+    :ok
   end
 
   @doc """

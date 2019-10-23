@@ -20,6 +20,8 @@ defmodule Mix.Pow.Phoenix.Mailer do
     """
 
     Generator.create_file(path, content)
+
+    :ok
   end
 
   @doc """
