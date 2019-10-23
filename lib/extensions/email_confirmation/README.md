@@ -17,7 +17,7 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
 ```elixir
 <%= if @changeset.data.unconfirmed_email do %>
   <div>
-    <p>Click the link in the confirmation email to change your email to <%= @changeset.data.unconfirmed_email %></span>.</p>
+    <p>Click the link in the confirmation email to change your email to <%= content_tag(:span, @changeset.data.unconfirmed_email) %>.</p>
   </div>
 <% end %>
 ```
