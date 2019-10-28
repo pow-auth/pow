@@ -35,6 +35,8 @@
 * `PowPersistentSession.Plug.Cookie.create/3` will use the value of `conn.private[:pow_session_metadata][:fingerprint]` if it exists as `:session_fingerprint` in the persistent session metadata
 * `PowPersistentSession.Plug.Cookie.authenticate/2` will assign `:fingerprint` to `conn.private[:pow_session_metadata]` if it exists in the persistent session metadata
 * `Pow.Store.CredentialsCache.put/3` will invalidate any other sessions with the same `:fingerprint` if any is set in session metadata
+* `PowResetPassword.Phoenix.ResetPasswordController.create/2` when a user doesn't exist will now only return success message if the registration routes has been disabled, otherwise the form with an error message will be returned
+* Added `PowResetPassword.Phoenix.Messages.user_not_found/1`
 
 ### Bug fixes
 

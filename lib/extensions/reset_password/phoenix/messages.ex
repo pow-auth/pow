@@ -7,6 +7,11 @@ defmodule PowResetPassword.Phoenix.Messages do
   def email_has_been_sent(_conn), do: "An email with reset instructions has been sent to you. Please check your inbox."
 
   @doc """
+  Flash message to show when no user exists for the provided e-mail.
+  """
+  def user_not_found(_conn), do: "No account exists for the provided email. Please try again."
+
+  @doc """
   Flash message to show when a an invalid or expired reset password link is
   used.
   """
