@@ -55,6 +55,18 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
 
     test "with invalid params", %{conn: conn} do
       conn = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params)
+
+      assert html = html_response(conn, 200)
+      assert get_flash(conn, :error) == "No account exists for the provided email. Please try again."
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid@example.com\">"
+    end
+  end
+
+  alias PowResetPassword.NoRegistration.TestWeb.Phoenix.Endpoint, as: NoRegistrationEndpoint
+  describe "create/2 with no registration routes" do
+    test "with invalid params", %{conn: conn} do
+      conn = Phoenix.ConnTest.dispatch(conn, NoRegistrationEndpoint, :post, Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
+
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "An email with reset instructions has been sent to you. Please check your inbox."
     end

@@ -34,7 +34,18 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
 
     default_respond_create(conn)
   end
-  def respond_create({:error, _any, conn}), do: default_respond_create(conn)
+  def respond_create({:error, _any, conn}) do
+    case registration_path?(conn) do
+      true ->
+        conn
+        |> assign(:changeset, Plug.change_user(conn, conn.params["user"]))
+        |> put_flash(:error, extension_messages(conn).user_not_found(conn))
+        |> render("new.html")
+
+      false ->
+        default_respond_create(conn)
+    end
+  end
 
   defp default_respond_create(conn) do
     conn
@@ -88,6 +99,12 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     email = Mailer.reset_password(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
+  end
+
+  defp registration_path?(conn) do
+    [conn.private.phoenix_router, Helpers]
+    |> Module.concat()
+    |> function_exported?(:pow_registration_path, 3)
   end
 
   defp assign_create_path(conn, _opts) do
