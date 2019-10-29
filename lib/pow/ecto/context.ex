@@ -100,15 +100,15 @@ defmodule Pow.Ecto.Context do
   def authenticate(params, config) do
     user_mod      = Config.user!(config)
     user_id_field = user_mod.pow_user_id_field()
-    login_value   = params[Atom.to_string(user_id_field)]
+    user_id_value = params[Atom.to_string(user_id_field)]
     password      = params["password"]
 
-    do_authenticate(user_id_field, login_value, password, config)
+    do_authenticate(user_id_field, user_id_value, password, config)
   end
 
   defp do_authenticate(_user_id_field, nil, _password, _config), do: nil
-  defp do_authenticate(user_id_field, login_value, password, config) do
-    [{user_id_field, login_value}]
+  defp do_authenticate(user_id_field, user_id_value, password, config) do
+    [{user_id_field, user_id_value}]
     |> get_by(config)
     |> verify_password(password, config)
   end
