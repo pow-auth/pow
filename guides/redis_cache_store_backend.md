@@ -17,7 +17,7 @@ Now set up your `WEB_PATH/pow_redis_cache.ex` like so:
 
 ```elixir
 defmodule MyAppWeb.PowRedisCache do
-  @behaviour Pow.Store.Base
+  @behaviour Pow.Store.Backend.Base
 
   alias Pow.Config
 
