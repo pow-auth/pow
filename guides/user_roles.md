@@ -42,17 +42,13 @@ This is all the work you'll need to control access:
 defmodule MyAppWeb.EnsureRolePlug do
   @moduledoc """
   This plug ensures that a user has a particular role.
-
   ## Example
-
       plug MyAppWeb.EnsureRolePlug, [:user, :admin]
-
       plug MyAppWeb.EnsureRolePlug, :admin
-
       plug MyAppWeb.EnsureRolePlug, ~w(user admin)a
   """
-  import Plug.Conn, only: [halt: 1]
 
+  import Plug.Conn, only: [halt: 1]
   alias MyAppWeb.Router.Helpers, as: Routes
   alias Phoenix.Controller
   alias Plug.Conn
@@ -63,7 +59,7 @@ defmodule MyAppWeb.EnsureRolePlug do
   def init(config), do: config
 
   @doc false
-  @spec call(Conn.t(), atom()) :: Conn.t()
+  @spec call(Conn.t(), atom() | list(atom() | String.t())) :: Conn.t()
   def call(conn, roles) do
     conn
     |> Plug.current_user()
@@ -76,8 +72,8 @@ defmodule MyAppWeb.EnsureRolePlug do
   defp has_role?(user, role) when is_atom(role), do: has_role?(user, Atom.to_string(role))
   defp has_role?(%{role: role}, role), do: true
   defp has_role?(_user, _role), do: false
-
   defp maybe_halt(true, conn), do: conn
+
   defp maybe_halt(_any, conn) do
     conn
     |> Controller.put_flash(:error, "Unauthorized access")
@@ -119,5 +115,48 @@ defmodule MyAppWeb.SomeController do
   plug MyAppWeb.EnsureRolePlug, :admin
 
   # ...
+end
+```
+
+## Test module
+
+```elixir
+defmodule MyAppWeb.EnsureRolePlugTest do
+  use MyAppWeb.ConnCase
+
+  @user %MyApp.User{id: 1, email: "test@example.com", role: "admin"}
+
+  setup do
+    conn =
+      build_conn()
+      |> bypass_through(MyAppWeb.Router, [:browser])
+      |> Pow.Plug.assign_current_user(@user, [])
+      |> get("/")
+
+    {:ok, conn: conn}
+  end
+
+  test "does not halt and redirect when the user roles match as an atom", %{conn: conn} do
+    conn = MyAppWeb.EnsureRolePlug.call(conn, :admin)
+    refute conn.halted
+  end
+
+  test "does not halt and redirect when the user roles match as a string", %{conn: conn} do
+    conn = MyAppWeb.EnsureRolePlug.call(conn, "admin")
+    refute conn.halted
+  end
+
+  test "does not halt and redirect when the user role is included in a list of roles", %{
+    conn: conn
+  } do
+    conn = MyAppWeb.EnsureRolePlug.call(conn, [:admin])
+    refute conn.halted
+  end
+
+  test "halts and redirects when the user role is not among the listed", %{conn: conn} do
+    conn = MyAppWeb.EnsureRolePlug.call(conn, :user)
+    assert conn.halted
+    assert Phoenix.ConnTest.redirected_to(conn) == Routes.page_path(conn, :index)
+  end
 end
 ```
