@@ -69,30 +69,13 @@ defmodule MyAppWeb.PowRedisCache do
 
   @impl true
   def all(config, match_spec) do
-    compiled_match_spec = :ets.match_spec_compile([{match_spec, [], [:"$_"]}])
+    compiled_match_spec = :ets.match_spec_compile([{{match_spec, :_}, [], [:"$_"]}])
 
     Stream.resource(
       fn -> do_scan(config, compiled_match_spec, "0") end,
       &stream_scan(config, compiled_match_spec, &1),
       fn _ -> :ok end)
     |> Enum.to_list()
-    |> case do
-      []   -> []
-      keys -> fetch_values_for_keys(keys, config)
-    end
-  end
-
-  defp fetch_values_for_keys(keys, config) do
-    binary_keys = Enum.map(keys, &binary_redis_key(config, &1))
-
-    case Redix.command(@redix_instance_name, ["MGET"] ++ binary_keys) do
-      {:ok, values} ->
-        values = Enum.map(values, &:erlang.binary_to_term/1)
-
-        keys
-        |> Enum.zip(values)
-        |> Enum.reject(fn {_key, value} -> is_nil(value) end)
-    end
   end
 
   defp stream_scan(_config, _compiled_match_spec, {[], "0"}), do: {:halt, nil}
@@ -103,25 +86,48 @@ defmodule MyAppWeb.PowRedisCache do
     prefix = to_binary_redis_key([namespace(config)]) <> ":*"
 
     case Redix.command(@redix_instance_name, ["SCAN", iterator, "MATCH", prefix]) do
-      {:ok, [iterator, res]} -> {filter_or_load_value(compiled_match_spec, res), iterator}
+      {:ok, [iterator, res]} -> {filter_or_load_value(compiled_match_spec, res, config), iterator}
     end
   end
 
-  defp filter_or_load_value(compiled_match_spec, keys) do
+  defp filter_or_load_value(compiled_match_spec, keys, config) do
     keys
     |> Enum.map(&convert_key/1)
     |> Enum.sort()
     |> :ets.match_spec_run(compiled_match_spec)
+    |> populate_values(config)
   end
 
   defp convert_key(key) do
-    key
-    |> from_binary_redis_key()
-    |> unwrap()
+    key =
+      key
+      |> from_binary_redis_key()
+      |> unwrap()
+
+    {key, nil}
   end
 
   defp unwrap([_namespace, key]), do: key
   defp unwrap([_namespace | key]), do: key
+
+  defp populate_values(records, config) do
+    binary_keys = Enum.map(records, fn {key, nil} -> binary_redis_key(config, key) end)
+
+    case Redix.command(@redix_instance_name, ["MGET"] ++ binary_keys) do
+      {:ok, values} ->
+        values = Enum.map(values, &:erlang.binary_to_term/1)
+
+        records
+        |> zip_values(values)
+        |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    end
+  end
+
+  defp zip_values([{key, nil} | next1], [value | next2]) do
+    [{key, value} | zip_values(next1, next2)]
+  end
+  defp zip_values(_, []), do: []
+  defp zip_values([], _), do: []
 
   defp binary_redis_key(config, key) do
     config
@@ -159,7 +165,6 @@ defmodule MyAppWeb.PowRedisCache do
   defp raise_ttl_error,
     do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 end
-
 ```
 
 We are converting keys to binary keys since we can't directly use the Erlang terms as with ETS and Mnesia.
