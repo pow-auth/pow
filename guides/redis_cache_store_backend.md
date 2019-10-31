@@ -110,6 +110,7 @@ defmodule MyAppWeb.PowRedisCache do
   defp unwrap([_namespace, key]), do: key
   defp unwrap([_namespace | key]), do: key
 
+  defp populate_values([], _config), do: []
   defp populate_values(records, config) do
     binary_keys = Enum.map(records, fn {key, nil} -> binary_redis_key(config, key) end)
 
@@ -236,6 +237,8 @@ defmodule MyAppWeb.PowRedisCacheTest do
   end
 
   test "can match fetch all" do
+    assert PowRedisCache.all(@default_config, :_) == []
+
     PowRedisCache.put(@default_config, {"key1", "value"})
     PowRedisCache.put(@default_config, {"key2", "value"})
     :timer.sleep(100)
