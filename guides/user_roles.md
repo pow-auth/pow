@@ -63,7 +63,7 @@ defmodule MyAppWeb.EnsureRolePlug do
   def init(config), do: config
 
   @doc false
-  @spec call(Conn.t(), atom()) :: Conn.t()
+  @spec call(Conn.t(), atom() | binary() | [atom()] | [binary()]) :: Conn.t()
   def call(conn, roles) do
     conn
     |> Plug.current_user()
@@ -119,5 +119,69 @@ defmodule MyAppWeb.SomeController do
   plug MyAppWeb.EnsureRolePlug, :admin
 
   # ...
+end
+```
+
+## Test module
+
+```elixir
+defmodule MyAppWeb.EnsureRolePlugTest do
+  use MyAppWeb.ConnCase
+
+  alias MyAppWeb.EnsureRolePlug
+
+  @opts ~w(admin)a
+  @user %{id: 1, role: "user"}
+  @admin %{id: 2, role: "admin"}
+
+  setup do
+    conn =
+      build_conn()
+      |> Plug.Conn.put_private(:plug_session, %{})
+      |> Plug.Conn.put_private(:plug_session_fetch, :done)
+      |> Pow.Plug.put_config(otp_app: :my_app)
+      |> fetch_flash()
+
+    {:ok, conn: conn}
+  end
+
+  test "call/2 with no user", %{conn: conn} do
+    opts = EnsureRolePlug.init(@opts)
+    conn = EnsureRolePlug.call(conn, opts)
+
+    assert conn.halted
+    assert Phoenix.ConnTest.redirected_to(conn) == Routes.page_path(conn, :index)
+  end
+
+  test "call/2 with non-admin user", %{conn: conn} do
+    opts = EnsureRolePlug.init(@opts)
+    conn =
+      conn
+      |> Pow.Plug.assign_current_user(@user, otp_app: :my_app)
+      |> EnsureRolePlug.call(opts)
+
+    assert conn.halted
+    assert Phoenix.ConnTest.redirected_to(conn) == Routes.page_path(conn, :index)
+  end
+
+  test "call/2 with non-admin user and multiple roles", %{conn: conn} do
+    opts = EnsureRolePlug.init(~w(user admin)a)
+    conn =
+      conn
+      |> Pow.Plug.assign_current_user(@user, otp_app: :my_app)
+      |> EnsureRolePlug.call(opts)
+
+    refute conn.halted
+  end
+
+  test "call/2 with admin user", %{conn: conn} do
+    opts = EnsureRolePlug.init(@opts)
+    conn =
+      conn
+      |> Pow.Plug.assign_current_user(@admin, otp_app: :my_app)
+      |> EnsureRolePlug.call(opts)
+
+    refute conn.halted
+  end
 end
 ```
