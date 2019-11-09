@@ -4,11 +4,13 @@ Locking users is trivial, and you won't need an extension for this. It can be do
 
 ## Update your schema
 
-Add a `locked_at` column to your user schema, and a changeset to lock the account:
+Add a `locked_at` column to your user schema, and a `lock_changeset/1` method to lock the account:
 
 ```elixir
 defmodule MyApp.Users.User do
-  # ...
+  use Ecto.Schema
+  use Pow.Ecto.Schema
+  
   alias Ecto.Changeset
 
   schema "users" do
@@ -16,18 +18,16 @@ defmodule MyApp.Users.User do
 
     pow_user_fields()
 
-    timestamp()
+    timestamps()
   end
 
-  # ...
-
-  @spec lock_changeset(map()) :: map()
+  @spec lock_changeset(Ecto.Schema.t() | Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def lock_changeset(user_or_changeset) do
     changeset = Changeset.change(user_or_changeset)
     locked_at = DateTime.from_unix!(System.system_time(:second), :second)
 
     case changeset do
-      %{data: %{locked_at: nil}} -> Changeset.change(changeset, [locked_at: locked_at])
+      %{data: %{locked_at: nil}} -> Changeset.change(changeset, locked_at: locked_at)
       changeset -> changeset
     end
   end
@@ -38,10 +38,7 @@ Add a lock action to your user context module:
 
 ```elixir
 defmodule MyApp.Users do
-  # ...
   alias MyApp.Users.User
-
-  # ...
 
   @spec lock(map()) :: {:ok, map()} | {:error, map()}
   def lock(user) do
@@ -58,11 +55,9 @@ Create or modify you user management controller so you (likely the admin) can lo
 
 ```elixir
 defmodule MyAppWeb.Admin.UserController do
-  # ...
+  use MyAppWeb, :controller
 
   plug :load_user when action in [:delete]
-
-  # ...
 
   @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def delete(%{assigns: %{user: user}} = conn, _params) do
@@ -71,8 +66,6 @@ defmodule MyAppWeb.Admin.UserController do
       {:error, _changeset} -> # Something went wrong
     end
   end
-
-  # ...
 
   defp load_user(%{params: %{"id" => user_id}} = conn, _opts) do
     config = Pow.Plug.fetch_config(conn)
@@ -180,6 +173,9 @@ Now all we got to do is to catch the route before the `pow_extension_routes/0` c
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
+  use Pow.Phoenix.Router
+  use Pow.Extension.Phoenix.Router, otp_app: :my_app
+
   # ...
 
   scope "/", MyAppWeb do

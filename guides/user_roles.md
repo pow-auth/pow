@@ -113,6 +113,8 @@ Now you can add `plug MyAppWeb.EnsureRolePlug, :admin` to your pipeline in `rout
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
+  use Pow.Phoenix.Router
+
   # ...
 
   pipeline :admin do

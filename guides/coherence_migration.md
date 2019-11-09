@@ -59,7 +59,7 @@ Set up `user.ex` to use Pow:
 
       pow_user_fields()
 
-      timestamp()
+      timestamps()
     end
 
     # ...
