@@ -4,35 +4,56 @@ Adding user roles is very simple, and you won't need an extension for this. This
 
 ## Update your schema
 
-Add a `role` column to your user schema. In our example, we'll set it so it can only have `user` and `admin` value, and defaults to `user`:
+Add a `role` column to your user schema. In our example, we'll set the default role to `user` and add a `changeset_role/2` method that ensures the role can only be `user` or `admin`.
 
 ```elixir
 defmodule MyApp.Users.User do
-  # ...
+  use Ecto.Schema
+  use Pow.Ecto.Schema
 
   schema "users" do
     field :role, :string, default: "user"
 
     pow_user_fields()
 
-    timestamp()
+    timestamps()
   end
 
-  def changeset(user_or_changeset, attrs) do
-    user_or_changeset
-    |> pow_changeset(attrs)
-    |> changeset_role(attrs)
-  end
-
+  @spec changeset_role(Ecto.Schema.t() | Ecto.Changeset.t(), map()) :: Ecto.Changeset.t()
   def changeset_role(user_or_changeset, attrs) do
     user_or_changeset
     |> Ecto.Changeset.cast(attrs, [:role])
     |> Ecto.Changeset.validate_inclusion(:role, ~w(user admin))
   end
-
-  # ...
 end
 ```
+
+To keep your app secure you shouldn't allow any direct calls to `changeset_role/2` with params provided by the user. Instead you should set up methods in your users context module to either create an admin user or update the role of an existing user:
+
+```elixir
+defmodule MyApp.Users do
+  alias MyApp.{Repo, Users.User}
+
+  @type t :: %User{}
+
+  @spec create_admin(map()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}
+  def create_admin(params) do
+    %User{}
+    |> User.changeset(params)
+    |> User.changeset_role(%{role: "admin"})
+    |> Repo.insert()
+  end
+
+  @spec set_admin_role(t()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}
+  def set_admin_role(user) do
+    user
+    |> User.changeset_role(%{role: "admin"})
+    |> Repo.update()
+  end
+end
+```
+
+Now you can safely call either `MyApp.Users.create_admin/1` or `MyApp.Users.set_admin_role/1` from your controllers.
 
 ## Add role plug
 
@@ -122,7 +143,55 @@ defmodule MyAppWeb.SomeController do
 end
 ```
 
-## Test module
+## Test modules
+
+```elixir
+defmodule MyApp.Users.UserTest do
+  use MyApp.DataCase
+
+  alias MyApp.Users.User
+
+  test "changeset/2 sets default role" do
+    user =
+      %User{}
+      |> User.changeset(%{})
+      |> Ecto.Changeset.apply_changes()
+
+    assert user.role == "user"
+  end
+
+  test "changeset_role/2" do
+    changeset = User.changeset_role(%User{}, %{role: "invalid"})
+    assert changeset.errors[:role] == {"is invalid", [validation: :inclusion, enum: ["user", "admin"]]}
+
+    changeset = User.changeset_role(%User{}, %{role: "admin"})
+    refute changeset.errors[:role]
+  end
+end
+```
+
+```elixir
+defmodule MyApp.UsersTest do
+  use MyApp.DataCase
+
+  alias MyApp.{Repo, Users, Users.User}
+
+  @valid_params %{email: "test@example.com", password: "secret1234", confirm_password: "secret1234"}
+
+  test "create_admin/2" do
+    assert {:ok, user} = Users.create_admin(@valid_params)
+    assert user.role == "admin"
+  end
+
+  test "set_admin_role/1" do
+    assert {:ok, user} = Repo.insert(User.changeset(%User{}, @valid_params))
+    assert user.role == "user"
+
+    assert {:ok, user} = Users.set_admin_role(user)
+    assert user.role == "admin"
+  end
+end
+```
 
 ```elixir
 defmodule MyAppWeb.EnsureRolePlugTest do
