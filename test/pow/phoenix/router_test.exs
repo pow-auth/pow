@@ -22,7 +22,8 @@ defmodule Pow.Test.Phoenix.OverriddenRouteRouter do
   use Pow.Phoenix.Router
 
   scope "/", Pow.Phoenix, as: "pow" do
-    get "/registration/overidden", RegistrationController, :new
+    get "/registration/overridden", RegistrationController, :new
+    resources "/registration/overridden", RegistrationController, only: [:edit], singleton: true
   end
 
   scope "/:extra" do
@@ -51,8 +52,12 @@ defmodule Pow.Phoenix.RouterTest do
   end
 
   test "can override routes" do
-    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new)) == "/registration/overidden"
+    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new)) == "/registration/overridden"
     assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new, "test")) == "/test/registration/new"
     assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.plug_opts == :new)) == 2
+
+    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :edit)) == "/registration/overridden/edit"
+    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :edit, "test")) == "/test/registration/edit"
+    assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.plug_opts == :edit)) == 2
   end
 end

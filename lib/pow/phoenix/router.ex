@@ -102,9 +102,36 @@ defmodule Pow.Phoenix.Router do
 
   @doc false
   def __filter_resource_actions__(phoenix_routes, line, module, path, controller, options) do
-    resource     = Phoenix.Router.Resource.build(path, controller, options)
-    action_verbs = [index: :get, new: :get, create: :post, show: :get, edit: :get, update: :patch]
-    only         = Enum.reject(resource.actions, &__route_defined__(phoenix_routes, line, module, action_verbs[&1], path, controller, &1, options))
+    resource    = Phoenix.Router.Resource.build(path, controller, options)
+    param       = resource.param
+    action_opts =
+      if resource.singleton do
+        [
+          show:   {:get, path},
+          new:    {:get, path <> "/new"},
+          edit:   {:get, path <> "/edit"},
+          create: {:post, path},
+          delete: {:delete, path},
+          update: {:patch, path}
+        ]
+      else
+        [
+          index:   {:get, path},
+          show:    {:get, path <> "/:" <> param},
+          new:     {:get, path <> "/new"},
+          edit:    {:get, path <> "/:" <> param <> "/edit"},
+          create:  {:post, path},
+          delete:  {:delete, path <> "/:" <> param},
+          update:  {:patch, path <> "/:" <> param}
+        ]
+      end
+
+    only =
+      Enum.reject(resource.actions, fn plug_opts ->
+        {verb, path} = Keyword.fetch!(action_opts, plug_opts)
+
+        __route_defined__(phoenix_routes, line, module, verb, path, controller, plug_opts, options)
+      end)
 
     Keyword.put(options, :only, only)
   end

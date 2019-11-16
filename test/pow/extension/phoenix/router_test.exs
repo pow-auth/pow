@@ -5,7 +5,7 @@ defmodule Pow.Test.Extension.Phoenix.Router.Phoenix.Router do
 
   defmacro routes(_config) do
     quote location: :keep do
-      Router.pow_resources "/test", TestController, only: [:new, :create, :edit, :update]
+      Router.pow_resources "/test", TestController, only: [:new, :create, :edit, :update, :delete]
     end
   end
 end
@@ -17,7 +17,8 @@ defmodule Pow.Test.Extension.Phoenix.Router do
     extensions: [Pow.Test.Extension.Phoenix.Router]
 
   scope "/", as: "pow_test_extension_phoenix_router" do
-    get "/test/:id/overidden", TestController, :edit
+    get "/test/:id/overridden", TestController, :edit
+    resources "/overridden/test", TestController, only: [:delete]
   end
 
   scope "/" do
@@ -67,7 +68,10 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   end
 
   test "can override routes" do
-    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :edit, 1)) == "/test/1/overidden"
+    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :edit, 1)) == "/test/1/overridden"
     assert Enum.count(Pow.Test.Extension.Phoenix.Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :edit)) == 1
+
+    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :delete, 1)) == "/overridden/test/1"
+    assert Enum.count(Pow.Test.Extension.Phoenix.Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :delete)) == 1
   end
 end
