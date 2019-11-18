@@ -71,7 +71,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   Sets a persistent session cookie with an auto generated token.
 
   The token is set as a key in the persistent session cache with the id fetched
-  from the struct.
+  from the struct. Any existing persistent session will be deleted first with
+  `delete/2`.
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` value, then that value will be set
@@ -91,7 +92,10 @@ defmodule PowPersistentSession.Plug.Cookie do
     opts                  = session_opts(config)
 
     store.put(store_config, key, value)
-    Conn.put_resp_cookie(conn, cookie_key, key, opts)
+
+    conn
+    |> delete(config)
+    |> Conn.put_resp_cookie(cookie_key, key, opts)
   end
 
   defp persistent_session_value(conn, user) do

@@ -196,6 +196,17 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
   end
 
+  test "create/3 deletes previous persistent session", %{conn: conn, config: config, ets: ets} do
+    conn = store_persistent(conn, ets, "previous_persistent_session", {[id: 1], []})
+
+    assert PersistentSessionCache.get([backend: ets], "previous_persistent_session") == {[id: 1], []}
+
+    Cookie.create(conn, %User{id: 1}, config)
+
+    assert_received {:ets, :put, [{_key, {[id: 1], []}}], _config}
+    assert PersistentSessionCache.get([backend: ets], "previous_persistent_session") == :not_found
+  end
+
   test "create/3 with `[:pow_session_metadata][:fingerprint]` defined in conn.private", %{conn: conn, config: config} do
     conn
     |> Conn.put_private(:pow_session_metadata, fingerprint: "fingerprint")

@@ -9,6 +9,7 @@
   * `PowPersistentSession.Plug.Cookie.create/3` now stores a metadata keyword list that can be populated
   * `PowPersistentSession.Plug.Cookie.create/3` will now, instead of adding `:session_fingerprint` to the metadata, populate the `:session_metadata` keyword list with `:fingerprint`
   * `PowPersistentSession.Plug.Cookie.authenticate/2` will now populate session metadata with what exists in `:session_metadata` key for the persistent session metadata
+* `PowPersistentSession.Plug.Cookie.create/3` now ensures to delete the previous persistent session first, if one is found in cookies
 
 ## v1.0.14 (2019-10-29)
 
