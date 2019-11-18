@@ -8,8 +8,8 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` key, that fingerprint value will be
-  set along with the user id as the persistent session value as
-  `{user_id, session_fingerprint: fingerprint}`.
+  set along with the user clause as the persistent session value as
+  `{[id: user_id], session_metadata: [fingerprint: fingerprint]}`.
 
   ## Example
 
@@ -35,6 +35,30 @@ defmodule PowPersistentSession.Plug.Cookie do
 
     * `:persistent_session_ttl` - used for both backend store and max age for
       cookie. See `PowPersistentSession.Plug.Base` for more.
+
+  ## Custom metadata
+
+  You can assign a private `:pow_persistent_session_metadata` key in the conn
+  with custom metadata as a keyword list. The only current use this has is to
+  set `:session_metadata` that'll be passed on as `:pow_session_metadata` for
+  new session generation.
+
+        session_metadata =
+          conn.private
+          |> Map.get(:pow_session_metadata, [])
+          |> Keyword.take([:first_seen_at])
+
+        Plug.Conn.put_private(conn, :pow_persistent_session_metadata, session_metadata: session_metadata)
+
+  This ensure that you are able to keep session metadata consistent between
+  browser sessions.
+
+  When a persistent session token is used, the
+  `:pow_persistent_session_metadata` assigns key in the conn will be populated
+  with a `:session_metadata` keyword list so that the session metadata that was
+  pulled from the persistent session can be carried over to the new persistent
+  session. `:fingerprint` will always be ignored as to not record the old
+  fingerprint.
   """
   use PowPersistentSession.Plug.Base
 
@@ -51,8 +75,9 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` value, then that value will be set
-  as the `:session_fingerprint` in the metadata. The value will look like:
-  `{user_id, session_fingerprint: fingerprint}`
+  in a `:session_metadata` keyword list in the persistent session metadata. The
+  value will look like:
+  `{[id: user_id], session_metadata: [fingerprint: fingerprint]}`
 
   The unique cookie id will be prepended by the `:otp_app` configuration
   value, if present.
@@ -70,18 +95,34 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp persistent_session_value(conn, user) do
-    clauses = user_to_get_by_clauses(user)
+    clauses  = user_to_get_by_clauses(user)
+    metadata =
+      conn.private
+      |> Map.get(:pow_persistent_session_metadata, [])
+      |> maybe_put_fingerprint_in_session_metadata(conn)
 
+    {clauses, metadata}
+  end
+
+  defp user_to_get_by_clauses(%{id: id}), do: [id: id]
+
+  defp maybe_put_fingerprint_in_session_metadata(metadata, conn) do
     conn.private
     |> Map.get(:pow_session_metadata, [])
     |> Keyword.get(:fingerprint)
     |> case do
-      nil         -> clauses
-      fingerprint -> {clauses, session_fingerprint: fingerprint}
+      nil ->
+        metadata
+
+      fingerprint ->
+        session_metadata =
+          metadata
+          |> Keyword.get(:session_metadata, [])
+          |> Keyword.put_new(:fingerprint, fingerprint)
+
+        Keyword.put(metadata, :session_metadata, session_metadata)
     end
   end
-
-  defp user_to_get_by_clauses(%{id: id}), do: [id: id]
 
   @doc """
   Expires the persistent session cookie.
@@ -116,9 +157,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   cookie. The old persistent session cookie and session cache credentials will
   be removed.
 
-  If a `:session_fingerprint` is fetched from the persistent session metadata,
-  it'll be assigned to the private `:pow_session_metadata` key in the conn as
-  `:fingerprint`.
+  If a `:session_metadata` keyword list is fetched from the persistent session
+  metadata, all the values will be merged into the private
+  `:pow_session_metadata` key in the conn.
 
   The cookie expiration will automatically be renewed on every request.
   """
@@ -155,8 +196,6 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
-    conn = update_session_metadata_with_fingerprint(conn, metadata)
-
     clauses
     |> filter_invalid!()
     |> Pow.Operations.get_by(config)
@@ -166,17 +205,53 @@ defmodule PowPersistentSession.Plug.Cookie do
 
       user ->
         conn
+        |> update_persistent_session_metadata(metadata)
+        |> update_session_metadata(metadata)
         |> create(user, config)
         |> plug.do_create(user, config)
     end
   end
+  # TODO: Remove by 1.1.0
   defp fetch_and_auth_user(conn, user_id, plug, config),
     do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
 
-  defp update_session_metadata_with_fingerprint(conn, metadata) do
+  defp update_persistent_session_metadata(conn, metadata) do
+    case Keyword.get(metadata, :session_metadata) do
+      nil ->
+        conn
+
+      session_metadata ->
+        current_metadata =
+          conn.private
+          |> Map.get(:pow_persistent_session_metadata, [])
+          |> Keyword.get(:session_metadata, [])
+
+        metadata =
+          session_metadata
+          |> Keyword.merge(current_metadata)
+          |> Keyword.delete(:fingerprint)
+
+        Conn.put_private(conn, :pow_persistent_session_metadata, session_metadata: metadata)
+    end
+  end
+
+  defp update_session_metadata(conn, metadata) do
+    case Keyword.get(metadata, :session_metadata) do
+      nil ->
+        fallback_session_fingerprint(conn, metadata)
+
+      session_metadata ->
+        metadata = Map.get(conn.private, :pow_session_metadata, [])
+
+        Conn.put_private(conn, :pow_session_metadata, Keyword.merge(session_metadata, metadata))
+    end
+  end
+
+  # TODO: Remove by 1.1.0
+  defp fallback_session_fingerprint(conn, metadata) do
     case Keyword.get(metadata, :session_fingerprint) do
       nil ->
         conn
