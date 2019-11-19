@@ -37,6 +37,7 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
   defmacro __before_compile__(_opts) do
     for hook <- [:before_process, :before_respond] do
       quote do
+        @impl true
         @spec unquote(hook)(atom(), atom(), any(), Config.t()) :: any()
         def unquote(hook)(_controller, _action, res, _config), do: res
       end
