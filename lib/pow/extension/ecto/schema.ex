@@ -57,6 +57,7 @@ defmodule Pow.Extension.Ecto.Schema do
   def __use_extensions__(config) do
     config
     |> schema_modules()
+    |> Enum.filter(&Code.ensure_compiled?/1)
     |> Enum.filter(&Kernel.macro_exported?(&1, :__using__, 1))
     |> Enum.map(fn module ->
       quote do
