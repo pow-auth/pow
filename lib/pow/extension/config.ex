@@ -12,6 +12,21 @@ defmodule Pow.Extension.Config do
     Config.get(config, :extensions, [])
   end
 
+  # This speeds up compile since we won't depend on `Code.ensure_compiled?/1`
+  @compiled_modules [
+    PowEmailConfirmation.Ecto.Schema,
+    PowEmailConfirmation.Phoenix.ControllerCallbacks,
+    PowEmailConfirmation.Phoenix.Messages,
+    PowEmailConfirmation.Phoenix.Router,
+    PowInvitation.Ecto.Schema,
+    PowInvitation.Phoenix.Messages,
+    PowInvitation.Phoenix.Router,
+    PowPersistentSession.Phoenix.ControllerCallbacks,
+    PowResetPassword.Ecto.Schema,
+    PowResetPassword.Phoenix.Messages,
+    PowResetPassword.Phoenix.Router,
+  ]
+
   @doc """
   Finds all existing extension modules that matches the extensions and module
   list.
@@ -23,7 +38,10 @@ defmodule Pow.Extension.Config do
   def extension_modules(extensions, module_list) do
     extensions
     |> Enum.map(&Module.concat([&1] ++ module_list))
-    |> Enum.filter(&Code.ensure_compiled?/1)
+    |> Enum.filter(fn
+      module when module in @compiled_modules -> true
+      module -> Code.ensure_compiled?(module)
+    end)
   end
 
   # TODO: Remove by 1.1.0
