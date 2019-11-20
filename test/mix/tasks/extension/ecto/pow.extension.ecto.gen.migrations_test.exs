@@ -1,17 +1,17 @@
 defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
-  defmodule Ecto.Schema do
+  defmodule ExtensionMock.Ecto.Schema do
     use Pow.Extension.Ecto.Schema.Base
 
+    @impl true
     def attrs(config) do
       [{:custom_string, :string, null: config[:binary_id] == true}]
     end
 
+    @impl true
     def indexes(_config) do
       [{:custom_string, true}]
     end
   end
-
-  use Pow.Test.Mix.TestCase
 
   alias Mix.Tasks.Pow.Extension.Ecto.Gen.Migrations
 
@@ -20,10 +20,13 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     def config, do: [priv: "tmp/#{inspect(Migrations)}", otp_app: :pow]
   end
 
-  @extension_name  "MixTasksPowExtensionEctoGenMigrationsTest"
+  use Pow.Test.Mix.TestCase
+
+  @extension       ExtensionMock
+  @extension_name  "MixTasksPowExtensionEctoGenMigrationsTestExtensionMock"
   @tmp_path        Path.join(["tmp", inspect(Migrations)])
   @migrations_path Path.join([@tmp_path, "migrations"])
-  @options         ["-r", inspect(Repo), "--extension", __MODULE__]
+  @options         ["-r", inspect(Repo), "--extension", @extension]
 
   setup do
     File.rm_rf!(@tmp_path)
@@ -80,7 +83,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
   describe "with `:otp_app` configuration" do
     setup do
-      Application.put_env(:pow, :pow, extensions: [__MODULE__])
+      Application.put_env(:pow, :pow, extensions: [@extension])
       on_exit(fn ->
         Application.delete_env(:pow, :pow)
       end)
@@ -88,7 +91,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
     test "generates migrations" do
       File.cd!(@tmp_path, fn ->
-        Application.put_env(:pow, :pow, extensions: [__MODULE__])
+        Application.put_env(:pow, :pow, extensions: [@extension])
         Migrations.run(["-r", inspect(Repo)])
 
         assert [_migration_file] = File.ls!(@migrations_path)
@@ -97,7 +100,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
   end
 
   test "doesn't make duplicate migrations" do
-    options = @options ++ ["--extension", __MODULE__]
+    options = @options ++ ["--extension", @extension]
 
     File.cd!(@tmp_path, fn ->
       assert_raise Mix.Error, "migration can't be created, there is already a migration file with name Add#{@extension_name}ToUsers.", fn ->

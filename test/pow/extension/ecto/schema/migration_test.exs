@@ -1,7 +1,8 @@
 defmodule Pow.Extension.Ecto.Schema.MigrationTest do
-  defmodule Ecto.Schema do
+  defmodule ExtensionMock.Ecto.Schema do
     use Pow.Extension.Ecto.Schema.Base
 
+    @impl true
     def attrs(_config) do
       [
         {:custom_string, :string, null: false},
@@ -9,6 +10,7 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
       ]
     end
 
+    @impl true
     def assocs(_config) do
       [
         {:belongs_to, :parent, :users},
@@ -16,6 +18,7 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
       ]
     end
 
+    @impl true
     def indexes(_config) do
       [{:custom_string, true}]
     end
@@ -26,33 +29,34 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
 
   alias Pow.Extension.Ecto.Schema.Migration
 
-  @extension "PowExtensionEctoSchemaMigrationTest"
+  @extension      ExtensionMock
+  @extension_name "PowExtensionEctoSchemaMigrationTestExtensionMock"
 
   test "new/1" do
-    schema = Migration.new(__MODULE__, Pow, "users", [])
+    schema = Migration.new(@extension, Pow, "users", [])
 
-    assert schema.migration_name == "Add#{@extension}ToUsers"
+    assert schema.migration_name == "Add#{@extension_name}ToUsers"
     assert schema.repo == Pow.Repo
     refute schema.binary_id
 
-    schema = Migration.new(__MODULE__, Test, "organizations", binary_id: true)
+    schema = Migration.new(@extension, Test, "organizations", binary_id: true)
 
-    assert schema.migration_name == "Add#{@extension}ToOrganizations"
+    assert schema.migration_name == "Add#{@extension_name}ToOrganizations"
     assert schema.repo == Test.Repo
     assert schema.binary_id
   end
 
   test "gen/1" do
-    content = Migration.gen(Migration.new(__MODULE__, Pow, "users"))
+    content = Migration.gen(Migration.new(@extension, Pow, "users"))
 
-    assert content =~ "defmodule Pow.Repo.Migrations.Add#{@extension}ToUsers do"
+    assert content =~ "defmodule Pow.Repo.Migrations.Add#{@extension_name}ToUsers do"
     assert content =~ "alter table(:users)"
     assert content =~ "add :custom_string, :string, null: false"
     assert content =~ "add :custom_at, :utc_datetime"
     assert content =~ "add :parent_id, references(\"users\", on_delete: :nothing)"
     assert content =~ "create unique_index(:users, [:custom_string])"
 
-    content = Migration.gen(Migration.new(__MODULE__, Test, "users"))
-    assert content =~ "defmodule Test.Repo.Migrations.Add#{@extension}ToUsers do"
+    content = Migration.gen(Migration.new(@extension, Test, "users"))
+    assert content =~ "defmodule Test.Repo.Migrations.Add#{@extension_name}ToUsers do"
   end
 end
