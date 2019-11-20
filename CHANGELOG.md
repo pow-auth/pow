@@ -2,20 +2,28 @@
 
 ## v1.0.15 (TBA)
 
-* Fixed bug in `Router.Phoenix.Router` where resource routes were not filtered correctly according to the path bindings
-* Added `Pow.Extension.Config.extension_modules/2`
-* Deprecated `Pow.Extension.Config.discover_modules/2`
-* Added support for custom metadata in `PowPersistentSession.Plug.Cookie`:
-  * `PowPersistentSession.Plug.Cookie.create/3` now stores a metadata keyword list that can be populated
-  * `PowPersistentSession.Plug.Cookie.create/3` will now, instead of adding `:session_fingerprint` to the metadata, populate the `:session_metadata` keyword list with `:fingerprint`
-  * `PowPersistentSession.Plug.Cookie.authenticate/2` will now populate session metadata with what exists in `:session_metadata` key for the persistent session metadata
-* `PowPersistentSession.Plug.Cookie.create/3` now ensures to delete the previous persistent session first, if one is found in cookies
-* Extensions are now expected to have a base module with compile-time information whether certain modules are available to prevent unnecessary `Code.ensure_compiled?/1` calls:
+### Enhancements
+
+* [`Pow.Extension.Base`] Extensions are now expected to have a base module with compile-time information whether certain modules are available to prevent unnecessary `Code.ensure_compiled?/1` calls:
   * Added `Pow.Extension.Base` module
   * Added `PowEmailConfirmation` module
   * Added `PowInvitation` module
   * Added `PowPersistentSession` module
   * Added `PowResetPassword` module
+* [`PowPersistentSession.Plug.Cookie`] Added support for custom metadata:
+  * `PowPersistentSession.Plug.Cookie.create/3` now stores a metadata keyword list that can be populated
+  * `PowPersistentSession.Plug.Cookie.create/3` will now, instead of adding `:session_fingerprint` to the metadata, populate the `:session_metadata` keyword list with `:fingerprint`
+  * `PowPersistentSession.Plug.Cookie.authenticate/2` will now populate session metadata with what exists in `:session_metadata` key for the persistent session metadata
+  * `PowPersistentSession.Plug.Cookie.create/3` now ensures to delete the previous persistent session first, if one is found in cookies
+* [`Pow.Extension.Config`] Added `Pow.Extension.Config.extension_modules/2`
+
+### Bug fixes
+
+* [`Router.Phoenix.Router`] Fixed bug where resource routes were not filtered correctly according to the path bindings
+
+### Deprecations
+
+* [`Pow.Extension.Config`] Deprecated `Pow.Extension.Config.discover_modules/2`
 
 ## v1.0.14 (2019-10-29)
 
