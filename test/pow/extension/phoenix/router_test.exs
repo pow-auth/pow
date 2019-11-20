@@ -1,4 +1,12 @@
 defmodule Pow.Extension.Phoenix.RouterTest do
+  # Implementation needed for `Pow.Extension.Base.has?/2` check
+  defmodule ExtensionMock do
+    use Pow.Extension.Base
+
+    @impl true
+    def phoenix_router?(), do: true
+  end
+
   defmodule ExtensionMock.Phoenix.Router do
     use Pow.Extension.Phoenix.Router.Base
 

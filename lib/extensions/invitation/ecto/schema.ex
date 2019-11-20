@@ -57,6 +57,7 @@ defmodule PowInvitation.Ecto.Schema do
   end
 
   @doc false
+  @impl true
   defmacro __using__(_config) do
     quote do
       def invite_changeset(changeset, invited_by, attrs), do: pow_invite_changeset(changeset, invited_by, attrs)

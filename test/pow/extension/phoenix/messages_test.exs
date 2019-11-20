@@ -1,4 +1,12 @@
 defmodule Pow.Extension.Phoenix.MessagesTest do
+  # Implementation needed for `Pow.Extension.Base.has?/2` check
+  defmodule ExtensionMock do
+    use Pow.Extension.Base
+
+    @impl true
+    def phoenix_messages?(), do: true
+  end
+
   defmodule ExtensionMock.Phoenix.Messages do
     def a(_conn), do: "First"
     def b(_conn), do: "Second"
