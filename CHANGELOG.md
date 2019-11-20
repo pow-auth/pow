@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.15 (TBA)
+## v1.0.15 (2019-11-20)
 
 ### Enhancements
 
