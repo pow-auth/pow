@@ -195,7 +195,9 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   defp schema_modules(config) do
-    Extension.Config.discover_modules(config, ["Ecto", "Schema"])
+    config
+    |> Extension.Config.extensions()
+    |> Extension.Config.extension_modules(["Ecto", "Schema"])
   end
 
   @doc """

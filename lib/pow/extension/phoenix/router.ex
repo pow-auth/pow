@@ -74,6 +74,8 @@ defmodule Pow.Extension.Phoenix.Router do
 
   @doc false
   def __router_modules__(config) do
-    Config.discover_modules(config, ["Phoenix", "Router"])
+    config
+    |> Config.extensions()
+    |> Config.extension_modules(["Phoenix", "Router"])
   end
 end

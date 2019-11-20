@@ -29,7 +29,9 @@ defmodule Pow.Extension.Phoenix.Messages do
 
   @doc false
   def __messages_modules__(config) do
-    Extension.Config.discover_modules(config, ["Phoenix", "Messages"])
+    config
+    |> Extension.Config.extensions()
+    |> Extension.Config.extension_modules(["Phoenix", "Messages"])
   end
 
   @doc false

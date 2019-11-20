@@ -26,6 +26,8 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks do
   end
 
   defp controller_callbacks_modules(config) do
-    Extension.Config.discover_modules(config, ["Phoenix", "ControllerCallbacks"])
+    config
+    |> Extension.Config.extensions()
+    |> Extension.Config.extension_modules(["Phoenix", "ControllerCallbacks"])
   end
 end

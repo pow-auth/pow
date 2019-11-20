@@ -13,17 +13,25 @@ defmodule Pow.Extension.Config do
   end
 
   @doc """
-  Finds all extensions that has a module matching the provided module list.
+  Finds all existing extension modules that matches the extensions and module
+  list.
 
-  It'll concat the extension atom with the  module list, and return a list of
-  all modules that is available in the project.
+  This will iterate through all extensions appending the module list to the
+  extension module and return a list of all modules that exists in the project.
   """
-  @spec discover_modules(Config.t(), [any()]) :: [atom()]
+  @spec extension_modules([atom()], [any()]) :: [atom()]
+  def extension_modules(extensions, module_list) do
+    extensions
+    |> Enum.map(&Module.concat([&1] ++ module_list))
+    |> Enum.filter(&Code.ensure_compiled?/1)
+  end
+
+  # TODO: Remove by 1.1.0
+  @deprecated "Use `extension_modules/2` instead"
   def discover_modules(config, module_list) do
     config
     |> extensions()
-    |> Enum.map(&Module.concat([&1] ++ module_list))
-    |> Enum.filter(&Code.ensure_compiled?/1)
+    |> extension_modules(module_list)
   end
 
   # TODO: Remove by 1.1.0

@@ -3,6 +3,8 @@
 ## v1.0.15 (TBA)
 
 * Fixed bug in `Router.Phoenix.Router` where resource routes were not filtered correctly according to the path bindings
+* Added `Pow.Extension.Config.extension_modules/2`
+* Deprecated `Pow.Extension.Config.discover_modules/2`
 
 ## v1.0.14 (2019-10-29)
 

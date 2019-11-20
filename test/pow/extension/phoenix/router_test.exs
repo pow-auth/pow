@@ -1,65 +1,66 @@
-defmodule Pow.Test.Extension.Phoenix.Router.Phoenix.Router do
-  use Pow.Extension.Phoenix.Router.Base
+defmodule Pow.Extension.Phoenix.RouterTest do
+  defmodule ExtensionMock.Phoenix.Router do
+    use Pow.Extension.Phoenix.Router.Base
 
-  alias Pow.Phoenix.Router
+    alias Pow.Phoenix.Router
 
-  defmacro routes(_config) do
-    quote location: :keep do
-      Router.pow_resources "/test", TestController, only: [:new, :create, :edit, :update, :delete]
-    end
-  end
-end
-
-defmodule Pow.Test.Extension.Phoenix.Router do
-  use Phoenix.Router
-  use Pow.Phoenix.Router
-  use Pow.Extension.Phoenix.Router,
-    extensions: [Pow.Test.Extension.Phoenix.Router]
-
-  scope "/", as: "pow_test_extension_phoenix_router" do
-    get "/test/:id/overridden", TestController, :edit
-    resources "/overridden/test", TestController, only: [:delete]
-  end
-
-  scope "/" do
-    pow_routes()
-    pow_extension_routes()
-  end
-
-  def phoenix_routes, do: @phoenix_routes
-end
-
-module_raised_with =
-  try do
-    defmodule Pow.Test.Extension.Phoenix.RouterAliasScope do
-      @moduledoc false
-      use Phoenix.Router
-      use Pow.Phoenix.Router
-      use Pow.Extension.Phoenix.Router,
-        extensions: [Pow.Test.Extension.Phoenix.Router]
-
-      scope "/", Test do
-        pow_extension_routes()
+    @impl true
+    defmacro routes(_config) do
+      quote location: :keep do
+        Router.pow_resources "/test", TestController, only: [:new, :create, :edit, :update, :delete]
       end
     end
-  rescue
-    e in ArgumentError -> e.message
-  else
-    _ -> raise "Scope with alias didn't throw any error"
   end
 
-defmodule Pow.Extension.Phoenix.RouterTest do
+  defmodule Router do
+    use Phoenix.Router
+    use Pow.Phoenix.Router
+    use Pow.Extension.Phoenix.Router,
+      extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
+
+    scope "/", as: "pow_extension_phoenix_router_test_extension_mock" do
+      get "/test/:id/overridden", TestController, :edit
+      resources "/overridden/test", TestController, only: [:delete]
+    end
+
+    scope "/" do
+      pow_routes()
+      pow_extension_routes()
+    end
+
+    def phoenix_routes, do: @phoenix_routes
+  end
+
+  module_raised_with =
+    try do
+      defmodule RouterAliasScope do
+        @moduledoc false
+        use Phoenix.Router
+        use Pow.Phoenix.Router
+        use Pow.Extension.Phoenix.Router,
+          extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
+
+        scope "/", Test do
+          pow_extension_routes()
+        end
+      end
+    rescue
+      e in ArgumentError -> e.message
+    else
+      _ -> raise "Scope with alias didn't throw any error"
+    end
+
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Phoenix.Router
 
   alias Phoenix.ConnTest
-  alias Pow.Test.Extension.Phoenix.Router.Helpers, as: Routes
+  alias Router.Helpers, as: Routes
 
   @conn ConnTest.build_conn()
 
   test "has routes" do
     assert unquote(Routes.pow_session_path(@conn, :new)) == "/session/new"
-    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :new)) == "/test/new"
+    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :new)) == "/test/new"
   end
 
   test "validates no aliases" do
@@ -68,10 +69,10 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   end
 
   test "can override routes" do
-    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :edit, 1)) == "/test/1/overridden"
-    assert Enum.count(Pow.Test.Extension.Phoenix.Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :edit)) == 1
+    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :edit, 1)) == "/test/1/overridden"
+    assert Enum.count(Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :edit)) == 1
 
-    assert unquote(Routes.pow_test_extension_phoenix_router_test_path(@conn, :delete, 1)) == "/overridden/test/1"
-    assert Enum.count(Pow.Test.Extension.Phoenix.Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :delete)) == 1
+    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :delete, 1)) == "/overridden/test/1"
+    assert Enum.count(Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :delete)) == 1
   end
 end
