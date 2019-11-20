@@ -1,4 +1,12 @@
 defmodule Pow.Extension.Ecto.Schema.MigrationTest do
+  # Implementation needed for `Pow.Extension.Base.has?/2` check
+  defmodule ExtensionMock do
+    use Pow.Extension.Base
+
+    @impl true
+    def ecto_schema?(), do: true
+  end
+
   defmodule ExtensionMock.Ecto.Schema do
     use Pow.Extension.Ecto.Schema.Base
 

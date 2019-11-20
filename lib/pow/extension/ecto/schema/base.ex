@@ -28,6 +28,8 @@ defmodule Pow.Extension.Ecto.Schema.Base do
   @callback assocs(Config.t()) :: [tuple()]
   @callback indexes(Config.t()) :: [tuple()]
   @callback changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
+  @macrocallback __using__(Config.t()) :: Macro.t()
+  @optional_callbacks __using__: 1
 
   @doc false
   defmacro __using__(_opts) do

@@ -1,4 +1,15 @@
 defmodule Pow.Extension.Ecto.SchemaTest do
+  # Implementation needed for `Pow.Extension.Base.has?/2` check
+  defmodule ExtensionMock do
+    use Pow.Extension.Base
+
+    @impl true
+    def ecto_schema?(), do: true
+
+    @impl true
+    def use_ecto_schema?(), do: true
+  end
+
   defmodule ExtensionMock.Ecto.Schema do
     use Pow.Extension.Ecto.Schema.Base
     alias Ecto.Changeset
@@ -34,6 +45,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
       end
     end
 
+    @impl true
     defmacro __using__(_config) do
       quote do
         def custom_method, do: true

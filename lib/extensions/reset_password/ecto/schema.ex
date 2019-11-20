@@ -7,7 +7,7 @@ defmodule PowResetPassword.Ecto.Schema do
 
   @impl true
   def validate!(_config, module) do
-    Schema.require_schema_field!(module, :email, PowEmailConfirmation)
+    Schema.require_schema_field!(module, :email, PowResetPassword)
   end
 
   @spec reset_password_changeset(map(), map()) :: Changeset.t()

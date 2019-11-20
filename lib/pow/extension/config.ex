@@ -2,7 +2,7 @@ defmodule Pow.Extension.Config do
   @moduledoc """
   Configuration helpers for extensions.
   """
-  alias Pow.Config
+  alias Pow.{Config, Extension.Base}
 
   @doc """
   Fetches the `:extensions` key from the configuration.
@@ -22,8 +22,8 @@ defmodule Pow.Extension.Config do
   @spec extension_modules([atom()], [any()]) :: [atom()]
   def extension_modules(extensions, module_list) do
     extensions
+    |> Enum.filter(&Base.has?(&1, module_list))
     |> Enum.map(&Module.concat([&1] ++ module_list))
-    |> Enum.filter(&Code.ensure_compiled?/1)
   end
 
   # TODO: Remove by 1.1.0

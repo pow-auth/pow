@@ -32,7 +32,7 @@ defmodule Pow.Extension.Ecto.Schema do
       end
   """
   alias Ecto.Changeset
-  alias Pow.{Config, Extension}
+  alias Pow.{Config, Extension, Extension.Base}
 
   defmodule SchemaError do
     @moduledoc false
@@ -56,8 +56,7 @@ defmodule Pow.Extension.Ecto.Schema do
   @doc false
   def __use_extensions__(config) do
     config
-    |> schema_modules()
-    |> Enum.filter(&Kernel.macro_exported?(&1, :__using__, 1))
+    |> schema_modules_with_use()
     |> Enum.map(fn module ->
       quote do
         use unquote(module), unquote(config)
@@ -198,6 +197,13 @@ defmodule Pow.Extension.Ecto.Schema do
     config
     |> Extension.Config.extensions()
     |> Extension.Config.extension_modules(["Ecto", "Schema"])
+  end
+
+  defp schema_modules_with_use(config) do
+    config
+    |> Extension.Config.extensions()
+    |> Enum.filter(&Base.use?(&1, ["Ecto", "Schema"]))
+    |> Enum.map(&Module.concat([&1] ++ ["Ecto", "Schema"]))
   end
 
   @doc """

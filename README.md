@@ -180,13 +180,14 @@ defmodule MyApp.Users.User do
 end
 ```
 
-Add Pow extension routes to `WEB_PATH/router.ex` (note the `:otp_app` configuration that will pull the extensions defined in the app environment):
+Add Pow extension routes to `WEB_PATH/router.ex`:
 
 ```elixir
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use Pow.Phoenix.Router
-  use Pow.Extension.Phoenix.Router, otp_app: :my_app
+  use Pow.Extension.Phoenix.Router,
+    extensions: [PowResetPassword, PowEmailConfirmation]
 
   # ...
 
