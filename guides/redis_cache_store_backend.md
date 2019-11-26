@@ -79,7 +79,11 @@ defmodule MyAppWeb.PowRedisCache do
   end
 
   defp stream_scan(_config, _compiled_match_spec, {[], "0"}), do: {:halt, nil}
-  defp stream_scan(config, compiled_match_spec, {[], iterator}), do: do_scan(config, compiled_match_spec, iterator)
+  defp stream_scan(config, compiled_match_spec, {[], iterator}) do
+    result = do_scan(config, compiled_match_spec, iterator)
+
+    stream_scan(config, compiled_match_spec, result)
+  end
   defp stream_scan(_config, _compiled_match_spec, {keys, iterator}), do: {keys, {[], iterator}}
 
   defp do_scan(config, compiled_match_spec, iterator) do
@@ -239,11 +243,12 @@ defmodule MyAppWeb.PowRedisCacheTest do
   test "can match fetch all" do
     assert PowRedisCache.all(@default_config, :_) == []
 
-    PowRedisCache.put(@default_config, {"key1", "value"})
-    PowRedisCache.put(@default_config, {"key2", "value"})
+    for number <- 1..11, do: PowRedisCache.put(@default_config, {"key#{number}", "value"})
     :timer.sleep(100)
+    items = PowRedisCache.all(@default_config, :_)
 
-    assert PowRedisCache.all(@default_config, :_) ==  [{"key1", "value"}, {"key2", "value"}]
+    assert [{"key1", "value"}, {"key2", "value"} | _rest] = items
+    assert length(items) == 11
 
     PowRedisCache.put(@default_config, {["namespace", "key"], "value"})
     :timer.sleep(100)
