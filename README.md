@@ -110,6 +110,26 @@ end
 
 That's it! Run `mix ecto.setup` and you can now visit `http://localhost:4000/registration/new`, and create a new user.
 
+### Customizing Routes
+
+By default, `pow_routes/0` will create standard RESTful routes. (`/session/new` for signing in, for example)
+
+If you want to customize this, the simplest way is to do something like the following:
+
+```elixir
+scope "/", Pow.Phoenix, as: "pow" do
+  get "/sign_up", RegistrationController, :new
+  post "/sign_up", RegistrationController, :create
+  get "/sign_in", SessionController, :new
+  post "/sign_in", SessionController, :create
+end
+
+scope "/" do
+  pow_routes()
+end
+```
+Note that in the above example having the block with `pow_routes/0` after ensures fallback for any routes you don't customize. This will be the simplest and easiest way to maintain custom route paths.
+
 ### Modify templates
 
 By default, Pow will only expose files that are necessary.
