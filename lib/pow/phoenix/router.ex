@@ -34,6 +34,64 @@ defmodule Pow.Phoenix.Router do
 
         # ...
       end
+
+  ## Disable registration routes
+
+  `pow_routes/0` will call `pow_session_routes/0` and
+  `pow_registration_routes/0`. Registration of new accounts can be disabled
+  just by calling `pow_session_routes/0` instead of `pow_routes/0`:
+
+      defmodule MyAppWeb.Router do
+        use MyAppWeb, :router
+        use Pow.Phoenix.Router
+
+        # ...
+
+        # Uncomment to permit update and deletion of user accounts:
+        # scope "/", Pow.Phoenix, as: "pow" do
+        #   pipe_through :browser
+        #
+        #   resources "/registration", RegistrationController, singleton: true, only: [:edit, :update, :delete]
+        # end
+
+        scope "/" do
+          pipe_through :browser
+
+          pow_session_routes()
+        end
+
+        # ...
+      end
+
+  ## Customize Pow routes
+
+  Pow routes can be overridden by defining them before the `pow_routes/0` call.
+  As an example, this can be used to change path:
+
+      defmodule MyAppWeb.Router do
+        use MyAppWeb, :router
+        use Pow.Phoenix.Router
+
+        # ...
+
+        scope "/", Pow.Phoenix, as: "pow" do
+          pipe_through :browser
+
+          get "/sign_up", RegistrationController, :new
+          post "/sign_up", RegistrationController, :create
+
+          get "/login", SessionController, :new
+          post "/login", SessionController, :create
+        end
+
+        scope "/" do
+          pipe_through :browser
+
+          pow_routes()
+        end
+
+        # ...
+      end
   """
 
   @doc false
