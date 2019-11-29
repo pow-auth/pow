@@ -72,7 +72,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   use PowPersistentSession.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Plug, UUID}
+  alias Pow.{Config, Operations, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
   @cookie_expiration_timeout 10
@@ -247,7 +247,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
     clauses
     |> filter_invalid!()
-    |> Pow.Operations.get_by(config)
+    |> Operations.get_by(config)
     |> case do
       nil ->
         conn

@@ -35,8 +35,7 @@ defmodule Pow.Ecto.Context do
     * `:user` - the user schema module (required)
     * `:repo_opts` - keyword list options for the repo, `:prefix` can be set here
   """
-  alias Pow.Config
-  alias Pow.Ecto.Schema
+  alias Pow.{Config, Ecto.Schema, Operations}
 
   @type user :: map()
   @type changeset :: map()
@@ -109,7 +108,7 @@ defmodule Pow.Ecto.Context do
   defp do_authenticate(_user_id_field, nil, _password, _config), do: nil
   defp do_authenticate(user_id_field, user_id_value, password, config) do
     [{user_id_field, user_id_value}]
-    |> get_by(config)
+    |> Operations.get_by(config)
     |> verify_password(password, config)
   end
 

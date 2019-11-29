@@ -70,7 +70,7 @@ defmodule MyAppWeb.Admin.UserController do
   defp load_user(%{params: %{"id" => user_id}} = conn, _opts) do
     config = Pow.Plug.fetch_config(conn)
 
-    case Pow.Ecto.Context.get_by([id: user_id], config) do
+    case Pow.Operations.get_by([id: user_id], config) do
       nil -> # Invalid user id
       user -> Plug.Conn.assign(conn, :user, user)
     end

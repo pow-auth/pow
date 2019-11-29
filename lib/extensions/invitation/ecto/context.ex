@@ -2,7 +2,7 @@ defmodule PowInvitation.Ecto.Context do
   @moduledoc """
   Handles invitation context for user.
   """
-  alias Pow.{Config, Ecto.Context}
+  alias Pow.{Config, Ecto.Context, Operations}
   alias PowInvitation.Ecto.Schema
 
   @doc """
@@ -40,7 +40,7 @@ defmodule PowInvitation.Ecto.Context do
   @spec get_by_invitation_token(binary(), Config.t()) :: Context.user() | nil
   def get_by_invitation_token(token, config) do
     [invitation_token: token]
-    |> Context.get_by(config)
+    |> Operations.get_by(config)
     |> case do
       %{invitation_accepted_at: nil} = user -> user
       _ -> nil
