@@ -32,7 +32,9 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     url = routes(conn).url_for(conn, __MODULE__, :edit, [token])
     deliver_email(conn, user, url)
 
-    default_respond_create(conn)
+    conn
+    |> put_flash(:info, extension_messages(conn).email_has_been_sent(conn))
+    |> redirect(to: routes(conn).session_path(conn, :new))
   end
   def respond_create({:error, _any, conn}) do
     case registration_path?(conn) do
@@ -43,14 +45,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
         |> render("new.html")
 
       false ->
-        default_respond_create(conn)
+        conn
+        |> put_flash(:info, extension_messages(conn).maybe_email_has_been_sent(conn))
+        |> redirect(to: routes(conn).session_path(conn, :new))
     end
-  end
-
-  defp default_respond_create(conn) do
-    conn
-    |> put_flash(:info, extension_messages(conn).email_has_been_sent(conn))
-    |> redirect(to: routes(conn).session_path(conn, :new))
   end
 
   @spec process_edit(Conn.t(), map()) :: {:ok, map(), Conn.t()}

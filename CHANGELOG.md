@@ -5,6 +5,8 @@
 ### Enhancements
 
 * [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
+* [`PowResetPassword.Phoenix.ResetPasswordController`] Now uses `PowResetPassword.Phoenix.Messages.maybe_email_has_been_sent/1` with a generic response that tells the user the email has been sent only if an account was found
+* [`PowResetPassword.Phoenix.Messages`] Added `PowResetPassword.Phoenix.Messages.maybe_email_has_been_sent/1` and let `PowResetPassword.Phoenix.Messages.email_has_been_sent/1` fall back to it
 
 ### Bug fixes
 
