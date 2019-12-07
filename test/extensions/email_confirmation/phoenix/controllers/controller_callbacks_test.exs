@@ -57,6 +57,27 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert mail.html =~ "<a href=\"http://localhost/confirm-email/#{token}\">"
       assert mail.user.email == "test@example.com"
     end
+
+    @email_taken_invalid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "confirm_password" => "s"}}
+    test "with invalid params and email taken", %{conn: conn} do
+      conn = post conn, Routes.pow_registration_path(conn, :create, @email_taken_invalid_params)
+
+      assert html = html_response(conn, 200)
+      refute html =~ "<span class=\"help-block\">has already been taken</span>"
+      assert html =~ "<span class=\"help-block\">not same as password</span>"
+    end
+
+    @email_taken_valid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "confirm_password" => @password}}
+    test "with valid params and email taken", %{conn: conn} do
+      conn = post conn, Routes.pow_registration_path(conn, :create, @email_taken_valid_params)
+
+      assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
+      assert redirected_to(conn) == "/after_registration"
+
+      refute Plug.current_user(conn)
+
+      refute_received {:mail_mock, _mail}
+    end
   end
 
   describe "Pow.Phoenix.RegistrationController.update/2" do

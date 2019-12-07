@@ -12,6 +12,15 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   user redirected back to `Pow.Phoenix.Routes.after_registration_path/1` or
   `Pow.Phoenix.Routes.after_registration_path/1` respectively.
 
+  ### E-mail already taken during registration
+
+  Triggers on `Pow.Phoenix.RegistrationController.create/2`.
+
+  When an error is returned during registration, and the changeset has an error
+  for the `:email` field with the message `has already been taken`, the user
+  will see the same success flow as above, but without any e-mail sent. This
+  will prevent information leak.
+
   ### User updates e-mail
 
   Triggers on `Pow.Phoenix.RegistrationController.update/2` and
@@ -40,6 +49,18 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     halt_unconfirmed(conn, {:ok, user, conn}, return_path)
   end
+  def before_respond(Pow.Phoenix.RegistrationController, :create, {:error, changeset, conn}, _config) do
+    case prevent_information_leak?(conn, changeset) do
+      true ->
+        return_path = routes(conn).after_registration_path(conn)
+        conn        = redirect_and_show_error(conn, return_path)
+
+        {:halt, conn}
+
+      false ->
+        {:error, changeset, conn}
+    end
+  end
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     return_path = routes(conn).after_sign_in_path(conn)
 
@@ -60,17 +81,29 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp halt_and_send_confirmation_email(conn, return_path) do
     user        = Plug.current_user(conn)
     {:ok, conn} = Plug.clear_authenticated_user(conn)
-    error       = extension_messages(conn).email_confirmation_required(conn)
 
     send_confirmation_email(user, conn)
 
-    conn =
-      conn
-      |> Phoenix.Controller.put_flash(:error, error)
-      |> Phoenix.Controller.redirect(to: return_path)
+    conn = redirect_and_show_error(conn, return_path)
 
     {:halt, conn}
   end
+
+  defp redirect_and_show_error(conn, return_path) do
+    error = extension_messages(conn).email_confirmation_required(conn)
+
+    conn
+    |> Phoenix.Controller.put_flash(:error, error)
+    |> Phoenix.Controller.redirect(to: return_path)
+  end
+
+  defp prevent_information_leak?(_conn, %{errors: errors}) do
+    Enum.find_value(errors, false, fn
+      {:email, {"has already been taken", _keys}} -> true
+      _any                                        -> false
+    end)
+  end
+  defp prevent_information_leak?(_conn, _changeset), do: false
 
   defp warn_unconfirmed(%{params: %{"user" => %{"email" => email}}} = conn, %{unconfirmed_email: email} = user) do
     case PowEmailConfirmationPlug.pending_email_change?(conn) do
