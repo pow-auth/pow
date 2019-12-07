@@ -39,7 +39,7 @@ Update the config with `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 Mnesia will store the database files in the directory `./Mnesia.NODE` in the current working directory where `NODE` is the node name. By default this is `./Mnesia.nonode@nohost`. You may wish to change the location to a shared directory so you can roll deploys:
 
 ```elixir
-config :mensia, :dir, '/path/to/dir'
+config :mnesia, :dir, '/path/to/dir'
 ```
 
 ## OPTIONAL: Validate that strong passwords are used
