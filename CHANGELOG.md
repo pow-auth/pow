@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.16 (TBA)
+
+### Enhancements
+
+* [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
+
 ## v1.0.15 (2019-11-20)
 
 ### Enhancements

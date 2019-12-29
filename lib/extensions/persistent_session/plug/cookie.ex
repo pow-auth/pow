@@ -36,6 +36,11 @@ defmodule PowPersistentSession.Plug.Cookie do
     * `:persistent_session_ttl` - used for both backend store and max age for
       cookie. See `PowPersistentSession.Plug.Base` for more.
 
+    * `:persistent_session_cookie_opts` - a keyword list of cookie options, see
+      `Plug.Conn.put_resp_cookie/4` for options. The default options are
+      `[max_age: max_age, path: "/"]` where `:max_age` is the value defined in
+      `:persistent_session_ttl`.
+
   ## Custom metadata
 
   You can assign a private `:pow_persistent_session_metadata` key in the conn
@@ -89,7 +94,7 @@ defmodule PowPersistentSession.Plug.Cookie do
     cookie_key            = cookie_key(config)
     key                   = cookie_id(config)
     value                 = persistent_session_value(conn, user)
-    opts                  = session_opts(config)
+    opts                  = cookie_opts(config)
 
     store.put(store_config, key, value)
 
@@ -280,7 +285,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp renew(conn, cookie_key, config) do
-    opts = session_opts(config)
+    opts = cookie_opts(config)
 
     case conn.req_cookies[cookie_key] do
       nil   -> conn
@@ -302,8 +307,11 @@ defmodule PowPersistentSession.Plug.Cookie do
     Plug.prepend_with_namespace(config, @cookie_key)
   end
 
-  defp session_opts(config) do
-    [max_age: max_age(config), path: "/"]
+  defp cookie_opts(config) do
+    config
+    |> Config.get(:persistent_session_cookie_opts, [])
+    |> Keyword.put_new(:max_age, max_age(config))
+    |> Keyword.put_new(:path, "/")
   end
 
   defp max_age(config) do

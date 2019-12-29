@@ -196,6 +196,20 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{max_age: 1, path: "/"} = conn.resp_cookies["persistent_session_cookie"]
   end
 
+  test "create/3 with custom cookie options", %{conn: conn, config: config} do
+    config = Keyword.put(config, :persistent_session_cookie_opts, [domain: "domain.com", max_age: 1, path: "/path", http_only: false, secure: true, extra: "SameSite=Lax"])
+    conn   = Cookie.create(conn, %User{id: 1}, config)
+
+    assert %{
+      domain: "domain.com",
+      extra: "SameSite=Lax",
+      http_only: false,
+      max_age: 1,
+      path: "/path",
+      secure: true
+    } = conn.resp_cookies["persistent_session_cookie"]
+  end
+
   test "create/3 deletes previous persistent session", %{conn: conn, config: config, ets: ets} do
     conn = store_persistent(conn, ets, "previous_persistent_session", {[id: 1], []})
 
