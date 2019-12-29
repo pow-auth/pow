@@ -6,6 +6,10 @@
 
 * [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
 
+### Bug fixes
+
+* [`Pow.Ecto.Schema.Changeset`] Fixed bug where `Pow.Ecto.Schema.Changeset.user_id_field_changeset/3` update with `nil` value caused an exception to be raised
+
 ## v1.0.15 (2019-11-20)
 
 ### Enhancements

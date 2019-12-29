@@ -26,6 +26,10 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       refute changeset.valid?
       assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
 
+      changeset = User.changeset(%User{email: "john.doe@example.com"}, %{email: nil})
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"can't be blank", [validation: :required]}
+
       changeset = UsernameUser.changeset(%UsernameUser{}, Map.delete(@valid_params_username, "username"))
       refute changeset.valid?
       assert changeset.errors[:username] == {"can't be blank", [validation: :required]}

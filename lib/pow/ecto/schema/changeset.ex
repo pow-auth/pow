@@ -45,11 +45,14 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     user_or_changeset
     |> Changeset.cast(params, [user_id_field])
-    |> Changeset.update_change(user_id_field, &Schema.normalize_user_id_field_value/1)
+    |> Changeset.update_change(user_id_field, &maybe_normalize_user_id_field_value/1)
     |> maybe_validate_email_format(user_id_field, config)
     |> Changeset.validate_required([user_id_field])
     |> Changeset.unique_constraint(user_id_field)
   end
+
+  defp maybe_normalize_user_id_field_value(value) when is_binary(value), do: Schema.normalize_user_id_field_value(value)
+  defp maybe_normalize_user_id_field_value(any), do: any
 
   @doc """
   Validates the password field.
