@@ -71,6 +71,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
+  @cookie_delete_time_drift 10
 
   @doc """
   Sets a persistent session cookie with an auto generated token.
@@ -144,18 +145,28 @@ defmodule PowPersistentSession.Plug.Cookie do
     cookie_key = cookie_key(config)
 
     case conn.req_cookies[cookie_key] do
-      nil    -> conn
-      key_id -> do_delete(conn, cookie_key, key_id, config)
+      nil ->
+        conn
+
+      key_id ->
+        expire_token_in_store(key_id, config)
+        delete_cookie(conn, cookie_key, config)
     end
   end
 
-  defp do_delete(conn, cookie_key, key_id, config) do
+  defp expire_token_in_store(key_id, config) do
     {store, store_config} = store(config)
-    value                 = ""
-    opts                  = [max_age: -1, path: "/"]
 
     store.delete(store_config, key_id)
-    Conn.put_resp_cookie(conn, cookie_key, value, opts)
+  end
+
+  defp delete_cookie(conn, cookie_key, config) do
+    opts =
+      config
+      |> cookie_opts()
+      |> Keyword.put(:max_age, -1)
+
+    Conn.put_resp_cookie(conn, cookie_key, "", opts)
   end
 
   @doc """
@@ -187,22 +198,37 @@ defmodule PowPersistentSession.Plug.Cookie do
 
     case conn.req_cookies[cookie_key] do
       nil    -> conn
-      key_id -> do_authenticate(conn, key_id, config)
+      key_id -> do_authenticate(conn, cookie_key, key_id, config)
     end
   end
   defp maybe_authenticate(conn, _user, _config), do: conn
 
-  defp do_authenticate(conn, key_id, config) do
+  defp do_authenticate(conn, cookie_key, key_id, config) do
     {store, store_config} = store(config)
     res                   = store.get(store_config, key_id)
     plug                  = Plug.get_plug(config)
-    conn                  = delete(conn, config)
+    conn                  = expire_cookie(conn, cookie_key, key_id, config)
 
     case res do
-      :not_found -> conn
-      res        -> fetch_and_auth_user(conn, res, plug, config)
+      :not_found ->
+        conn
+
+      res ->
+        expire_token_in_store(key_id, config)
+
+        fetch_and_auth_user(conn, res, plug, config)
     end
   end
+
+  defp expire_cookie(conn, cookie_key, key_id, config) do
+    opts =
+      config
+      |> cookie_opts()
+      |> Keyword.put(:max_age, @cookie_delete_time_drift)
+
+    Conn.put_resp_cookie(conn, cookie_key, key_id, opts)
+  end
+
 
   defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
     clauses
@@ -276,11 +302,13 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp maybe_renew(conn, config) do
-    cookie_key  = cookie_key(config)
+    cookie_key = cookie_key(config)
 
-    case conn.resp_cookies[cookie_key] do
-      nil  -> renew(conn, cookie_key, config)
-      _any -> conn
+    with user when not is_nil(user) <- Plug.current_user(conn, config),
+         nil <- conn.resp_cookies[cookie_key] do
+      renew(conn, cookie_key, config)
+    else
+      _ -> conn
     end
   end
 

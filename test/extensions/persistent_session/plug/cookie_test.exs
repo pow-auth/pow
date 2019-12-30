@@ -9,6 +9,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   alias PowPersistentSession.Test.Users.User
 
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
+  @custom_cookie_opts [domain: "domain.com", max_age: 1, path: "/path", http_only: false, secure: true, extra: "SameSite=Lax"]
 
   setup do
     config = PowPersistentSession.Test.pow_config()
@@ -128,7 +129,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
+    assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: 10, path: "/", value: "test"}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 
@@ -139,7 +140,26 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
+    assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: 10, path: "/", value: "test"}
+  end
+
+  test "call/2 when persistent session cache doesn't have credentials with custom cookie options", %{conn: conn, config: config} do
+    config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
+    conn   =
+      conn
+      |> persistent_cookie("persistent_session_cookie", "test")
+      |> Cookie.call(Cookie.init(config))
+
+    refute Plug.current_user(conn)
+    assert conn.resp_cookies["persistent_session_cookie"] == %{
+      domain: "domain.com",
+      extra: "SameSite=Lax",
+      http_only: false,
+      max_age: 10,
+      path: "/path",
+      secure: true,
+      value: "test"
+    }
   end
 
   test "call/2 with invalid stored clauses", %{conn: conn, ets: ets} do
@@ -197,7 +217,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   end
 
   test "create/3 with custom cookie options", %{conn: conn, config: config} do
-    config = Keyword.put(config, :persistent_session_cookie_opts, [domain: "domain.com", max_age: 1, path: "/path", http_only: false, secure: true, extra: "SameSite=Lax"])
+    config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
     conn   = Cookie.create(conn, %User{id: 1}, config)
 
     assert %{
@@ -235,5 +255,38 @@ defmodule PowPersistentSession.Plug.CookieTest do
     |> Cookie.create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, {[id: 1], session_metadata: [a: 1]}}], _config}
+  end
+
+  test "delete/3", %{conn: conn, ets: ets, config: config} do
+    id   = "test"
+    conn =
+      conn
+      |> store_persistent(ets, id, {[id: 1], []})
+      |> Cookie.delete(config)
+
+    refute Plug.current_user(conn)
+    assert conn.resp_cookies["persistent_session_cookie"] == %{max_age: -1, path: "/", value: ""}
+    assert PersistentSessionCache.get([backend: ets], id) == :not_found
+  end
+
+  test "delete/3 with custom cookie options", %{conn: conn, ets: ets, config: config} do
+    id   = "test"
+    config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
+    conn =
+      conn
+      |> store_persistent(ets, id, {[id: 1], []})
+      |> Cookie.delete(config)
+
+    refute Plug.current_user(conn)
+    assert conn.resp_cookies["persistent_session_cookie"] == %{
+      domain: "domain.com",
+      extra: "SameSite=Lax",
+      http_only: false,
+      max_age: -1,
+      path: "/path",
+      secure: true,
+      value: ""
+    }
+    assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 end
