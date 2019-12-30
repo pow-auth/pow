@@ -3,8 +3,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   This plug will handle persistent user sessions with cookies.
 
   By default, the cookie will expire after 30 days. The cookie expiration will
-  be renewed on every request. The token in the cookie can only be used once to
-  create a session.
+  be renewed on every request where a user is assigned to the conn. The token
+  in the cookie can only be used once to create a session.
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` key, that fingerprint value will be
@@ -36,10 +36,14 @@ defmodule PowPersistentSession.Plug.Cookie do
     * `:persistent_session_ttl` - used for both backend store and max age for
       cookie. See `PowPersistentSession.Plug.Base` for more.
 
-    * `:persistent_session_cookie_opts` - a keyword list of cookie options, see
+    * `:persistent_session_cookie_opts` - keyword list of cookie options, see
       `Plug.Conn.put_resp_cookie/4` for options. The default options are
       `[max_age: max_age, path: "/"]` where `:max_age` is the value defined in
       `:persistent_session_ttl`.
+
+    * `:persistent_session_cookie_expiration_timeout` - integer value in
+      seconds for how much time should go by before cookie should expire after
+      the token is fetched in `authenticate/2`. Defaults to 10.
 
   ## Custom metadata
 
@@ -71,6 +75,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
+  @cookie_expiration_timeout 10
 
   @doc """
   Sets a persistent session cookie with an auto generated token.
@@ -136,41 +141,60 @@ defmodule PowPersistentSession.Plug.Cookie do
   @doc """
   Expires the persistent session cookie.
 
-  If a persistent session cookie exists it'll be expired, and the token in
-  the persistent session cache will be deleted.
+  If a persistent session cookie exists it'll be updated to expire immediately,
+  and the token in the persistent session cache will be deleted.
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     cookie_key = cookie_key(config)
 
     case conn.req_cookies[cookie_key] do
-      nil    -> conn
-      key_id -> do_delete(conn, cookie_key, key_id, config)
+      nil ->
+        conn
+
+      key_id ->
+        expire_token_in_store(key_id, config)
+        delete_cookie(conn, cookie_key, config)
     end
   end
 
-  defp do_delete(conn, cookie_key, key_id, config) do
+  defp expire_token_in_store(key_id, config) do
     {store, store_config} = store(config)
-    value                 = ""
-    opts                  = [max_age: -1, path: "/"]
 
     store.delete(store_config, key_id)
-    Conn.put_resp_cookie(conn, cookie_key, value, opts)
+  end
+
+  defp delete_cookie(conn, cookie_key, config) do
+    opts =
+      config
+      |> cookie_opts()
+      |> Keyword.put(:max_age, -1)
+
+    Conn.put_resp_cookie(conn, cookie_key, "", opts)
   end
 
   @doc """
   Authenticates a user with the persistent session cookie.
 
   If a persistent session cookie exists, it'll fetch the credentials from the
-  persistent session cache, and create a new session and persistent session
-  cookie. The old persistent session cookie and session cache credentials will
-  be removed.
+  persistent session cache.
+
+  After the value is fetched from the cookie, it'll be updated to expire after
+  the value of `:persistent_session_cookie_expiration_timeout` so invalid
+  cookies will be deleted eventually. This timeout prevents immediate deletion
+  of the cookie so in case of multiple simultaneous requests, the cache has
+  time to update the value.
+
+  If credentials was fetched successfully, the token in the cache is deleted, a
+  new session is created, and `create/2` is called to create a new persistent
+  session cookie. This will override any expiring cookie.
 
   If a `:session_metadata` keyword list is fetched from the persistent session
   metadata, all the values will be merged into the private
   `:pow_session_metadata` key in the conn.
 
-  The cookie expiration will automatically be renewed on every request.
+  The expiration date for the cookie will be reset on each request where a user
+  is assigned to the conn.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
@@ -187,22 +211,38 @@ defmodule PowPersistentSession.Plug.Cookie do
 
     case conn.req_cookies[cookie_key] do
       nil    -> conn
-      key_id -> do_authenticate(conn, key_id, config)
+      key_id -> do_authenticate(conn, cookie_key, key_id, config)
     end
   end
   defp maybe_authenticate(conn, _user, _config), do: conn
 
-  defp do_authenticate(conn, key_id, config) do
+  defp do_authenticate(conn, cookie_key, key_id, config) do
     {store, store_config} = store(config)
     res                   = store.get(store_config, key_id)
     plug                  = Plug.get_plug(config)
-    conn                  = delete(conn, config)
+    conn                  = expire_cookie(conn, cookie_key, key_id, config)
 
     case res do
-      :not_found -> conn
-      res        -> fetch_and_auth_user(conn, res, plug, config)
+      :not_found ->
+        conn
+
+      res ->
+        expire_token_in_store(key_id, config)
+
+        fetch_and_auth_user(conn, res, plug, config)
     end
   end
+
+  defp expire_cookie(conn, cookie_key, key_id, config) do
+    max_age = Config.get(config, :persistent_session_cookie_expiration_timeout, @cookie_expiration_timeout)
+    opts    =
+      config
+      |> cookie_opts()
+      |> Keyword.put(:max_age, max_age)
+
+    Conn.put_resp_cookie(conn, cookie_key, key_id, opts)
+  end
+
 
   defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
     clauses
@@ -276,11 +316,13 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp maybe_renew(conn, config) do
-    cookie_key  = cookie_key(config)
+    cookie_key = cookie_key(config)
 
-    case conn.resp_cookies[cookie_key] do
-      nil  -> renew(conn, cookie_key, config)
-      _any -> conn
+    with user when not is_nil(user) <- Plug.current_user(conn, config),
+         nil <- conn.resp_cookies[cookie_key] do
+      renew(conn, cookie_key, config)
+    else
+      _ -> conn
     end
   end
 
