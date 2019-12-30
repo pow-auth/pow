@@ -144,7 +144,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
   end
 
   test "call/2 when persistent session cache doesn't have credentials with custom cookie options", %{conn: conn, config: config} do
-    config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
+    config = Keyword.merge(config, persistent_session_cookie_opts: @custom_cookie_opts, persistent_session_cookie_expiration_drift: 20)
     conn   =
       conn
       |> persistent_cookie("persistent_session_cookie", "test")
@@ -155,7 +155,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       domain: "domain.com",
       extra: "SameSite=Lax",
       http_only: false,
-      max_age: 10,
+      max_age: 20,
       path: "/path",
       secure: true,
       value: "test"

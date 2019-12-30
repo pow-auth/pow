@@ -36,10 +36,14 @@ defmodule PowPersistentSession.Plug.Cookie do
     * `:persistent_session_ttl` - used for both backend store and max age for
       cookie. See `PowPersistentSession.Plug.Base` for more.
 
-    * `:persistent_session_cookie_opts` - a keyword list of cookie options, see
+    * `:persistent_session_cookie_opts` - keyword list of cookie options, see
       `Plug.Conn.put_resp_cookie/4` for options. The default options are
       `[max_age: max_age, path: "/"]` where `:max_age` is the value defined in
       `:persistent_session_ttl`.
+
+    * `:persistent_session_cookie_expiration_drift` - integer value in seconds
+      for how much time till the cookie should expire after the token has been
+      fetched in `authenticate/2`. Defaults to 10.
 
   ## Custom metadata
 
@@ -71,7 +75,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
-  @cookie_delete_time_drift 10
+  @cookie_expiration_drift 10
 
   @doc """
   Sets a persistent session cookie with an auto generated token.
@@ -174,14 +178,15 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   If a persistent session cookie exists, it'll fetch the credentials from the
   persistent session cache, and create a new session and persistent session
-  cookie. The old persistent session cookie and session cache credentials will
-  be removed.
+  cookie. The max age of the old cookie will always be updated to the value of
+  `:persistent_session_cookie_expiration_drift` to prevent eager expiration in
+  case of multiple simultaneous requests.
 
   If a `:session_metadata` keyword list is fetched from the persistent session
   metadata, all the values will be merged into the private
   `:pow_session_metadata` key in the conn.
 
-  The cookie expiration will automatically be renewed on every request.
+  If there is a user assigned in the conn, the cookie expiration will be renewed.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
@@ -221,10 +226,11 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp expire_cookie(conn, cookie_key, key_id, config) do
-    opts =
+    max_age = Config.get(config, :persistent_session_cookie_expiration_drift, @cookie_expiration_drift)
+    opts    =
       config
       |> cookie_opts()
-      |> Keyword.put(:max_age, @cookie_delete_time_drift)
+      |> Keyword.put(:max_age, max_age)
 
     Conn.put_resp_cookie(conn, cookie_key, key_id, opts)
   end

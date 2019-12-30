@@ -9,7 +9,7 @@
 ### Bug fixes
 
 * [`Pow.Ecto.Schema.Changeset`] Fixed bug where `Pow.Ecto.Schema.Changeset.user_id_field_changeset/3` update with `nil` value caused an exception to be raised
-* [`PowPersistentSession.Plug.Cookie`] Now expires the cookie after 10 seconds after the last request when authenticating to prevent multiple simultaneous requests deletes the cookie immediately
+* [`PowPersistentSession.Plug.Cookie`] Now expires the cookie 10 seconds after the last request when authenticating to prevent multiple simultaneous requests deletes the cookie immediately
 
 ## v1.0.15 (2019-11-20)
 
