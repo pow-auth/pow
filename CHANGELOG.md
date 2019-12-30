@@ -6,6 +6,7 @@
 
 * [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
 * Added mailer rate limitation section to [production checklist guide](guides/production_checklist.md)
+* [`Pow.Plug.Session`] Added section on session expiration to the docs
 
 ### Bug fixes
 
