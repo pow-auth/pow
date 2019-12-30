@@ -3,8 +3,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   This plug will handle persistent user sessions with cookies.
 
   By default, the cookie will expire after 30 days. The cookie expiration will
-  be renewed on every request. The token in the cookie can only be used once to
-  create a session.
+  be renewed on every request where a user is assigned to the conn. The token
+  in the cookie can only be used once to create a session.
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` key, that fingerprint value will be
@@ -41,9 +41,9 @@ defmodule PowPersistentSession.Plug.Cookie do
       `[max_age: max_age, path: "/"]` where `:max_age` is the value defined in
       `:persistent_session_ttl`.
 
-    * `:persistent_session_cookie_expiration_drift` - integer value in seconds
-      for how much time till the cookie should expire after the token has been
-      fetched in `authenticate/2`. Defaults to 10.
+    * `:persistent_session_cookie_expiration_timeout` - integer value in
+      seconds for how much time should go by before cookie should expire after
+      the token is fetched in `authenticate/2`. Defaults to 10.
 
   ## Custom metadata
 
@@ -75,7 +75,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session_cookie"
-  @cookie_expiration_drift 10
+  @cookie_expiration_timeout 10
 
   @doc """
   Sets a persistent session cookie with an auto generated token.
@@ -141,8 +141,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   @doc """
   Expires the persistent session cookie.
 
-  If a persistent session cookie exists it'll be expired, and the token in
-  the persistent session cache will be deleted.
+  If a persistent session cookie exists it'll be updated to expire immediately,
+  and the token in the persistent session cache will be deleted.
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
@@ -177,16 +177,24 @@ defmodule PowPersistentSession.Plug.Cookie do
   Authenticates a user with the persistent session cookie.
 
   If a persistent session cookie exists, it'll fetch the credentials from the
-  persistent session cache, and create a new session and persistent session
-  cookie. The max age of the old cookie will always be updated to the value of
-  `:persistent_session_cookie_expiration_drift` to prevent eager expiration in
-  case of multiple simultaneous requests.
+  persistent session cache.
+
+  After the value is fetched from the cookie, it'll be updated to expire after
+  the value of `:persistent_session_cookie_expiration_timeout` so invalid
+  cookies will be deleted eventually. This timeout prevents immediate deletion
+  of the cookie so in case of multiple simultaneous requests, the cache has
+  time to update the value.
+
+  If credentials was fetched successfully, the token in the cache is deleted, a
+  new session is created, and `create/2` is called to create a new persistent
+  session cookie. This will override any expiring cookie.
 
   If a `:session_metadata` keyword list is fetched from the persistent session
   metadata, all the values will be merged into the private
   `:pow_session_metadata` key in the conn.
 
-  If there is a user assigned in the conn, the cookie expiration will be renewed.
+  The expiration date for the cookie will be reset on each request where a user
+  is assigned to the conn.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
@@ -226,7 +234,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp expire_cookie(conn, cookie_key, key_id, config) do
-    max_age = Config.get(config, :persistent_session_cookie_expiration_drift, @cookie_expiration_drift)
+    max_age = Config.get(config, :persistent_session_cookie_expiration_timeout, @cookie_expiration_timeout)
     opts    =
       config
       |> cookie_opts()
