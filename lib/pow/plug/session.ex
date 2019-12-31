@@ -78,6 +78,32 @@ defmodule Pow.Plug.Session do
 
   The method should be called after `Pow.Plug.Session.call/2` has been called
   to ensure that the metadata, if any, has been fetched.
+
+  ## Session expiration
+
+  `Pow.Store.CredentialsCache` will, by default, invalidate any session token
+  30 minutes after it has been generated. To keep sessions alive the
+  `:session_ttl_renewal` option is used to determine when a session token
+  becomes stale and a new session ID has to be generated for the user (deleting
+  the previous one in the process).
+
+  If `:session_ttl_renewal` is set to zero, a new session token will be
+  generated on every request.
+
+  To change the amount of time a session can be alive, both the TTL for
+  `Pow.Store.CredentialsCache` and `:session_ttl_renewal` option should be
+  changed:
+
+      plug Pow.Plug.Session, otp_app: :my_app,
+        session_ttl_renewal: :timer.minutes(1),
+        session_store: {Pow.Store.CredentialsCache, ttl: :timer.minutes(15)}
+
+  In the above, a new session token will be generated when a request occurs
+  more than a minute after the current session token was generated. The
+  session is invalidated if there is no request for the next 14 minutes.
+
+  There are no absolute session timeout; sessions can be kept alive
+  indefinitely.
   """
   use Pow.Plug.Base
 
