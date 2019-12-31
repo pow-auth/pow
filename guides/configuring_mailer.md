@@ -24,6 +24,7 @@ defmodule MyAppWeb.PowMailer do
   
   require Logger
 
+  @impl true
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     %Swoosh.Email{}
     |> to({"", user.email})
@@ -33,6 +34,7 @@ defmodule MyAppWeb.PowMailer do
     |> text_body(text)
   end
 
+  @impl true
   def process(email) do
     email
     |> deliver()
@@ -73,6 +75,7 @@ defmodule MyAppWeb.PowMailer do
 
   import Bamboo.Email
 
+  @impl true
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     new_email(
       to: user.email,
@@ -80,9 +83,10 @@ defmodule MyAppWeb.PowMailer do
       subject: subject,
       html_body: html,
       text_body: text
-    )    
+    )
   end
 
+  @impl true
   def process(email) do
     deliver_now(email)
   end
