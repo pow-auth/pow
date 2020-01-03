@@ -5,13 +5,17 @@
 ### Enhancements
 
 * [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
-* Added mailer rate limitation section to [production checklist guide](guides/production_checklist.md)
-* [`Pow.Plug.Session`] Added section on session expiration to the docs
 
 ### Bug fixes
 
 * [`Pow.Ecto.Schema.Changeset`] Fixed bug where `Pow.Ecto.Schema.Changeset.user_id_field_changeset/3` update with `nil` value caused an exception to be raised
 * [`PowPersistentSession.Plug.Cookie`] Now expires the cookie 10 seconds after the last request when authenticating to prevent multiple simultaneous requests deletes the cookie immediately
+
+### Documentation
+
+* Added mailer rate limitation section to [production checklist guide](guides/production_checklist.md)
+* [`Pow.Plug.Session`] Added section on session expiration to the docs
+* Updated instructions in [umbrella project guide](guides/umbrella_project.md) to Elixir 1.9
 
 ## v1.0.15 (2019-11-20)
 

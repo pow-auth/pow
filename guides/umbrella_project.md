@@ -9,4 +9,3 @@ You can follow the rest of the [README](../README.md#phoenix-app) instructions w
 - Run all mix ecto tasks inside the ecto app
 - Run all mix phoenix tasks inside the phoenix app(s)
 - For a project generated with `mix phx.new --umbrella` use `:my_app_web` instead of `:my_app`
-- `config/config.ex` is inside the Phoenix app(s)
