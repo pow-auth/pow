@@ -2,7 +2,7 @@
 
 This extension will allow users to reset the password by sending an e-mail with a reset password link. It requires that the user schema has an `:email` field.
 
-A success message will always be returned during reset request if registration routes has been disabled to prevent information leak.
+A success message will always be returned during reset request if registration routes has been disabled or `PowEmailConfirmation` is included in the extension list to prevent information leak.
 
 ## Installation
 
