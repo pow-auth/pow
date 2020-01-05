@@ -21,6 +21,7 @@
 * [`Pow.Plug.Session`] Added section on session expiration to the docs
 * Updated instructions in [umbrella project guide](guides/umbrella_project.md) to Elixir 1.9
 * [`Pow.Store.Backend.Base`] Updated usage example with Cachex
+* Added [security practices page](guides/security_practices.md)
 
 ## v1.0.15 (2019-11-20)
 
