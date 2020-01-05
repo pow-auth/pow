@@ -8,6 +8,7 @@
 * [`PowResetPassword.Phoenix.ResetPasswordController`] Now uses `PowResetPassword.Phoenix.Messages.maybe_email_has_been_sent/1` with a generic response that tells the user the email has been sent only if an account was found
 * [`PowResetPassword.Phoenix.ResetPasswordController`] When a user doesn't exist will now return success message if `PowEmailConfirmation` extension is enabled
 * [`PowResetPassword.Phoenix.Messages`] Added `PowResetPassword.Phoenix.Messages.maybe_email_has_been_sent/1` and let `PowResetPassword.Phoenix.Messages.email_has_been_sent/1` fall back to it
+* [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] When a user tries to sign up and the email has already been taken the default e-mail confirmation required message will be shown
 
 ### Bug fixes
 

@@ -32,7 +32,7 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
   end
 
-  def update(%{changes: %{email: "taken@example.com"}} = changeset, _opts) do
+  def update(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
     changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken")
 
     {:error, changeset}
@@ -57,6 +57,12 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     |> Enum.reduce(changeset, & &1.(&2))
   end
 
+  def insert(%{valid?: false} = changeset, _opts), do: {:error, %{changeset | action: :insert}}
+  def insert(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
+    changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken")
+
+    {:error, %{changeset | action: :insert}}
+  end
   def insert(%{valid?: true} = changeset, _opts) do
     user =
       changeset
