@@ -2,6 +2,8 @@
 
 ## v1.0.16 (TBA)
 
+**Note:** This release contains an important security fix.
+
 ### Enhancements
 
 * [`PowPersistentSession.Plug.Cookie`] Now supports `:persistent_session_cookie_opts` to customize any options that will be passed on to `Plug.Conn.put_resp_cookie/4`
@@ -9,6 +11,7 @@
 * [`PowResetPassword.Phoenix.ResetPasswordController`] When a user doesn't exist will now return success message if `PowEmailConfirmation` extension is enabled
 * [`PowResetPassword.Phoenix.Messages`] Added `PowResetPassword.Phoenix.Messages.maybe_email_has_been_sent/1` and let `PowResetPassword.Phoenix.Messages.email_has_been_sent/1` fall back to it
 * [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] When a user tries to sign up and the email has already been taken the default e-mail confirmation required message will be shown
+* [`Pow.Plug.Session`] Now renews the Plug session each time the Pow session is created or rolled
 
 ### Bug fixes
 
