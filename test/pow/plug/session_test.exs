@@ -2,7 +2,7 @@ defmodule Pow.Plug.SessionTest do
   use ExUnit.Case
   doctest Pow.Plug.Session
 
-  alias Plug.Conn
+  alias Plug.{Conn, Test}
   alias Pow.{Plug, Plug.Session, Store.Backend.EtsCache, Store.CredentialsCache}
   alias Pow.Test.{ConnHelpers, Ecto.Users.User, EtsCacheMock}
 
@@ -185,6 +185,28 @@ defmodule Pow.Plug.SessionTest do
       assert CredentialsCache.get(@store_config, session_id) == :not_found
       assert Plug.current_user(conn) == @user
       assert metadata[:fingerprint] == new_metadata[:fingerprint]
+    end
+
+    test "renews plug session", %{conn: new_conn} do
+      opts = Session.init(@default_opts)
+      conn =
+        new_conn
+        |> Session.call(opts)
+        |> Session.do_create(@user, opts)
+        |> Conn.send_resp(200, "")
+
+      assert %{"foobar" => %{value: plug_session_id}} = conn.resp_cookies
+
+      conn =
+        new_conn
+        |> Test.recycle_cookies(conn)
+        |> Session.call(opts)
+        |> Session.do_create(@user, opts)
+        |> Conn.send_resp(200, "")
+
+      assert %{"foobar" => %{value: new_plug_session_id}} = conn.resp_cookies
+
+      refute plug_session_id == new_plug_session_id
     end
 
     test "creates with custom metadata", %{conn: conn} do

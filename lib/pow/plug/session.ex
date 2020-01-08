@@ -173,6 +173,7 @@ defmodule Pow.Plug.Session do
       |> delete(config)
       |> Conn.put_private(:pow_session_metadata, metadata)
       |> Conn.put_session(session_key, key)
+      |> Conn.configure_session(renew: true)
 
     {conn, user}
   end
