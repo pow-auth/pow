@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.16 (TBA)
+## v1.0.16 (2020-01-07)
 
 **Note:** This release contains an important security fix.
 
