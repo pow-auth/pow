@@ -12,6 +12,7 @@
 * [`Pow.Ecto.Schema.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now adds the default `Ecto.Changeset.validate_confirmation/3` error instead of the previous `not same as password` error
 * [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now uses the `Ecto.Changeset.validate_confirmation/3` for validation and expects `:password_confirmation` instead of `:confirm_password` in params
 * [`Pow.Ecto.Schema`] No longer adds `:confirm_password` virtual field
+* [`Pow.Ecto.Schema`] Now has an `@after_compile` callback that ensures all required fields has been defined
 * [`PowInvitation.Phoenix.InvitationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`PowResetPassword.Phoenix.ResetPasswordView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`Pow.Phoenix.RegistrationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
