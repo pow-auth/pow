@@ -13,13 +13,13 @@ You should use a persistent (and possibly distributed) cache store like the `Pow
 To enable the Mnesia cache you should add it to your `application.ex` supervisor:
 
 ```elixir
-defmodule MyAppWeb.Application do
+defmodule MyApp.Application do
   use Application
 
   def start(_type, _args) do
     children = [
       MyApp.Repo,
-      MyAppWeb.Endpoint,
+      MyApp.Endpoint,
       Pow.Store.Backend.MnesiaCache
       # # Or in a distributed system:
       # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
