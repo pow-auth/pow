@@ -522,7 +522,7 @@ By default `Pow.Store.Backend.EtsCache` is started automatically and can be used
 For a production environment, you should use a distributed, persistent cache store. Pow makes this easy with `Pow.Store.Backend.MnesiaCache`. To start MnesiaCache in your Phoenix app, add it to your `application.ex` supervisor:
 
 ```elixir
-defmodule MyAppWeb.Application do
+defmodule MyApp.Application do
   use Application
 
   def start(_type, _args) do
