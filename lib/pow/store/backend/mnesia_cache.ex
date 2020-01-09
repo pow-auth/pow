@@ -45,7 +45,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   To start the GenServer, add it to your application `start/2` method:
 
-      defmodule MyAppWeb.Application do
+      defmodule MyApp.Application do
         use Application
 
         def start(_type, _args) do

@@ -19,7 +19,7 @@ defmodule MyApp.Application do
   def start(_type, _args) do
     children = [
       MyApp.Repo,
-      MyApp.Endpoint,
+      MyAppWeb.Endpoint,
       Pow.Store.Backend.MnesiaCache
       # # Or in a distributed system:
       # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
