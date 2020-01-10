@@ -64,7 +64,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
       assert html = html_response(conn, 200)
       refute html =~ "<span class=\"help-block\">has already been taken</span>"
-      assert html =~ "<span class=\"help-block\">not same as password</span>"
+      assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
     end
 
     @email_taken_valid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "confirm_password" => @password}}
