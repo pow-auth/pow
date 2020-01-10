@@ -93,7 +93,8 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
       changeset = User.changeset(user, Map.put(@valid_params, :email, "invalid"))
 
       refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validator: &Pow.Ecto.Schema.Changeset.validate_email/1, reason: "invalid format"]}
+      assert changeset.errors[:email] == {"has invalid format", [validation: :email_format, reason: "invalid format"]}
+      assert changeset.validations[:email] == {:email_format, &Pow.Ecto.Schema.Changeset.validate_email/1}
       refute Ecto.Changeset.get_change(changeset, :email_confirmation_token)
       refute Ecto.Changeset.get_change(changeset, :unconfirmed_email)
 
@@ -105,7 +106,8 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
       changeset = User.changeset(user, Map.put(@valid_params, :email, "invalid"))
 
       refute changeset.valid?
-      assert changeset.errors[:email] == {"has invalid format", [validator: &Pow.Ecto.Schema.Changeset.validate_email/1, reason: "invalid format"]}
+      assert changeset.errors[:email] == {"has invalid format", [validation: :email_format, reason: "invalid format"]}
+      assert changeset.validations[:email] == {:email_format, &Pow.Ecto.Schema.Changeset.validate_email/1}
       assert Ecto.Changeset.get_field(changeset, :email_confirmation_token) == user.email_confirmation_token
       assert Ecto.Changeset.get_field(changeset, :unconfirmed_email) == user.unconfirmed_email
     end

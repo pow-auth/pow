@@ -130,11 +130,11 @@ defmodule Pow.Ecto.Schema.Changeset do
   defp maybe_validate_email_format(changeset, :email, config) do
     validate_method = email_validator(config)
 
-    Changeset.validate_change(changeset, :email, fn :email, email ->
+    Changeset.validate_change(changeset, :email, {:email_format, validate_method}, fn :email, email ->
       case validate_method.(email) do
         :ok              -> []
-        :error           -> [email: {"has invalid format", validator: validate_method}]
-        {:error, reason} -> [email: {"has invalid format", validator: validate_method, reason: reason}]
+        :error           -> [email: {"has invalid format", validation: :email_format}]
+        {:error, reason} -> [email: {"has invalid format", validation: :email_format, reason: reason}]
       end
     end)
   end
@@ -155,8 +155,13 @@ defmodule Pow.Ecto.Schema.Changeset do
     user
     |> verify_password(password, config)
     |> case do
-      true -> changeset
-      _    -> Changeset.add_error(changeset, :current_password, "is invalid")
+      true ->
+        changeset
+
+      _ ->
+        changeset = %{changeset | validations: [{:current_password, {:verify_password, []}} | changeset.validations]}
+
+        Changeset.add_error(changeset, :current_password, "is invalid", validation: :verify_password)
     end
   end
 
