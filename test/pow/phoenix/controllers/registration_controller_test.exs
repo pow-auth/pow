@@ -16,8 +16,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label for=\"user_confirm_password\">Confirm password</label>"
-      assert html =~ "<input id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password_confirmation\">Password confirmation</label>"
+      assert html =~ "<input id=\"user_password_confirmation\" name=\"user[password_confirmation]\" type=\"password\">"
       assert html =~ "<a href=\"/session/new\">Sign in</a>"
     end
 

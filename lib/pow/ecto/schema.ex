@@ -195,7 +195,6 @@ defmodule Pow.Ecto.Schema do
     * `:password_hash`
     * `:current_password` (virtual)
     * `:password` (virtual)
-    * `:confirm_password` (virtual)
   """
   defmacro pow_user_fields do
     quote do

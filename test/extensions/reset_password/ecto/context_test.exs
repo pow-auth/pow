@@ -31,7 +31,7 @@ defmodule PowResetPassword.Ecto.ContextTest do
 
   describe "update_password/2" do
     test "updates with compiled password hash methods" do
-      assert {:ok, user} = Context.update_password(@user, %{password: @password, confirm_password: @password}, @config)
+      assert {:ok, user} = Context.update_password(@user, %{password: @password, password_confirmation: @password}, @config)
       assert Password.pbkdf2_verify(@password, user.password_hash)
     end
 
@@ -39,7 +39,7 @@ defmodule PowResetPassword.Ecto.ContextTest do
       assert {:error, changeset} = Context.update_password(@user, %{}, @config)
       assert changeset.errors[:password] == {"can't be blank", [validation: :required]}
 
-      assert {:error, changeset} = Context.update_password(@user, %{password: "", confirm_password: ""}, @config)
+      assert {:error, changeset} = Context.update_password(@user, %{password: "", password_confirmation: ""}, @config)
       assert changeset.errors[:password] == {"can't be blank", [validation: :required]}
     end
   end

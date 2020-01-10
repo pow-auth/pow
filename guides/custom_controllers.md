@@ -163,9 +163,9 @@ Create `lib/my_app_web/templates/registration/new.html.eex`:
   <%= password_input f, :password %>
   <%= error_tag f, :password %>
 
-  <%= label f, :confirm_password, "confirm_password" %>
-  <%= password_input f, :confirm_password %>
-  <%= error_tag f, :confirm_password %>
+  <%= label f, :password_confirmation, "password_confirmation" %>
+  <%= password_input f, :password_confirmation %>
+  <%= error_tag f, :password_confirmation %>
 
   <%= submit "Register" %>
 <% end %>

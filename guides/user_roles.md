@@ -178,7 +178,7 @@ defmodule MyApp.UsersTest do
 
   alias MyApp.{Repo, Users, Users.User}
 
-  @valid_params %{email: "test@example.com", password: "secret1234", confirm_password: "secret1234"}
+  @valid_params %{email: "test@example.com", password: "secret1234", password_confirmation: "secret1234"}
 
   test "create_admin/2" do
     assert {:ok, user} = Users.create_admin(@valid_params)

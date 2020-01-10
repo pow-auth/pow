@@ -265,7 +265,7 @@ You can now set up your client to connect to your API and generate session token
 You can run the following curl methods to test it out:
 
 ```bash
-$ curl -X POST -d "user[email]=test@example.com&user[password]=secret1234&user[confirm_password]=secret1234" http://localhost:4000/api/v1/registration
+$ curl -X POST -d "user[email]=test@example.com&user[password]=secret1234&user[password_confirmation]=secret1234" http://localhost:4000/api/v1/registration
 {"data":{"renew_token":"RENEW_TOKEN","token":"AUTH_TOKEN"}}
 
 $ curl -X POST -d "user[email]=test@example.com&user[password]=secret1234" http://localhost:4000/api/v1/session
@@ -333,8 +333,8 @@ defmodule MyAppWeb.API.V1.RegistrationControllerTest do
   use MyAppWeb.ConnCase
 
   describe "create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret1234", "confirm_password" => "secret1234"}}
-    @invalid_params %{"user" => %{"email" => "invalid", "password" => "secret1234", "confirm_password" => ""}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret1234", "password_confirmation" => "secret1234"}}
+    @invalid_params %{"user" => %{"email" => "invalid", "password" => "secret1234", "password_confirmation" => ""}}
 
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.api_v1_registration_path(conn, :create, @valid_params)
@@ -351,7 +351,7 @@ defmodule MyAppWeb.API.V1.RegistrationControllerTest do
 
       assert json["error"]["message"] == "Couldn't create user"
       assert json["error"]["status"] == 500
-      assert json["error"]["errors"]["confirm_password"] == ["does not match confirmation"]
+      assert json["error"]["errors"]["password_confirmation"] == ["does not match confirmation"]
       assert json["error"]["errors"]["email"] == ["has invalid format"]
     end
   end

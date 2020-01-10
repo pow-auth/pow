@@ -6,7 +6,7 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
   alias PowEmailConfirmation.Test.{RepoMock, Users.User}
 
   @password          "secret1234"
-  @valid_params     %{email: "test@example.com", password: @password, confirm_password: @password, current_password: @password}
+  @valid_params     %{email: "test@example.com", password: @password, password_confirmation: @password, current_password: @password}
 
   test "user_schema/1" do
     user = %User{}

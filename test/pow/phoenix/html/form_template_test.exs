@@ -8,7 +8,7 @@ defmodule Pow.Phoenix.HTML.FormTemplateTest do
     html = FormTemplate.render([
       {:text, {:changeset, :pow_user_id_field}},
       {:password, :password},
-      {:password, :confirm_password}
+      {:password, :password_confirmation}
     ])
 
     refute html =~ "<div class=\"form-group\">"
@@ -24,7 +24,7 @@ defmodule Pow.Phoenix.HTML.FormTemplateTest do
     html = FormTemplate.render([
       {:text, {:changeset, :pow_user_id_field}},
       {:password, :password},
-      {:password, :confirm_password}
+      {:password, :password_confirmation}
     ], bootstrap: true)
 
     assert html =~ "<div class=\"form-group\">"

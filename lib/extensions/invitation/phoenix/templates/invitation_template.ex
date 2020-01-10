@@ -18,7 +18,7 @@ defmodule PowInvitation.Phoenix.InvitationTemplate do
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:text, {:changeset, :pow_user_id_field}},
     {:password, :password},
-    {:password, :confirm_password}
+    {:password, :password_confirmation}
   ]) %>
 
   <span><%%= link "Sign in", to: Routes.<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.SessionController) %>_path(@conn, :new) %></span>
