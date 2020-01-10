@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.17 (TBA)
+
+### Enhancements
+
+* [`Pow.Ecto.Context`] Calls to `Pow.Ecto.Context.get_by/2` replaced with `Pow.Operations.get_by/2` so custom users context module can be used. The following methods has been updated
+  * `Pow.Ecto.Context.authenticate/2`
+  * `PowEmailConfirmation.Ecto.Context.get_by_confirmation_token/2`
+  * `PowInvitation.Ecto.Context.get_by_invitation_token/2`
+  * `PowResetPassword.Ecto.Context.get_by_email/2`
+
 ## v1.0.16 (2020-01-07)
 
 **Note:** This release contains an important security fix.

@@ -10,6 +10,10 @@ defmodule PowResetPassword.Ecto.ContextTest do
   @password "secret1234"
   @user %User{id: 1, password_hash: :set}
 
+  defmodule CustomUsers do
+    def get_by([email: :test]), do: %User{email: :ok}
+  end
+
   describe "get_by_email/2" do
     test "email is case insensitive when it's the user id field" do
       assert Context.get_by_email("test@example.com", @config)
@@ -18,6 +22,10 @@ defmodule PowResetPassword.Ecto.ContextTest do
 
     test "email is trimmed when it's the user id field" do
       assert Context.get_by_email(" test@example.com ", @config)
+    end
+
+    test "with `:users_context`" do
+      assert %User{email: :ok} = Context.get_by_email(:test, @config ++ [users_context: CustomUsers])
     end
   end
 

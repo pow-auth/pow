@@ -9,6 +9,16 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
   @config [repo: RepoMock, user: User]
   @user   %User{id: 1, email: "test@example.com"}
 
+  defmodule CustomUsers do
+    def get_by([email_confirmation_token: :test]), do: %User{email: :ok}
+  end
+
+  describe "get_by_confirmation_token/2" do
+    test "with `:users_context`" do
+      assert %User{email: :ok} = Context.get_by_confirmation_token(:test, @config ++ [users_context: CustomUsers])
+    end
+  end
+
   describe "confirm_email/2" do
     test "confirms with no :unconfirmed_email" do
       assert {:ok, user} = Context.confirm_email(@user, @config)
