@@ -155,15 +155,15 @@ Create `lib/my_app_web/templates/registration/new.html.eex`:
 
 ```elixir
 <%= form_for @changeset, Routes.signup_path(@conn, :create), fn f -> %>
-  <%= label f, :email, "email" %>
+  <%= label f, :email %>
   <%= email_input f, :email %>
   <%= error_tag f, :email %>
 
-  <%= label f, :password, "password" %>
+  <%= label f, :password %>
   <%= password_input f, :password %>
   <%= error_tag f, :password %>
 
-  <%= label f, :password_confirmation, "password_confirmation" %>
+  <%= label f, :password_confirmation %>
   <%= password_input f, :password_confirmation %>
   <%= error_tag f, :password_confirmation %>
 
