@@ -9,6 +9,7 @@
   * `PowEmailConfirmation.Ecto.Context.get_by_confirmation_token/2`
   * `PowInvitation.Ecto.Context.get_by_invitation_token/2`
   * `PowResetPassword.Ecto.Context.get_by_email/2`
+* [`Pow.Ecto.Schema.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now adds the default `Ecto.Changeset.validate_confirmation/3` error instead of the previous `not same as password` error
 
 ## v1.0.16 (2020-01-07)
 

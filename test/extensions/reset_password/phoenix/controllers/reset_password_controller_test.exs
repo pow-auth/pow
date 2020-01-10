@@ -164,7 +164,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">not same as password</span>"
+      assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
 
       changeset = conn.assigns[:changeset]
       assert changeset.errors[:confirm_password]

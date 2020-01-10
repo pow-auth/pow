@@ -180,7 +180,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html =~ "<span class=\"help-block\">has invalid format</span>"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">not same as password</span>"
+      assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
       refute conn.private[:plug_session]["auth"]
     end
   end

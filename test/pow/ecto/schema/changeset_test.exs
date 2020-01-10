@@ -146,7 +146,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       changeset = User.changeset(%User{}, Map.put(@valid_params, "confirm_password", "invalid"))
 
       refute changeset.valid?
-      assert changeset.errors[:confirm_password] == {"not same as password", []}
+      assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
       refute changeset.changes[:password_hash]
 
       changeset = User.changeset(%User{}, @valid_params)
