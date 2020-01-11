@@ -4,6 +4,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
 
   alias Plug.Conn
   alias Pow.Phoenix.SessionController
+  alias Pow.Plug, as: PowPlug
   alias PowInvitation.{Phoenix.Mailer, Plug}
 
   plug :require_authenticated when action in [:new, :create, :show]
@@ -34,22 +35,26 @@ defmodule PowInvitation.Phoenix.InvitationController do
   def respond_create({:ok, %{email: email} = user, conn}) when is_binary(email) do
     deliver_email(conn, user)
 
-    conn
-    |> put_flash(:info, extension_messages(conn).invitation_email_sent(conn))
-    |> redirect(to: routes(conn).path_for(conn, __MODULE__, :new))
+    invitation_sent_redirect(conn)
   end
   def respond_create({:ok, user, conn}) do
     redirect(conn, to: routes(conn).path_for(conn, __MODULE__, :show, [user.invitation_token]))
   end
   def respond_create({:error, changeset, conn}) do
-    conn
-    |> assign(:changeset, changeset)
-    |> render("new.html")
+    case PowPlug.__prevent_information_leak__(conn, changeset) do
+      true  ->
+        invitation_sent_redirect(conn)
+
+      false ->
+        conn
+        |> assign(:changeset, changeset)
+        |> render("new.html")
+    end
   end
 
   defp deliver_email(conn, user) do
     url        = invitation_url(conn, user)
-    invited_by = Pow.Plug.current_user(conn)
+    invited_by = PowPlug.current_user(conn)
     email      = Mailer.invitation(conn, user, invited_by, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
@@ -57,6 +62,12 @@ defmodule PowInvitation.Phoenix.InvitationController do
 
   defp invitation_url(conn, user) do
     routes(conn).url_for(conn, __MODULE__, :edit, [user.invitation_token])
+  end
+
+  defp invitation_sent_redirect(conn) do
+    conn
+    |> put_flash(:info, extension_messages(conn).invitation_email_sent(conn))
+    |> redirect(to: routes(conn).path_for(conn, __MODULE__, :new))
   end
 
   @spec process_show(Conn.t(), map()) :: {:ok, Conn.t()}

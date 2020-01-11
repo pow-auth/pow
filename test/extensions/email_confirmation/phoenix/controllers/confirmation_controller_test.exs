@@ -29,7 +29,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       refute user.unconfirmed_email
     end
 
-    test "failes with unique constraint", %{conn: conn} do
+    test "fails with unique constraint", %{conn: conn} do
       conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid-with-taken-email")
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)

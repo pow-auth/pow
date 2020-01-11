@@ -41,6 +41,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
   describe "create/2" do
     @valid_params %{"user" => %{"email" => "test@example.com"}}
     @invalid_params %{"user" => %{"email" => "invalid"}}
+    @valid_params_email_taken %{"user" => %{"email" => "taken@example.com"}}
     @valid_params_no_email %{"user" => %{"email" => :no_email}}
 
     test "not signed in", %{conn: conn} do
@@ -77,6 +78,31 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid\">"
       assert html =~ "<span class=\"help-block\">has invalid format</span>"
+    end
+
+    test "with valid params and email taken", %{conn: conn} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(@user, [])
+        |> post(Routes.pow_invitation_invitation_path(conn, :create, @valid_params_email_taken))
+
+      refute_received {:mail_mock, _mail}
+
+      assert redirected_to(conn) == Routes.pow_invitation_invitation_path(conn, :new)
+      assert get_flash(conn, :info) == "An e-mail with invitation link has been sent."
+    end
+
+    test "with valid params and email taken with pow_prevent_information_leak: false", %{conn: conn} do
+      conn =
+        conn
+        |> Conn.put_private(:pow_prevent_information_leak, false)
+        |> Pow.Plug.assign_current_user(@user, [])
+        |> post(Routes.pow_invitation_invitation_path(conn, :create, @valid_params_email_taken))
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"taken@example.com\">"
+      assert html =~ "<span class=\"help-block\">has already been taken</span>"
     end
 
     test "user with no email", %{conn: conn} do
@@ -145,6 +171,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
   describe "update/2" do
     @password "password1234"
     @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
+    @valid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => @password}}
     @invalid_params %{"user" => %{"email" => "invalid", "password" => @password, "password_confirmation" => "invalid"}}
 
     test "already signed in", %{conn: conn} do
@@ -169,6 +196,15 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert redirected_to(conn) == "/after_registration"
       assert get_flash(conn, :info) == "user_created"
       assert conn.private[:plug_session]["auth"]
+    end
+
+    test "with valid params and email taken", %{conn: conn} do
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params_email_taken)
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"taken@example.com\">"
+      assert html =~ "<span class=\"help-block\">has already been taken</span>"
     end
 
     test "with invalid params", %{conn: conn} do

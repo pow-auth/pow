@@ -38,7 +38,7 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   def update(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
     changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken", constraint: :unique, constraint_name: "users_email_index")
 
-    {:error, changeset}
+    {:error, %{changeset | action: :update}}
   end
   def update(%{valid?: true} = changeset, _opts) do
     %{changeset | repo: __MODULE__}

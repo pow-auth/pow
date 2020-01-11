@@ -56,29 +56,19 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     test "with invalid params", %{conn: conn} do
       conn = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params)
 
+      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be send to you. Please check your inbox."
+    end
+
+    test "with invalid params and pow_prevent_information_leak: false", %{conn: conn} do
+      conn =
+        conn
+        |> Plug.Conn.put_private(:pow_prevent_information_leak, false)
+        |> post(Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
+
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "No account exists for the provided email. Please try again."
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid@example.com\">"
-    end
-
-    test "with invalid params and PowEmailConfirmation enabled", %{conn: conn} do
-      conn =
-        conn
-        |> Plug.Conn.put_private(:pow_test_config, extensions: [PowResetPassword, PowEmailConfirmation])
-        |> post(Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
-
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be send to you. Please check your inbox."
-    end
-  end
-
-  alias PowResetPassword.NoRegistration.TestWeb.Phoenix.Endpoint, as: NoRegistrationEndpoint
-  describe "create/2 with no registration routes" do
-    test "with invalid params", %{conn: conn} do
-      conn = Phoenix.ConnTest.dispatch(conn, NoRegistrationEndpoint, :post, Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
-
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be send to you. Please check your inbox."
     end
   end
 

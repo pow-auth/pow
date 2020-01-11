@@ -25,11 +25,18 @@ Some of the below is based on [OWASP](https://www.owasp.org/) or [NIST SP800-63b
 * If a user couldn't be found or the `:password_hash` is `nil` a blank password is used
 * A UUID is always generated during reset password flow
 
-## Information leak
+## User enumeration attacks
 
-* If `PowEmailConfirmation` extension is used or registration has been disabled, the reset password flow will always return success message
-* If `PowEmailConfirmation` extension is used and a user can't be found, the registration and sign in page will redirect the user with a message to confirm their e-mail before they can sign in
-* When using `PowEmailConfirmation` extension a user can change their e-mail to one already used by another user, and will first receive an error when they try to confirm the change
+* If authentication fails, a generic `The provided login details did not work. Please verify your credentials, and try again.` message is returned
+* When password reset is requested with `PowResetPassword` for an e-mail that doesn't exist, the generic `If an account for the provided email exists, an email with reset instructions will be send to you. Please check your inbox.` message is returned
+* When attempting to invite a user with `PowInvitation` using an already taken e-mail, the success message `An e-mail with invitation link has been sent.` is returned
+
+Enabling `PowEmailConfirmation` extension will add additional protection:
+
+* User is redirected with message to confirm their e-mail when they attempt to create a user with already taken e-mail
+* Updating e-mail requires the user to confirm the e-mail address by clicking a link send to them
+
+You can disable the protection by setting `pow_prevent_information_leak: false` in `conn.private`.
 
 ## Browser cache
 
