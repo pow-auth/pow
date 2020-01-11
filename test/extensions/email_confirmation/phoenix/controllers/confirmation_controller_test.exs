@@ -19,6 +19,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
 
     test "confirms with valid token and :unconfirmed_email", %{conn: conn} do
       conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid-with-unconfirmed-changed-email")
+
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "The email address has been confirmed."
 
@@ -26,6 +27,15 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       assert user.email == "new@example.com"
       assert user.email_confirmed_at
       refute user.unconfirmed_email
+    end
+
+    test "failes with unique constraint", %{conn: conn} do
+      conn = get conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid-with-taken-email")
+
+      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert get_flash(conn, :error) == "The email address couldn't be confirmed."
+
+      refute Process.get({:user, 1})
     end
 
     test "fails with invalid token", %{conn: conn} do

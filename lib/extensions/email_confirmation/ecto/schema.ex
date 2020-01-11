@@ -121,21 +121,6 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     changeset
     |> Changeset.put_change(:email, current_email)
     |> Changeset.put_change(:unconfirmed_email, new_email)
-    |> Changeset.prepare_changes(&validate_unique_email/1)
-  end
-
-  defp validate_unique_email(changeset) do
-    opts = Keyword.take(changeset.repo_opts, [:prefix])
-    unconfirmed_email = Changeset.get_change(changeset, :unconfirmed_email)
-    unique_email_changeset =
-      changeset
-      |> Changeset.put_change(:email, unconfirmed_email)
-      |> Changeset.unsafe_validate_unique(:email, changeset.repo, opts)
-
-    case unique_email_changeset.valid? do
-      true  -> changeset
-      false -> unique_email_changeset
-    end
   end
 
   @doc """

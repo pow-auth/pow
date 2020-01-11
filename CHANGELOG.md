@@ -15,6 +15,7 @@
 * [`PowInvitation.Phoenix.InvitationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`PowResetPassword.Phoenix.ResetPasswordView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`Pow.Phoenix.RegistrationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
+* [`PowEmailConfirmation.Ecto.Schema`] No longer validates if `:email` has been taken before setting `:unconfirmed_email`
 
 ### Deprecations
 

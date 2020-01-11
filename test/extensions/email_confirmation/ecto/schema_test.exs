@@ -111,17 +111,6 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
       assert Ecto.Changeset.get_field(changeset, :email_confirmation_token) == user.email_confirmation_token
       assert Ecto.Changeset.get_field(changeset, :unconfirmed_email) == user.unconfirmed_email
     end
-
-    test "doesn't update when :email already taken by another user", %{user: user} do
-      {:error, changeset} =
-        user
-        |> User.changeset(Map.put(@valid_params, :email, "taken@example.com"))
-        |> RepoMock.update([])
-
-      assert changeset.errors[:email] == {"has already been taken", validation: :unsafe_unique, fields: [:email]}
-      assert Ecto.Changeset.get_change(changeset, :email) == "taken@example.com"
-      assert Ecto.Changeset.get_change(changeset, :unconfirmed_email) == "taken@example.com"
-    end
   end
 
   describe "confirm_email_changeset/1" do

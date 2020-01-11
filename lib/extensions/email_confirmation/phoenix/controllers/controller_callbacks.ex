@@ -53,7 +53,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     case prevent_information_leak?(conn, changeset) do
       true ->
         return_path = routes(conn).after_registration_path(conn)
-        conn        = redirect_and_show_error(conn, return_path)
+        conn        = redirect_with_email_confirmation_required(conn, return_path)
 
         {:halt, conn}
 
@@ -84,12 +84,12 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
     send_confirmation_email(user, conn)
 
-    conn = redirect_and_show_error(conn, return_path)
+    conn = redirect_with_email_confirmation_required(conn, return_path)
 
     {:halt, conn}
   end
 
-  defp redirect_and_show_error(conn, return_path) do
+  defp redirect_with_email_confirmation_required(conn, return_path) do
     error = extension_messages(conn).email_confirmation_required(conn)
 
     conn

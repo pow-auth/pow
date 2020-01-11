@@ -1,4 +1,4 @@
-# Pow security practices
+# Security practices
 
 Some of the below is based on [OWASP](https://www.owasp.org/) or [NIST SP800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html) recommendations.
 
@@ -29,6 +29,7 @@ Some of the below is based on [OWASP](https://www.owasp.org/) or [NIST SP800-63b
 
 * If `PowEmailConfirmation` extension is used or registration has been disabled, the reset password flow will always return success message
 * If `PowEmailConfirmation` extension is used and a user can't be found, the registration and sign in page will redirect the user with a message to confirm their e-mail before they can sign in
+* When using `PowEmailConfirmation` extension a user can change their e-mail to one already used by another user, and will first receive an error when they try to confirm the change
 
 ## Browser cache
 
