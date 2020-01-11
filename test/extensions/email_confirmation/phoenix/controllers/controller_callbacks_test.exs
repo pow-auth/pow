@@ -41,7 +41,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   end
 
   describe "Pow.Phoenix.RegistrationController.create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "confirm_password" => @password}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
 
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
@@ -58,7 +58,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert mail.user.email == "test@example.com"
     end
 
-    @email_taken_invalid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "confirm_password" => "s"}}
+    @email_taken_invalid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => "s"}}
     test "with invalid params and email taken", %{conn: conn} do
       conn = post conn, Routes.pow_registration_path(conn, :create, @email_taken_invalid_params)
 
@@ -67,7 +67,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
     end
 
-    @email_taken_valid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "confirm_password" => @password}}
+    @email_taken_valid_params %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => @password}}
     test "with valid params and email taken", %{conn: conn} do
       conn = post conn, Routes.pow_registration_path(conn, :create, @email_taken_valid_params)
 
@@ -127,8 +127,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
   describe "PowInvitation.Phoenix.InvitationController.update/2" do
     @token               "token"
-    @params              %{"email" => "test@example.com", "password" => @password, "confirm_password" => @password}
-    @change_email_params %{"email" => "new@example.com", "password" => @password, "confirm_password" => @password}
+    @params              %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}
+    @change_email_params %{"email" => "new@example.com", "password" => @password, "password_confirmation" => @password}
 
     test "when email changes", %{conn: conn} do
       conn = put_invitation conn, PowInvitationRoutes.pow_invitation_invitation_path(conn, :update, @token, %{"user" => @change_email_params})

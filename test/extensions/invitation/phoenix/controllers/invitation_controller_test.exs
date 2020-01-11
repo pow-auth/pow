@@ -136,16 +136,16 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label for=\"user_confirm_password\">Confirm password</label>"
-      assert html =~ "<input id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password_confirmation\">Password confirmation</label>"
+      assert html =~ "<input id=\"user_password_confirmation\" name=\"user[password_confirmation]\" type=\"password\">"
       assert html =~ "<button type=\"submit\">Submit</button>"
     end
   end
 
   describe "update/2" do
     @password "password1234"
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "confirm_password" => @password}}
-    @invalid_params %{"user" => %{"email" => "invalid", "password" => @password, "confirm_password" => "invalid"}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
+    @invalid_params %{"user" => %{"email" => "invalid", "password" => @password, "password_confirmation" => "invalid"}}
 
     test "already signed in", %{conn: conn} do
       conn =

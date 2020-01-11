@@ -123,15 +123,14 @@ defmodule Pow.Ecto.ContextTest do
       "email" => "test@example.com",
       "custom" => "custom",
       "password" => @password,
-      "confirm_password" => @password
+      "password_confirmation" => @password
     }
 
     test "creates" do
-      assert {:error, _changeset} = Context.create(Map.delete(@valid_params, "confirm_password"), @config)
+      assert {:error, _changeset} = Context.create(Map.delete(@valid_params, "password_confirmation"), @config)
       assert {:ok, user} = Context.create(@valid_params, @config)
       assert user.custom == "custom"
       refute user.password
-      refute user.confirm_password
     end
 
     test "as `use Pow.Ecto.Context`" do
@@ -148,7 +147,7 @@ defmodule Pow.Ecto.ContextTest do
       "email" => "new@example.com",
       "custom" => "custom",
       "password" => "new_#{@password}",
-      "confirm_password" => "new_#{@password}",
+      "password_confirmation" => "new_#{@password}",
       "current_password" => @password
     }
 
@@ -165,7 +164,6 @@ defmodule Pow.Ecto.ContextTest do
       assert Context.authenticate(@valid_params, @config) == updated_user
       assert updated_user.custom == "custom"
       refute updated_user.password
-      refute updated_user.confirm_password
       refute updated_user.current_password
     end
 

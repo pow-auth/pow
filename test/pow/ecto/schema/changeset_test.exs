@@ -9,13 +9,13 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     @valid_params %{
       "email" => "john.doe@example.com",
       "password" => "secret1234",
-      "confirm_password" => "secret1234",
+      "password_confirmation" => "secret1234",
       "custom" => "custom"
     }
     @valid_params_username %{
       "username" => "john.doe",
       "password" => "secret1234",
-      "confirm_password" => "secret1234"
+      "password_confirmation" => "secret1234"
     }
 
     test "requires user id" do
@@ -145,10 +145,10 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     end
 
     test "can confirm and hash password" do
-      changeset = User.changeset(%User{}, Map.put(@valid_params, "confirm_password", "invalid"))
+      changeset = User.changeset(%User{}, Map.put(@valid_params, "password_confirmation", "invalid"))
 
       refute changeset.valid?
-      assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
+      assert changeset.errors[:password_confirmation] == {"does not match confirmation", [validation: :confirmation]}
       refute changeset.changes[:password_hash]
 
       changeset = User.changeset(%User{}, @valid_params)
@@ -156,6 +156,24 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
       assert changeset.changes[:password_hash]
       assert Password.pbkdf2_verify("secret1234", changeset.changes[:password_hash])
+    end
+
+    # TODO: Remove by 1.1.0
+    test "handle `confirm_password` conversion" do
+      params =
+        @valid_params
+        |> Map.delete("password_confirmation")
+        |> Map.put("confirm_password", "secret1234")
+      changeset = User.changeset(%User{}, params)
+
+      assert changeset.valid?
+
+      params    = Map.put(params, "confirm_password", "invalid")
+      changeset = User.changeset(%User{}, params)
+
+      refute changeset.valid?
+      assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
+      refute changeset.errors[:password_confirmation]
     end
 
     test "can use custom password hash methods" do

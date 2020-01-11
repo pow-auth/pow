@@ -68,7 +68,7 @@ defmodule PowInvitation.Ecto.SchemaTest do
 
   describe "accept_invitation_changeset/2" do
     @password "password12"
-    @valid_params %{email: "test@example.com", password: @password, confirm_password: @password}
+    @valid_params %{email: "test@example.com", password: @password, password_confirmation: @password}
     @invalid_params %{email: "foo"}
 
     test "with valid params" do

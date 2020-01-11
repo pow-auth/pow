@@ -110,7 +110,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
   @valid_params %{
     "email" => "john.doe@example.com",
     "password" => @password,
-    "confirm_password" => @password,
+    "password_confirmation" => @password,
     "custom" => "valid"
   }
 

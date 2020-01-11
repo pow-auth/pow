@@ -17,7 +17,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
 
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:password, :password},
-    {:password, :confirm_password}
+    {:password, :password_confirmation}
   ]) %>
 
   <span><%%= link "Sign in", to: Routes.<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.SessionController) %>_path(@conn, :new) %></span>

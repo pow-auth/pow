@@ -114,8 +114,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label for=\"user_confirm_password\">Confirm password</label>"
-      assert html =~ "<input id=\"user_confirm_password\" name=\"user[confirm_password]\" type=\"password\">"
+      assert html =~ "<label for=\"user_password_confirmation\">Password confirmation</label>"
+      assert html =~ "<input id=\"user_password_confirmation\" name=\"user[password_confirmation]\" type=\"password\">"
       assert html =~ "<a href=\"/session/new\">Sign in</a>"
     end
   end
@@ -124,8 +124,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @valid_token "valid"
     @invalid_token "invalid"
 
-    @valid_params %{"user" => %{"password" => @password, "confirm_password" => @password}}
-    @invalid_params %{"user" => %{"password" => @password, "confirm_password" => "invalid"}}
+    @valid_params %{"user" => %{"password" => @password, "password_confirmation" => @password}}
+    @invalid_params %{"user" => %{"password" => @password, "password_confirmation" => "invalid"}}
 
     setup %{ets: ets} do
       ResetTokenCache.put([backend: ets], @valid_token, @user)
@@ -167,7 +167,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
 
       changeset = conn.assigns[:changeset]
-      assert changeset.errors[:confirm_password]
+      assert changeset.errors[:password_confirmation]
       assert changeset.action == :update
 
       assert ResetTokenCache.get([backend: ets], @valid_token) == @user

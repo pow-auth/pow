@@ -9,7 +9,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
   <%= Pow.Phoenix.HTML.FormTemplate.render([
     {:text, {:changeset, :pow_user_id_field}},
     {:password, :password},
-    {:password, :confirm_password}
+    {:password, :password_confirmation}
   ],
   button_label: "Register") %>
 
@@ -24,7 +24,7 @@ defmodule Pow.Phoenix.RegistrationTemplate do
     {:password, :current_password},
     {:text, {:changeset, :pow_user_id_field}},
     {:password, :password},
-    {:password, :confirm_password}
+    {:password, :password_confirmation}
   ],
   button_label: "Update") %>
   """
