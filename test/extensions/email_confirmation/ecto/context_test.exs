@@ -46,7 +46,7 @@ defmodule PowEmailConfirmation.Ecto.ContextTest do
       user = %{@user | unconfirmed_email: "taken@example.com"}
 
       assert {:error, changeset} = Context.confirm_email(user, @config)
-      assert changeset.errors[:email] == {"has already been taken", []}
+      assert changeset.errors[:email] == {"has already been taken", constraint: :unique, constraint_name: "users_email_index"}
     end
   end
 

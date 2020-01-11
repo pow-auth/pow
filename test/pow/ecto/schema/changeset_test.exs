@@ -92,7 +92,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
         %User{}
         |> User.changeset(@valid_params)
         |> Repo.insert()
-      assert changeset.errors[:email] == {"has already been taken", [constraint: :unique, constraint_name: "users_email_index"]}
+      assert changeset.errors[:email] == {"has already been taken", constraint: :unique, constraint_name: "users_email_index"}
 
       {:ok, _user} =
         %UsernameUser{}
@@ -103,7 +103,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
         %UsernameUser{}
         |> UsernameUser.changeset(@valid_params_username)
         |> Repo.insert()
-      assert changeset.errors[:username] == {"has already been taken", [constraint: :unique, constraint_name: "users_username_index"]}
+      assert changeset.errors[:username] == {"has already been taken", constraint: :unique, constraint_name: "users_username_index"}
     end
 
     test "requires password when password_hash is nil" do
