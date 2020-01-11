@@ -99,8 +99,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
 
   defp prevent_information_leak?(_conn, %{errors: errors}) do
     Enum.find_value(errors, false, fn
-      {:email, {"has already been taken", _keys}} -> true
-      _any                                        -> false
+      {:email, {_msg, [constraint: :unique, constraint_name: _name]}} -> true
+      _any                                                            -> false
     end)
   end
   defp prevent_information_leak?(_conn, _changeset), do: false
