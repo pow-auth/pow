@@ -21,7 +21,7 @@ defmodule MyApp.Users.User do
 
   @spec changeset_role(Ecto.Schema.t() | Ecto.Changeset.t(), map()) :: Ecto.Changeset.t()
   def changeset_role(user_or_changeset, attrs) do
-    user_or_changeset
+    pow_changeset(user_or_changeset, attrs)
     |> Ecto.Changeset.cast(attrs, [:role])
     |> Ecto.Changeset.validate_inclusion(:role, ~w(user admin))
   end
