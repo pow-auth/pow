@@ -197,4 +197,17 @@ defmodule Pow.Plug do
   defp no_plug_error do
     Config.raise_error("Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.")
   end
+
+  @doc false
+  @spec __prevent_information_leak__(Conn.t(), any()) :: boolean()
+  def __prevent_information_leak__(%{private: %{pow_prevent_information_leak: false}}, _changeset), do: false
+  def __prevent_information_leak__(_conn, %{errors: errors}), do: unique_constraint_error?(errors, :email)
+  def __prevent_information_leak__(_conn, _any), do: true
+
+  defp unique_constraint_error?(errors, field) do
+    Enum.find_value(errors, false, fn
+      {^field, {_msg, [constraint: :unique, constraint_name: _name]}} -> true
+      _any                                                            -> false
+    end)
+  end
 end

@@ -15,6 +15,12 @@
 * [`PowInvitation.Phoenix.InvitationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`PowResetPassword.Phoenix.ResetPasswordView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`Pow.Phoenix.RegistrationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
+* [`PowEmailConfirmation.Ecto.Schema`] No longer validates if `:email` has been taken before setting `:unconfirmed_email`
+* [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now prevents user enumeration attack for `PowInvitation.Phoenix.InvitationController.create/2`
+
+## Removed
+
+* [`PowResetPassword.Phoenix.ResetPasswordController`] Will now by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`.
 
 ### Deprecations
 

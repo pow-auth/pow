@@ -31,11 +31,14 @@ defmodule PowEmailConfirmation.Test.RepoMock do
   def get_by(User, [email_confirmation_token: "valid-with-unconfirmed-changed-email"], _opts) do
     %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
   end
+  def get_by(User, [email_confirmation_token: "valid-with-taken-email"], _opts) do
+    %{user() | unconfirmed_email: "taken@example.com", email_confirmed_at: DateTime.utc_now()}
+  end
 
   def update(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
     changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken", constraint: :unique, constraint_name: "users_email_index")
 
-    {:error, changeset}
+    {:error, %{changeset | action: :update}}
   end
   def update(%{valid?: true} = changeset, _opts) do
     %{changeset | repo: __MODULE__}

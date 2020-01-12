@@ -49,24 +49,21 @@ defmodule PowResetPassword.Plug do
   def create_reset_token(conn, params) do
     config = Plug.fetch_config(conn)
     token  = UUID.generate()
-    user   =
-      params
-      |> Map.get("email")
-      |> ResetPasswordContext.get_by_email(config)
 
-    maybe_store_reset_token(conn, user, token, config)
-  end
+    params
+    |> Map.get("email")
+    |> ResetPasswordContext.get_by_email(config)
+    |> case do
+      nil ->
+        {:error, change_user(conn, params), conn}
 
-  defp maybe_store_reset_token(conn, nil, _token, _config) do
-    changeset = change_user(conn)
-    {:error, %{changeset | action: :update}, conn}
-  end
-  defp maybe_store_reset_token(conn, user, token, config) do
-    {store, store_config} = store(config)
+      user ->
+        {store, store_config} = store(config)
 
-    store.put(store_config, token, user)
+        store.put(store_config, token, user)
 
-    {:ok, %{token: token, user: user}, conn}
+        {:ok, %{token: token, user: user}, conn}
+    end
   end
 
   @doc """

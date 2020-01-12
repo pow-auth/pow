@@ -5,6 +5,11 @@ defmodule PowInvitation.Test.RepoMock do
 
   @user %User{id: 1, email: "test@example.com"}
 
+  def insert(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
+    changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken", constraint: :unique, constraint_name: "users_email_index")
+
+    {:error, %{changeset | action: :insert}}
+  end
   def insert(%{valid?: true} = changeset, _opts) do
     user = %{Ecto.Changeset.apply_changes(changeset) | id: 1}
 
@@ -28,6 +33,11 @@ defmodule PowInvitation.Test.RepoMock do
   def get_by(User, [invitation_token: "valid_but_accepted"], _opts), do: %{@user | invitation_accepted_at: :now}
   def get_by(User, [invitation_token: "invalid"], _opts), do: nil
 
+  def update(%{changes: %{email: "taken@example.com"}, valid?: true} = changeset, _opts) do
+    changeset = Ecto.Changeset.add_error(changeset, :email, "has already been taken", constraint: :unique, constraint_name: "users_email_index")
+
+    {:error, %{changeset | action: :update}}
+  end
   def update(%{valid?: true} = changeset, _opts) do
     user = Ecto.Changeset.apply_changes(changeset)
 

@@ -3,8 +3,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   use Pow.Extension.Phoenix.Controller.Base
 
   alias Plug.Conn
+  alias Pow.Plug, as: PowPlug
   alias PowResetPassword.{Phoenix.Mailer, Plug}
-  alias Pow.Extension.Config
 
   plug :require_not_authenticated
   plug :load_user_from_reset_token when action in [:edit, :update]
@@ -37,18 +37,18 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     |> put_flash(:info, extension_messages(conn).email_has_been_sent(conn))
     |> redirect(to: routes(conn).session_path(conn, :new))
   end
-  def respond_create({:error, _any, conn}) do
-    case prevent_information_leak?(conn) do
-      false ->
-        conn
-        |> assign(:changeset, Plug.change_user(conn, conn.params["user"]))
-        |> put_flash(:error, extension_messages(conn).user_not_found(conn))
-        |> render("new.html")
-
+  def respond_create({:error, changeset, conn}) do
+    case PowPlug.__prevent_information_leak__(conn, nil) do
       true ->
         conn
         |> put_flash(:info, extension_messages(conn).maybe_email_has_been_sent(conn))
         |> redirect(to: routes(conn).session_path(conn, :new))
+
+      false ->
+        conn
+        |> assign(:changeset, changeset)
+        |> put_flash(:error, extension_messages(conn).user_not_found(conn))
+        |> render("new.html")
     end
   end
 
@@ -98,26 +98,6 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     email = Mailer.reset_password(conn, user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
-  end
-
-  defp prevent_information_leak?(conn) do
-    cond do
-      email_confirmation_extension?(conn) -> true
-      registration_path?(conn)            -> false
-      true                                -> true
-    end
-  end
-
-  defp email_confirmation_extension?(conn) do
-    config = Pow.Plug.fetch_config(conn)
-
-    PowEmailConfirmation in Config.extensions(config)
-  end
-
-  defp registration_path?(conn) do
-    [conn.private.phoenix_router, Helpers]
-    |> Module.concat()
-    |> function_exported?(:pow_registration_path, 3)
   end
 
   defp assign_create_path(conn, _opts) do
