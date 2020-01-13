@@ -146,6 +146,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
+    conn       = Conn.fetch_cookies(conn)
     cookie_key = cookie_key(config)
 
     case conn.req_cookies[cookie_key] do
