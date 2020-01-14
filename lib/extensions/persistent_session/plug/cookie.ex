@@ -2,9 +2,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   @moduledoc """
   This plug will handle persistent user sessions with cookies.
 
-  By default, the cookie will expire after 30 days. The cookie expiration will
-  be renewed on every request where a user is assigned to the conn. The token
-  in the cookie can only be used once to create a session.
+  The cookie and token will expire after 30 days. The token in the cookie can
+  only be used once to create a session.
 
   If an assigned private `:pow_session_metadata` key exists in the conn with a
   keyword list containing a `:fingerprint` key, that fingerprint value will be
@@ -30,8 +29,8 @@ defmodule PowPersistentSession.Plug.Cookie do
     * `:cache_store_backend` - see `PowPersistentSession.Plug.Base`
 
     * `:persistent_session_cookie_key` - session key name. This defaults to
-      "persistent_session_cookie". If `:otp_app` is used it'll automatically
-      prepend the key with the `:otp_app` value.
+      "persistent_session". If `:otp_app` is used it'll automatically prepend
+      the key with the `:otp_app` value.
 
     * `:persistent_session_ttl` - used for both backend store and max age for
       cookie. See `PowPersistentSession.Plug.Base` for more.
@@ -74,7 +73,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Plug.Conn
   alias Pow.{Config, Operations, Plug, UUID}
 
-  @cookie_key "persistent_session_cookie"
+  @cookie_key "persistent_session"
   @cookie_expiration_timeout 10
 
   @doc """
@@ -146,6 +145,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
+    conn       = Conn.fetch_cookies(conn)
     cookie_key = cookie_key(config)
 
     case conn.req_cookies[cookie_key] do
@@ -203,7 +203,6 @@ defmodule PowPersistentSession.Plug.Cookie do
     conn
     |> Conn.fetch_cookies()
     |> maybe_authenticate(user, config)
-    |> maybe_renew(config)
   end
 
   defp maybe_authenticate(conn, nil, config) do
@@ -312,26 +311,6 @@ defmodule PowPersistentSession.Plug.Cookie do
           |> Keyword.put(:fingerprint, fingerprint)
 
         Conn.put_private(conn, :pow_session_metadata, metadata)
-    end
-  end
-
-  defp maybe_renew(conn, config) do
-    cookie_key = cookie_key(config)
-
-    with user when not is_nil(user) <- Plug.current_user(conn, config),
-         nil <- conn.resp_cookies[cookie_key] do
-      renew(conn, cookie_key, config)
-    else
-      _ -> conn
-    end
-  end
-
-  defp renew(conn, cookie_key, config) do
-    opts = cookie_opts(config)
-
-    case conn.req_cookies[cookie_key] do
-      nil   -> conn
-      value -> Conn.put_resp_cookie(conn, cookie_key, value, opts)
     end
   end
 
