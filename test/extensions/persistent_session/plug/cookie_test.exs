@@ -116,8 +116,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Plug.assign_current_user(:user, [])
       |> Cookie.call(Cookie.init([]))
 
-    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
-    assert new_id == id
+    refute conn.resp_cookies[@cookie_key]
     assert PersistentSessionCache.get([backend: ets], id) == {[id: 1], []}
   end
 

@@ -1,6 +1,6 @@
 # PowPersistentSession
 
-This extension will permit reissuing sessions, by setting a cookie with a 30-day expiration (renewed on every request). The token in this cookie can be used exactly once to create the session. When the session has been created, the cookie will be updated with a new id.
+This extension can reissue sessions by setting a cookie with a token that may be used exactly once to issue the session. The cookie and token will expire after 30 days. Once the session has been issued, a new cookie and token will be set that expires after another 30 days.
 
 ## Installation
 

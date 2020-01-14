@@ -18,6 +18,7 @@
 * [`PowEmailConfirmation.Ecto.Schema`] No longer validates if `:email` has been taken before setting `:unconfirmed_email`
 * [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now prevents user enumeration attack for `PowInvitation.Phoenix.InvitationController.create/2`
 * [`PowPersistentSession.Plug.Cookie`] Changed default cookie name to `persistent_session`
+* [`PowPersistentSession.Plug.Cookie`] Removed renewal of cookie as the token will always expire
 
 ## Removed
 
