@@ -2,17 +2,15 @@ defmodule Pow.Store.CredentialsCache do
   @moduledoc """
   Default module for credentials session storage.
 
-  A key (session id), is used to store, fetch or delete credentials. When
-  credentials are stored or deleted, a credentials key will be generated.
-  The value of that key will be all current keys (session ids), and the
-  most recent credentials.
-
-  When a key is updated, all expired keys will be pruned from the credentials
-  key.
-
-  The credentials are expected to take the form of
+  A key (session id) is used to store, fetch, or delete credentials. The
+  credentials are expected to take the form of
   `{credentials, session_metadata}`, where session metadata is data exclusive
   to the session id.
+
+  This module also adds two utility methods:
+
+    * `users/2` - to list all current users
+    * `sessions/2` - to list all current sessions
   """
   alias Pow.{Config, Store.Base}
 
