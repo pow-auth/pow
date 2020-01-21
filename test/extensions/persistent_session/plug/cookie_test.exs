@@ -60,6 +60,29 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == {[id: 1], []}
   end
 
+  test "call/2 assigns user from cookie and doesn't expire with simultanous request", %{conn: conn, ets: ets} do
+    user = %User{id: 1}
+    id   = "test"
+    opts = Cookie.init([])
+    conn = store_persistent(conn, ets, id, {[id: user.id], []})
+
+    first_conn =
+      conn
+      |> Cookie.call(opts)
+      |> Conn.resp(200, "")
+
+    assert Plug.current_user(first_conn) == user
+    assert %{value: _id, max_age: @max_age, path: "/"} = first_conn.resp_cookies[@cookie_key]
+
+    second_conn =
+      conn
+      |> Cookie.call(opts)
+      |> Conn.resp(200, "")
+
+    refute Plug.current_user(second_conn) == user
+    refute second_conn.resp_cookies[@cookie_key]
+  end
+
   test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"

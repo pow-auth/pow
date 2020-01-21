@@ -32,7 +32,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
   end
 
   describe "Pow.Phoenix.SessionController.delete/2" do
-    test "generates cookie", %{conn: conn, ets: ets} do
+    test "expires cookie", %{conn: conn, ets: ets} do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
 
       assert %{value: id} = conn.resp_cookies[@cookie_key]

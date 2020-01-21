@@ -120,6 +120,43 @@ defmodule Pow.Plug.SessionTest do
     assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
+  test "call/2 creates new session when :session_renewal_ttl reached and doesn't delete with simultanous request", %{conn: new_conn} do
+    ttl             = 100
+    id              = "token"
+    config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
+    stale_timestamp = :os.system_time(:millisecond) - ttl - 1
+    opts            = Session.init(config)
+
+    CredentialsCache.put(@store_config, id, {@user, inserted_at: stale_timestamp})
+
+    conn =
+      new_conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], id)
+      |> Conn.send_resp(200, "")
+
+    conn = Test.recycle_cookies(new_conn, conn)
+
+    first_conn =
+      conn
+      |> Session.call(opts)
+      |> Conn.send_resp(200, "")
+
+    assert Plug.current_user(first_conn) == @user
+    assert %{value: _id} = first_conn.resp_cookies["foobar"]
+    assert new_id = first_conn.private[:plug_session][config[:session_key]]
+    refute new_id == id
+    assert {@user, _metadata} = CredentialsCache.get(@store_config, new_id)
+
+    second_conn =
+      conn
+      |> Session.call(opts)
+      |> Conn.send_resp(200, "")
+
+    refute second_conn.resp_cookies["foobar"]
+    refute second_conn.private[:plug_session]
+  end
+
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
