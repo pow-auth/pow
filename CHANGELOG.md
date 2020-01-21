@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.22 (TBA)
+
+### Enhancements
+
+* [`PowPersistentSession.Plug.Cookie`] Now stores the user struct instead of clauses
+
 ## v1.0.21 (2020-09-13)
 
 ### Enhancements
