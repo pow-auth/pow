@@ -19,6 +19,7 @@
 * [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now prevents user enumeration attack for `PowInvitation.Phoenix.InvitationController.create/2`
 * [`PowPersistentSession.Plug.Cookie`] Changed default cookie name to `persistent_session`
 * [`PowPersistentSession.Plug.Cookie`] Removed renewal of cookie as the token will always expire
+* [`PowPersistentSession.Plug.Cookie`] No longer expires invalid cookies
 
 ## Removed
 

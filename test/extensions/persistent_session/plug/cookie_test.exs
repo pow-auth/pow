@@ -60,6 +60,29 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == {[id: 1], []}
   end
 
+  test "call/2 assigns user from cookie and doesn't expire with simultanous request", %{conn: conn, ets: ets} do
+    user = %User{id: 1}
+    id   = "test"
+    opts = Cookie.init([])
+    conn = store_persistent(conn, ets, id, {[id: user.id], []})
+
+    first_conn =
+      conn
+      |> Cookie.call(opts)
+      |> Conn.resp(200, "")
+
+    assert Plug.current_user(first_conn) == user
+    assert %{value: _id, max_age: @max_age, path: "/"} = first_conn.resp_cookies[@cookie_key]
+
+    second_conn =
+      conn
+      |> Cookie.call(opts)
+      |> Conn.resp(200, "")
+
+    refute Plug.current_user(second_conn) == user
+    refute second_conn.resp_cookies[@cookie_key]
+  end
+
   test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"
@@ -129,7 +152,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies[@cookie_key] == %{max_age: 10, path: "/", value: "test"}
+    refute conn.resp_cookies[@cookie_key]
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 
@@ -140,26 +163,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.call(Cookie.init([]))
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies[@cookie_key] == %{max_age: 10, path: "/", value: "test"}
-  end
-
-  test "call/2 when persistent session cache doesn't have credentials with custom cookie options", %{conn: conn, config: config} do
-    config = Keyword.merge(config, persistent_session_cookie_opts: @custom_cookie_opts, persistent_session_cookie_expiration_timeout: 20)
-    conn   =
-      conn
-      |> persistent_cookie(@cookie_key, "test")
-      |> Cookie.call(Cookie.init(config))
-
-    refute Plug.current_user(conn)
-    assert conn.resp_cookies[@cookie_key] == %{
-      domain: "domain.com",
-      extra: "SameSite=Lax",
-      http_only: false,
-      max_age: 20,
-      path: "/path",
-      secure: true,
-      value: "test"
-    }
+    refute conn.resp_cookies[@cookie_key]
   end
 
   test "call/2 with invalid stored clauses", %{conn: conn, ets: ets} do
@@ -265,7 +269,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.delete(config)
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies[@cookie_key] == %{max_age: -1, path: "/", value: ""}
+    assert conn.resp_cookies[@cookie_key] == %{max_age: 0, path: "/", universal_time: {{1970, 1, 1}, {0, 0, 0}}}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 
@@ -278,15 +282,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> Cookie.delete(config)
 
     refute Plug.current_user(conn)
-    assert conn.resp_cookies[@cookie_key] == %{
-      domain: "domain.com",
-      extra: "SameSite=Lax",
-      http_only: false,
-      max_age: -1,
-      path: "/path",
-      secure: true,
-      value: ""
-    }
+    assert conn.resp_cookies[@cookie_key] == %{max_age: 0, universal_time: {{1970, 1, 1}, {0, 0, 0}}, path: "/path", domain: "domain.com", extra: "SameSite=Lax", http_only: false, secure: true}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
 end
