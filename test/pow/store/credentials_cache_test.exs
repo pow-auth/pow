@@ -75,23 +75,6 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.get(@config, "key_3") == {user, fingerprint: 1}
   end
 
-  test "raises for nil primary key value" do
-    user_1 = %User{id: nil}
-
-    assert_raise RuntimeError, "Primary key value for key `:id` in Pow.Test.Ecto.Users.User can't be `nil`", fn ->
-      CredentialsCache.put(@config, "key_1", {user_1, a: 1})
-    end
-  end
-
-  defmodule NoPrimaryFieldUser do
-    use Ecto.Schema
-
-    @primary_key false
-    schema "users" do
-      timestamps()
-    end
-  end
-
   defmodule CompositePrimaryFieldsUser do
     use Ecto.Schema
 
@@ -104,36 +87,13 @@ defmodule Pow.Store.CredentialsCacheTest do
     end
   end
 
-  test "handles custom primary fields" do
-    assert_raise RuntimeError, "No primary keys found for Pow.Store.CredentialsCacheTest.NoPrimaryFieldUser", fn ->
-      CredentialsCache.put(@config, "key_1", {%NoPrimaryFieldUser{}, a: 1})
-    end
-
-    assert_raise RuntimeError, "Primary key value for key `:another_id` in Pow.Store.CredentialsCacheTest.CompositePrimaryFieldsUser can't be `nil`", fn ->
-      CredentialsCache.put(@config, "key_1", {%CompositePrimaryFieldsUser{}, a: 1})
-    end
-
+  test "sorts composite primary keys" do
     user = %CompositePrimaryFieldsUser{some_id: 1, another_id: 2}
 
     CredentialsCache.put(@config, "key_1", {user, a: 1})
 
     assert CredentialsCache.users(@config, CompositePrimaryFieldsUser) == [user]
-  end
-
-  defmodule NonEctoUser do
-    defstruct [:id]
-  end
-
-  test "handles non-ecto user struct" do
-    assert_raise RuntimeError, "Primary key value for key `:id` in Pow.Store.CredentialsCacheTest.NonEctoUser can't be `nil`", fn ->
-      CredentialsCache.put(@config, "key_1", {%NonEctoUser{}, a: 1})
-    end
-
-    user = %NonEctoUser{id: 1}
-
-    assert CredentialsCache.put(@config, "key_1", {user, a: 1})
-
-    assert CredentialsCache.users(@config, NonEctoUser) == [user]
+    assert EtsCacheMock.get(@backend_config, [CompositePrimaryFieldsUser, :user, [another_id: 2, some_id: 1]]) == user
   end
 
   # TODO: Remove by 1.1.0

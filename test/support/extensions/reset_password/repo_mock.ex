@@ -17,6 +17,6 @@ defmodule PowResetPassword.Test.RepoMock do
   end
   def update(%{valid?: false} = changeset, _opts), do: {:error, %{changeset | action: :update}}
 
-  def get!(User, 1, _opts), do: Process.get({:user, 1})
-  def get!(User, :missing, _opts), do: nil
+  def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
+  def get_by!(User, [id: :missing], _opts), do: nil
 end

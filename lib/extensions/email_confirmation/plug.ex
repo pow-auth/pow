@@ -3,7 +3,7 @@ defmodule PowEmailConfirmation.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.Plug
+  alias Pow.{Operations, Plug}
   alias PowEmailConfirmation.Ecto.Context
 
   @doc """
@@ -56,10 +56,18 @@ defmodule PowEmailConfirmation.Plug do
     end
   end
 
-  defp maybe_renew_conn(conn, %{id: user_id} = user, config) do
-    case Plug.current_user(conn, config) do
-      %{id: ^user_id} -> Plug.get_plug(config).do_create(conn, user, config)
-      _any            -> conn
+  defp maybe_renew_conn(conn, user, config) do
+    case equal_user?(user, Plug.current_user(conn, config), config) do
+      true  -> Plug.get_plug(config).do_create(conn, user, config)
+      false -> conn
     end
+  end
+
+  defp equal_user?(_user, nil, _config), do: false
+  defp equal_user?(user, current_user, config) do
+    {:ok, clauses1} = Operations.fetch_primary_key_values(user, config)
+    {:ok, clauses2} = Operations.fetch_primary_key_values(current_user, config)
+
+    Keyword.equal?(clauses1, clauses2)
   end
 end

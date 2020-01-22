@@ -92,7 +92,7 @@ defmodule PowPersistentSession.Plug.Cookie do
     {store, store_config} = store(config)
     cookie_key            = cookie_key(config)
     key                   = cookie_id(config)
-    value                 = persistent_session_value(conn, user)
+    value                 = persistent_session_value(conn, user, config)
     opts                  = cookie_opts(config)
 
     store.put(store_config, key, value)
@@ -102,8 +102,8 @@ defmodule PowPersistentSession.Plug.Cookie do
     |> Conn.put_resp_cookie(cookie_key, key, opts)
   end
 
-  defp persistent_session_value(conn, user) do
-    clauses  = user_to_get_by_clauses(user)
+  defp persistent_session_value(conn, user, config) do
+    clauses  = user_to_get_by_clauses!(user, config)
     metadata =
       conn.private
       |> Map.get(:pow_persistent_session_metadata, [])
@@ -112,7 +112,12 @@ defmodule PowPersistentSession.Plug.Cookie do
     {clauses, metadata}
   end
 
-  defp user_to_get_by_clauses(%{id: id}), do: [id: id]
+  defp user_to_get_by_clauses!(user, config) do
+    case Operations.fetch_primary_key_values(user, config) do
+      {:ok, clauses}  -> clauses
+      {:error, error} -> raise error
+    end
+  end
 
   defp maybe_put_fingerprint_in_session_metadata(metadata, conn) do
     conn.private
