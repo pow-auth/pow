@@ -4,14 +4,14 @@
 
 ### Enhancements
 
-* [`Pow.Ecto.Context`] Calls to `Pow.Ecto.Context.get_by/2` replaced with `Pow.Operations.get_by/2` so custom users context module can be used. The following methods has been updated
+* [`Pow.Ecto.Context`] Calls to `Pow.Ecto.Context.get_by/2` replaced with `Pow.Operations.get_by/2` so custom users context module can be used. The following methods has been updated:
   * `Pow.Ecto.Context.authenticate/2`
   * `PowEmailConfirmation.Ecto.Context.get_by_confirmation_token/2`
   * `PowInvitation.Ecto.Context.get_by_invitation_token/2`
   * `PowResetPassword.Ecto.Context.get_by_email/2`
 * [`Pow.Ecto.Schema.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now adds the default `Ecto.Changeset.validate_confirmation/3` error instead of the previous `not same as password` error
-* [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now uses the `Ecto.Changeset.validate_confirmation/3` for validation and expects `:password_confirmation` instead of `:confirm_password` in params
-* [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.new_password_changeset/3` now only requires the `:password_hash` if there have been no previous errors set in the changeset
+* [`Pow.Ecto.Schema.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` now uses the `Ecto.Changeset.validate_confirmation/3` for validation and expects `:password_confirmation` instead of `:confirm_password` in params
+* [`Pow.Ecto.Schema.Changeset`] `Pow.Ecto.Schema.Changeset.new_password_changeset/3` now only requires the `:password_hash` if there have been no previous errors set in the changeset
 * [`Pow.Ecto.Schema`] No longer adds `:confirm_password` virtual field
 * [`PowInvitation.Phoenix.InvitationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`PowResetPassword.Phoenix.ResetPasswordView`] Now renders `:password_confirmation` field instead of `:confirm_password`
@@ -24,7 +24,7 @@
 
 ## Removed
 
-* [`PowResetPassword.Phoenix.ResetPasswordController`] Will now by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`.
+* [`PowResetPassword.Phoenix.ResetPasswordController`] Will now by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`
 
 ### Deprecations
 
