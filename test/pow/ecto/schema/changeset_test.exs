@@ -158,6 +158,32 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert Password.pbkdf2_verify("secret1234", changeset.changes[:password_hash])
     end
 
+    test "only validates password hash when no previous errors" do
+      params = Map.drop(@valid_params, ["email"])
+      changeset = User.changeset(%User{}, params)
+
+      refute changeset.valid?
+      refute changeset.errors[:password_hash]
+
+      params = Map.drop(@valid_params, ["password"])
+      changeset = User.changeset(%User{}, params)
+
+      refute changeset.valid?
+      refute changeset.errors[:password_hash]
+
+      params = Map.drop(@valid_params, ["password"])
+      changeset = User.changeset(%User{}, params)
+
+      refute changeset.valid?
+      refute changeset.errors[:password_hash]
+
+      config = [password_hash_methods: {fn _ -> nil end, & &1}]
+      changeset = Changeset.password_changeset(%User{}, @valid_params, config)
+
+      refute changeset.valid?
+      assert changeset.errors[:password_hash] == {"can't be blank", [validation: :required]}
+    end
+
     # TODO: Remove by 1.1.0
     test "handle `confirm_password` conversion" do
       params =

@@ -84,7 +84,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> maybe_require_password()
     |> maybe_validate_password(config)
     |> maybe_put_password_hash(config)
-    |> Changeset.validate_required([:password_hash])
+    |> maybe_validate_password_hash()
   end
 
   # TODO: Remove `confirm_password` support by 1.1.0
@@ -247,6 +247,11 @@ defmodule Pow.Ecto.Schema.Changeset do
     Changeset.put_change(changeset, :password_hash, hash_password(password, config))
   end
   defp maybe_put_password_hash(changeset, _config), do: changeset
+
+  defp maybe_validate_password_hash(%Changeset{valid?: true} = changeset) do
+    Changeset.validate_required(changeset, [:password_hash])
+  end
+  defp maybe_validate_password_hash(changeset), do: changeset
 
   defp hash_password(password, config) do
     config
