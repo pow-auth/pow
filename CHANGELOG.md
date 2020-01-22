@@ -21,6 +21,7 @@
 * [`PowPersistentSession.Plug.Cookie`] Changed default cookie name to `persistent_session`
 * [`PowPersistentSession.Plug.Cookie`] Removed renewal of cookie as the token will always expire
 * [`PowPersistentSession.Plug.Cookie`] No longer expires invalid cookies
+* [`Pow.Operations`] Added `Pow.Operations.fetch_primary_key_values/2`
 
 ## Removed
 

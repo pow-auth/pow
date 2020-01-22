@@ -220,6 +220,12 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert %{max_age: 1, path: "/"} = conn.resp_cookies[@cookie_key]
   end
 
+  test "create/3 handles clause error", %{conn: conn, config: config} do
+    assert_raise RuntimeError, "Primary key value for key `:id` in #{inspect User} can't be `nil`", fn ->
+      Cookie.create(conn, %User{id: nil}, config)
+    end
+  end
+
   test "create/3 with custom cookie options", %{conn: conn, config: config} do
     config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
     conn   = Cookie.create(conn, %User{id: 1}, config)

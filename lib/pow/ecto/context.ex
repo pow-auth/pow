@@ -222,10 +222,18 @@ defmodule Pow.Ecto.Context do
   defp reload_after_write({:ok, struct}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    opts = repo_opts(config, [:prefix])
-    struct = Config.repo!(config).get!(struct.__struct__, struct.id, opts)
+    opts    = repo_opts(config, [:prefix])
+    clauses = fetch_primary_key_values!(struct, config)
+    struct  = Config.repo!(config).get_by!(struct.__struct__, clauses, opts)
 
     {:ok, struct}
+  end
+
+  defp fetch_primary_key_values!(struct, config) do
+    case Operations.fetch_primary_key_values(struct, config) do
+      {:error, error} -> raise error
+      {:ok, clauses}  -> clauses
+    end
   end
 
   # TODO: Remove by 1.1.0

@@ -78,7 +78,7 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     {:ok, user}
   end
 
-  def get!(User, 1, _opts), do: Process.get({:user, 1})
+  def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
 
   defmodule Invitation do
     @moduledoc false
@@ -89,6 +89,6 @@ defmodule PowEmailConfirmation.Test.RepoMock do
 
     def update(changeset, opts), do: RepoMock.update(changeset, opts)
 
-    def get!(User, 1, _opts), do: Process.get({:user, 1})
+    def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
   end
 end

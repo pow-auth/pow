@@ -1,6 +1,8 @@
 defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
+  alias PowEmailConfirmation.Test.Users.User
+
   @session_key "auth"
 
   describe "show/2" do
@@ -51,7 +53,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
-        |> Pow.Plug.assign_current_user(%{id: 1}, [])
+        |> Pow.Plug.assign_current_user(%User{id: 1}, [])
         |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
@@ -63,7 +65,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       session_id = conn.private[:plug_session][@session_key]
       conn       =
         conn
-        |> Pow.Plug.assign_current_user(%{id: 2}, [])
+        |> Pow.Plug.assign_current_user(%User{id: 2}, [])
         |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
 
       assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)

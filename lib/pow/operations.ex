@@ -104,4 +104,31 @@ defmodule Pow.Operations do
   defp context_module(config) do
     Config.get(config, :users_context, Context)
   end
+
+  @doc """
+  Retrieve a keyword list of primary key value(s) from the provided struct.
+
+  The keys will be fetched from the `__schema__/1` method in the struct module.
+  If no `__schema__/1` method exists, then it's expected that the struct has
+  `:id` as its only primary key.
+  """
+  @spec fetch_primary_key_values(struct(), Config.t()) :: {:ok, keyword()} | {:error, term()}
+  def fetch_primary_key_values(%mod{} = struct, _config) do
+    mod
+    |> function_exported?(:__schema__, 1)
+    |> case do
+      true  -> mod.__schema__(:primary_key)
+      false -> [:id]
+    end
+    |> map_primary_key_values(struct, [])
+  end
+
+  defp map_primary_key_values([], %mod{}, []), do: {:error, "No primary keys found for #{inspect mod}"}
+  defp map_primary_key_values([key | rest], %mod{} = struct, acc) do
+    case Map.get(struct, key) do
+      nil   -> {:error, "Primary key value for key `#{inspect key}` in #{inspect mod} can't be `nil`"}
+      value -> map_primary_key_values(rest, struct, acc ++ [{key, value}])
+    end
+  end
+  defp map_primary_key_values([], _struct, acc), do: {:ok, acc}
 end
