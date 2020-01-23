@@ -1,5 +1,9 @@
 defmodule PowEmailConfirmation.Phoenix.Messages do
-  @moduledoc false
+  @moduledoc """
+  Module that handles messages for PowEmailConfirmation.
+
+  See `Pow.Extension.Phoenix.Messages` for more.
+  """
 
   @doc """
   Flash message to show when email has been confirmed.

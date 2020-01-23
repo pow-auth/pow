@@ -1,5 +1,9 @@
 defmodule PowResetPassword.Phoenix.Messages do
-  @moduledoc false
+  @moduledoc """
+  Module that handles messages for PowEmailConfirmation.
+
+  See `Pow.Extension.Phoenix.Messages` for more.
+  """
 
   @doc """
   Flash message to show generic response for reset password request.

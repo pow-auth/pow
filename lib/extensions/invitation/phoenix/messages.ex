@@ -1,5 +1,9 @@
 defmodule PowInvitation.Phoenix.Messages do
-  @moduledoc false
+  @moduledoc """
+  Module that handles messages for PowEmailConfirmation.
+
+  See `Pow.Extension.Phoenix.Messages` for more.
+  """
 
   @doc """
   Flash message to show when an invalid or expired invitation url is used.

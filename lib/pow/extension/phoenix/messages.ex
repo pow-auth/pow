@@ -2,6 +2,10 @@ defmodule Pow.Extension.Phoenix.Messages do
   @moduledoc """
   Module that handles messages for extensions.
 
+  To override messages from extensions, the method name has to start with the
+  snake cased extension name. So the `a_message/1` method from
+  `PowExtensionOne`, should be written as `pow_extension_one_a_message/1`.
+
   ## Usage
 
       defmodule MyAppWeb.Pow.Messages do
@@ -12,6 +16,8 @@ defmodule Pow.Extension.Phoenix.Messages do
         import MyAppWeb.Gettext
 
         def pow_extension_one_a_message(_conn), do: gettext("A message.")
+
+        def pow_extension_two_a_message(_conn), do: gettext("A message.")
       end
 
   Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.
