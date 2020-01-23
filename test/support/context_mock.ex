@@ -10,7 +10,7 @@ defmodule Pow.Test.ContextMock do
   def authenticate(_params), do: nil
 
   def create(@valid_params), do: {:ok, @user}
-  def create(params), do: {:error, %{User.changeset(%User{}, params) | action: :create}}
+  def create(params), do: {:error, %{User.changeset(%User{}, params) | action: :insert}}
 
   def update(%{id: 1}, @valid_params), do: {:ok, %{@user | id: :updated}}
   def update(user, params), do: {:error, %{User.changeset(user, params) | action: :update}}

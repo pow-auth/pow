@@ -12,13 +12,6 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     }, state: :loaded)
   end
 
-  def one(query) do
-    case inspect(query) =~ "where: u0.email == ^\"taken@example.com\"" do
-      true  -> user()
-      false -> false
-    end
-  end
-
   def get_by(User, [email: "test@example.com"], _opts), do: user()
   def get_by(User, [email: "with-unconfirmed-changed-email@example.com"], _opts) do
     %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
