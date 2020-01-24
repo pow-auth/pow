@@ -1,6 +1,6 @@
 defmodule PowInvitation.Phoenix.Messages do
   @moduledoc """
-  Module that handles messages for PowEmailConfirmation.
+  Module that handles messages for PowInvitation.
 
   See `Pow.Extension.Phoenix.Messages` for more.
   """

@@ -1,6 +1,6 @@
 defmodule PowResetPassword.Phoenix.Messages do
   @moduledoc """
-  Module that handles messages for PowEmailConfirmation.
+  Module that handles messages for PowResetPassword.
 
   See `Pow.Extension.Phoenix.Messages` for more.
   """
