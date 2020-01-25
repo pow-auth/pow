@@ -195,12 +195,17 @@ defmodule Pow.Plug.Session do
   @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
-    key                   = client_store_fetch(conn, config)
-    {store, store_config} = store(config)
+    case client_store_fetch(conn, config) do
+      nil ->
+        conn
 
-    store.delete(store_config, key)
+      key ->
+        {store, store_config} = store(config)
 
-    client_store_delete(conn, config)
+        store.delete(store_config, key)
+
+        client_store_delete(conn, config)
+    end
   end
 
   # TODO: Remove by 1.1.0
