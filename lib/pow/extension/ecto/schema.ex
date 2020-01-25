@@ -99,11 +99,11 @@ defmodule Pow.Extension.Ecto.Schema do
   @doc false
   defmacro __register_after_compile_validation__ do
     quote do
-      def validate_after_compilation!(env, _bytecode) do
+      def pow_extension_validate_after_compilation!(env, _bytecode) do
         unquote(__MODULE__).validate!(@pow_extension_config, __MODULE__)
       end
 
-      @after_compile {__MODULE__, :validate_after_compilation!}
+      @after_compile {__MODULE__, :pow_extension_validate_after_compilation!}
     end
   end
 

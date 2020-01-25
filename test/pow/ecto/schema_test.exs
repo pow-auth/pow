@@ -68,4 +68,57 @@ defmodule Pow.Ecto.SchemaTest do
     assert %{on_replace: :mark_as_invalid} = OverrideAssocUser.__schema__(:association, :parent)
     assert %{on_delete: :delete_all} = OverrideAssocUser.__schema__(:association, :children)
   end
+
+  module_raised_with =
+    try do
+      defmodule MissingAssocsUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        @pow_assocs {:belongs_to, :invited_by, __MODULE__, foreign_key: :user_id}
+        @pow_assocs {:has_many, :invited, __MODULE__}
+
+        schema "users" do
+          timestamps()
+        end
+      end
+    rescue
+      e in Pow.Ecto.Schema.SchemaError -> e.message
+    end
+
+  test "requires assocs defined" do
+    assert unquote(module_raised_with) ==
+      """
+      Please define the following association(s) in the schema for Pow.Ecto.SchemaTest.MissingAssocsUser:
+
+      belongs_to :invited_by, Pow.Ecto.SchemaTest.MissingAssocsUser, [foreign_key: :user_id]
+      has_many :invited, Pow.Ecto.SchemaTest.MissingAssocsUser
+      """
+  end
+
+  module_raised_with =
+    try do
+      defmodule MissingFieldsUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        schema "users" do
+          timestamps()
+        end
+      end
+    rescue
+      e in Pow.Ecto.Schema.SchemaError -> e.message
+    end
+
+  test "requires fields defined" do
+    assert unquote(module_raised_with) ==
+      """
+      Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
+
+      field :email, :string, [null: false]
+      field :password_hash, :string
+      field :current_password, :string, [virtual: true]
+      field :password, :string, [virtual: true]
+      """
+  end
 end

@@ -94,6 +94,25 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
+  An `@after_compile` callback will raise an error if there are missing fields
+  or associations, so you can forego the `pow_user_fields/0` call, and write
+  out the whole schema instead:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema, user_id_field: :email
+
+        schema "users" do
+          field :email,            :string, null: false
+          field :password_hash,    :string
+          field :current_password, :string, virtual: true
+          field :password,         :string, virtual: true
+          field :confirm_password, :string, virtual: true
+
+          timestamps()
+        end
+      end
+
   ## Customize Pow changeset
 
   You can extract individual changeset methods to modify the changeset flow
@@ -124,6 +143,11 @@ defmodule Pow.Ecto.Schema do
   alias Ecto.Changeset
   alias Pow.Config
 
+  defmodule SchemaError do
+    @moduledoc false
+    defexception [:message]
+  end
+
   @callback changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
   @callback verify_password(Ecto.Schema.t(), binary()) :: boolean()
 
@@ -145,6 +169,7 @@ defmodule Pow.Ecto.Schema do
       unquote(__MODULE__).__register_fields__()
       unquote(__MODULE__).__register_assocs__()
       unquote(__MODULE__).__register_user_id_field__()
+      unquote(__MODULE__).__register_after_compile_validation__()
     end
   end
 
@@ -293,6 +318,87 @@ defmodule Pow.Ecto.Schema do
   def user_id_field(%Changeset{data: %user_mod{}}), do: user_mod.pow_user_id_field()
   def user_id_field(config) when is_list(config), do: Config.get(config, :user_id_field, @default_user_id_field)
   def user_id_field(_any), do: @default_user_id_field
+
+  @doc false
+  defmacro __register_after_compile_validation__ do
+    quote do
+      def pow_validate_after_compilation!(env, _bytecode) do
+        unquote(__MODULE__).__require_assocs__(__MODULE__)
+        unquote(__MODULE__).__require_fields__(__MODULE__)
+      end
+
+      @after_compile {__MODULE__, :pow_validate_after_compilation!}
+    end
+  end
+
+  @doc false
+  def __require_assocs__(module) do
+    ecto_assocs = Module.get_attribute(module, :ecto_assocs)
+
+    module
+    |> Module.get_attribute(:pow_assocs)
+    |> Enum.reverse()
+    |> Enum.filter(fn assoc ->
+      not Enum.any?(ecto_assocs, &assocs_match?(elem(assoc, 0), elem(assoc, 1), &1))
+    end)
+    |> Enum.map(fn
+      {type, name, queryable}           -> "#{type} #{inspect name}, #{inspect queryable}"
+      {type, name, queryable, defaults} -> "#{type} #{inspect name}, #{inspect queryable}, #{inspect defaults}"
+    end)
+    |> case do
+      []         -> :ok
+      assoc_defs -> raise_missing_assocs_error(module, assoc_defs)
+    end
+  end
+
+  defp raise_missing_assocs_error(module, assoc_defs) do
+    raise SchemaError, message:
+      """
+      Please define the following association(s) in the schema for #{inspect module}:
+
+      #{Enum.join(assoc_defs, "\n")}
+      """
+  end
+
+  @doc false
+  def __require_fields__(module) do
+    ecto_fields      = Module.get_attribute(module, :ecto_fields)
+    changeset_fields = Module.get_attribute(module, :changeset_fields)
+
+    module
+    |> Module.get_attribute(:pow_fields)
+    |> Enum.reverse()
+    |> Enum.filter(&missing_field?(&1, ecto_fields, changeset_fields))
+    |> Enum.map(fn
+      {name, type}           -> "field #{inspect name}, #{inspect type}"
+      {name, type, defaults} -> "field #{inspect name}, #{inspect type}, #{inspect defaults}"
+    end)
+    |> case do
+      []         -> :ok
+      field_defs -> raise_missing_fields_error(module, field_defs)
+    end
+  end
+
+  defp missing_field?({name, type, defaults}, ecto_fields, changeset_fields) do
+    case defaults[:virtual] do
+      true -> missing_field?(name, type, changeset_fields)
+      _any -> missing_field?(name, type, ecto_fields)
+    end
+  end
+  defp missing_field?({name, type}, ecto_fields, _changeset_fields),
+    do: missing_field?(name, type, ecto_fields)
+  defp missing_field?(name, type, existing_fields) do
+    not Enum.member?(existing_fields, {name, type})
+  end
+
+  defp raise_missing_fields_error(module, field_defs) do
+    raise SchemaError, message:
+      """
+      Please define the following field(s) in the schema for #{inspect module}:
+
+      #{Enum.join(field_defs, "\n")}
+      """
+  end
 
   @doc """
   Normalizes the user id field.
