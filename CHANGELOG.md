@@ -23,9 +23,9 @@
 * [`PowPersistentSession.Plug.Cookie`] No longer expires invalid cookies
 * [`Pow.Operations`] Added `Pow.Operations.fetch_primary_key_values/2`
 
-## Removed
+### Removed
 
-* [`PowResetPassword.Phoenix.ResetPasswordController`] Will now by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`
+* [`PowResetPassword.Phoenix.ResetPasswordController`] Will no longer prevent information leak by checking if `PowEmailConfirmation` or registration routes are enabled; instead it'll by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`
 
 ### Deprecations
 
