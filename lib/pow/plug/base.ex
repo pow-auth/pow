@@ -4,6 +4,11 @@ defmodule Pow.Plug.Base do
   assign a user in the connection if it has not already been assigned. The user
   will be assigned automatically in any of the operations.
 
+  Any writes to backend store or client should occur in `:before_send` callback
+  as defined in `Plug.Conn`. To ensure that the callbacks are called in the
+  order they were set, a `register_before_send/2` method is used to set
+  callbacks instead of `Plug.Conn.register_before_send/2`.
+
   ## Example
 
       defmodule MyAppWeb.Pow.CustomPlug do
@@ -43,7 +48,10 @@ defmodule Pow.Plug.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
+      @before_send_private_key String.to_atom(Macro.underscore(__MODULE__) <> "/before_send")
+
       @doc false
+      @impl true
       def init(config), do: config
 
       @doc """
@@ -57,6 +65,7 @@ defmodule Pow.Plug.Base do
       If a user can't be fetched with `Pow.Plug.current_user/2`, `do_fetch/2`
       will be called.
       """
+      @impl true
       def call(conn, config) do
         config = put_plug(config)
         conn   = Plug.put_config(conn, config)
@@ -64,6 +73,17 @@ defmodule Pow.Plug.Base do
         conn
         |> Plug.current_user(config)
         |> maybe_fetch_user(conn, config)
+        |> Conn.register_before_send(fn conn ->
+          conn.private
+          |> Map.get(@before_send_private_key, [])
+          |> Enum.reduce(conn, & &1.(&2))
+        end)
+      end
+
+      defp register_before_send(conn, callback) do
+        callbacks = Map.get(conn.private, @before_send_private_key, []) ++ [callback]
+
+        Conn.put_private(conn, @before_send_private_key, callbacks)
       end
 
       defp put_plug(config) do

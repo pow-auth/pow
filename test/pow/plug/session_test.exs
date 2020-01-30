@@ -17,17 +17,13 @@ defmodule Pow.Plug.SessionTest do
   setup do
     EtsCacheMock.init()
 
-    conn =
-      :get
-      |> ConnHelpers.conn("/")
-      |> ConnHelpers.init_session()
+    conn = init_session_conn()
 
-    {:ok, %{conn: conn}}
+    {:ok, conn: conn}
   end
 
   test "call/2 sets plug in :pow_config", %{conn: conn} do
-    opts = Session.init(@default_opts)
-    conn = Session.call(conn, opts)
+    conn = run_plug(conn)
     expected_config = [mod: Session, plug: Session] ++ @default_opts
 
     assert is_nil(conn.assigns[:current_user])
@@ -35,11 +31,10 @@ defmodule Pow.Plug.SessionTest do
   end
 
   test "call/2 with assigned current_user", %{conn: conn} do
-    opts = Session.init(@default_opts)
     conn =
       conn
       |> Plug.assign_current_user("assigned", @default_opts)
-      |> Session.call(opts)
+      |> run_plug()
 
     assert conn.assigns[:current_user] == "assigned"
   end
@@ -47,12 +42,11 @@ defmodule Pow.Plug.SessionTest do
   test "call/2 with stored current_user", %{conn: conn} do
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond), fingerprint: "fingerprint"})
 
-    opts = Session.init(@default_opts)
     conn =
       conn
       |> Conn.fetch_session()
       |> Conn.put_session(@default_opts[:session_key], "token")
-      |> Session.call(opts)
+      |> run_plug()
 
     assert conn.assigns[:current_user] == @user
     assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
@@ -62,13 +56,12 @@ defmodule Pow.Plug.SessionTest do
     inserted_at = :os.system_time(:millisecond)
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: inserted_at, a: 1})
 
-    opts = Session.init(@default_opts)
     conn =
       conn
       |> Conn.put_private(:pow_session_metadata, b: 2)
       |> Conn.fetch_session()
       |> Conn.put_session(@default_opts[:session_key], "token")
-      |> Session.call(opts)
+      |> run_plug()
 
     assert conn.assigns[:current_user] == @user
     assert conn.private[:pow_session_metadata][:inserted_at] == inserted_at
@@ -78,12 +71,11 @@ defmodule Pow.Plug.SessionTest do
   test "call/2 with non existing cached key", %{conn: conn} do
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
-    opts = Session.init(@default_opts)
     conn =
       conn
       |> Conn.fetch_session()
       |> Conn.put_session(@default_opts[:session_key], "invalid")
-      |> Session.call(opts)
+      |> run_plug()
 
     assert is_nil(conn.assigns[:current_user])
   end
@@ -100,16 +92,15 @@ defmodule Pow.Plug.SessionTest do
 
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: timestamp, fingerprint: "fingerprint"})
 
-    opts = Session.init(config)
-    conn = Session.call(init_conn, opts)
-    session_id = get_session_id(conn)
+    conn = run_plug(init_conn, config)
 
+    assert session_id = get_session_id(conn)
     assert conn.assigns[:current_user] == @user
 
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: stale_timestamp, fingerprint: "fingerprint"})
     CredentialsCache.put(@store_config, "newer_token", {@user, inserted_at: timestamp, fingerprint: "new_fingerprint"})
 
-    conn = Session.call(init_conn, opts)
+    conn = run_plug(init_conn, config)
 
     assert conn.assigns[:current_user] == @user
     assert new_session_id = get_session_id(conn)
@@ -120,56 +111,48 @@ defmodule Pow.Plug.SessionTest do
     assert conn.private[:pow_session_metadata][:fingerprint] == "fingerprint"
   end
 
-  test "call/2 creates new session when :session_renewal_ttl reached and doesn't delete with simultanous request", %{conn: new_conn} do
+  test "call/2 creates new session when :session_renewal_ttl reached and doesn't delete with simultanous request", %{conn: conn} do
     ttl             = 100
     id              = "token"
     config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
     stale_timestamp = :os.system_time(:millisecond) - ttl - 1
-    opts            = Session.init(config)
 
     CredentialsCache.put(@store_config, id, {@user, inserted_at: stale_timestamp})
 
     conn =
-      new_conn
+      conn
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], id)
       |> Conn.send_resp(200, "")
 
-    conn = Test.recycle_cookies(new_conn, conn)
+    conn = recycle_session_conn(conn)
 
-    first_conn =
-      conn
-      |> Session.call(opts)
-      |> Conn.send_resp(200, "")
+    first_conn = run_plug(conn, config)
 
     assert Plug.current_user(first_conn) == @user
-    assert %{value: _id} = first_conn.resp_cookies["foobar"]
+    assert first_conn.resp_cookies["foobar"]
     assert new_id = first_conn.private[:plug_session][config[:session_key]]
     refute new_id == id
     assert {@user, _metadata} = CredentialsCache.get(@store_config, new_id)
 
-    second_conn =
-      conn
-      |> Session.call(opts)
-      |> Conn.send_resp(200, "")
+    second_conn = run_plug(conn, config)
 
     refute second_conn.resp_cookies["foobar"]
-    refute second_conn.private[:plug_session]
+    assert second_conn.private[:plug_session] == %{}
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
     CredentialsCache.put(@store_config, "token", {@user, inserted_at: :os.system_time(:millisecond)})
 
-    opts =
+    config =
       @default_opts
       |> Keyword.delete(:session_key)
       |> Keyword.put(:otp_app, :test_app)
-      |> Session.init()
     conn =
       conn
       |> Conn.fetch_session()
       |> Conn.put_session("test_app_auth", "token")
-      |> Session.call(opts)
+      |> run_plug(config)
 
     assert conn.assigns[:current_user] == @user
   end
@@ -184,12 +167,11 @@ defmodule Pow.Plug.SessionTest do
     |> Keyword.put(:namespace, "credentials")
     |> EtsCacheMock.put({"token", {@user, stale_timestamp}})
 
-    opts = Session.init(config)
     conn =
       conn
       |> Conn.fetch_session()
       |> Conn.put_session(config[:session_key], "token")
-      |> Session.call(opts)
+      |> run_plug(config)
 
     assert new_session_id = get_session_id(conn)
     assert new_session_id != "token"
@@ -198,24 +180,26 @@ defmodule Pow.Plug.SessionTest do
   end
 
   describe "create/2" do
-    test "creates new session id", %{conn: conn} do
-      opts = Session.init(@default_opts)
+    test "deletes existing and creates new session id", %{conn: new_conn} do
       conn =
-        conn
-        |> Session.call(opts)
-        |> Session.do_create(@user, opts)
+        new_conn
+        |> init_plug()
+        |> run_do_create(@user)
 
-      session_id = get_session_id(conn)
-
+      assert session_id = get_session_id(conn)
       assert {@user, metadata} = CredentialsCache.get(@store_config, session_id)
       assert is_binary(session_id)
       assert Plug.current_user(conn) == @user
       assert metadata[:inserted_at]
       assert metadata[:fingerprint]
 
-      conn = Session.do_create(conn, @user, opts)
-      new_session_id = get_session_id(conn)
+      conn =
+        conn
+        |> recycle_session_conn()
+        |> init_plug()
+        |> run_do_create(@user)
 
+      assert new_session_id = get_session_id(conn)
       assert {@user, new_metadata} = CredentialsCache.get(@store_config, new_session_id)
       assert is_binary(session_id)
       assert new_session_id != session_id
@@ -225,21 +209,18 @@ defmodule Pow.Plug.SessionTest do
     end
 
     test "renews plug session", %{conn: new_conn} do
-      opts = Session.init(@default_opts)
       conn =
         new_conn
-        |> Session.call(opts)
-        |> Session.do_create(@user, opts)
-        |> Conn.send_resp(200, "")
+        |> init_plug()
+        |> run_do_create(@user)
 
       assert %{"foobar" => %{value: plug_session_id}} = conn.resp_cookies
 
       conn =
-        new_conn
-        |> Test.recycle_cookies(conn)
-        |> Session.call(opts)
-        |> Session.do_create(@user, opts)
-        |> Conn.send_resp(200, "")
+        conn
+        |> recycle_session_conn()
+        |> init_plug()
+        |> run_do_create(@user)
 
       assert %{"foobar" => %{value: new_plug_session_id}} = conn.resp_cookies
 
@@ -248,12 +229,11 @@ defmodule Pow.Plug.SessionTest do
 
     test "creates with custom metadata", %{conn: conn} do
       inserted_at = :os.system_time(:millisecond) - 10
-      opts = Session.init(@default_opts)
       conn =
         conn
         |> Conn.put_private(:pow_session_metadata, inserted_at: inserted_at, a: 1)
-        |> Session.call(opts)
-        |> Session.do_create(@user, opts)
+        |> init_plug()
+        |> run_do_create(@user)
 
       assert conn.assigns[:current_user] == @user
       assert conn.private[:pow_session_metadata][:inserted_at] != inserted_at
@@ -262,15 +242,14 @@ defmodule Pow.Plug.SessionTest do
     end
 
     test "creates new session id with `:otp_app` prepended", %{conn: conn} do
-      opts =
+      config =
         @default_opts
         |> Keyword.delete(:session_key)
         |> Keyword.put(:otp_app, :test_app)
-        |> Session.init()
       conn =
         conn
-        |> Session.call(opts)
-        |> Session.do_create(@user, opts)
+        |> init_plug(config)
+        |> run_do_create(@user)
 
       refute get_session_id(conn)
 
@@ -279,20 +258,22 @@ defmodule Pow.Plug.SessionTest do
     end
   end
 
-  test "delete/1 removes session id", %{conn: conn} do
-    opts = Session.init(@default_opts)
+  test "delete/1 removes session id", %{conn: new_conn} do
     conn =
-      conn
-      |> Session.call(opts)
-      |> Session.do_create(@user, opts)
+      new_conn
+      |> init_plug()
+      |> run_do_create(@user)
 
-    session_id = get_session_id(conn)
-
+    assert session_id = get_session_id(conn)
     assert {@user, _metadata} = CredentialsCache.get(@store_config, session_id)
     assert is_binary(session_id)
     assert Plug.current_user(conn) == @user
 
-    conn = Session.do_delete(conn, opts)
+    conn =
+      conn
+      |> recycle_session_conn()
+      |> init_plug()
+      |> run_do_delete()
 
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
@@ -316,18 +297,59 @@ defmodule Pow.Plug.SessionTest do
 
       :timer.sleep(100)
 
-      opts = Session.init(session_key: "auth")
+      config = [session_key: "auth"]
       conn =
         conn
         |> Conn.fetch_session()
         |> Conn.put_session("auth", token)
-        |> Session.call(opts)
+        |> run_plug(config)
 
       assert conn.assigns[:current_user] == @user
     end
   end
 
+  defp init_session_conn() do
+    :get
+    |> ConnHelpers.conn("/")
+    |> ConnHelpers.init_session()
+  end
+
+  defp recycle_session_conn(old_conn) do
+    :get
+    |> ConnHelpers.conn("/")
+    |> Test.recycle_cookies(old_conn)
+    |> ConnHelpers.init_session()
+  end
+
+  defp init_plug(conn, config \\ @default_opts) do
+    opts = Session.init(config)
+
+    Session.call(conn, opts)
+  end
+
+  defp run_plug(conn, config \\ @default_opts) do
+    conn
+    |> init_plug(config)
+    |> Conn.send_resp(200, "")
+  end
+
   def get_session_id(conn) do
     conn.private[:plug_session][@default_opts[:session_key]]
+  end
+
+  defp run_do_create(conn, user) do
+    config = Plug.fetch_config(conn)
+
+    conn
+    |> Session.do_create(user, config)
+    |> Conn.send_resp(200, "")
+  end
+
+  defp run_do_delete(conn) do
+    config = Plug.fetch_config(conn)
+
+    conn
+    |> Session.do_delete(config)
+    |> Conn.send_resp(200, "")
   end
 end

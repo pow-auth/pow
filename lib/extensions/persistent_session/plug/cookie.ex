@@ -89,17 +89,23 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, user, config) do
+    conn
+    |> delete(config)
+    |> before_send_create(user, config)
+  end
+
+  defp before_send_create(conn, user, config) do
     {store, store_config} = store(config)
     cookie_key            = cookie_key(config)
     key                   = cookie_id(config)
     value                 = persistent_session_value(conn, user, config)
     opts                  = cookie_opts(config)
 
-    store.put(store_config, key, value)
+    register_before_send(conn, fn conn ->
+      store.put(store_config, key, value)
 
-    conn
-    |> delete(config)
-    |> Conn.put_resp_cookie(cookie_key, key, opts)
+      Conn.put_resp_cookie(conn, cookie_key, key, opts)
+    end)
   end
 
   defp persistent_session_value(conn, user, config) do
@@ -150,13 +156,19 @@ defmodule PowPersistentSession.Plug.Cookie do
     cookie_key = cookie_key(config)
 
     case conn.req_cookies[cookie_key] do
-      nil ->
-        conn
-
-      key_id ->
-        expire_token_in_store(key_id, config)
-        delete_cookie(conn, cookie_key, config)
+      nil -> conn
+      key -> before_send_delete(conn, key, config)
     end
+  end
+
+  defp before_send_delete(conn, key, config) do
+    cookie_key = cookie_key(config)
+
+    register_before_send(conn, fn conn ->
+      expire_token_in_store(key, config)
+
+      delete_cookie(conn, cookie_key, config)
+    end)
   end
 
   defp expire_token_in_store(key_id, config) do

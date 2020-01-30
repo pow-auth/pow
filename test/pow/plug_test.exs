@@ -2,7 +2,7 @@ defmodule Pow.PlugTest do
   use ExUnit.Case
   doctest Pow.Plug
 
-  alias Plug.Conn
+  alias Plug.{Conn, Test}
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
   alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User, EtsCacheMock}
 
@@ -48,19 +48,15 @@ defmodule Pow.PlugTest do
   test "authenticate_user/2" do
     EtsCacheMock.init()
 
-    opts = Session.init(@default_config)
-    conn =
-      conn()
-      |> ConnHelpers.init_session()
-      |> Session.call(opts)
+    conn = init_session_conn()
 
-    refute conn.private[:plug_session]["auth"]
+    refute fetch_session_id(conn)
     refute Plug.current_user(conn)
 
     assert {:ok, loaded_conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert user = Plug.current_user(loaded_conn)
     assert user.id == 1
-    assert loaded_conn.private[:plug_session]["auth"]
+    assert fetch_session_id(loaded_conn)
 
     assert {:error, conn} = Plug.authenticate_user(conn, %{})
     refute Plug.current_user(conn)
@@ -90,21 +86,15 @@ defmodule Pow.PlugTest do
   test "clear_authenticated_user/1" do
     EtsCacheMock.init()
 
-    opts = Session.init(@default_config)
-    conn =
-      conn()
-      |> ConnHelpers.init_session()
-      |> Session.call(opts)
-
-    assert {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    conn = auth_user_conn()
     assert user = Plug.current_user(conn)
-    assert session_id = conn.private[:plug_session]["auth"]
+    assert session_id = fetch_session_id(conn)
     assert {key, _metadata} = EtsCacheMock.get([namespace: "credentials"], session_id)
     assert EtsCacheMock.get([namespace: "credentials"], key) == user
 
     {:ok, conn} = Plug.clear_authenticated_user(conn)
     refute Plug.current_user(conn)
-    refute conn.private[:plug_session]["auth"]
+    refute fetch_session_id(conn)
     assert EtsCacheMock.get([namespace: "credentials"], session_id) == :not_found
   end
 
@@ -120,63 +110,71 @@ defmodule Pow.PlugTest do
   test "create_user/2" do
     EtsCacheMock.init()
 
-    opts = Session.init(@default_config)
-    conn =
-      conn()
-      |> ConnHelpers.init_session()
-      |> Session.call(opts)
+    conn = init_session_conn()
 
     assert {:error, _changeset, conn} = Plug.create_user(conn, %{})
     refute Plug.current_user(conn)
-    refute conn.private[:plug_session]["auth"]
+    refute fetch_session_id(conn)
 
     assert {:ok, user, conn} = Plug.create_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert Plug.current_user(conn) == user
-    assert conn.private[:plug_session]["auth"]
+    assert fetch_session_id(conn)
   end
 
   test "update_user/2" do
     EtsCacheMock.init()
 
-    opts = Session.init(@default_config)
-    conn =
-      conn()
-      |> ConnHelpers.init_session()
-      |> Session.call(opts)
-
-    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
-    user        = Plug.current_user(conn)
-    session_id  = conn.private[:plug_session]["auth"]
+    conn = auth_user_conn()
+    assert user = Plug.current_user(conn)
+    assert session_id = fetch_session_id(conn)
 
     assert {:error, _changeset, conn} = Plug.update_user(conn, %{})
     assert Plug.current_user(conn) == user
-    assert conn.private[:plug_session]["auth"] == session_id
+    assert fetch_session_id(conn) == session_id
 
     assert {:ok, updated_user, conn} = Plug.update_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     assert updated_user.id == :updated
     assert Plug.current_user(conn) == updated_user
     refute updated_user == user
-    refute conn.private[:plug_session]["auth"] == session_id
+    refute fetch_session_id(conn) == session_id
   end
 
   test "delete_user/2" do
     EtsCacheMock.init()
 
-    opts = Session.init(@default_config)
-    conn =
-      conn()
-      |> ConnHelpers.init_session()
-      |> Session.call(opts)
-
-    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    conn = auth_user_conn()
 
     assert {:ok, user, conn} = Plug.delete_user(conn)
     assert user.id == :deleted
     refute Plug.current_user(conn)
-    refute conn.private[:plug_session]["auth"]
+    refute fetch_session_id(conn)
+  end
+
+  defp auth_user_conn() do
+    conn        = init_session_conn()
+    {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
+    conn        = Conn.send_resp(conn, 200, "")
+
+    conn()
+    |> Test.recycle_cookies(conn)
+    |> init_session_conn()
+  end
+
+  defp init_session_conn(conn \\ nil) do
+    (conn || conn(@default_config))
+    |> ConnHelpers.init_session()
+    |> Session.call(Session.init(@default_config))
+  end
+
+  defp fetch_session_id(conn) do
+    conn = Conn.send_resp(conn, 200, "")
+
+    Map.get(conn.private[:plug_session], "auth")
   end
 
   defp conn(config \\ @default_config) do
-    %Conn{private: %{pow_config: config}}
+    :get
+    |> ConnHelpers.conn("/")
+    |> Conn.put_private(:pow_config, config)
   end
 end
