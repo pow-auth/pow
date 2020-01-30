@@ -23,6 +23,10 @@
 * [`PowPersistentSession.Plug.Cookie`] Removed renewal of cookie as the token will always expire
 * [`PowPersistentSession.Plug.Cookie`] No longer expires invalid cookies
 * [`Pow.Operations`] Added `Pow.Operations.fetch_primary_key_values/2`
+* [`PowPersistentSession.Plug.Base`] Now registers `:before_send` callbacks
+* [`PowPersistentSession.Plug.Cookie`] Now updates cookie and backend store in `:before_send` callback
+* [`Pow.Plug.Base`] Now registers `:before_send` callbacks
+* [`Pow.Plug.Session`] Now updates plug session and backend store in  `:before_send` callback
 
 ### Removed
 

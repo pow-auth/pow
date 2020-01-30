@@ -130,7 +130,7 @@ defmodule Pow.Plug.Session do
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     {store, store_config} = store(config)
-    key                   = client_store_fetch(conn, config)
+    {key, conn}           = client_store_fetch(conn, config)
 
     {key, store.get(store_config, key)}
     |> convert_old_session_value()
@@ -158,18 +158,14 @@ defmodule Pow.Plug.Session do
   @impl true
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
-    {store, store_config} = store(config)
-    metadata              = Map.get(conn.private, :pow_session_metadata, [])
-    {user, metadata}      = session_value(user, metadata)
-    key                   = session_id(config)
-
-    store.put(store_config, key, {user, metadata})
+    metadata         = Map.get(conn.private, :pow_session_metadata, [])
+    {user, metadata} = session_value(user, metadata)
 
     conn =
       conn
       |> delete(config)
+      |> before_send_create({user, metadata}, config)
       |> Conn.put_private(:pow_session_metadata, metadata)
-      |> client_store_put(key, config)
 
     {conn, user}
   end
@@ -181,6 +177,17 @@ defmodule Pow.Plug.Session do
       |> Keyword.put(:inserted_at, timestamp())
 
     {user, metadata}
+  end
+
+  defp before_send_create(conn, value, config) do
+    {store, store_config} = store(config)
+    key                   = session_id(config)
+
+    register_before_send(conn, fn conn ->
+      store.put(store_config, key, value)
+
+      client_store_put(conn, key, config)
+    end)
   end
 
   @doc """
@@ -196,16 +203,19 @@ defmodule Pow.Plug.Session do
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     case client_store_fetch(conn, config) do
-      nil ->
-        conn
-
-      key ->
-        {store, store_config} = store(config)
-
-        store.delete(store_config, key)
-
-        client_store_delete(conn, config)
+      {nil, conn} -> conn
+      {key, conn} -> before_send_delete(conn, key, config)
     end
+  end
+
+  defp before_send_delete(conn, key, config) do
+    {store, store_config} = store(config)
+
+    register_before_send(conn, fn conn ->
+      store.delete(store_config, key)
+
+      client_store_delete(conn, config)
+    end)
   end
 
   # TODO: Remove by 1.1.0
@@ -268,9 +278,10 @@ defmodule Pow.Plug.Session do
   defp timestamp, do: :os.system_time(:millisecond)
 
   defp client_store_fetch(conn, config) do
-    conn
-    |> Conn.fetch_session()
-    |> Conn.get_session(session_key(config))
+    conn = Conn.fetch_session(conn)
+    key  = Conn.get_session(conn, session_key(config))
+
+    {key, conn}
   end
 
   defp client_store_put(conn, value, config) do

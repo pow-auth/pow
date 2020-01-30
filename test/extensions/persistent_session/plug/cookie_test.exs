@@ -27,18 +27,8 @@ defmodule PowPersistentSession.Plug.CookieTest do
     {:ok, %{conn: conn, config: config, ets: ets}}
   end
 
-  defp store_persistent(conn, ets, id, value, cookie_key \\ @cookie_key) do
-    PersistentSessionCache.put([backend: ets], id, value)
-    persistent_cookie(conn, cookie_key, id)
-  end
-
-  defp persistent_cookie(conn, cookie_key, id) do
-    cookies = Map.new([{cookie_key, id}])
-    %{conn | req_cookies: cookies, cookies: cookies}
-  end
-
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
-    conn            = Cookie.call(conn, Cookie.init([]))
+    conn            = run_plug(conn)
     expected_config = [mod: Session, plug: Session] ++ config
 
     assert {Cookie, ^expected_config} = conn.private[:pow_persistent_session]
@@ -51,7 +41,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: user.id], []})
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
@@ -63,21 +53,14 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "call/2 assigns user from cookie and doesn't expire with simultanous request", %{conn: conn, ets: ets} do
     user = %User{id: 1}
     id   = "test"
-    opts = Cookie.init([])
     conn = store_persistent(conn, ets, id, {[id: user.id], []})
 
-    first_conn =
-      conn
-      |> Cookie.call(opts)
-      |> Conn.resp(200, "")
+    first_conn = run_plug(conn)
 
     assert Plug.current_user(first_conn) == user
     assert %{value: _id, max_age: @max_age, path: "/"} = first_conn.resp_cookies[@cookie_key]
 
-    second_conn =
-      conn
-      |> Cookie.call(opts)
-      |> Conn.resp(200, "")
+    second_conn = run_plug(conn)
 
     refute Plug.current_user(second_conn) == user
     refute second_conn.resp_cookies[@cookie_key]
@@ -89,7 +72,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: user.id], session_metadata: [fingerprint: "fingerprint"]})
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
@@ -106,7 +89,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> store_persistent(ets, "test", {[id: user.id], session_metadata: [a: 1, b: 2, fingerprint: "fingerprint"]})
       |> Conn.put_private(:pow_persistent_session_metadata, session_metadata: [a: 2])
       |> Conn.put_private(:pow_session_metadata, [a: 3, fingerprint: "new_fingerprint"])
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     assert Plug.current_user(conn) == user
     assert %{value: id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
@@ -122,7 +105,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> ConnHelpers.init_session()
       |> Session.call(config ++ [otp_app: :test_app])
       |> store_persistent(ets, "test_app_test", {[id: user.id], []}, "test_app_" <> @cookie_key)
-      |> Cookie.call(Cookie.init(config))
+      |> run_plug(config)
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies["test_app_" <> @cookie_key]
@@ -137,7 +120,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       conn
       |> store_persistent(ets, id, {[id: user.id], []})
       |> Plug.assign_current_user(:user, [])
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     refute conn.resp_cookies[@cookie_key]
     assert PersistentSessionCache.get([backend: ets], id) == {[id: 1], []}
@@ -149,7 +132,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: user.id], []})
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     refute Plug.current_user(conn)
     refute conn.resp_cookies[@cookie_key]
@@ -160,7 +143,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> persistent_cookie(@cookie_key, "test")
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     refute Plug.current_user(conn)
     refute conn.resp_cookies[@cookie_key]
@@ -173,7 +156,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert_raise RuntimeError, "Invalid get_by clauses stored: [id: 1, uid: 2]", fn ->
       conn
       |> store_persistent(ets, id, {[id: user.id, uid: 2], []})
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
     end
   end
 
@@ -184,7 +167,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, id: user.id)
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
@@ -200,7 +183,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: user.id], session_fingerprint: "fingerprint"})
-      |> Cookie.call(Cookie.init([]))
+      |> run_plug()
 
     assert Plug.current_user(conn) == user
     assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
@@ -212,7 +195,10 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
   test "create/3 with custom TTL", %{conn: conn, config: config} do
     config = Keyword.put(config, :persistent_session_ttl, 1000)
-    conn   = Cookie.create(conn, %User{id: 1}, config)
+    conn   =
+      conn
+      |> init_plug(config)
+      |> run_create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, _value} | _rest], config}
     assert config[:ttl] == 1000
@@ -222,13 +208,18 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
   test "create/3 handles clause error", %{conn: conn, config: config} do
     assert_raise RuntimeError, "Primary key value for key `:id` in #{inspect User} can't be `nil`", fn ->
-      Cookie.create(conn, %User{id: nil}, config)
+      conn
+      |> init_plug(config)
+      |> run_create(%User{id: nil}, config)
     end
   end
 
   test "create/3 with custom cookie options", %{conn: conn, config: config} do
     config = Keyword.put(config, :persistent_session_cookie_opts, @custom_cookie_opts)
-    conn   = Cookie.create(conn, %User{id: 1}, config)
+    conn   =
+      conn
+      |> init_plug(config)
+      |> run_create(%User{id: 1}, config)
 
     assert %{
       domain: "domain.com",
@@ -245,7 +236,9 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
     assert PersistentSessionCache.get([backend: ets], "previous_persistent_session") == {[id: 1], []}
 
-    Cookie.create(conn, %User{id: 1}, config)
+    conn
+    |> init_plug(config)
+    |> run_create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, {[id: 1], []}}], _config}
     assert PersistentSessionCache.get([backend: ets], "previous_persistent_session") == :not_found
@@ -254,7 +247,8 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "create/3 with `[:pow_session_metadata][:fingerprint]` defined in conn.private", %{conn: conn, config: config} do
     conn
     |> Conn.put_private(:pow_session_metadata, fingerprint: "fingerprint")
-    |> Cookie.create(%User{id: 1}, config)
+    |> init_plug(config)
+    |> run_create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, {[id: 1], session_metadata: [fingerprint: "fingerprint"]}}], _config}
   end
@@ -262,7 +256,8 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "create/3 with custom metadata", %{conn: conn, config: config} do
     conn
     |> Conn.put_private(:pow_persistent_session_metadata, session_metadata: [a: 1])
-    |> Cookie.create(%User{id: 1}, config)
+    |> init_plug(config)
+    |> run_create(%User{id: 1}, config)
 
     assert_received {:ets, :put, [{_key, {[id: 1], session_metadata: [a: 1]}}], _config}
   end
@@ -272,9 +267,9 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: 1], []})
-      |> Cookie.delete(config)
+      |> init_plug(config)
+      |> run_delete(config)
 
-    refute Plug.current_user(conn)
     assert conn.resp_cookies[@cookie_key] == %{max_age: 0, path: "/", universal_time: {{1970, 1, 1}, {0, 0, 0}}}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
   end
@@ -285,10 +280,42 @@ defmodule PowPersistentSession.Plug.CookieTest do
     conn =
       conn
       |> store_persistent(ets, id, {[id: 1], []})
-      |> Cookie.delete(config)
+      |> init_plug(config)
+      |> run_delete(config)
 
-    refute Plug.current_user(conn)
     assert conn.resp_cookies[@cookie_key] == %{max_age: 0, universal_time: {{1970, 1, 1}, {0, 0, 0}}, path: "/path", domain: "domain.com", extra: "SameSite=Lax", http_only: false, secure: true}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
+  end
+
+  defp store_persistent(conn, ets, id, value, cookie_key \\ @cookie_key) do
+    PersistentSessionCache.put([backend: ets], id, value)
+    persistent_cookie(conn, cookie_key, id)
+  end
+
+  defp persistent_cookie(conn, cookie_key, id) do
+    cookies = Map.new([{cookie_key, id}])
+    %{conn | req_cookies: cookies, cookies: cookies}
+  end
+
+  defp run_plug(conn, config \\ []) do
+    conn
+    |> init_plug(config)
+    |> Conn.send_resp(200, "")
+  end
+
+  defp init_plug(conn, config) do
+    Cookie.call(conn, Cookie.init(config))
+  end
+
+  defp run_create(conn, user, config) do
+    conn
+    |> Cookie.create(user, config)
+    |> Conn.send_resp(200, "")
+  end
+
+  defp run_delete(conn, config) do
+    conn
+    |> Cookie.delete(config)
+    |> Conn.send_resp(200, "")
   end
 end

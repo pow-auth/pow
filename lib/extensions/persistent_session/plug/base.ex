@@ -2,6 +2,11 @@ defmodule PowPersistentSession.Plug.Base do
   @moduledoc """
   Base module for setting up persistent session plugs.
 
+  Any writes to backend store or client should occur in `:before_send` callback
+  as defined in `Plug.Conn`. To ensure that the callbacks are called in the
+  order they were set, a `register_before_send/2` method is used to set
+  callbacks instead of `Plug.Conn.register_before_send/2`.
+
   See `PowPersistentSession.Plug.Cookie` for an implementation example.
 
   ## Configuration options
@@ -24,6 +29,8 @@ defmodule PowPersistentSession.Plug.Base do
   alias Pow.{Config, Plug, Store.Backend.EtsCache}
   alias PowPersistentSession.Store.PersistentSessionCache
 
+  @callback init(Config.t()) :: Config.t()
+  @callback call(Conn.t(), Config.t()) :: Conn.t()
   @callback authenticate(Conn.t(), Config.t()) :: Conn.t()
   @callback create(Conn.t(), map(), Config.t()) :: Conn.t()
 
@@ -32,12 +39,14 @@ defmodule PowPersistentSession.Plug.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
+      @before_send_private_key String.to_atom(Macro.underscore(__MODULE__) <> "/before_send")
+
       import unquote(__MODULE__)
 
-      @spec init(Config.t()) :: Config.t()
+      @impl true
       def init(config), do: config
 
-      @spec call(Conn.t(), Config.t()) :: Conn.t()
+      @impl true
       def call(conn, config) do
         config =
           conn
@@ -47,6 +56,17 @@ defmodule PowPersistentSession.Plug.Base do
         conn
         |> Conn.put_private(:pow_persistent_session, {__MODULE__, config})
         |> authenticate(config)
+        |> Conn.register_before_send(fn conn ->
+          conn.private
+          |> Map.get(@before_send_private_key, [])
+          |> Enum.reduce(conn, & &1.(&2))
+        end)
+      end
+
+      defp register_before_send(conn, callback) do
+        callbacks = Map.get(conn.private, @before_send_private_key, []) ++ [callback]
+
+        Conn.put_private(conn, @before_send_private_key, callbacks)
       end
     end
   end
