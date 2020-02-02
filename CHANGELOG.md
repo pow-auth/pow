@@ -35,6 +35,7 @@
 ### Deprecations
 
 * [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has deprecated use of `:confirm_password` in params in favor of `:password_confirmation`
+* [`Pow.Plug.Session`] `:session_store` option has been renamed to `:credentials_cache_store`
 
 ## v1.0.16 (2020-01-07)
 
