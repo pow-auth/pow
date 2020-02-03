@@ -26,9 +26,9 @@ defmodule Pow.Plug.Session do
         user: MyApp.User,
         current_user_assigns_key: :current_user,
         session_key: "auth",
-        session_store: {Pow.Store.CredentialsCache,
-                        ttl: :timer.minutes(30),
-                        namespace: "credentials"},
+        credentials_cache_store: {Pow.Store.CredentialsCache,
+                                  ttl: :timer.minutes(30),
+                                  namespace: "credentials"},
         session_ttl_renewal: :timer.minutes(15),
         cache_store_backend: Pow.Store.Backend.EtsCache,
         users_context: Pow.Ecto.Users
@@ -38,7 +38,7 @@ defmodule Pow.Plug.Session do
     * `:session_key` - session key name, defaults to "auth". If `:otp_app` is
       used it'll automatically prepend the key with the `:otp_app` value.
 
-    * `:session_store` - the credentials cache store. This value defaults to
+    * `:credentials_cache_store` - the credentials cache store. This value defaults to
       `{Pow.Store.CredentialsCache, backend: Pow.Store.Backend.EtsCache}`. The
       `Pow.Store.Backend.EtsCache` backend store can be changed with the
       `:cache_store_backend` option.
@@ -96,7 +96,7 @@ defmodule Pow.Plug.Session do
 
       plug Pow.Plug.Session, otp_app: :my_app,
         session_ttl_renewal: :timer.minutes(1),
-        session_store: {Pow.Store.CredentialsCache, ttl: :timer.minutes(15)}
+        credentials_cache_store: {Pow.Store.CredentialsCache, ttl: :timer.minutes(15)}
 
   In the above, a new session token will be generated when a request occurs
   more than a minute after the current session token was generated. The
@@ -263,9 +263,21 @@ defmodule Pow.Plug.Session do
   end
 
   defp store(config) do
-    case Config.get(config, :session_store, default_store(config)) do
+    case Config.get(config, :credentials_cache_store, fallback_store(config)) do
       {store, store_config} -> {store, store_config}
       store                 -> {store, []}
+    end
+  end
+
+  # TODO: Remove by 1.1.0
+  defp fallback_store(config) do
+    case Config.get(config, :session_store) do
+      nil ->
+        default_store(config)
+
+      value ->
+        IO.warn("use of `:session_store` config value is deprecated, use `:credentials_cache_store` instead")
+        value
     end
   end
 
