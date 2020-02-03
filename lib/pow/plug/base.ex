@@ -154,9 +154,12 @@ defmodule Pow.Plug.Base do
 
   @spec store(Config.t()) :: {module(), Config.t()}
   def store(config) do
-    case Config.get(config, :credentials_cache_store, fallback_store(config)) do
-      {store, store_config} -> {store, store_config}
-      store                 -> {store, []}
+    config
+    |> Config.get(:credentials_cache_store)
+    |> Kernel.||(fallback_store(config))
+    |> case do
+      {store, store_config} -> {store, store_opts(config, store_config)}
+      nil                   -> {CredentialsCache, store_opts(config)}
     end
   end
 
@@ -164,7 +167,7 @@ defmodule Pow.Plug.Base do
   defp fallback_store(config) do
     case Config.get(config, :session_store) do
       nil ->
-        default_store(config)
+        nil
 
       value ->
         IO.warn("use of `:session_store` config value is deprecated, use `:credentials_cache_store` instead")
@@ -172,9 +175,7 @@ defmodule Pow.Plug.Base do
     end
   end
 
-  defp default_store(config) do
-    backend = Config.get(config, :cache_store_backend, EtsCache)
-
-    {CredentialsCache, [backend: backend]}
+  defp store_opts(config, store_config \\ []) do
+    Keyword.put_new(store_config, :backend, Config.get(config, :cache_store_backend, EtsCache))
   end
 end
