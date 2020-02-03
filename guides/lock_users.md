@@ -115,9 +115,8 @@ defmodule MyAppWeb.EnsureUserNotLockedPlug do
   defp locked?(_user), do: false
 
   defp maybe_halt(true, conn) do
-    {:ok, conn} = Plug.clear_authenticated_user(conn)
-
     conn
+    |> Plug.delete()
     |> Controller.put_flash(:error, "Sorry, your account is locked.")
     |> Controller.redirect(to: Routes.pow_session_path(conn, :new))
   end

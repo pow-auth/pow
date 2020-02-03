@@ -82,12 +82,12 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   end
 
   defp halt_and_send_confirmation_email(conn, return_path) do
-    user        = Plug.current_user(conn)
-    {:ok, conn} = Plug.clear_authenticated_user(conn)
+    send_confirmation_email(Plug.current_user(conn), conn)
 
-    send_confirmation_email(user, conn)
-
-    conn = redirect_with_email_confirmation_required(conn, return_path)
+    conn =
+      conn
+      |> Plug.delete()
+      |> redirect_with_email_confirmation_required(return_path)
 
     {:halt, conn}
   end

@@ -83,7 +83,7 @@ defmodule Pow.PlugTest do
     end
   end
 
-  test "clear_authenticated_user/1" do
+  test "delete/1" do
     EtsCacheMock.init()
 
     conn = auth_user_conn()
@@ -92,7 +92,7 @@ defmodule Pow.PlugTest do
     assert {key, _metadata} = EtsCacheMock.get([namespace: "credentials"], session_id)
     assert EtsCacheMock.get([namespace: "credentials"], key) == user
 
-    {:ok, conn} = Plug.clear_authenticated_user(conn)
+    conn = Plug.delete(conn)
     refute Plug.current_user(conn)
     refute fetch_session_id(conn)
     assert EtsCacheMock.get([namespace: "credentials"], session_id) == :not_found

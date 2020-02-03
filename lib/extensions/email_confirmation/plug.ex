@@ -58,7 +58,7 @@ defmodule PowEmailConfirmation.Plug do
 
   defp maybe_renew_conn(conn, user, config) do
     case equal_user?(user, Plug.current_user(conn, config), config) do
-      true  -> Plug.get_plug(config).do_create(conn, user, config)
+      true  -> Plug.create(conn, user, config)
       false -> conn
     end
   end

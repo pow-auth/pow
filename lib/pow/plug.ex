@@ -7,7 +7,6 @@ defmodule Pow.Plug do
 
   @private_config_key :pow_config
 
-
   @doc """
   Get the current user assigned to the conn.
 
@@ -96,19 +95,15 @@ defmodule Pow.Plug do
     |> Operations.authenticate(config)
     |> case do
       nil  -> {:error, conn}
-      user -> {:ok, get_plug(config).do_create(conn, user, config)}
+      user -> {:ok, create(conn, user, config)}
     end
   end
 
-  @doc """
-  Clears the user authentication from the session.
-  """
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `delete/1` instead"
   @spec clear_authenticated_user(Conn.t()) :: {:ok, Conn.t()}
-  def clear_authenticated_user(conn) do
-    config = fetch_config(conn)
-
-    {:ok, get_plug(config).do_delete(conn, config)}
-  end
+  def clear_authenticated_user(conn), do: {:ok, delete(conn)}
 
   @doc """
   Creates a changeset from the current authenticated user.
@@ -165,13 +160,13 @@ defmodule Pow.Plug do
     |> current_user(config)
     |> Operations.delete(config)
     |> case do
-      {:ok, user}         -> {:ok, user, get_plug(config).do_delete(conn, config)}
+      {:ok, user}         -> {:ok, user, delete(conn, config)}
       {:error, changeset} -> {:error, changeset, conn}
     end
   end
 
   defp maybe_create_auth({:ok, user}, conn, config) do
-    {:ok, user, get_plug(config).do_create(conn, user, config)}
+    {:ok, user, create(conn, user, config)}
   end
   defp maybe_create_auth({:error, changeset}, conn, _config) do
     {:error, changeset, conn}
@@ -187,6 +182,24 @@ defmodule Pow.Plug do
   def get_plug(config) do
     config[:plug] || no_plug_error()
   end
+
+  @doc """
+  Call `create/3` for the Pow plug set for the `conn`.
+  """
+  @spec create(Conn.t(), map()) :: Conn.t()
+  def create(conn, user), do: create(conn, user, fetch_config(conn))
+
+  @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
+  def create(conn, user, config), do: get_plug(config).do_create(conn, user, config)
+
+  @doc """
+  Call `delete/2` for the Pow plug set for the `conn`.
+  """
+  @spec delete(Conn.t()) :: Conn.t()
+  def delete(conn), do: delete(conn, fetch_config(conn))
+
+  @spec delete(Conn.t(), Config.t()) :: Conn.t()
+  def delete(conn, config), do: get_plug(config).do_delete(conn, config)
 
   @spec no_config_error :: no_return
   defp no_config_error do

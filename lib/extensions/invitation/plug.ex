@@ -54,7 +54,7 @@ defmodule PowInvitation.Plug do
     |> invited_user()
     |> InvitationContext.update(params, config)
     |> case do
-      {:ok, user}         -> {:ok, user, Plug.get_plug(config).do_create(conn, user, config)}
+      {:ok, user}         -> {:ok, user, Plug.create(conn, user, config)}
       {:error, changeset} -> {:error, changeset, conn}
     end
   end

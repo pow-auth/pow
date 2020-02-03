@@ -217,7 +217,6 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp do_authenticate(conn, key_id, config) do
     {store, store_config} = store(config)
     res                   = store.get(store_config, key_id)
-    plug                  = Plug.get_plug(config)
 
     case res do
       :not_found ->
@@ -226,11 +225,11 @@ defmodule PowPersistentSession.Plug.Cookie do
       res ->
         expire_token_in_store(key_id, config)
 
-        fetch_and_auth_user(conn, res, plug, config)
+        fetch_and_auth_user(conn, res, config)
     end
   end
 
-  defp fetch_and_auth_user(conn, {clauses, metadata}, plug, config) do
+  defp fetch_and_auth_user(conn, {clauses, metadata}, config) do
     clauses
     |> filter_invalid!()
     |> Operations.get_by(config)
@@ -243,12 +242,12 @@ defmodule PowPersistentSession.Plug.Cookie do
         |> update_persistent_session_metadata(metadata)
         |> update_session_metadata(metadata)
         |> create(user, config)
-        |> plug.do_create(user, config)
+        |> Plug.create(user, config)
     end
   end
   # TODO: Remove by 1.1.0
-  defp fetch_and_auth_user(conn, user_id, plug, config),
-    do: fetch_and_auth_user(conn, {user_id, []}, plug, config)
+  defp fetch_and_auth_user(conn, user_id, config),
+    do: fetch_and_auth_user(conn, {user_id, []}, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"

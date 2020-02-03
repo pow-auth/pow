@@ -142,9 +142,9 @@ defmodule MyAppWeb.SessionController do
   end
 
   def delete(conn, _params) do
-    {:ok, conn} = Pow.Plug.clear_authenticated_user(conn)
-
-    redirect(conn, to: Routes.page_path(conn, :index))
+    conn
+    |> Pow.Plug.delete()
+    |> redirect(to: Routes.page_path(conn, :index))
   end
 end
 ```
@@ -213,7 +213,7 @@ defmodule MyAppWeb.SessionController do
 
       false ->
         conn
-        |> Pow.Plug.clear_authenticated_user()
+        |> Pow.Plug.delete()
         |> put_flash(:info, "Your e-mail address has not been confirmed.")
         |> redirect(to: Routes.login_path(conn, :new))
     end

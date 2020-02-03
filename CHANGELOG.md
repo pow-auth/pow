@@ -27,6 +27,8 @@
 * [`PowPersistentSession.Plug.Cookie`] Now updates cookie and backend store in `:before_send` callback
 * [`Pow.Plug.Base`] Now registers `:before_send` callbacks
 * [`Pow.Plug.Session`] Now updates plug session and backend store in  `:before_send` callback
+* [`Pow.Plug`] Added `Pow.Plug.create/3`
+* [`Pow.Plug`] Added `Pow.Plug.delete/2`
 
 ### Removed
 
@@ -36,6 +38,7 @@
 
 * [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has deprecated use of `:confirm_password` in params in favor of `:password_confirmation`
 * [`Pow.Plug.Session`] `:session_store` option has been renamed to `:credentials_cache_store`
+* [`Pow.Plug`] `Pow.Plug.clear_authenticated_user/1` deprecated in favor of `Pow.Plug.delete/1`
 
 ## v1.0.16 (2020-01-07)
 
