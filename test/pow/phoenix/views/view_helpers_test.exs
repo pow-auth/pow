@@ -26,7 +26,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
       |> Conn.assign(:changeset, User.changeset(%User{}, %{}))
       |> Conn.assign(:action, "/")
 
-    {:ok, %{conn: conn}}
+    {:ok, conn: conn}
   end
 
   test "layout/1", %{conn: conn} do

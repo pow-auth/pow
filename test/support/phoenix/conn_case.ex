@@ -16,7 +16,7 @@ defmodule Pow.Test.Phoenix.ConnCase do
     end
   end
 
-  setup _tags do
+  setup do
     EtsCacheMock.init()
 
     {:ok, conn: Phoenix.ConnTest.build_conn(), ets: EtsCacheMock}

@@ -19,7 +19,7 @@ defmodule Pow.Phoenix.MailerTest do
       |> Plug.Conn.put_private(:pow_config, [])
       |> Mailer.Mail.new(%{email: "test@example.com"}, {MailerView, :mail_test}, value: "test")
 
-    {:ok, conn: conn, email: email}
+    {:ok, email: email}
   end
 
   test "deliver/2", %{conn: conn, email: email} do

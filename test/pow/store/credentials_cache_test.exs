@@ -9,10 +9,10 @@ defmodule Pow.Store.CredentialsCacheTest do
   @config [backend: EtsCacheMock]
   @backend_config [namespace: "credentials"]
 
-  setup context do
+  setup do
     EtsCacheMock.init()
 
-    {:ok, context}
+    :ok
   end
 
   test "stores sessions" do

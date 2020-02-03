@@ -8,7 +8,7 @@ defmodule Pow.Test.Mix.TestCase do
     :ok
   end
 
-  setup _context do
+  setup do
     current_shell = Mix.shell()
 
     on_exit fn ->

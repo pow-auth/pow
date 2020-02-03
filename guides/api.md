@@ -369,10 +369,10 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
 
   @pow_config [otp_app: :my_app]
 
-  setup %{conn: conn} do
+  setup do
     user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
 
-    {:ok, conn: conn, user: user}
+    {:ok, user: user}
   end
 
   describe "create/2" do
@@ -403,7 +403,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
 
       :timer.sleep(100)
 
-      {:ok, conn: conn, renew_token: authed_conn.private[:api_renew_token]}
+      {:ok, renew_token: authed_conn.private[:api_renew_token]}
     end
 
     test "with valid authorization header", %{conn: conn, renew_token: token} do
@@ -436,7 +436,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
 
       :timer.sleep(100)
 
-      {:ok, conn: conn, auth_token: authed_conn.private[:api_auth_token]}
+      {:ok, auth_token: authed_conn.private[:api_auth_token]}
     end
 
     test "invalidates", %{conn: conn, auth_token: token} do

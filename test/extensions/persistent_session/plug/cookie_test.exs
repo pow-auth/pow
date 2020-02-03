@@ -24,7 +24,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
       |> ConnHelpers.init_session()
       |> Session.call(config)
 
-    {:ok, %{conn: conn, config: config, ets: ets}}
+    {:ok, conn: conn, config: config, ets: ets}
   end
 
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
