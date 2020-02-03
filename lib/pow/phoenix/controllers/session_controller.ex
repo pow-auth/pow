@@ -52,7 +52,7 @@ defmodule Pow.Phoenix.SessionController do
 
   @doc false
   @spec process_delete(Conn.t(), map()) :: {:ok, Conn.t()}
-  def process_delete(conn, _params), do: Plug.clear_authenticated_user(conn)
+  def process_delete(conn, _params), do: {:ok, Plug.delete(conn)}
 
   @doc false
   @spec respond_delete({:ok, Conn.t()}) :: Conn.t()
