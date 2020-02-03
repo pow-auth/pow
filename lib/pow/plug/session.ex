@@ -35,16 +35,12 @@ defmodule Pow.Plug.Session do
 
   ## Configuration options
 
+    * `:credentials_cache_store` - see `Pow.Plug.Base`.
+
+    * `:cache_store_backend` - see `Pow.Plug.Base`.
+
     * `:session_key` - session key name, defaults to "auth". If `:otp_app` is
       used it'll automatically prepend the key with the `:otp_app` value.
-
-    * `:credentials_cache_store` - the credentials cache store. This value defaults to
-      `{Pow.Store.CredentialsCache, backend: Pow.Store.Backend.EtsCache}`. The
-      `Pow.Store.Backend.EtsCache` backend store can be changed with the
-      `:cache_store_backend` option.
-
-    * `:cache_store_backend` - the backend cache store. This value defaults to
-      `Pow.Store.Backend.EtsCache`.
 
     * `:session_ttl_renewal` - the ttl in milliseconds to trigger renewal of
       sessions. Defaults to 15 minutes in miliseconds.
@@ -108,7 +104,7 @@ defmodule Pow.Plug.Session do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Plug, Store.Backend.EtsCache, Store.CredentialsCache, UUID}
+  alias Pow.{Config, Plug, UUID}
 
   @session_key "auth"
   @session_ttl_renewal :timer.minutes(15)
@@ -260,31 +256,6 @@ defmodule Pow.Plug.Session do
 
   defp default_session_key(config) do
     Plug.prepend_with_namespace(config, @session_key)
-  end
-
-  defp store(config) do
-    case Config.get(config, :credentials_cache_store, fallback_store(config)) do
-      {store, store_config} -> {store, store_config}
-      store                 -> {store, []}
-    end
-  end
-
-  # TODO: Remove by 1.1.0
-  defp fallback_store(config) do
-    case Config.get(config, :session_store) do
-      nil ->
-        default_store(config)
-
-      value ->
-        IO.warn("use of `:session_store` config value is deprecated, use `:credentials_cache_store` instead")
-        value
-    end
-  end
-
-  defp default_store(config) do
-    backend = Config.get(config, :cache_store_backend, EtsCache)
-
-    {CredentialsCache, [backend: backend]}
   end
 
   defp timestamp, do: :os.system_time(:millisecond)

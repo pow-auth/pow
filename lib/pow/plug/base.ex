@@ -9,6 +9,16 @@ defmodule Pow.Plug.Base do
   order they were set, a `register_before_send/2` method is used to set
   callbacks instead of `Plug.Conn.register_before_send/2`.
 
+  ## Configuration options
+
+    * `:credentials_cache_store` - the credentials cache store. This value defaults to
+      `{Pow.Store.CredentialsCache, backend: Pow.Store.Backend.EtsCache}`. The
+      `Pow.Store.Backend.EtsCache` backend store can be changed with the
+      `:cache_store_backend` option.
+
+    * `:cache_store_backend` - the backend cache store. This value defaults to
+      `Pow.Store.Backend.EtsCache`.
+
   ## Example
 
       defmodule MyAppWeb.Pow.CustomPlug do
@@ -35,7 +45,7 @@ defmodule Pow.Plug.Base do
       end
   """
   alias Plug.Conn
-  alias Pow.{Config, Plug}
+  alias Pow.{Config, Plug, Store.Backend.EtsCache, Store.CredentialsCache}
 
   @callback init(Config.t()) :: Config.t()
   @callback call(Conn.t(), Config.t()) :: Conn.t()
@@ -49,6 +59,8 @@ defmodule Pow.Plug.Base do
       @behaviour unquote(__MODULE__)
 
       @before_send_private_key String.to_atom(Macro.underscore(__MODULE__) <> "/before_send")
+
+      import unquote(__MODULE__)
 
       @doc false
       @impl true
@@ -138,5 +150,31 @@ defmodule Pow.Plug.Base do
 
       defoverridable unquote(__MODULE__)
     end
+  end
+
+  @spec store(Config.t()) :: {module(), Config.t()}
+  def store(config) do
+    case Config.get(config, :credentials_cache_store, fallback_store(config)) do
+      {store, store_config} -> {store, store_config}
+      store                 -> {store, []}
+    end
+  end
+
+  # TODO: Remove by 1.1.0
+  defp fallback_store(config) do
+    case Config.get(config, :session_store) do
+      nil ->
+        default_store(config)
+
+      value ->
+        IO.warn("use of `:session_store` config value is deprecated, use `:credentials_cache_store` instead")
+        value
+    end
+  end
+
+  defp default_store(config) do
+    backend = Config.get(config, :cache_store_backend, EtsCache)
+
+    {CredentialsCache, [backend: backend]}
   end
 end
