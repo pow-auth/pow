@@ -45,7 +45,7 @@ defmodule Pow.Extension.Phoenix.Router do
         scope "/", PowExtensionOne.Phoenix, as: "pow_extension_one" do
           pipe_through [:browser]
 
-          resources "/pow_extension_on", SomeController, only: [:new, :create]
+          resources "/pow_extension_one", SomeController, only: [:new, :create]
         end
 
         scope "/" do
