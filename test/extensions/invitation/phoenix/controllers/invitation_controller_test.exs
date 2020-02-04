@@ -92,10 +92,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert get_flash(conn, :info) == "An e-mail with invitation link has been sent."
     end
 
-    test "with valid params and email taken with pow_prevent_information_leak: false", %{conn: conn} do
+    test "with valid params and email taken with pow_prevent_user_enumeration: false", %{conn: conn} do
       conn =
         conn
-        |> Conn.put_private(:pow_prevent_information_leak, false)
+        |> Conn.put_private(:pow_prevent_user_enumeration, false)
         |> Pow.Plug.assign_current_user(@user, [])
         |> post(Routes.pow_invitation_invitation_path(conn, :create, @valid_params_email_taken))
 

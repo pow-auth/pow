@@ -4,7 +4,7 @@ This extension will send an e-mail confirmation link when the user registers, an
 
 Users won't be signed in when they register, and can't sign in until the e-mail has been confirmed. The confirmation e-mail will be sent every time the sign in fails. The user will be redirected to `after_registration_path/1` and `after_sign_in_path/1` accordingly.
 
-To prevent information leak, the user will see the same confirmation required message if the account couldn't be created due to unique constraint error on `:email`. No e-mail will be sent.
+To prevent user enumeration, the user will see the same confirmation required message if the account couldn't be created due to unique constraint error on `:email`. No e-mail will be sent.
 
 When users updates their e-mail, it won't be changed until the user has confirmed the new e-mail by clicking the e-mail confirmation link. The confirmation will fail if the `:email` is already in use for another account. If `PowInvitation` is used then the same logic applies when a user accepts an invitation changing their e-mail address in the process.
 

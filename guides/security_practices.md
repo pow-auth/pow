@@ -36,7 +36,7 @@ Enabling `PowEmailConfirmation` extension will add additional protection:
 * User is redirected with message to confirm their e-mail when they attempt to create a user with already taken e-mail
 * Updating e-mail requires the user to confirm the e-mail address by clicking a link send to them
 
-You can disable the protection by setting `pow_prevent_information_leak: false` in `conn.private`.
+You can disable the protection by setting `pow_prevent_user_enumeration: false` in `conn.private`.
 
 ## Browser cache
 

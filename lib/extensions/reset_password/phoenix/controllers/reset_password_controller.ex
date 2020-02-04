@@ -38,7 +38,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
     |> redirect(to: routes(conn).session_path(conn, :new))
   end
   def respond_create({:error, changeset, conn}) do
-    case PowPlug.__prevent_information_leak__(conn, nil) do
+    case PowPlug.__prevent_user_enumeration__(conn, nil) do
       true ->
         conn
         |> put_flash(:info, extension_messages(conn).maybe_email_has_been_sent(conn))

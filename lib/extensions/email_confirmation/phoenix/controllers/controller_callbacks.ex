@@ -34,7 +34,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   When a user can't be created and the changeset has a unique constraint error
   for the `:email` field, the user will experience the same success flow as if
   the user could be created, but no e-mail is sent out. This prevents
-  information leak.
+  user enumeration.
   """
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
@@ -51,7 +51,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     halt_unconfirmed(conn, {:ok, user, conn}, return_path)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:error, changeset, conn}, _config) do
-    case Plug.__prevent_information_leak__(conn, changeset) do
+    case Plug.__prevent_user_enumeration__(conn, changeset) do
       true ->
         return_path = routes(conn).after_registration_path(conn)
         conn        = redirect_with_email_confirmation_required(conn, return_path)

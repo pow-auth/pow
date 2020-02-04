@@ -212,10 +212,10 @@ defmodule Pow.Plug do
   end
 
   @doc false
-  @spec __prevent_information_leak__(Conn.t(), any()) :: boolean()
-  def __prevent_information_leak__(%{private: %{pow_prevent_information_leak: false}}, _changeset), do: false
-  def __prevent_information_leak__(_conn, %{errors: errors}), do: unique_constraint_error?(errors, :email)
-  def __prevent_information_leak__(_conn, _any), do: true
+  @spec __prevent_user_enumeration__(Conn.t(), any()) :: boolean()
+  def __prevent_user_enumeration__(%{private: %{pow_prevent_user_enumeration: false}}, _changeset), do: false
+  def __prevent_user_enumeration__(_conn, %{errors: errors}), do: unique_constraint_error?(errors, :email)
+  def __prevent_user_enumeration__(_conn, _any), do: true
 
   defp unique_constraint_error?(errors, field) do
     Enum.find_value(errors, false, fn
