@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.17 (TBA)
+## v1.0.17 (2020-02-04)
 
 ### Enhancements
 
