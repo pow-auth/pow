@@ -123,15 +123,13 @@ defmodule PowResetPassword.Plug do
   end
 
   defp store(config) do
-    case Config.get(config, :reset_password_token_store, default_store(config)) do
-      {store, store_config} -> {store, store_config}
-      store                 -> {store, []}
+    case Config.get(config, :reset_password_token_store) do
+      {store, store_config} -> {store, store_opts(config, store_config)}
+      nil                   -> {ResetTokenCache, store_opts(config)}
     end
   end
 
-  defp default_store(config) do
-    backend = Config.get(config, :cache_store_backend, EtsCache)
-
-    {ResetTokenCache, [backend: backend]}
+  defp store_opts(config, store_config \\ []) do
+    Keyword.put_new(store_config, :backend, Config.get(config, :cache_store_backend, EtsCache))
   end
 end

@@ -34,6 +34,12 @@
 
 * [`PowResetPassword.Phoenix.ResetPasswordController`] Will no longer prevent information leak by checking if `PowEmailConfirmation` or registration routes are enabled; instead it'll by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`
 
+### Bug fixes
+
+* [`PowPersistentSession.Plug.Base`] With custom `:persistent_session_store` now falls back to `:cache_store_backend` configuration option
+* [`PowResetPassword.Plug`] With custom `:reset_password_token_store` now falls back to `:cache_store_backend` configuration option
+* [`Pow.Plug.Base`] With custom `:credentials_cache_store` now falls back to `:cache_store_backend` configuration option
+
 ### Deprecations
 
 * [`Pow.Ecto.Changeset`] `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has deprecated use of `:confirm_password` in params in favor of `:password_confirmation`

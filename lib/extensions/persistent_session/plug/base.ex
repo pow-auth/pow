@@ -73,17 +73,16 @@ defmodule PowPersistentSession.Plug.Base do
 
   @spec store(Config.t()) :: {module(), Config.t()}
   def store(config) do
-    case Config.get(config, :persistent_session_store, default_store(config)) do
-      {store, store_config} -> {store, store_config}
-      store                 -> {store, []}
+    case Config.get(config, :persistent_session_store) do
+      {store, store_config} -> {store, store_opts(config, store_config)}
+      nil                   -> {PersistentSessionCache, store_opts(config)}
     end
   end
 
-  defp default_store(config) do
-    backend = Config.get(config, :cache_store_backend, EtsCache)
-    ttl     = ttl(config)
-
-    {PersistentSessionCache, [backend: backend, ttl: ttl]}
+  defp store_opts(config, store_config \\ []) do
+    store_config
+    |> Keyword.put_new(:backend, Config.get(config, :cache_store_backend, EtsCache))
+    |> Keyword.put_new(:ttl, ttl(config))
   end
 
   @ttl :timer.hours(24) * 30

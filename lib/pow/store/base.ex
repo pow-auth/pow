@@ -10,8 +10,8 @@ defmodule Pow.Store.Base do
           namespace: "credentials"
 
         @impl true
-        def put(config, backend_config, key, value) do
-          Pow.Store.Base.put(config, backend_config, {key, value})
+        def put(config, key, value) do
+          Pow.Store.Base.put(config, backend_config(config), {key, value})
         end
       end
   """
