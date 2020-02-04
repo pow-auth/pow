@@ -4,9 +4,9 @@ This extension will set up a basic invitation system where users can invite othe
 
 Invited users are persisted in the database without a password. Only the user id will be validated when the user is invited, but `changeset/2` on your user schema will be used for when the user accepts the invitation.
 
-To prevent information leak, the invited user will, to the inviter, appear as succesfully invited even if the user couldn't be created due to unique constraint error on `:email`. No e-mail will be sent out. If `pow_prevent_information_leak: false` is set in `conn.private` the form with error will be shown instead.
+To prevent user enumeration, the invited user will, to the inviter, appear as succesfully invited even if the user couldn't be created due to unique constraint error on `:email`. No e-mail will be sent out. If `pow_prevent_user_enumeration: false` is set in `conn.private` the form with error will be shown instead.
 
-An invited user can change their e-mail when accepting the invitation. To prevent information leak `PowEmailConfirmation` extension should be enabled.
+An invited user can change their e-mail when accepting the invitation. To prevent user enumeration `PowEmailConfirmation` extension can be enabled.
 
 ## Installation
 

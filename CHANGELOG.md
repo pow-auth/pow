@@ -18,7 +18,7 @@
 * [`PowResetPassword.Phoenix.ResetPasswordView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`Pow.Phoenix.RegistrationView`] Now renders `:password_confirmation` field instead of `:confirm_password`
 * [`PowEmailConfirmation.Ecto.Schema`] No longer validates if `:email` has been taken before setting `:unconfirmed_email`
-* [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now prevents user enumeration attack for `PowInvitation.Phoenix.InvitationController.create/2`
+* [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now prevents user enumeration for `PowInvitation.Phoenix.InvitationController.create/2`
 * [`PowPersistentSession.Plug.Cookie`] Changed default cookie name to `persistent_session`
 * [`PowPersistentSession.Plug.Cookie`] Removed renewal of cookie as the token will always expire
 * [`PowPersistentSession.Plug.Cookie`] No longer expires invalid cookies
@@ -32,7 +32,7 @@
 
 ### Removed
 
-* [`PowResetPassword.Phoenix.ResetPasswordController`] Will no longer prevent information leak by checking if `PowEmailConfirmation` or registration routes are enabled; instead it'll by default prevent information leak, but can be disabled if `pow_prevent_information_leak: false` is set in `conn.private`
+* [`PowResetPassword.Phoenix.ResetPasswordController`] Will no longer prevent information leak by checking if `PowEmailConfirmation` or registration routes are enabled; instead it'll by default prevent user enumeration, but can be disabled if `pow_prevent_user_enumeration: false` is set in `conn.private`
 
 ### Bug fixes
 

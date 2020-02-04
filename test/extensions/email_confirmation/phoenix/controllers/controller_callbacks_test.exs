@@ -80,10 +80,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       refute_received {:mail_mock, _mail}
     end
 
-    test "with valid params and email taken with pow_prevent_information_leak: false", %{conn: conn} do
+    test "with valid params and email taken with pow_prevent_user_enumeration: false", %{conn: conn} do
       conn =
         conn
-        |> Conn.put_private(:pow_prevent_information_leak, false)
+        |> Conn.put_private(:pow_prevent_user_enumeration, false)
         |> post(Routes.pow_registration_path(conn, :create, @valid_params_email_taken))
 
       assert html = html_response(conn, 200)

@@ -60,10 +60,10 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
     end
 
-    test "with invalid params and pow_prevent_information_leak: false", %{conn: conn} do
+    test "with invalid params and pow_prevent_user_enumeration: false", %{conn: conn} do
       conn =
         conn
-        |> Plug.Conn.put_private(:pow_prevent_information_leak, false)
+        |> Plug.Conn.put_private(:pow_prevent_user_enumeration, false)
         |> post(Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
 
       assert html = html_response(conn, 200)

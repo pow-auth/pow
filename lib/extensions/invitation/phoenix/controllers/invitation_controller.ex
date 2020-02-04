@@ -41,7 +41,7 @@ defmodule PowInvitation.Phoenix.InvitationController do
     redirect(conn, to: routes(conn).path_for(conn, __MODULE__, :show, [user.invitation_token]))
   end
   def respond_create({:error, changeset, conn}) do
-    case PowPlug.__prevent_information_leak__(conn, changeset) do
+    case PowPlug.__prevent_user_enumeration__(conn, changeset) do
       true  ->
         invitation_sent_redirect(conn)
 
