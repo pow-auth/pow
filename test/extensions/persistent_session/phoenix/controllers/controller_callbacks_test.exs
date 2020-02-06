@@ -10,8 +10,8 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
   describe "Pow.Phoenix.SessionController.create/2" do
     test "generates cookie", %{conn: conn, ets: ets} do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
-      assert session_fingerprint = conn.private[:pow_session_metadata][:fingerprint]
 
+      assert session_fingerprint = conn.private[:pow_session_metadata][:fingerprint]
       assert %{max_age: @max_age, path: "/", value: id} = conn.resp_cookies[@cookie_key]
       assert PersistentSessionCache.get([backend: ets], id) == {[id: 1], session_metadata: [fingerprint: session_fingerprint]}
     end
