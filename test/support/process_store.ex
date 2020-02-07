@@ -1,6 +1,6 @@
 defmodule Plug.ProcessStore do
   @moduledoc """
-  Used with `Plug.Conn` sessions in tests. See `Pow.Test.ConnHelpers` for more.
+  Used with `Plug.Conn` sessions in tests.
   """
   @behaviour Plug.Session.Store
 

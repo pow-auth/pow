@@ -2,9 +2,10 @@ defmodule Pow.Plug.SessionTest do
   use ExUnit.Case
   doctest Pow.Plug.Session
 
-  alias Plug.{Conn, Test}
+  alias Plug.{Conn, ProcessStore, Test}
+  alias Plug.Session, as: PlugSession
   alias Pow.{Plug, Plug.Session, Store.Backend.EtsCache, Store.CredentialsCache}
-  alias Pow.Test.{ConnHelpers, Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{Ecto.Users.User, EtsCacheMock}
 
   @default_opts [
     current_user_assigns_key: :current_user,
@@ -17,7 +18,7 @@ defmodule Pow.Plug.SessionTest do
   setup do
     EtsCacheMock.init()
 
-    conn = init_session_conn()
+    conn = conn_with_plug_session()
 
     {:ok, conn: conn}
   end
@@ -308,17 +309,17 @@ defmodule Pow.Plug.SessionTest do
     end
   end
 
-  defp init_session_conn() do
-    :get
-    |> ConnHelpers.conn("/")
-    |> ConnHelpers.init_session()
+  defp conn_with_plug_session(conn \\ nil) do
+    conn
+    |> Kernel.||(Test.conn(:get, "/"))
+    |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
   end
 
   defp recycle_session_conn(old_conn) do
     :get
-    |> ConnHelpers.conn("/")
+    |> Test.conn("/")
     |> Test.recycle_cookies(old_conn)
-    |> ConnHelpers.init_session()
+    |> conn_with_plug_session()
   end
 
   defp init_plug(conn, config \\ @default_opts) do

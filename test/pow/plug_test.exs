@@ -2,9 +2,10 @@ defmodule Pow.PlugTest do
   use ExUnit.Case
   doctest Pow.Plug
 
-  alias Plug.{Conn, Test}
+  alias Plug.{Conn, ProcessStore, Test}
+  alias Plug.Session, as: PlugSession
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
-  alias Pow.Test.{ConnHelpers, ContextMock, Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{ContextMock, Ecto.Users.User, EtsCacheMock}
 
   @default_config [
     current_user_assigns_key: :current_user,
@@ -48,7 +49,7 @@ defmodule Pow.PlugTest do
   test "authenticate_user/2" do
     EtsCacheMock.init()
 
-    conn = init_session_conn()
+    conn = conn_with_session_plug()
 
     refute fetch_session_id(conn)
     refute Plug.current_user(conn)
@@ -110,7 +111,7 @@ defmodule Pow.PlugTest do
   test "create_user/2" do
     EtsCacheMock.init()
 
-    conn = init_session_conn()
+    conn = conn_with_session_plug()
 
     assert {:error, _changeset, conn} = Plug.create_user(conn, %{})
     refute Plug.current_user(conn)
@@ -151,18 +152,19 @@ defmodule Pow.PlugTest do
   end
 
   defp auth_user_conn() do
-    conn        = init_session_conn()
+    conn        = conn_with_session_plug()
     {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
     conn        = Conn.send_resp(conn, 200, "")
 
     conn()
     |> Test.recycle_cookies(conn)
-    |> init_session_conn()
+    |> conn_with_session_plug()
   end
 
-  defp init_session_conn(conn \\ nil) do
-    (conn || conn(@default_config))
-    |> ConnHelpers.init_session()
+  defp conn_with_session_plug(conn \\ nil) do
+    conn
+    |> Kernel.||(conn())
+    |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
     |> Session.call(Session.init(@default_config))
   end
 
@@ -174,7 +176,7 @@ defmodule Pow.PlugTest do
 
   defp conn(config \\ @default_config) do
     :get
-    |> ConnHelpers.conn("/")
+    |> Test.conn("/")
     |> Conn.put_private(:pow_config, config)
   end
 end

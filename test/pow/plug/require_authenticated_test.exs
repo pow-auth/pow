@@ -2,14 +2,13 @@ defmodule Pow.Plug.RequireAuthenticatedTest do
   use ExUnit.Case
   doctest Pow.Plug.RequireAuthenticated
 
-  alias Plug.Conn
+  alias Plug.{Conn, Test}
   alias Pow.{Config.ConfigError, Plug, Plug.RequireAuthenticated}
-  alias Pow.Test.ConnHelpers
 
   setup do
     conn =
       :get
-      |> ConnHelpers.conn("/")
+      |> Test.conn("/")
       |> Plug.put_config(current_user_assigns_key: :current_user)
 
     {:ok, %{conn: conn}}
