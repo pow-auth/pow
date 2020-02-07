@@ -91,13 +91,8 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
 
             # ...
 
-            plug Plug.Session,
-              store: :cookie,
-              key: "_#{web_app}_key",
-              signing_salt: "secret"
-
+            plug Plug.Session, @session_options
             plug Pow.Plug.Session, otp_app: #{inspect(web_app)}
-
             plug #{inspect(web_base)}.Router
           end
 

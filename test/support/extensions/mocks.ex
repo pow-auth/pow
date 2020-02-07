@@ -122,6 +122,14 @@ defmodule Pow.Test.ExtensionMocks do
 
       use Phoenix.Endpoint, otp_app: :pow
 
+      @session_options [
+        store: :cookie,
+        key: "_binaryid_key",
+        signing_salt: "secret"
+      ]
+
+      @pow_config unquote(config)
+
       plug Plug.RequestId
       plug Plug.Logger
 
@@ -133,17 +141,11 @@ defmodule Pow.Test.ExtensionMocks do
       plug Plug.MethodOverride
       plug Plug.Head
 
-      plug Plug.Session,
-        store: :cookie,
-        key: "_binaryid_key",
-        signing_salt: "secret"
-
-      plug SessionPlugHelper, unquote(config)
-
+      plug Plug.Session, @session_options
+      plug SessionPlugHelper, @pow_config
       if Code.ensure_compiled?(unquote(opts[:plug])) do
         plug unquote(opts[:plug])
       end
-
       plug unquote(web_module).Phoenix.Router
     end
 
