@@ -126,9 +126,9 @@ defmodule Pow.Plug.Session do
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     {store, store_config} = store(config)
-    {key, conn}           = client_store_fetch(conn, config)
+    {session_id, conn}    = client_store_fetch(conn, config)
 
-    {key, store.get(store_config, key)}
+    {session_id, store.get(store_config, session_id)}
     |> convert_old_session_value()
     |> handle_fetched_session_value(conn, config)
   end
@@ -169,20 +169,22 @@ defmodule Pow.Plug.Session do
   defp session_value(user, metadata) do
     metadata =
       metadata
-      |> Keyword.put_new(:fingerprint, UUID.generate())
+      |> Keyword.put_new(:fingerprint, gen_fingerprint())
       |> Keyword.put(:inserted_at, timestamp())
 
     {user, metadata}
   end
 
+  defp gen_fingerprint(), do: UUID.generate()
+
   defp before_send_create(conn, value, config) do
     {store, store_config} = store(config)
-    key                   = session_id(config)
+    session_id            = gen_session_id(config)
 
     register_before_send(conn, fn conn ->
-      store.put(store_config, key, value)
+      store.put(store_config, session_id, value)
 
-      client_store_put(conn, key, config)
+      client_store_put(conn, session_id, config)
     end)
   end
 
@@ -199,27 +201,27 @@ defmodule Pow.Plug.Session do
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     case client_store_fetch(conn, config) do
-      {nil, conn} -> conn
-      {key, conn} -> before_send_delete(conn, key, config)
+      {nil, conn}        -> conn
+      {session_id, conn} -> before_send_delete(conn, session_id, config)
     end
   end
 
-  defp before_send_delete(conn, key, config) do
+  defp before_send_delete(conn, session_id, config) do
     {store, store_config} = store(config)
 
     register_before_send(conn, fn conn ->
-      store.delete(store_config, key)
+      store.delete(store_config, session_id)
 
       client_store_delete(conn, config)
     end)
   end
 
   # TODO: Remove by 1.1.0
-  defp convert_old_session_value({key, {user, timestamp}}) when is_number(timestamp), do: {key, {user, inserted_at: timestamp}}
+  defp convert_old_session_value({session_id, {user, timestamp}}) when is_number(timestamp), do: {session_id, {user, inserted_at: timestamp}}
   defp convert_old_session_value(any), do: any
 
-  defp handle_fetched_session_value({_key, :not_found}, conn, _config), do: {conn, nil}
-  defp handle_fetched_session_value({_key, {user, metadata}}, conn, config) when is_list(metadata) do
+  defp handle_fetched_session_value({_session_id, :not_found}, conn, _config), do: {conn, nil}
+  defp handle_fetched_session_value({_session_id, {user, metadata}}, conn, config) when is_list(metadata) do
     conn
     |> Conn.put_private(:pow_session_metadata, metadata)
     |> renew_stale_session(user, metadata, config)
@@ -244,7 +246,7 @@ defmodule Pow.Plug.Session do
     inserted_at + ttl < timestamp()
   end
 
-  defp session_id(config) do
+  defp gen_session_id(config) do
     uuid = UUID.generate()
 
     Plug.prepend_with_namespace(config, uuid)
@@ -261,16 +263,16 @@ defmodule Pow.Plug.Session do
   defp timestamp, do: :os.system_time(:millisecond)
 
   defp client_store_fetch(conn, config) do
-    conn = Conn.fetch_session(conn)
-    key  = Conn.get_session(conn, session_key(config))
+    conn       = Conn.fetch_session(conn)
+    session_id = Conn.get_session(conn, session_key(config))
 
-    {key, conn}
+    {session_id, conn}
   end
 
-  defp client_store_put(conn, value, config) do
+  defp client_store_put(conn, session_id, config) do
     conn
     |> Conn.fetch_session()
-    |> Conn.put_session(session_key(config), value)
+    |> Conn.put_session(session_key(config), session_id)
     |> Conn.configure_session(renew: true)
   end
 
