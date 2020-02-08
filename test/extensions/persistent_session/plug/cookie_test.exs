@@ -50,15 +50,16 @@ defmodule PowPersistentSession.Plug.CookieTest do
     id   = "test"
     conn = store_persistent(conn, ets, id, {[id: user.id], []})
 
-    first_conn = run_plug(conn)
+    task_1 = Task.async(fn -> run_plug(conn) end)
+    task_2 = Task.async(fn -> run_plug(conn) end)
+    conn_1 = Task.await(task_1)
+    conn_2 = Task.await(task_2)
 
-    assert Plug.current_user(first_conn) == user
-    assert %{value: _id, max_age: @max_age, path: "/"} = first_conn.resp_cookies[@cookie_key]
+    assert Plug.current_user(conn_1) == user
+    assert %{value: _id, max_age: @max_age, path: "/"} = conn_1.resp_cookies[@cookie_key]
 
-    second_conn = run_plug(conn)
-
-    refute Plug.current_user(second_conn) == user
-    refute second_conn.resp_cookies[@cookie_key]
+    refute Plug.current_user(conn_2)
+    refute conn_2.resp_cookies[@cookie_key]
   end
 
   test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do

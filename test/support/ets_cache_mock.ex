@@ -2,7 +2,7 @@ defmodule Pow.Test.EtsCacheMock do
   @moduledoc false
   @tab __MODULE__
 
-  def init, do: :ets.new(@tab, [:ordered_set, :protected, :named_table])
+  def init, do: :ets.new(@tab, [:ordered_set, :public, :named_table])
 
   def get(config, key) do
     ets_key = ets_key(config, key)
