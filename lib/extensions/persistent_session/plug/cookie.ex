@@ -149,8 +149,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
     case client_store_fetch(conn, config) do
-      nil   -> conn
-      token -> before_send_delete(conn, token, config)
+      {nil, conn}   -> conn
+      {token, conn} -> before_send_delete(conn, token, config)
     end
   end
 
@@ -185,48 +185,56 @@ defmodule PowPersistentSession.Plug.Cookie do
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
     case client_store_fetch(conn, config) do
-      nil   -> conn
-      token -> do_authenticate(conn, token, config)
+      {nil, conn}   -> conn
+      {token, conn} -> do_authenticate(conn, token, config)
     end
   end
 
   defp do_authenticate(conn, token, config) do
     {store, store_config} = store(config)
-    res                   = store.get(store_config, token)
 
-    case res do
-      :not_found ->
+    {token, store.get(store_config, token)}
+    |> fetch_user(config)
+    |> case do
+      :error ->
         conn
 
-      res ->
+      {token, nil} ->
         expire_token_in_store(token, config)
 
-        fetch_and_auth_user(conn, res, config)
+        conn
+
+      {token, {user, metadata}} ->
+        expire_token_in_store(token, config)
+
+        auth_user(conn, user, metadata, config)
     end
   end
 
-  defp fetch_and_auth_user(conn, {clauses, metadata}, config) do
+  defp fetch_user({_token, :not_found}, _config), do: :error
+  defp fetch_user({token, {clauses, metadata}}, config) do
     clauses
     |> filter_invalid!()
     |> Operations.get_by(config)
     |> case do
-      nil ->
-        conn
-
-      user ->
-        conn
-        |> update_persistent_session_metadata(metadata)
-        |> update_session_metadata(metadata)
-        |> create(user, config)
-        |> Plug.create(user, config)
+      nil  -> {token, nil}
+      user -> {token, {user, metadata}}
     end
   end
   # TODO: Remove by 1.1.0
-  defp fetch_and_auth_user(conn, user_id, config),
-    do: fetch_and_auth_user(conn, {user_id, []}, config)
+  defp fetch_user({token, user_id}, config),
+    do: fetch_user({token, {user_id, []}}, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
+
+  defp auth_user(conn, user, metadata, config) do
+    conn
+    |> update_persistent_session_metadata(metadata)
+    |> update_session_metadata(metadata)
+    |> create(user, config)
+    |> Plug.create(user, config)
+  end
 
   defp update_persistent_session_metadata(conn, metadata) do
     case Keyword.get(metadata, :session_metadata) do
@@ -283,10 +291,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp client_store_fetch(conn, config) do
-    conn
-    |> Conn.fetch_cookies()
-    |> Map.get(:req_cookies)
-    |> Map.get(cookie_key(config))
+    conn  = Conn.fetch_cookies(conn)
+    token = conn.req_cookies[cookie_key(config)]
+
+    {token, conn}
   end
 
   defp client_store_put(conn, value, config) do
