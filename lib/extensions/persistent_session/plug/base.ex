@@ -52,16 +52,20 @@ defmodule PowPersistentSession.Plug.Base do
           conn
           |> Plug.fetch_config()
           |> Config.merge(config)
+        conn   = Conn.put_private(conn, :pow_persistent_session, {__MODULE__, config})
 
         conn
-        |> Conn.put_private(:pow_persistent_session, {__MODULE__, config})
-        |> authenticate(config)
+        |> Plug.current_user(config)
+        |> maybe_authenticate(conn, config)
         |> Conn.register_before_send(fn conn ->
           conn.private
           |> Map.get(@before_send_private_key, [])
           |> Enum.reduce(conn, & &1.(&2))
         end)
       end
+
+      defp maybe_authenticate(nil, conn, config), do: authenticate(conn, config)
+      defp maybe_authenticate(_user, conn, _config), do: conn
 
       defp register_before_send(conn, callback) do
         callbacks = Map.get(conn.private, @before_send_private_key, []) ++ [callback]

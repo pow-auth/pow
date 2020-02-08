@@ -2,29 +2,24 @@ defmodule PowPersistentSession.Plug.CookieTest do
   use ExUnit.Case
   doctest PowPersistentSession.Plug.Cookie
 
-  alias Plug.Conn
+  alias Plug.{Conn, ProcessStore, Test}
+  alias Plug.Session, as: PlugSession
   alias Pow.{Plug, Plug.Session}
-  alias Pow.Test.ConnHelpers
   alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
   alias PowPersistentSession.Test.Users.User
+  alias Pow.Test.EtsCacheMock
 
   @cookie_key "persistent_session"
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
   @custom_cookie_opts [domain: "domain.com", max_age: 1, path: "/path", http_only: false, secure: true, extra: "SameSite=Lax"]
 
   setup do
+    EtsCacheMock.init()
+
     config = PowPersistentSession.Test.pow_config()
-    ets    = Pow.Config.get(config, :cache_store_backend, nil)
+    conn   = conn_with_session_plug(config)
 
-    ets.init()
-
-    conn =
-      :get
-      |> ConnHelpers.conn("/")
-      |> ConnHelpers.init_session()
-      |> Session.call(config)
-
-    {:ok, conn: conn, config: config, ets: ets}
+    {:ok, conn: conn, config: config, ets: EtsCacheMock}
   end
 
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
@@ -100,10 +95,9 @@ defmodule PowPersistentSession.Plug.CookieTest do
   test "call/2 assigns user from cookie with prepended `:otp_app`", %{config: config, ets: ets} do
     user = %User{id: 1}
     conn =
-      :get
-      |> ConnHelpers.conn("/")
-      |> ConnHelpers.init_session()
-      |> Session.call(config ++ [otp_app: :test_app])
+      config
+      |> Keyword.put(:otp_app, :test_app)
+      |> conn_with_session_plug()
       |> store_persistent(ets, "test_app_test", {[id: user.id], []}, "test_app_" <> @cookie_key)
       |> run_plug(config)
 
@@ -285,6 +279,13 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
     assert conn.resp_cookies[@cookie_key] == %{max_age: 0, universal_time: {{1970, 1, 1}, {0, 0, 0}}, path: "/path", domain: "domain.com", extra: "SameSite=Lax", http_only: false, secure: true}
     assert PersistentSessionCache.get([backend: ets], id) == :not_found
+  end
+
+  defp conn_with_session_plug(config) do
+    :get
+    |> Test.conn("/")
+    |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
+    |> Session.call(Session.init(config))
   end
 
   defp store_persistent(conn, ets, id, value, cookie_key \\ @cookie_key) do

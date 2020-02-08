@@ -16,9 +16,7 @@ defmodule PowPersistentSession.Plug.Cookie do
       # ...
 
       plug Pow.Plug.Session, otp_app: :my_app
-
       plug PowPersistentSession.Plug.Cookie
-
       #...
     end
 
@@ -96,15 +94,13 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp before_send_create(conn, user, config) do
     {store, store_config} = store(config)
-    cookie_key            = cookie_key(config)
-    key                   = cookie_id(config)
+    token                 = gen_token(config)
     value                 = persistent_session_value(conn, user, config)
-    opts                  = cookie_opts(config)
 
     register_before_send(conn, fn conn ->
-      store.put(store_config, key, value)
+      store.put(store_config, token, value)
 
-      Conn.put_resp_cookie(conn, cookie_key, key, opts)
+      client_store_put(conn, token, config)
     end)
   end
 
@@ -152,33 +148,24 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
-    conn       = Conn.fetch_cookies(conn)
-    cookie_key = cookie_key(config)
-
-    case conn.req_cookies[cookie_key] do
-      nil -> conn
-      key -> before_send_delete(conn, key, config)
+    case client_store_fetch(conn, config) do
+      {nil, conn}   -> conn
+      {token, conn} -> before_send_delete(conn, token, config)
     end
   end
 
-  defp before_send_delete(conn, key, config) do
-    cookie_key = cookie_key(config)
-
+  defp before_send_delete(conn, token, config) do
     register_before_send(conn, fn conn ->
-      expire_token_in_store(key, config)
+      expire_token_in_store(token, config)
 
-      delete_cookie(conn, cookie_key, config)
+      client_store_delete(conn, config)
     end)
   end
 
-  defp expire_token_in_store(key_id, config) do
+  defp expire_token_in_store(token, config) do
     {store, store_config} = store(config)
 
-    store.delete(store_config, key_id)
-  end
-
-  defp delete_cookie(conn, cookie_key, config) do
-    Conn.delete_resp_cookie(conn, cookie_key, cookie_opts(config))
+    store.delete(store_config, token)
   end
 
   @doc """
@@ -197,60 +184,57 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
-    user = Plug.current_user(conn, config)
-
-    conn
-    |> Conn.fetch_cookies()
-    |> maybe_authenticate(user, config)
-  end
-
-  defp maybe_authenticate(conn, nil, config) do
-    cookie_key = cookie_key(config)
-
-    case conn.req_cookies[cookie_key] do
-      nil    -> conn
-      key_id -> do_authenticate(conn, key_id, config)
+    case client_store_fetch(conn, config) do
+      {nil, conn}   -> conn
+      {token, conn} -> do_authenticate(conn, token, config)
     end
   end
-  defp maybe_authenticate(conn, _user, _config), do: conn
 
-  defp do_authenticate(conn, key_id, config) do
+  defp do_authenticate(conn, token, config) do
     {store, store_config} = store(config)
-    res                   = store.get(store_config, key_id)
 
-    case res do
-      :not_found ->
+    {token, store.get(store_config, token)}
+    |> fetch_user(config)
+    |> case do
+      :error ->
         conn
 
-      res ->
-        expire_token_in_store(key_id, config)
+      {token, nil} ->
+        expire_token_in_store(token, config)
 
-        fetch_and_auth_user(conn, res, config)
+        conn
+
+      {token, {user, metadata}} ->
+        expire_token_in_store(token, config)
+
+        auth_user(conn, user, metadata, config)
     end
   end
 
-  defp fetch_and_auth_user(conn, {clauses, metadata}, config) do
+  defp fetch_user({_token, :not_found}, _config), do: :error
+  defp fetch_user({token, {clauses, metadata}}, config) do
     clauses
     |> filter_invalid!()
     |> Operations.get_by(config)
     |> case do
-      nil ->
-        conn
-
-      user ->
-        conn
-        |> update_persistent_session_metadata(metadata)
-        |> update_session_metadata(metadata)
-        |> create(user, config)
-        |> Plug.create(user, config)
+      nil  -> {token, nil}
+      user -> {token, {user, metadata}}
     end
   end
   # TODO: Remove by 1.1.0
-  defp fetch_and_auth_user(conn, user_id, config),
-    do: fetch_and_auth_user(conn, {user_id, []}, config)
+  defp fetch_user({token, user_id}, config),
+    do: fetch_user({token, {user_id, []}}, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
+
+  defp auth_user(conn, user, metadata, config) do
+    conn
+    |> update_persistent_session_metadata(metadata)
+    |> update_session_metadata(metadata)
+    |> create(user, config)
+    |> Plug.create(user, config)
+  end
 
   defp update_persistent_session_metadata(conn, metadata) do
     case Keyword.get(metadata, :session_metadata) do
@@ -300,10 +284,29 @@ defmodule PowPersistentSession.Plug.Cookie do
     end
   end
 
-  defp cookie_id(config) do
+  defp gen_token(config) do
     uuid = UUID.generate()
 
     Plug.prepend_with_namespace(config, uuid)
+  end
+
+  defp client_store_fetch(conn, config) do
+    conn  = Conn.fetch_cookies(conn)
+    token = conn.req_cookies[cookie_key(config)]
+
+    {token, conn}
+  end
+
+  defp client_store_put(conn, value, config) do
+    conn
+    |> Conn.fetch_cookies()
+    |> Conn.put_resp_cookie(cookie_key(config), value, cookie_opts(config))
+  end
+
+  defp client_store_delete(conn, config) do
+    conn
+    |> Conn.fetch_cookies()
+    |> Conn.delete_resp_cookie(cookie_key(config), cookie_opts(config))
   end
 
   defp cookie_key(config) do

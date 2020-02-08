@@ -39,9 +39,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
   alias Plug.Conn
-  alias Pow.Plug
+  alias Pow.Plug, as: PowPlug
   alias PowEmailConfirmation.Phoenix.{ConfirmationController, Mailer}
-  alias PowEmailConfirmation.Plug, as: PowEmailConfirmationPlug
+  alias PowEmailConfirmation.Plug
 
   @doc false
   @impl true
@@ -51,7 +51,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     halt_unconfirmed(conn, {:ok, user, conn}, return_path)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:error, changeset, conn}, _config) do
-    case Plug.__prevent_user_enumeration__(conn, changeset) do
+    case PowPlug.__prevent_user_enumeration__(conn, changeset) do
       true ->
         return_path = routes(conn).after_registration_path(conn)
         conn        = redirect_with_email_confirmation_required(conn, return_path)
@@ -75,18 +75,18 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   end
 
   defp halt_unconfirmed(conn, success_response, return_path) do
-    case PowEmailConfirmationPlug.email_unconfirmed?(conn) do
+    case Plug.email_unconfirmed?(conn) do
       true  -> halt_and_send_confirmation_email(conn, return_path)
       false -> success_response
     end
   end
 
   defp halt_and_send_confirmation_email(conn, return_path) do
-    send_confirmation_email(Plug.current_user(conn), conn)
+    send_confirmation_email(PowPlug.current_user(conn), conn)
 
     conn =
       conn
-      |> Plug.delete()
+      |> PowPlug.delete()
       |> redirect_with_email_confirmation_required(return_path)
 
     {:halt, conn}
@@ -101,7 +101,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   end
 
   defp warn_unconfirmed(%{params: %{"user" => %{"email" => email}}} = conn, %{unconfirmed_email: email} = user) do
-    case PowEmailConfirmationPlug.pending_email_change?(conn) do
+    case Plug.pending_email_change?(conn) do
       true  -> warn_and_send_confirmation_email(conn)
       false -> {:ok, user, conn}
     end
@@ -109,7 +109,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   defp warn_unconfirmed(conn, user), do: {:ok, user, conn}
 
   defp warn_and_send_confirmation_email(conn) do
-    user  = Plug.current_user(conn)
+    user  = PowPlug.current_user(conn)
     error = extension_messages(conn).email_confirmation_required_for_update(conn)
     conn  = Phoenix.Controller.put_flash(conn, :error, error)
 

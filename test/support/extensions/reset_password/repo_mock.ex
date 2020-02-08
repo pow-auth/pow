@@ -6,6 +6,7 @@ defmodule PowResetPassword.Test.RepoMock do
 
   def get_by(User, [email: "test@example.com"], _opts), do: @user
   def get_by(User, [email: "invalid@example.com"], _opts), do: nil
+  def get_by(User, [email: "missing@example.com"], _opts), do: %User{id: :missing}
 
   def update(%{valid?: true} = changeset, _opts) do
     user = Ecto.Changeset.apply_changes(changeset)

@@ -20,6 +20,20 @@ defmodule Pow.Test.Phoenix.Endpoint do
   @moduledoc false
   use Phoenix.Endpoint, otp_app: :pow
 
+  @session_options [
+    store: :cookie,
+    key: "_binaryid_key",
+    signing_salt: "secret"
+  ]
+
+  @pow_config [
+    current_user_assigns_key: :current_user,
+    session_key: "auth",
+    cache_store_backend: Pow.Test.EtsCacheMock,
+    messages_backend: Pow.Test.Phoenix.Messages,
+    routes_backend: Pow.Test.Phoenix.Routes
+  ]
+
   plug Plug.RequestId
   plug Plug.Logger
 
@@ -31,17 +45,7 @@ defmodule Pow.Test.Phoenix.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
 
-  plug Plug.Session,
-    store: :cookie,
-    key: "_binaryid_key",
-    signing_salt: "secret"
-
-  plug SessionPlugHelper,
-    current_user_assigns_key: :current_user,
-    session_key: "auth",
-    cache_store_backend: Pow.Test.EtsCacheMock,
-    messages_backend: Pow.Test.Phoenix.Messages,
-    routes_backend: Pow.Test.Phoenix.Routes
-
+  plug Plug.Session, @session_options
+  plug SessionPlugHelper, @pow_config
   plug Pow.Test.Phoenix.Router
 end

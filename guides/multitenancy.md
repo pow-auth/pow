@@ -41,13 +41,8 @@ defmodule MyAppWeb.Endpoint do
 
   # ...
 
-  plug Plug.Session,
-    store: :cookie,
-    key: "_my_app_key",
-    signing_salt: "secret"
-
+  plug Plug.Session, @session_options
   plug MyAppWeb.PowTriplexSessionPlug, otp_app: :my_app
-
   # ...
 end
 ```
