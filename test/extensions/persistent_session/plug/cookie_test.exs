@@ -7,20 +7,19 @@ defmodule PowPersistentSession.Plug.CookieTest do
   alias Pow.{Plug, Plug.Session}
   alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
   alias PowPersistentSession.Test.Users.User
+  alias Pow.Test.EtsCacheMock
 
   @cookie_key "persistent_session"
   @max_age Integer.floor_div(:timer.hours(24) * 30, 1000)
   @custom_cookie_opts [domain: "domain.com", max_age: 1, path: "/path", http_only: false, secure: true, extra: "SameSite=Lax"]
 
   setup do
+    EtsCacheMock.init()
+
     config = PowPersistentSession.Test.pow_config()
-    ets    = Pow.Config.get(config, :cache_store_backend, nil)
+    conn   = conn_with_session_plug(config)
 
-    ets.init()
-
-    conn = conn_with_session_plug(config)
-
-    {:ok, conn: conn, config: config, ets: ets}
+    {:ok, conn: conn, config: config, ets: EtsCacheMock}
   end
 
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
