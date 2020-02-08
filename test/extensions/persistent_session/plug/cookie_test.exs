@@ -58,7 +58,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert Plug.current_user(conn_1) == user
     assert %{value: _id, max_age: @max_age, path: "/"} = conn_1.resp_cookies[@cookie_key]
 
-    refute Plug.current_user(conn_2)
+    assert Plug.current_user(conn_2) == user
     refute conn_2.resp_cookies[@cookie_key]
   end
 

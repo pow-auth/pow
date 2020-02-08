@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.19 (TBA)
+
+### Enhancements
+
+* [`Pow.Plug.Session`] Now sets a global lock when renewing the session
+* [`PowPersistentSession.Plug.Cookie`] Now sets a global lock when authenticating the user
+
 ## v1.0.18 (2020-02-14)
 
 ### Bug fixes

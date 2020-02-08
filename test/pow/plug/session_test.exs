@@ -146,7 +146,7 @@ defmodule Pow.Plug.SessionTest do
     refute get_session_id(conn_1) == session_id
     assert {@user, _metadata} = CredentialsCache.get(@store_config, get_session_id(conn_1))
 
-    refute Plug.current_user(conn_2)
+    assert Plug.current_user(conn_2) == @user
     refute conn_2.resp_cookies["foobar"]
     assert get_session_id(conn_2) == session_id
     assert CredentialsCache.get(@store_config, get_session_id(conn_2)) == :not_found
