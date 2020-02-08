@@ -126,8 +126,14 @@ defmodule Pow.Plug.Session do
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
+    case client_store_fetch(conn, config) do
+      {nil, conn}        -> {conn, nil}
+      {session_id, conn} -> fetch(conn, session_id, config)
+    end
+  end
+
+  defp fetch(conn, session_id, config) do
     {store, store_config} = store(config)
-    {session_id, conn}    = client_store_fetch(conn, config)
 
     {session_id, store.get(store_config, session_id)}
     |> convert_old_session_value()
