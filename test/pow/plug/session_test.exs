@@ -114,32 +114,42 @@ defmodule Pow.Plug.SessionTest do
 
   test "call/2 creates new session when :session_renewal_ttl reached and doesn't delete with simultanous request", %{conn: conn} do
     ttl             = 100
-    id              = "token"
+    session_id      = "token"
     config          = Keyword.put(@default_opts, :session_ttl_renewal, ttl)
     stale_timestamp = :os.system_time(:millisecond) - ttl - 1
-
-    CredentialsCache.put(@store_config, id, {@user, inserted_at: stale_timestamp})
 
     conn =
       conn
       |> Conn.fetch_session()
-      |> Conn.put_session(config[:session_key], id)
+      |> Conn.put_session(config[:session_key], session_id)
       |> Conn.send_resp(200, "")
+      |> recycle_session_conn()
 
-    conn = recycle_session_conn(conn)
+    sid          = Conn.fetch_cookies(conn).cookies["foobar"]
+    session_data = Process.get({:session, sid})
 
-    first_conn = run_plug(conn, config)
+    CredentialsCache.put(@store_config, session_id, {@user, inserted_at: stale_timestamp})
 
-    assert Plug.current_user(first_conn) == @user
-    assert first_conn.resp_cookies["foobar"]
-    assert new_id = first_conn.private[:plug_session][config[:session_key]]
-    refute new_id == id
-    assert {@user, _metadata} = CredentialsCache.get(@store_config, new_id)
+    task_1 = Task.async(fn ->
+      Process.put({:session, sid}, session_data)
+      run_plug(conn, config)
+    end)
+    task_2 = Task.async(fn ->
+      Process.put({:session, sid}, session_data)
+      run_plug(conn, config)
+    end)
+    conn_1 = Task.await(task_1)
+    conn_2 = Task.await(task_2)
 
-    second_conn = run_plug(conn, config)
+    assert Plug.current_user(conn_1) == @user
+    assert conn_1.resp_cookies["foobar"]
+    refute get_session_id(conn_1) == session_id
+    assert {@user, _metadata} = CredentialsCache.get(@store_config, get_session_id(conn_1))
 
-    refute second_conn.resp_cookies["foobar"]
-    assert second_conn.private[:plug_session] == %{}
+    refute Plug.current_user(conn_2)
+    refute conn_2.resp_cookies["foobar"]
+    assert get_session_id(conn_2) == session_id
+    assert CredentialsCache.get(@store_config, get_session_id(conn_2)) == :not_found
   end
 
   test "call/2 with prepended `:otp_app` session key", %{conn: conn} do
