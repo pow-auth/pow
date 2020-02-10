@@ -253,7 +253,7 @@ defmodule MyAppWeb.API.V1.SessionController do
   def delete(conn, _params) do
     conn
     |> Pow.Plug.delete()
-    |> json(conn, %{data: %{}})
+    |> json(%{data: %{}})
   end
 end
 ```
