@@ -6,6 +6,29 @@
 
 * [`Pow.Plug.Session`] Now sets a global lock when renewing the session
 * [`PowPersistentSession.Plug.Cookie`] Now sets a global lock when authenticating the user
+* [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.sign_confirmation_token/2` to sign the `email_confirmation_token` to prevent timing attacks
+* [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.confirm_email_by_token/2` to verify the signed `email_confirmation_token` to prevent timing attacks
+* [`PowInvitation.Plug`] Added `PowInvitation.Plug.sign_invitation_token/2` to sign the `invitation_token`
+* [`PowInvitation.Plug`] Added `PowInvitation.Plug.load_invited_user_by_token/2` to verify the signed `invitation_token` to prevent timing attacks
+* [`PowResetPassword.Plug`] Changed `PowResetPassword.Plug.create_reset_token/2` to sign the `:token`
+* [`PowResetPassword.Plug`] Added `PowResetPassword.Plug.load_user_by_token/2` to verify the signed token to prevent timing attacks
+* [`PowResetPassword.Plug`] Changed `PowResetPassword.Plug.update_user_password/2` so it decodes the signed token
+* [`PowPersistentSession.Plug.Cookie`] Now uses signed tokens to prevent timing attacks
+* [`Pow.Plug.Session`] Now uses signed session ID's to prevent timing attacks
+* [`Pow.Plug`] Added `Pow.Plug.sign_token/4` to sign tokens
+* [`Pow.Plug`] Added `Pow.Plug.verify_token/4` to decode and verify signed tokens
+
+### Deprecations
+
+* [`PowEmailConfirmation.Plug`] `PowEmailConfirmation.Plug.confirm_email/2` has been deprecated in favor of `PowEmailConfirmation.Plug.confirm_email_by_token/2`
+* [`PowInvitation.Plug`] `PowInvitation.Plug.invited_user_from_token/2` has been deprecated in favor of `PowInvitation.Plug.load_invited_user_by_token/2`
+* [`PowInvitation.Plug`] `PowInvitation.Plug.assign_invited_user/2` has been deprecated
+* [`PowResetPassword.Plug`] `PowResetPassword.Plug.user_from_token/2` has been deprecated in favor of `PowResetPassword.Plug.load_user_by_token/2`
+* [`PowResetPassword.Plug`] `PowResetPassword.Plug.assign_reset_password_user/2` has been deprecated
+
+### Documentation
+
+* Updated the [API guide](guides/api.md) with signed tokens
 
 ## v1.0.18 (2020-02-14)
 

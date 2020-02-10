@@ -84,21 +84,6 @@ defmodule Pow.PlugTest do
     end
   end
 
-  test "delete/1" do
-    EtsCacheMock.init()
-
-    conn = auth_user_conn()
-    assert user = Plug.current_user(conn)
-    assert session_id = fetch_session_id(conn)
-    assert {key, _metadata} = EtsCacheMock.get([namespace: "credentials"], session_id)
-    assert EtsCacheMock.get([namespace: "credentials"], key) == user
-
-    conn = Plug.delete(conn)
-    refute Plug.current_user(conn)
-    refute fetch_session_id(conn)
-    assert EtsCacheMock.get([namespace: "credentials"], session_id) == :not_found
-  end
-
   test "change_user/2" do
     conn = conn()
     assert %Ecto.Changeset{} = Plug.change_user(conn)
@@ -151,6 +136,16 @@ defmodule Pow.PlugTest do
     refute fetch_session_id(conn)
   end
 
+  test "verify_token/3" do
+    conn         = conn()
+    signed_token = Plug.sign_token(conn, "salt", "token")
+
+    assert Plug.verify_token(%{conn | secret_key_base: conn.secret_key_base <> "invalid"}, "salt", signed_token) == :error
+    assert Plug.verify_token(conn, "invalid", signed_token) == :error
+    assert Plug.verify_token(conn, "salt", "invalid") == :error
+    assert Plug.verify_token(conn, "salt", signed_token) == {:ok, "token"}
+  end
+
   defp auth_user_conn() do
     conn        = conn_with_session_plug()
     {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "test@example.com", "password" => "secret"})
@@ -174,9 +169,12 @@ defmodule Pow.PlugTest do
     Map.get(conn.private[:plug_session], "auth")
   end
 
+  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
+
   defp conn(config \\ @default_config) do
     :get
     |> Test.conn("/")
+    |> Map.put(:secret_key_base, @secret_key_base)
     |> Conn.put_private(:pow_config, config)
   end
 end

@@ -2,10 +2,11 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
   use PowInvitation.TestWeb.Phoenix.ConnCase
 
   alias Plug.Conn
+  alias PowInvitation.Plug
   alias PowInvitation.Test.Users.{User, UsernameUser}
 
   @user %User{id: 1, email: "test@example.com"}
-  @url_regex ~r/http:\/\/localhost\/invitations\/[a-z0-9\-]*\/edit/
+  @url_regex ~r/http:\/\/localhost\/invitations\/[a-zA-Z0-9\-\_\.]*\/edit/
 
   describe "new/2" do
     test "not signed in", %{conn: conn} do
@@ -119,7 +120,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
   describe "show/2" do
     test "not signed in", %{conn: conn} do
-      conn = get(conn, Routes.pow_invitation_invitation_path(conn, :show, "valid"))
+      conn = get(conn, Routes.pow_invitation_invitation_path(conn, :show, sign_token("valid")))
 
       assert_not_authenticated_redirect(conn)
     end
@@ -128,7 +129,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       conn =
         conn
         |> Pow.Plug.assign_current_user(@user, [])
-        |> get(Routes.pow_invitation_invitation_path(conn, :show, "valid"))
+        |> get(Routes.pow_invitation_invitation_path(conn, :show, sign_token("valid")))
 
       assert html = html_response(conn, 200)
       assert html =~ @url_regex
@@ -140,20 +141,27 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       conn =
         conn
         |> Pow.Plug.assign_current_user(@user, [])
-        |> get(Routes.pow_invitation_invitation_path(conn, :edit, "valid"))
+        |> get(Routes.pow_invitation_invitation_path(conn, :edit, sign_token("valid")))
 
       assert_authenticated_redirect(conn)
     end
 
-    test "invalid invitation token", %{conn: conn} do
-      conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, "invalid")
+    test "with invalid invitation token", %{conn: conn} do
+      conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, sign_token("invalid"))
+
+      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert get_flash(conn, :error) == "The invitation doesn't exist."
+    end
+
+    test "with unsigned invitation token", %{conn: conn} do
+      conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, "valid")
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :error) == "The invitation doesn't exist."
     end
 
     test "shows", %{conn: conn} do
-      conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, "valid")
+      conn = get conn, Routes.pow_invitation_invitation_path(conn, :edit, sign_token("valid"))
 
       assert Conn.get_resp_header(conn, "cache-control") == ["no-cache, no-store, must-revalidate"]
 
@@ -178,20 +186,27 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       conn =
         conn
         |> Pow.Plug.assign_current_user(@user, [])
-        |> put(Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params))
+        |> put(Routes.pow_invitation_invitation_path(conn, :update, sign_token("valid"), @valid_params))
 
       assert_authenticated_redirect(conn)
     end
 
-    test "invalid invitation", %{conn: conn} do
-      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "invalid", @valid_params)
+    test "with invalid invitation", %{conn: conn} do
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, sign_token("invalid"), @valid_params)
+
+      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert get_flash(conn, :error) == "The invitation doesn't exist."
+    end
+
+    test "with unsigned invitation token", %{conn: conn} do
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params)
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :error) == "The invitation doesn't exist."
     end
 
     test "with valid params", %{conn: conn} do
-      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params)
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, sign_token("valid"), @valid_params)
 
       assert redirected_to(conn) == "/after_registration"
       assert get_flash(conn, :info) == "user_created"
@@ -199,7 +214,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     end
 
     test "with valid params and email taken", %{conn: conn} do
-      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @valid_params_email_taken)
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, sign_token("valid"), @valid_params_email_taken)
 
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_email\">Email</label>"
@@ -208,7 +223,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     end
 
     test "with invalid params", %{conn: conn} do
-      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, "valid", @invalid_params)
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, sign_token("valid"), @invalid_params)
 
       assert html = html_response(conn, 200)
       assert html =~ "<label for=\"user_email\">Email</label>"
@@ -219,5 +234,13 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
       refute conn.private[:plug_session]["auth"]
     end
+  end
+
+  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
+
+  defp sign_token(token) do
+    conn = %Conn{secret_key_base: @secret_key_base, private: %{pow_config: []}}
+
+    Plug.sign_invitation_token(conn, %{invitation_token: token})
   end
 end

@@ -14,6 +14,9 @@ defmodule Pow.Plug.Session do
   assigned private `:pow_session_metadata` key in the conn. The value has to be
   a keyword list.
 
+  The session id used in the client is signed using `Pow.Plug.sign_token/4` to
+  prevent timing attacks.
+
   ## Example
 
       @pow_config [
@@ -122,6 +125,8 @@ defmodule Pow.Plug.Session do
   The metadata of the session will be assigned as a private
   `:pow_session_metadata` key in the conn so it may be used in `create/3`.
 
+  The session id will be decoded and verified with `Pow.Plug.verify_token/4`.
+
   See `do_fetch/2` for more.
   """
   @impl true
@@ -156,6 +161,9 @@ defmodule Pow.Plug.Session do
   be passed on as the metadata for the session. However the `:inserted_at` value
   will always be overridden. If no `:fingerprint` exists in the metadata a
   random UUID value will be generated as its value.
+
+  The session id will be signed for public consumption with
+  `Pow.Plug.sign_token/4`.
 
   See `do_create/3` for more.
   """
@@ -293,16 +301,24 @@ defmodule Pow.Plug.Session do
   defp timestamp, do: :os.system_time(:millisecond)
 
   defp client_store_fetch(conn, config) do
-    conn       = Conn.fetch_session(conn)
-    session_id = Conn.get_session(conn, session_key(config))
+    conn = Conn.fetch_session(conn)
 
-    {session_id, conn}
+    with session_id when is_binary(session_id) <- Conn.get_session(conn, session_key(config)),
+         {:ok, session_id}                     <- Plug.verify_token(conn, signing_salt(), session_id) do
+      {session_id, conn}
+    else
+      _any -> {nil, conn}
+    end
   end
 
+  defp signing_salt(), do: Atom.to_string(__MODULE__)
+
   defp client_store_put(conn, session_id, config) do
+    signed_session_id = Plug.sign_token(conn, signing_salt(), session_id, config)
+
     conn
     |> Conn.fetch_session()
-    |> Conn.put_session(session_key(config), session_id)
+    |> Conn.put_session(session_key(config), signed_session_id)
     |> Conn.configure_session(renew: true)
   end
 

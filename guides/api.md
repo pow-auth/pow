@@ -69,14 +69,19 @@ defmodule MyAppWeb.APIAuthPlug do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Store.CredentialsCache}
+  alias Pow.{Config, Plug, Store.CredentialsCache}
   alias PowPersistentSession.Store.PersistentSessionCache
 
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
-    token = fetch_auth_token(conn)
+    conn
+    |> fetch_auth_token(config)
+    |> fetch_from_store(conn, config)
+  end
 
+  defp fetch_from_store(nil, conn, _config), do: {conn, nil}
+  defp fetch_from_store(token, conn, config) do
     config
     |> store_config()
     |> CredentialsCache.get(token)
@@ -94,35 +99,39 @@ defmodule MyAppWeb.APIAuthPlug do
     renew_token  = Pow.UUID.generate()
     conn         =
       conn
-      |> Conn.put_private(:api_auth_token, token)
-      |> Conn.put_private(:api_renew_token, renew_token)
+      |> Conn.put_private(:api_auth_token, sign_token(conn, token, config))
+      |> Conn.put_private(:api_renew_token, sign_token(conn, renew_token, config))
 
     CredentialsCache.put(store_config, token, {user, []})
     PersistentSessionCache.put(store_config, renew_token, {[id: user.id], []})
 
     {conn, user}
   end
-  
+
   @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
-    token = fetch_auth_token(conn)
+    case fetch_auth_token(conn, config) do
+      nil ->
+        :ok
 
-    config
-    |> store_config()
-    |> CredentialsCache.delete(token)
+      token ->
+        config
+        |> store_config()
+        |> CredentialsCache.delete(token)
+    end
 
     conn
   end
-  
+
   @doc """
   Create a new token with the provided authorization token.
-  
+
   The renewal authorization token will be deleted from the store after the user id has been fetched.
   """
   @spec renew(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def renew(conn, config) do
-    renew_token  = fetch_auth_token(conn)
+    renew_token  = fetch_auth_token(conn, config)
     store_config = store_config(config)
     res          = PersistentSessionCache.get(store_config, renew_token)
 
@@ -133,7 +142,7 @@ defmodule MyAppWeb.APIAuthPlug do
       res        -> load_and_create_session(conn, res, config)
     end
   end
-  
+
   defp load_and_create_session(conn, {clauses, _metadata}, config) do
     case Pow.Operations.get_by(clauses, config) do
       nil  -> {conn, nil}
@@ -141,12 +150,21 @@ defmodule MyAppWeb.APIAuthPlug do
     end
   end
 
-  defp fetch_auth_token(conn) do
-    conn
-    |> Plug.Conn.get_req_header("authorization")
-    |> List.first()
+  defp sign_token(conn, token, config) do
+    Plug.sign_token(conn, signing_salt(), token, config)
   end
-  
+
+  defp signing_salt(), do: Atom.to_string(__MODULE__)
+
+  defp fetch_auth_token(conn, config) do
+    with [token | _rest] <- Conn.get_req_header(conn, "authorization"),
+         {:ok, token}    <- Plug.verify_token(conn, signing_salt(), token, config) do
+      token
+    else
+      _any -> nil
+    end
+  end
+
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)
 
@@ -293,9 +311,11 @@ defmodule MyAppWeb.APIAuthPlugTest do
   alias MyAppWeb.APIAuthPlug
   alias MyApp.{Repo, Users.User}
 
-  @pow_config [otp_app: :my_app]
+  @pow_config [otp_app: :pow_demo]
+  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 
   test "can fetch, create, delete, and renew session for user", %{conn: conn} do
+    conn = %{conn | secret_key_base: @secret_key_base}
     user = Repo.insert!(%User{id: 1, email: "test@example.com"})
 
     assert {_conn, nil} = APIAuthPlug.fetch(conn, @pow_config)
@@ -364,15 +384,16 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   use MyAppWeb.ConnCase
 
   alias MyApp.{Repo, Users.User}
-  alias MyAppWeb.APIAuthPlug
+  alias MyAppWeb.{APIAuthPlug, Endpoint}
   alias Pow.Ecto.Schema.Password
 
   @pow_config [otp_app: :my_app]
 
-  setup do
+  setup %{conn: conn} do
+    conn = %{conn | secret_key_base: Application.get_env(@pow_config[:otp_app], Endpoint)[:secret_key_base]}
     user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
 
-    {:ok, user: user}
+    {:ok, user: user, conn: conn}
   end
 
   describe "create/2" do

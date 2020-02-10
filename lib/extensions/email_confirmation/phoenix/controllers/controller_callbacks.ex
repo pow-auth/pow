@@ -126,14 +126,16 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   """
   @spec send_confirmation_email(map(), Conn.t()) :: any()
   def send_confirmation_email(user, conn) do
-    url               = confirmation_url(conn, user.email_confirmation_token)
+    url               = confirmation_url(conn, user)
     unconfirmed_user  = %{user | email: user.unconfirmed_email || user.email}
     email             = Mailer.email_confirmation(conn, unconfirmed_user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
   end
 
-  defp confirmation_url(conn, token) do
+  defp confirmation_url(conn, user) do
+    token = Plug.sign_confirmation_token(conn, user)
+
     routes(conn).url_for(conn, ConfirmationController, :show, [token])
   end
 end

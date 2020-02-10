@@ -62,19 +62,49 @@ defmodule PowInvitation.Plug do
   defp invited_user(conn), do: conn.assigns[:invited_user]
 
   @doc """
-  Fetches invited user by the invitation token.
+  Signs the invitation token for public consumption.
+
+  The token will be signed using `Pow.Plug.sign_token/4`.
   """
-  @spec invited_user_from_token(Conn.t(), binary()) :: map() | nil
+  @spec sign_invitation_token(Conn.t(), map()) :: binary()
+  def sign_invitation_token(conn, %{invitation_token: token}),
+    do: Plug.sign_token(conn, signing_salt(), token)
+
+  defp signing_salt(), do: Atom.to_string(__MODULE__)
+
+  @doc """
+  Verifies the token and fetches invited user by the invitation token.
+
+  If a user is found, it'll be assigned to `conn.assign` for key
+  `:invited_user`.
+
+  The token should have been signed with `sign_invitation_token/2`. The token
+  will be decoded and verified with `Pow.Plug.verify_token/4`.
+  """
+  @spec load_invited_user_by_token(Conn.t(), binary()) :: {:ok, Conn.t()} | {:error, Conn.t()}
+  def load_invited_user_by_token(conn, signed_token) do
+    config = Plug.fetch_config(conn)
+
+    with {:ok, token}               <- Plug.verify_token(conn, signing_salt(), signed_token, config),
+         user when not is_nil(user) <- InvitationContext.get_by_invitation_token(token, config) do
+      {:ok, Conn.assign(conn, :invited_user, user)}
+    else
+      _any -> {:error, conn}
+    end
+  end
+
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use `load_invited_user_by_token/2` instead"
   def invited_user_from_token(conn, token) do
     config = Plug.fetch_config(conn)
 
     InvitationContext.get_by_invitation_token(token, config)
   end
 
-  @doc """
-  Assigns a `:invited_user` key with the user in the connection.
-  """
-  @spec assign_invited_user(Conn.t(), map()) :: Conn.t()
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "No longer used"
   def assign_invited_user(conn, user) do
     Conn.assign(conn, :invited_user, user)
   end

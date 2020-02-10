@@ -223,4 +223,69 @@ defmodule Pow.Plug do
       _any                                                            -> false
     end)
   end
+
+  alias Plug.Crypto.{KeyGenerator, MessageVerifier}
+
+  @doc """
+  Signs a token for public consumption.
+
+  Used to prevent timing attacks with token lookup.
+
+  `Plug.Crypto.MessageVerifier.sign/2` is used. The secret is derived from the
+  `salt` and `conn.secret_key_base` using
+  `Plug.Crypto.KeyGenerator.generate/3`. If `:key_generator_opts` is set in the
+  config, this will be passed on to the key generator.
+  """
+  @spec sign_token(Conn.t(), binary(), binary()) :: {:ok, binary()}
+  def sign_token(conn, salt, token) do
+    config = fetch_config(conn)
+
+    sign_token(conn, salt, token, config)
+  end
+
+  @spec sign_token(Conn.t(), binary(), binary(), Config.t()) :: {:ok, binary()}
+  def sign_token(conn, salt, token, config) do
+    secret = derive(conn, salt, key_opts(config))
+
+    MessageVerifier.sign(token, secret)
+  end
+
+  @doc """
+  Decodes and verifies a token.
+
+  Used to prevent timing attacks with token lookup.
+
+  `Plug.Crypto.MessageVerifier.verify/2` is used. The secret is derived from
+  the `salt` and `conn.secret_key_base` using
+  `Plug.Crypto.KeyGenerator.generate/3`. If `:key_generator_opts` is set in the
+  config, this will be passed on to the key generator.
+  """
+  @spec verify_token(Conn.t(), binary(), binary()) :: {:ok, binary()} | :error
+  def verify_token(conn, salt, token) do
+    config = fetch_config(conn)
+
+    verify_token(conn, salt, token, config)
+  end
+
+  @doc false
+  @spec verify_token(Conn.t(), binary(), binary(), Config.t()) :: {:ok, binary()} | :error
+  def verify_token(conn, salt, token, config) do
+    secret = derive(conn, salt, key_opts(config))
+
+    MessageVerifier.verify(token, secret)
+  end
+
+  defp derive(conn, key, key_opts) do
+    conn.secret_key_base
+    |> validate_secret_key_base()
+    |> KeyGenerator.generate(key, key_opts)
+  end
+
+  defp validate_secret_key_base(nil),
+    do: raise ArgumentError, "No conn.secret_key_base set"
+  defp validate_secret_key_base(secret_key_base) when byte_size(secret_key_base) < 64,
+    do: raise ArgumentError, "conn.secret_key_base has to be at least 64 bytes"
+  defp validate_secret_key_base(secret_key_base), do: secret_key_base
+
+  defp key_opts(config), do: Config.get(config, :key_generator_opts, [])
 end
