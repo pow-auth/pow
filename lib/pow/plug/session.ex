@@ -247,11 +247,23 @@ defmodule Pow.Plug.Session do
   end
 
   defp lock_create(conn, session_id, user, config) do
+    id    = {[__MODULE__, session_id], self()}
     nodes = Node.list() ++ [node()]
 
-    case :global.set_lock({[__MODULE__, session_id], self()}, nodes, 0) do
-      true  -> create(conn, user, config)
-      false -> {conn, user}
+    case :global.set_lock(id, nodes, 0) do
+      true ->
+        {conn, user} = create(conn, user, config)
+
+        conn = register_before_send(conn, fn conn ->
+          :global.del_lock(id, nodes)
+
+          conn
+        end)
+
+        {conn, user}
+
+      false ->
+        {conn, user}
     end
   end
 

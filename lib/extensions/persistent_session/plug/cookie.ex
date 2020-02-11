@@ -230,11 +230,18 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
 
   defp lock_auth_user(conn, token, user, metadata, config) do
+    id    = {[__MODULE__, token], self()}
     nodes = Node.list() ++ [node()]
 
-    case :global.set_lock({[__MODULE__, token], self()}, nodes, 0) do
+    case :global.set_lock(id, nodes, 0) do
       true ->
-        auth_user(conn, user, metadata, config)
+        conn
+        |> auth_user(user, metadata, config)
+        |> register_before_send(fn conn ->
+          :global.del_lock(id, nodes)
+
+          conn
+        end)
 
       false ->
         Plug.assign_current_user(conn, user, config)
