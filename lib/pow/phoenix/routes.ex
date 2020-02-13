@@ -98,8 +98,8 @@ defmodule Pow.Phoenix.Routes do
   """
   def user_not_authenticated_path(conn) do
     case conn.method do
-      "GET"   -> session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
-      _method -> session_path(conn, :new)
+      "GET"   -> routes(conn).session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
+      _method -> routes(conn).session_path(conn, :new)
     end
   end
 
@@ -113,7 +113,7 @@ defmodule Pow.Phoenix.Routes do
   @doc """
   Path to redirect user to when user has signed out.
   """
-  def after_sign_out_path(conn), do: session_path(conn, :new)
+  def after_sign_out_path(conn), do: routes(conn).session_path(conn, :new)
 
   @doc """
   Path to redirect user to when user has signed in.
@@ -136,7 +136,7 @@ defmodule Pow.Phoenix.Routes do
   @doc """
   Path to redirect user to when user has updated their account.
   """
-  def after_user_updated_path(conn), do: registration_path(conn, :edit)
+  def after_user_updated_path(conn), do: routes(conn).registration_path(conn, :edit)
 
   @doc """
   Path to redirect user to when user has deleted their account.
@@ -146,10 +146,10 @@ defmodule Pow.Phoenix.Routes do
   def after_user_deleted_path(conn), do: routes(conn).after_sign_out_path(conn)
 
   @doc false
-  def session_path(conn, verb, query_params \\ []), do: path_for(conn, SessionController, verb, [], query_params)
+  def session_path(conn, verb, query_params \\ []), do: routes(conn).path_for(conn, SessionController, verb, [], query_params)
 
   @doc false
-  def registration_path(conn, verb), do: path_for(conn, RegistrationController, verb)
+  def registration_path(conn, verb), do: routes(conn).path_for(conn, RegistrationController, verb)
 
   @doc """
   Generates a path route.

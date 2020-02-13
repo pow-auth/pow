@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.18 (TBA)
+
+### Bug fixes
+
+* [`Pow.Phoenix.Routes`] Fixed bug where callback route methods is not using the overridden method
+
 ## v1.0.17 (2020-02-04)
 
 ### Enhancements
