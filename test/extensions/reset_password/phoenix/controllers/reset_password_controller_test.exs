@@ -42,7 +42,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     end
 
     test "with valid params", %{conn: conn, ets: ets} do
-      conn         = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @valid_params)
+      conn           = post conn, Routes.pow_reset_password_reset_password_path(conn, :create, @valid_params)
       [{[token], _}] = ResetTokenCache.all([backend: ets], [:_])
 
       assert_received {:mail_mock, mail}
@@ -74,15 +74,9 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     end
   end
 
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
   describe "edit/2" do
     setup %{conn: conn} do
-      conn = %{conn | secret_key_base: @secret_key_base}
-      {:ok, %{token: token}, _conn} =
-        conn
-        |> PowPlug.put_config(Test.pow_config())
-        |> Plug.create_reset_token(%{"email" => "test@example.com"})
+      token = create_reset_token(conn, "test@example.com")
 
       {:ok, conn: conn, token: token}
     end
@@ -104,8 +98,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     end
 
     test "with unsigned token", %{conn: conn, token: token} do
-      {:ok, token} = PowPlug.verify_token(conn, Atom.to_string(Plug), token, [])
-      conn = get conn, Routes.pow_reset_password_reset_password_path(conn, :edit, token)
+      token = decode_token(conn, token)
+      conn  = get conn, Routes.pow_reset_password_reset_password_path(conn, :edit, token)
 
       assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
       assert get_flash(conn, :error) == "The reset token has expired."
@@ -128,11 +122,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     @invalid_params %{"user" => %{"password" => @password, "password_confirmation" => "invalid"}}
 
     setup %{conn: conn} do
-      conn = %{conn | secret_key_base: @secret_key_base}
-      {:ok, %{token: token}, _conn} =
-        conn
-        |> PowPlug.put_config(Test.pow_config())
-        |> Plug.create_reset_token(%{"email" => "test@example.com"})
+      token = create_reset_token(conn, "test@example.com")
 
       {:ok, conn: conn, token: token}
     end
@@ -154,8 +144,8 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     end
 
     test "with unsigned token", %{conn: conn, token: token} do
-      {:ok, token} = PowPlug.verify_token(conn, Atom.to_string(Plug), token, [])
-      conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params)
+      token = decode_token(conn, token)
+      conn  = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params)
 
       assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
       assert get_flash(conn, :error) == "The reset token has expired."
@@ -186,16 +176,30 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
     end
 
     test "with missing user", %{conn: conn} do
-      {:ok, %{token: token}, _conn} =
-        conn
-        |> PowPlug.put_config(Test.pow_config())
-        |> Plug.create_reset_token(%{"email" => "missing@example.com"})
-
-      conn = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params)
+      token = create_reset_token(conn, "missing@example.com")
+      conn  = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params)
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
       assert get_flash(conn, :info) == "The password has been updated."
     end
+  end
+
+  defp create_reset_token(conn, email) do
+    {:ok, %{token: token}, _conn} =
+      conn
+      |> PowPlug.put_config(Test.pow_config())
+      |> Plug.create_reset_token(%{"email" => email})
+
+    token
+  end
+
+  defp decode_token(conn, token) do
+    {:ok, token} =
+      conn
+      |> PowPlug.put_config(Test.pow_config())
+      |> PowPlug.verify_token(Atom.to_string(Plug), token)
+
+    token
   end
 
   defp sign_token(conn, token), do: PowPlug.sign_token(conn, Atom.to_string(Plug), token)

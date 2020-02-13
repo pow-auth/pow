@@ -3,7 +3,7 @@ defmodule Pow.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Config, Operations}
+  alias Pow.{Config, Operations, Plug.MessageVerifier}
 
   @private_config_key :pow_config
 
@@ -224,30 +224,23 @@ defmodule Pow.Plug do
     end)
   end
 
-  alias Plug.Crypto.{KeyGenerator, MessageVerifier}
-
   @doc """
   Signs a token for public consumption.
 
   Used to prevent timing attacks with token lookup.
 
-  `Plug.Crypto.MessageVerifier.sign/2` is used. The secret is derived from the
-  `salt` and `conn.secret_key_base` using
-  `Plug.Crypto.KeyGenerator.generate/3`. If `:key_generator_opts` is set in the
-  config, this will be passed on to the key generator.
+  This uses `Pow.Plug.MessageVerifier` by default, but can be changed if the
+  Pow configuration is set with `:message_verifier`. `Pow.Plug.MessageVerifier`
+  can also be configured in this way if `:message_verifier` is set to
+  `{Pow.Plug.MessageVerifier, key_generator_opts: [length: 64]}`
   """
-  @spec sign_token(Conn.t(), binary(), binary()) :: {:ok, binary()}
-  def sign_token(conn, salt, token) do
-    config = fetch_config(conn)
 
-    sign_token(conn, salt, token, config)
-  end
+  @spec sign_token(Conn.t(), binary(), binary(), Config.t() | nil) :: binary()
+  def sign_token(conn, salt, token, config \\ nil) do
+    config           = config || fetch_config(conn)
+    {module, config} = message_verifier_module(config)
 
-  @spec sign_token(Conn.t(), binary(), binary(), Config.t()) :: {:ok, binary()}
-  def sign_token(conn, salt, token, config) do
-    secret = derive(conn, salt, key_opts(config))
-
-    MessageVerifier.sign(token, secret)
+    module.sign(conn, salt, token, config)
   end
 
   @doc """
@@ -255,37 +248,23 @@ defmodule Pow.Plug do
 
   Used to prevent timing attacks with token lookup.
 
-  `Plug.Crypto.MessageVerifier.verify/2` is used. The secret is derived from
-  the `salt` and `conn.secret_key_base` using
-  `Plug.Crypto.KeyGenerator.generate/3`. If `:key_generator_opts` is set in the
-  config, this will be passed on to the key generator.
+  This uses `Pow.Plug.MessageVerifier` by default, but can be changed if the
+  Pow configuration is set with `:message_verifier`. `Pow.Plug.MessageVerifier`
+  can also be configured in this way if `:message_verifier` is set to
+  `{Pow.Plug.MessageVerifier, key_generator_opts: [length: 64]}`
   """
-  @spec verify_token(Conn.t(), binary(), binary()) :: {:ok, binary()} | :error
-  def verify_token(conn, salt, token) do
-    config = fetch_config(conn)
+  @spec verify_token(Conn.t(), binary(), binary(), Config.t() | nil) :: {:ok, binary()} | :error
+  def verify_token(conn, salt, token, config \\ nil) do
+    config           = config || fetch_config(conn)
+    {module, config} = message_verifier_module(config)
 
-    verify_token(conn, salt, token, config)
+    module.verify(conn, salt, token, config)
   end
 
-  @doc false
-  @spec verify_token(Conn.t(), binary(), binary(), Config.t()) :: {:ok, binary()} | :error
-  def verify_token(conn, salt, token, config) do
-    secret = derive(conn, salt, key_opts(config))
-
-    MessageVerifier.verify(token, secret)
+  defp message_verifier_module(config) do
+    case Config.get(config, :message_verifier, MessageVerifier) do
+      {module, config} -> {module, config}
+      module           -> {module, []}
+    end
   end
-
-  defp derive(conn, key, key_opts) do
-    conn.secret_key_base
-    |> validate_secret_key_base()
-    |> KeyGenerator.generate(key, key_opts)
-  end
-
-  defp validate_secret_key_base(nil),
-    do: raise ArgumentError, "No conn.secret_key_base set"
-  defp validate_secret_key_base(secret_key_base) when byte_size(secret_key_base) < 64,
-    do: raise ArgumentError, "conn.secret_key_base has to be at least 64 bytes"
-  defp validate_secret_key_base(secret_key_base), do: secret_key_base
-
-  defp key_opts(config), do: Config.get(config, :key_generator_opts, [])
 end

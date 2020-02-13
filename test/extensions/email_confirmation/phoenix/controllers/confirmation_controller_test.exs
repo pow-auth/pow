@@ -2,8 +2,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
   alias Plug.Conn
+  alias Pow.Plug, as: PowPlug
   alias PowEmailConfirmation.Plug
-  alias PowEmailConfirmation.Test.Users.User
+  alias PowEmailConfirmation.{Test, Test.Users.User}
 
   @session_key "auth"
 
@@ -85,11 +86,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
     end
   end
 
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
   defp sign_token(token) do
-    conn = %Conn{secret_key_base: @secret_key_base, private: %{pow_config: []}}
-
-    Plug.sign_confirmation_token(conn, %{email_confirmation_token: token})
+    %Conn{}
+    |> PowPlug.put_config(Test.pow_config())
+    |> Plug.sign_confirmation_token(%{email_confirmation_token: token})
   end
 end

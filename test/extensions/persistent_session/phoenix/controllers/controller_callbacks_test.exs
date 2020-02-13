@@ -46,7 +46,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
   end
 
   defp get_from_cache(conn, token, config) do
-    assert {:ok, token} = Plug.verify_token(conn, Atom.to_string(Cookie), token, config)
+    assert {:ok, token} = Plug.verify_token(conn, Atom.to_string(Cookie), token)
 
     PersistentSessionCache.get(config, token)
   end

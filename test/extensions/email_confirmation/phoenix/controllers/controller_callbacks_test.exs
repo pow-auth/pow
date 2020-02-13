@@ -5,7 +5,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   alias PowEmailConfirmation.Plug
   alias Pow.Ecto.Schema.Password
   alias Pow.Plug, as: PowPlug
-  alias PowEmailConfirmation.Test.Users.User
+  alias PowEmailConfirmation.{Test, Test.Users.User}
 
   @password "secret1234"
 
@@ -146,11 +146,12 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     @token               "token"
     @params              %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}
     @change_email_params %{"email" => "new@example.com", "password" => @password, "password_confirmation" => @password}
-    @secret_key_base     String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 
-    setup %{conn: conn} do
-      conn  = %{conn | secret_key_base: @secret_key_base, private: %{pow_config: []}}
-      token = PowInvitationPlug.sign_invitation_token(conn, %{invitation_token: @token})
+    setup do
+      token =
+        %Conn{}
+        |> PowPlug.put_config(Test.pow_config())
+        |> PowInvitationPlug.sign_invitation_token(%{invitation_token: @token})
 
       {:ok, token: token}
     end

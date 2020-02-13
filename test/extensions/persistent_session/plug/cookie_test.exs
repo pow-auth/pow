@@ -349,12 +349,9 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert get_from_cache(conn, id, backend: ets) == :not_found
   end
 
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
   defp conn_with_session_plug(config) do
     :get
     |> Test.conn("/")
-    |> Map.put(:secret_key_base, @secret_key_base)
     |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
     |> Session.call(Session.init(config))
   end

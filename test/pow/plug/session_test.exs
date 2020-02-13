@@ -5,12 +5,13 @@ defmodule Pow.Plug.SessionTest do
   alias Plug.{Conn, ProcessStore, Test}
   alias Plug.Session, as: PlugSession
   alias Pow.{Plug, Plug.Session, Store.Backend.EtsCache, Store.CredentialsCache}
-  alias Pow.Test.{Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{Ecto.Users.User, EtsCacheMock, MessageVerifier}
 
   @default_opts [
     current_user_assigns_key: :current_user,
     session_key: "auth",
-    cache_store_backend: EtsCacheMock
+    cache_store_backend: EtsCacheMock,
+    message_verifier: MessageVerifier
   ]
   @store_config [backend: EtsCacheMock]
   @user %User{id: 1}
@@ -81,7 +82,7 @@ defmodule Pow.Plug.SessionTest do
     assert is_nil(conn.assigns[:current_user])
   end
 
-  test "call/2 with unsigned key", %{conn: conn} do
+  test "call/2 with unsigned session id", %{conn: conn} do
     session_id = "token"
     store_in_cache(session_id, {@user, inserted_at: :os.system_time(:millisecond), fingerprint: "fingerprint"})
     conn       =
@@ -383,7 +384,7 @@ defmodule Pow.Plug.SessionTest do
         conn
         |> Conn.fetch_session()
         |> Conn.put_session("auth", session_id)
-        |> run_plug(session_key: "auth")
+        |> run_plug(session_key: "auth", message_verifier: MessageVerifier)
 
       assert conn.assigns[:current_user] == @user
     end
@@ -391,22 +392,15 @@ defmodule Pow.Plug.SessionTest do
 
   defp conn_with_plug_session(conn \\ nil) do
     conn
-    |> Kernel.||(conn())
+    |> Kernel.||(Test.conn(:get, "/"))
     |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
   end
 
   defp recycle_session_conn(old_conn) do
-    conn()
-    |> Test.recycle_cookies(old_conn)
-    |> conn_with_plug_session()
-  end
-
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
-  defp conn() do
     :get
     |> Test.conn("/")
-    |> Map.put(:secret_key_base, @secret_key_base)
+    |> Test.recycle_cookies(old_conn)
+    |> conn_with_plug_session()
   end
 
   defp init_plug(conn, config \\ @default_opts) do
@@ -448,15 +442,11 @@ defmodule Pow.Plug.SessionTest do
   end
 
   defp sign_token(token) do
-    conn = %Conn{secret_key_base: @secret_key_base}
-
-    Plug.sign_token(conn, Atom.to_string(Session), token, [])
+    Plug.sign_token(%Conn{}, Atom.to_string(Session), token, @default_opts)
   end
 
   defp get_from_cache(token) do
-    conn = %Conn{secret_key_base: @secret_key_base}
-
-    assert {:ok, token} = Plug.verify_token(conn, Atom.to_string(Session), token, [])
+    assert {:ok, token} = Plug.verify_token(%Conn{}, Atom.to_string(Session), token, @default_opts)
 
     CredentialsCache.get(@store_config, token)
   end

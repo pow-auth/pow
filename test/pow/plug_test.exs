@@ -5,13 +5,14 @@ defmodule Pow.PlugTest do
   alias Plug.{Conn, ProcessStore, Test}
   alias Plug.Session, as: PlugSession
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
-  alias Pow.Test.{ContextMock, Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{ContextMock, Ecto.Users.User, EtsCacheMock, MessageVerifier}
 
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
     cache_store_backend: EtsCacheMock,
-    user: User
+    user: User,
+    message_verifier: MessageVerifier
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
@@ -136,8 +137,13 @@ defmodule Pow.PlugTest do
     refute fetch_session_id(conn)
   end
 
-  test "verify_token/3" do
-    conn         = conn()
+  test "verify_token/4" do
+    conn =
+      @default_config
+      |> Keyword.put(:message_verifier, Pow.Plug.MessageVerifier)
+      |> conn()
+      |> Map.put(:secret_key_base, String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2))
+
     signed_token = Plug.sign_token(conn, "salt", "token")
 
     assert Plug.verify_token(%{conn | secret_key_base: conn.secret_key_base <> "invalid"}, "salt", signed_token) == :error
@@ -169,12 +175,9 @@ defmodule Pow.PlugTest do
     Map.get(conn.private[:plug_session], "auth")
   end
 
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
   defp conn(config \\ @default_config) do
     :get
     |> Test.conn("/")
-    |> Map.put(:secret_key_base, @secret_key_base)
     |> Conn.put_private(:pow_config, config)
   end
 end

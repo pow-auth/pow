@@ -17,6 +17,7 @@
 * [`Pow.Plug.Session`] Now uses signed session ID's to prevent timing attacks
 * [`Pow.Plug`] Added `Pow.Plug.sign_token/4` to sign tokens
 * [`Pow.Plug`] Added `Pow.Plug.verify_token/4` to decode and verify signed tokens
+* [`Pow.Plug.MessageVerifier`] Added `Pow.Plug.MessageVerifier` module to sign and verify messages
 
 ### Deprecations
 

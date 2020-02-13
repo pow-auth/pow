@@ -2,8 +2,9 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
   use PowInvitation.TestWeb.Phoenix.ConnCase
 
   alias Plug.Conn
+  alias Pow.Plug, as: PowPlug
   alias PowInvitation.Plug
-  alias PowInvitation.Test.Users.{User, UsernameUser}
+  alias PowInvitation.{Test, Test.Users.User, Test.Users.UsernameUser}
 
   @user %User{id: 1, email: "test@example.com"}
   @url_regex ~r/http:\/\/localhost\/invitations\/[a-zA-Z0-9\-\_\.]*\/edit/
@@ -236,11 +237,9 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     end
   end
 
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
-
   defp sign_token(token) do
-    conn = %Conn{secret_key_base: @secret_key_base, private: %{pow_config: []}}
-
-    Plug.sign_invitation_token(conn, %{invitation_token: token})
+    %Conn{}
+    |> PowPlug.put_config(Test.pow_config())
+    |> Plug.sign_invitation_token(%{invitation_token: token})
   end
 end
