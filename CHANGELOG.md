@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.18 (TBA)
+## v1.0.18 (2020-02-14)
 
 ### Bug fixes
 
