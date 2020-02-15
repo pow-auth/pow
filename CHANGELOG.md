@@ -5,6 +5,8 @@
 ### Bug fixes
 
 * [`Pow.Phoenix.Routes`] Fixed bug where callback route methods is not using the overridden method
+* [`PowPersistentSession.Plug.Cookie`] `PowPersistentSession.Plug.Cookie.delete/2` now correctly pulls token during `:before_send` callback
+* [`Pow.Plug.Session`] `Pow.Plug.Session.delete/2` now correctly pulls session id during `:before_send` callback so `PowEmailConfirmation` will remove set session
 
 ## v1.0.17 (2020-02-04)
 

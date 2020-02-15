@@ -17,6 +17,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert redirected_to(conn) == "/after_signed_in"
 
       refute Plug.current_user(conn)
+      refute conn.private[:plug_session]["auth"]
 
       assert_received {:mail_mock, mail}
       assert token = mail.user.email_confirmation_token
@@ -28,6 +29,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     test "when current email has been confirmed", %{conn: conn} do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "confirmed-email@example.com")})
 
+      assert Plug.current_user(conn)
+      assert conn.private[:plug_session]["auth"]
       assert get_flash(conn, :info) == "signed_in"
       assert redirected_to(conn) == "/after_signed_in"
     end
@@ -36,6 +39,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "with-unconfirmed-changed-email@example.com")})
 
       assert %{id: 1} = Plug.current_user(conn)
+      assert conn.private[:plug_session]["auth"]
 
       refute_received {:mail_mock, _mail}
     end
@@ -53,6 +57,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert redirected_to(conn) == "/after_registration"
 
       refute Plug.current_user(conn)
+      refute conn.private[:plug_session]["auth"]
 
       assert_received {:mail_mock, mail}
       assert token = mail.user.email_confirmation_token
@@ -76,6 +81,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       assert redirected_to(conn) == "/after_registration"
 
       refute Plug.current_user(conn)
+      refute conn.private[:plug_session]["auth"]
 
       refute_received {:mail_mock, _mail}
     end
@@ -106,6 +112,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
     test "when email changes", %{conn: conn} do
       conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @change_email_params})
+
       assert %{id: 1, email: "test@example.com", email_confirmation_token: new_token} = Plug.current_user(conn)
 
       assert get_flash(conn, :error) == "You'll need to confirm the e-mail before it's updated. An e-mail confirmation link has been sent to you."

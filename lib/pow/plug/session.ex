@@ -206,20 +206,21 @@ defmodule Pow.Plug.Session do
   """
   @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
-  def delete(conn, config) do
-    case client_store_fetch(conn, config) do
-      {nil, conn}        -> conn
-      {session_id, conn} -> before_send_delete(conn, session_id, config)
-    end
-  end
+  def delete(conn, config), do: before_send_delete(conn, config)
 
-  defp before_send_delete(conn, session_id, config) do
+  defp before_send_delete(conn, config) do
     {store, store_config} = store(config)
 
     register_before_send(conn, fn conn ->
-      store.delete(store_config, session_id)
+      case client_store_fetch(conn, config) do
+        {nil, conn} ->
+          conn
 
-      client_store_delete(conn, config)
+        {session_id, conn} ->
+          store.delete(store_config, session_id)
+
+          client_store_delete(conn, config)
+      end
     end)
   end
 
