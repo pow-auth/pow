@@ -54,9 +54,15 @@ PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 Add the following to `config/config.exs`:
 
 ```elixir
+use Mix.Config
+
+# ... existing config
+  
 config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo
+
+# ... import_config
 ```
 
 Set up `WEB_PATH/endpoint.ex` to enable session based authentication (`Pow.Plug.Session` is added after `Plug.Session`):
