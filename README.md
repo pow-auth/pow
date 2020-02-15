@@ -54,6 +54,13 @@ PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
 Add the following to `config/config.exs`:
 
 ```elixir
+
+# General application configuration
+config :my_app,
+  ecto_repos: [MyApp.Repo]
+  
+# New configuration block placed futher down
+# See: https://github.com/danschultzer/pow/issues/17
 config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo
