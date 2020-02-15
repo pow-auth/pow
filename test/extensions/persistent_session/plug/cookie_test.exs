@@ -45,21 +45,71 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert PersistentSessionCache.get([backend: ets], new_id) == {[id: 1], []}
   end
 
-  test "call/2 assigns user from cookie and doesn't expire with simultanous request", %{conn: conn, ets: ets} do
-    user = %User{id: 1}
-    id   = "test"
-    conn = store_persistent(conn, ets, id, {[id: user.id], []})
+  defmodule PersistentSessionCacheWaitDelete do
+    alias PowPersistentSession.Store.PersistentSessionCache
 
-    task_1 = Task.async(fn -> run_plug(conn) end)
-    task_2 = Task.async(fn -> run_plug(conn) end)
-    conn_1 = Task.await(task_1)
-    conn_2 = Task.await(task_2)
+    @timeout :timer.seconds(5)
+
+    defdelegate put(config, session_id, record_or_records), to: PersistentSessionCache
+
+    defdelegate get(config, session_id), to: PersistentSessionCache
+
+    def delete(config, session_id)do
+      send(self(), {__MODULE__, :wait})
+
+      receive do
+        {__MODULE__, :commit} -> :ok
+      after
+        @timeout -> raise "Timeout reached"
+      end
+
+      PersistentSessionCache.delete(config, session_id)
+    end
+  end
+
+  test "call/2 assigns user from cookie and doesn't expire with simultanous request", %{conn: conn, ets: ets} do
+    :ets.delete(EtsCacheMock)
+    :ets.new(EtsCacheMock, [:ordered_set, :public, :named_table])
+
+    user   = %User{id: 1}
+    id     = "test"
+    conn   = store_persistent(conn, ets, id, {[id: user.id], []})
+    config = [persistent_session_store: {PersistentSessionCacheWaitDelete, ttl: :timer.hours(24) * 30, namespace: "persistent_session"}]
+
+    task_1 =
+      fn -> run_plug(conn, config) end
+      |> Task.async()
+      |> wait_till_ready()
+
+    conn_2 =
+      fn -> run_plug(conn, config) end
+      |> Task.async()
+      |> continue_work()
+      |> Task.await()
+
+    conn_1 =
+      task_1
+      |> continue_work()
+      |> Task.await()
 
     assert Plug.current_user(conn_1) == user
     assert %{value: _id, max_age: @max_age, path: "/"} = conn_1.resp_cookies[@cookie_key]
 
     assert Plug.current_user(conn_2) == user
     refute conn_2.resp_cookies[@cookie_key]
+  end
+
+  defp wait_till_ready(%{pid: tracking_pid} = task) do
+    :erlang.trace(tracking_pid, true, [:receive])
+    assert_receive {:trace, ^tracking_pid, :receive, {PersistentSessionCacheWaitDelete, :wait}}
+
+    task
+  end
+
+  defp continue_work(%{pid: tracking_pid} = task) do
+    send(tracking_pid, {PersistentSessionCacheWaitDelete, :commit})
+
+    task
   end
 
   test "call/2 assigns user from cookie passing fingerprint to the session metadata", %{conn: conn, ets: ets} do
