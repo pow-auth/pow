@@ -147,18 +147,19 @@ defmodule PowPersistentSession.Plug.Cookie do
   `Plug.Conn.delete_resp_cookie/3.
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
-  def delete(conn, config) do
-    case client_store_fetch(conn, config) do
-      {nil, conn}   -> conn
-      {token, conn} -> before_send_delete(conn, token, config)
-    end
-  end
+  def delete(conn, config), do: before_send_delete(conn, config)
 
-  defp before_send_delete(conn, token, config) do
+  defp before_send_delete(conn, config) do
     register_before_send(conn, fn conn ->
-      expire_token_in_store(token, config)
+      case client_store_fetch(conn, config) do
+        {nil, conn} ->
+          conn
 
-      client_store_delete(conn, config)
+        {token, conn} ->
+          expire_token_in_store(token, config)
+
+          client_store_delete(conn, config)
+      end
     end)
   end
 

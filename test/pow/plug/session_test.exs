@@ -259,7 +259,7 @@ defmodule Pow.Plug.SessionTest do
     end
   end
 
-  test "delete/1 removes session id", %{conn: new_conn} do
+  test "delete/2 removes session id", %{conn: new_conn} do
     conn =
       new_conn
       |> init_plug()
@@ -279,6 +279,17 @@ defmodule Pow.Plug.SessionTest do
     refute new_session_id = get_session_id(conn)
     assert is_nil(new_session_id)
     assert CredentialsCache.get(@store_config, session_id) == :not_found
+    assert is_nil(Plug.current_user(conn))
+  end
+
+  test "delete/2 deletes when call create in sequence", %{conn: conn} do
+    conn =
+      conn
+      |> init_plug(@default_opts)
+      |> Session.do_create(@user, @default_opts)
+      |> run_do_delete()
+
+    refute get_session_id(conn)
     assert is_nil(Plug.current_user(conn))
   end
 
