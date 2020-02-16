@@ -115,8 +115,9 @@ defmodule Pow.Plug.Session do
 
   This will fetch a session from the credentials cache with the session id
   fetched through `Plug.Conn.get_session/2` session. If the credentials are
-  stale (timestamp is older than the `:session_ttl_renewal` value), the session
-  will be regenerated with `create/3`.
+  stale (timestamp is older than the `:session_ttl_renewal` value), a global
+  lock will be set, and the session will be regenerated with `create/3`.
+  Nothing happens if setting the lock failed.
 
   The metadata of the session will be assigned as a private
   `:pow_session_metadata` key in the conn so it may be used in `create/3`.
@@ -229,19 +230,40 @@ defmodule Pow.Plug.Session do
   defp convert_old_session_value(any), do: any
 
   defp handle_fetched_session_value({_session_id, :not_found}, conn, _config), do: {conn, nil}
-  defp handle_fetched_session_value({_session_id, {user, metadata}}, conn, config) when is_list(metadata) do
+  defp handle_fetched_session_value({session_id, {user, metadata}}, conn, config) when is_list(metadata) do
     conn
     |> Conn.put_private(:pow_session_metadata, metadata)
-    |> renew_stale_session(user, metadata, config)
+    |> renew_stale_session(session_id, user, metadata, config)
   end
 
-  defp renew_stale_session(conn, user, metadata, config) do
+  defp renew_stale_session(conn, session_id, user, metadata, config) do
     metadata
     |> Keyword.get(:inserted_at)
     |> session_stale?(config)
     |> case do
-      true  -> create(conn, user, config)
+      true  -> lock_create(conn, session_id, user, config)
       false -> {conn, user}
+    end
+  end
+
+  defp lock_create(conn, session_id, user, config) do
+    id    = {[__MODULE__, session_id], self()}
+    nodes = Node.list() ++ [node()]
+
+    case :global.set_lock(id, nodes, 0) do
+      true ->
+        {conn, user} = create(conn, user, config)
+
+        conn = register_before_send(conn, fn conn ->
+          :global.del_lock(id, nodes)
+
+          conn
+        end)
+
+        {conn, user}
+
+      false ->
+        {conn, user}
     end
   end
 

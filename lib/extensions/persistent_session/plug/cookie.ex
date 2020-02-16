@@ -175,9 +175,11 @@ defmodule PowPersistentSession.Plug.Cookie do
   If a persistent session cookie exists, it'll fetch the credentials from the
   persistent session cache.
 
-  If credentials was fetched successfully, the token in the cache is deleted, a
-  new session is created, and `create/2` is called to create a new persistent
-  session cookie.
+  If credentials was fetched successfully, a global lock is set and the token
+  in the cache is deleted, a new session is created, and `create/2` is called
+  to create a new persistent session cookie. If setting the lock failed, the
+  user will fetched will be set for the `conn` with
+  `Pow.Plug.assign_current_user/3`.
 
   If a `:session_metadata` keyword list is fetched from the persistent session
   metadata, all the values will be merged into the private
@@ -206,9 +208,7 @@ defmodule PowPersistentSession.Plug.Cookie do
         conn
 
       {token, {user, metadata}} ->
-        expire_token_in_store(token, config)
-
-        auth_user(conn, user, metadata, config)
+        lock_auth_user(conn, token, user, metadata, config)
     end
   end
 
@@ -228,6 +228,25 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
+
+  defp lock_auth_user(conn, token, user, metadata, config) do
+    id    = {[__MODULE__, token], self()}
+    nodes = Node.list() ++ [node()]
+
+    case :global.set_lock(id, nodes, 0) do
+      true ->
+        conn
+        |> auth_user(user, metadata, config)
+        |> register_before_send(fn conn ->
+          :global.del_lock(id, nodes)
+
+          conn
+        end)
+
+      false ->
+        Plug.assign_current_user(conn, user, config)
+    end
+  end
 
   defp auth_user(conn, user, metadata, config) do
     conn
