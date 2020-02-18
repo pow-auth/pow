@@ -78,10 +78,10 @@ Set up `user.ex` to use Pow:
 
 Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
- 1. Install comeonin for bcrypt in `mix.exs`:
+ 1. Install bcrypt in `mix.exs`:
 
     ```elixir
-    {:comeonin, "~> 3.0"}
+    {:bcrypt_elixir, "~> 2.0"}
     ```
 
  2. Set up `user.ex` to use bcrypt for password hashing:
@@ -90,8 +90,8 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
     defmodule MyApp.User do
       use Ecto.Schema
       use Pow.Ecto.Schema,
-        password_hash_methods: {&Comeonin.Bcrypt.hashpwsalt/1,
-                                &Comeonin.Bcrypt.checkpw/2}
+        password_hash_methods: {&Bcrypt.hash_pwd_salt/1,
+                                &Bcrypt.verify_pass/2}
 
       # ...
     end
