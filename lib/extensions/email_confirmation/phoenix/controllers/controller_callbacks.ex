@@ -48,7 +48,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:ok, user, conn}, _config) do
     return_path = routes(conn).after_registration_path(conn)
 
-    halt_unconfirmed(conn, {:ok, user, conn}, return_path)
+    conn = send_confirmation_email(user, conn, :create)
+    halt_or_continue(conn, {:ok, user, conn}, return_path)
   end
   def before_respond(Pow.Phoenix.RegistrationController, :create, {:error, changeset, conn}, _config) do
     case PowPlug.__prevent_user_enumeration__(conn, changeset) do
@@ -68,35 +69,32 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     return_path = routes(conn).after_sign_in_path(conn)
 
-    halt_unconfirmed(conn, {:ok, conn}, return_path)
+    halt_or_continue(conn, {:ok, conn}, return_path)
   end
   def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config) do
     warn_unconfirmed(conn, user)
   end
 
-  defp halt_unconfirmed(conn, success_response, return_path) do
-    case Plug.email_unconfirmed?(conn) do
-      true  -> halt_and_send_confirmation_email(conn, return_path)
-      false -> success_response
+  defp halt_or_continue(conn, success_response, return_path) do
+    unconfirmed_access_allowed = !!Pow.Config.get(Pow.Plug.fetch_config(conn), :allow_unconfirmed_access)
+    email_is_unconfirmed = Plug.email_unconfirmed?(conn)
+
+    case {unconfirmed_access_allowed, email_is_unconfirmed} do
+      {false, true} ->
+        conn =
+          conn
+          |> PowPlug.delete()
+          |> redirect_with_email_confirmation_required(return_path)
+
+        {:halt, conn}
+
+      _otherwise ->
+        success_response
     end
   end
 
-  defp halt_and_send_confirmation_email(conn, return_path) do
-    send_confirmation_email(PowPlug.current_user(conn), conn)
-
-    conn =
-      conn
-      |> PowPlug.delete()
-      |> redirect_with_email_confirmation_required(return_path)
-
-    {:halt, conn}
-  end
-
   defp redirect_with_email_confirmation_required(conn, return_path) do
-    error = extension_messages(conn).email_confirmation_required(conn)
-
     conn
-    |> Phoenix.Controller.put_flash(:error, error)
     |> Phoenix.Controller.redirect(to: return_path)
   end
 
@@ -113,7 +111,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     error = extension_messages(conn).email_confirmation_required_for_update(conn)
     conn  = Phoenix.Controller.put_flash(conn, :error, error)
 
-    send_confirmation_email(user, conn)
+    conn = send_confirmation_email(user, conn, :update)
 
     {:ok, user, conn}
   end
@@ -124,16 +122,30 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   The user struct passed to the mailer will have the `:email` set to the
   `:unconfirmed_email` value if `:unconfirmed_email` is set.
   """
-  @spec send_confirmation_email(map(), Conn.t()) :: any()
-  def send_confirmation_email(user, conn) do
+  @spec send_confirmation_email(map(), Conn.t(), atom()) :: any()
+  def send_confirmation_email(user, conn, type) do
     url               = confirmation_url(conn, user.email_confirmation_token)
     unconfirmed_user  = %{user | email: user.unconfirmed_email || user.email}
     email             = Mailer.email_confirmation(conn, unconfirmed_user, url)
 
     Pow.Phoenix.Mailer.deliver(conn, email)
+    flash_message_confirmation_email_sent(conn, type)
   end
 
   defp confirmation_url(conn, token) do
     routes(conn).url_for(conn, ConfirmationController, :show, [token])
   end
+
+  defp flash_message_confirmation_email_sent(conn, type) do
+    message = case type do
+      :create ->
+        extension_messages(conn).email_confirmation_required(conn)
+      :update ->
+        extension_messages(conn).email_confirmation_required_for_update(conn)
+    end
+
+    conn
+    |> Phoenix.Controller.put_flash(:info, message)
+  end
+
 end
