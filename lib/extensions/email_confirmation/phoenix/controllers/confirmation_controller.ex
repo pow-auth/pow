@@ -23,7 +23,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   defp redirect_to(conn) do
     case Pow.Plug.current_user(conn) do
       nil   -> routes(conn).session_path(conn, :new)
-      _user -> routes(conn).registration_path(conn, :edit)
+      _user ->
+        routes(conn).after_email_confirmed_path(conn)
+        # routes(conn).registration_path(conn, :edit)
     end
   end
 end
