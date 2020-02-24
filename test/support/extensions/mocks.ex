@@ -143,7 +143,8 @@ defmodule Pow.Test.ExtensionMocks do
 
       plug Plug.Session, @session_options
       plug SessionPlugHelper, @pow_config
-      if Code.ensure_compiled?(unquote(opts[:plug])) do
+      if unquote(opts[:plug]) do
+        Code.ensure_compiled(unquote(opts[:plug]))
         plug unquote(opts[:plug])
       end
       plug unquote(web_module).Phoenix.Router
