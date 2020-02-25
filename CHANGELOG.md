@@ -2,6 +2,8 @@
 
 ## v1.0.19 (TBA)
 
+**Warning:** This release will now sign and verify all tokens, causing previous tokens to no longer work. Any sessions and persistent sessions will be invalidated.
+
 ### Enhancements
 
 * [`Pow.Plug.Session`] Now sets a global lock when renewing the session
