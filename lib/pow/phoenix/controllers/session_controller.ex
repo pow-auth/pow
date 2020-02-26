@@ -39,9 +39,7 @@ defmodule Pow.Phoenix.SessionController do
   @doc false
   @spec respond_create({:ok | :error, Conn.t()}) :: Conn.t()
   def respond_create({:ok, conn}) do
-    conn
-    |> put_flash(:info, messages(conn).signed_in(conn))
-    |> redirect(to: routes(conn).after_sign_in_path(conn))
+    routes(conn).after_sign_in(conn)
   end
   def respond_create({:error, conn}) do
     conn
@@ -57,9 +55,7 @@ defmodule Pow.Phoenix.SessionController do
   @doc false
   @spec respond_delete({:ok, Conn.t()}) :: Conn.t()
   def respond_delete({:ok, conn}) do
-    conn
-    |> put_flash(:info, messages(conn).signed_out(conn))
-    |> redirect(to: routes(conn).after_sign_out_path(conn))
+    routes(conn).after_sign_out(conn)
   end
 
   defp assign_request_path(%{params: %{"request_path" => request_path}} = conn, _opts) do

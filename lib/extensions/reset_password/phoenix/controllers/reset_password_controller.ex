@@ -72,7 +72,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordController do
   @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
   def respond_update({:ok, _user, conn}) do
     conn
-    |> put_flash(:info, extension_messages(conn).password_has_been_reset(conn))
+    |> put_flash(:success, extension_messages(conn).password_has_been_reset(conn))
     |> redirect(to: routes(conn).session_path(conn, :new))
   end
   def respond_update({:error, changeset, conn}) do

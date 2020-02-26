@@ -8,6 +8,11 @@ defmodule PowEmailConfirmation.Phoenix.Messages do
   @doc """
   Flash message to show when email has been confirmed.
   """
+  def confirmation_email_has_been_resent(_conn), do: "A confirmation email has been sent."
+
+  @doc """
+  Flash message to show when email has been confirmed.
+  """
   def email_has_been_confirmed(_conn), do: "The email address has been confirmed."
 
   @doc """

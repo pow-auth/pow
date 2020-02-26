@@ -32,6 +32,20 @@ defmodule Pow.Plug do
   end
 
   @doc """
+  Refreshes the current_user with the persistent version in case it changed
+  """
+  @spec refresh_current_user(Conn.t()) :: Conn.t()
+  def refresh_current_user(conn) do
+    config = fetch_config(conn)
+
+    {:ok, clauses} = current_user(conn, config)
+    |> Pow.Operations.fetch_primary_key_values(config)
+
+    refreshed_user = Pow.Operations.get_by(clauses, config)
+    create(conn, refreshed_user, config)
+  end
+
+  @doc """
   Assign an authenticated user to the connection.
 
   This will assign the user to the conn. The key is by default `:current_user`,

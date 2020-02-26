@@ -44,6 +44,18 @@ defmodule PowEmailConfirmation.Plug do
     |> maybe_confirm_email(conn, config)
   end
 
+  @spec refreshed_user_with_confirmation_token(Conn.t()) :: any()
+  def refreshed_user_with_confirmation_token(conn) do
+    refreshed_user = conn
+      |> Plug.refresh_current_user()
+      |> Plug.current_user()
+
+      case Context.ensure_confirmation_token(refreshed_user, Plug.fetch_config(conn)) do
+        {:ok, maybe_updated_user} -> maybe_updated_user
+        {:error, _changeset} -> refreshed_user
+      end
+  end
+
   defp maybe_confirm_email(nil, conn, _config) do
     {:error, nil, conn}
   end

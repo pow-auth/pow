@@ -31,12 +31,19 @@ defmodule Pow.Phoenix.Routes do
   alias Plug.Conn
   alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
 
+  use Pow.Phoenix.Controller
+
   @callback user_not_authenticated_path(Conn.t()) :: binary()
   @callback user_already_authenticated_path(Conn.t()) :: binary()
+  @callback after_sign_out(Conn.t()) :: Conn.t()
   @callback after_sign_out_path(Conn.t()) :: binary()
+  @callback after_sign_in(Conn.t()) :: Conn.t()
   @callback after_sign_in_path(Conn.t()) :: binary()
+  @callback after_registration(Conn.t()) :: Conn.t()
   @callback after_registration_path(Conn.t()) :: binary()
+  @callback after_user_updated(Conn.t()) :: Conn.t()
   @callback after_user_updated_path(Conn.t()) :: binary()
+  @callback after_user_deleted(Conn.t()) :: Conn.t()
   @callback after_user_deleted_path(Conn.t()) :: binary()
   @callback session_path(Conn.t(), atom(), list()) :: binary()
   @callback registration_path(Conn.t(), atom()) :: binary()
@@ -54,17 +61,32 @@ defmodule Pow.Phoenix.Routes do
       def user_already_authenticated_path(conn),
         do: unquote(__MODULE__).user_already_authenticated_path(conn, __MODULE__)
 
+      def after_sign_out(conn),
+        do: unquote(__MODULE__).after_sign_out(conn, __MODULE__)
+
       def after_sign_out_path(conn),
         do: unquote(__MODULE__).after_sign_out_path(conn, __MODULE__)
 
+      def after_sign_in(conn),
+        do: unquote(__MODULE__).after_sign_in(conn, __MODULE__)
+
       def after_sign_in_path(conn),
         do: unquote(__MODULE__).after_sign_in_path(conn, __MODULE__)
+
+      def after_registration(conn),
+        do: unquote(__MODULE__).after_registration(conn, __MODULE__)
 
       def after_registration_path(conn),
         do: unquote(__MODULE__).after_registration_path(conn, __MODULE__)
 
       def after_user_updated_path(conn),
         do: unquote(__MODULE__).after_user_updated_path(conn, __MODULE__)
+
+      def after_user_updated(conn),
+        do: unquote(__MODULE__).after_user_updated(conn, __MODULE__)
+
+      def after_user_deleted(conn),
+        do: unquote(__MODULE__).after_user_deleted(conn, __MODULE__)
 
       def after_user_deleted_path(conn),
         do: unquote(__MODULE__).after_user_deleted_path(conn, __MODULE__)
@@ -121,11 +143,23 @@ defmodule Pow.Phoenix.Routes do
   This will look for a `:request_path` assigns key, and redirect to this value
   if it exists.
   """
+  def after_sign_in(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).signed_in(conn))
+    |> redirect(to: routes_module.after_sign_in_path(conn))
+  end
+
   def after_sign_in_path(params, routes_module \\ __MODULE__)
   def after_sign_in_path(%{assigns: %{request_path: request_path}}, _routes_module) when is_binary(request_path),
     do: request_path
 
   def after_sign_in_path(_params, _routes_module), do: "/"
+
+  def after_registration(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).user_has_been_created(conn))
+    |> redirect(to: routes_module.after_registration_path(conn))
+  end
 
   @doc """
   Path to redirect user to when user has signed up.
@@ -134,10 +168,28 @@ defmodule Pow.Phoenix.Routes do
   """
   def after_registration_path(conn, routes_module \\ __MODULE__), do: routes_module.after_sign_in_path(conn)
 
+  def after_user_updated(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).user_has_been_updated(conn))
+    |> redirect(to: routes_module.after_user_updated_path(conn))
+  end
+
   @doc """
   Path to redirect user to when user has updated their account.
   """
   def after_user_updated_path(conn, routes_module \\ __MODULE__), do: routes_module.registration_path(conn, :edit)
+
+  def after_user_deleted(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).user_has_been_deleted(conn))
+    |> redirect(to: routes_module.after_user_deleted_path(conn))
+  end
+
+  def after_user_not_deleted(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:error, messages(conn).user_could_not_be_deleted(conn))
+    |> redirect(to: routes_module.path_for(conn, __MODULE__, :edit))
+  end
 
   @doc """
   Path to redirect user to when user has deleted their account.
@@ -145,6 +197,12 @@ defmodule Pow.Phoenix.Routes do
   By default this is the same as `after_sign_out_path/1`.
   """
   def after_user_deleted_path(conn, routes_module \\ __MODULE__), do: routes_module.after_sign_out_path(conn)
+
+  def after_sign_out(conn, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).signed_out(conn))
+    |> redirect(to: routes_module.after_sign_out_path(conn))
+  end
 
   @doc false
   def session_path(conn, verb, query_params \\ [], routes_module \\ __MODULE__), do: routes_module.path_for(conn, SessionController, verb, [], query_params)

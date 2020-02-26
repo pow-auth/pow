@@ -30,9 +30,7 @@ defmodule Pow.Phoenix.RegistrationController do
 
   @spec respond_create({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_create({:ok, _user, conn}) do
-    conn
-    |> put_flash(:info, messages(conn).user_has_been_created(conn))
-    |> redirect(to: routes(conn).after_registration_path(conn))
+    routes(conn).after_registration(conn)
   end
   def respond_create({:error, changeset, conn}) do
     conn
@@ -59,9 +57,7 @@ defmodule Pow.Phoenix.RegistrationController do
 
   @spec respond_update({:ok, map(), Conn.t()}) :: Conn.t()
   def respond_update({:ok, _user, conn}) do
-    conn
-    |> put_flash(:info, messages(conn).user_has_been_updated(conn))
-    |> redirect(to: routes(conn).after_user_updated_path(conn))
+    routes(conn).after_user_updated(conn)
   end
   def respond_update({:error, changeset, conn}) do
     conn
@@ -76,14 +72,10 @@ defmodule Pow.Phoenix.RegistrationController do
 
   @spec respond_delete({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_delete({:ok, _user, conn}) do
-    conn
-    |> put_flash(:info, messages(conn).user_has_been_deleted(conn))
-    |> redirect(to: routes(conn).after_user_deleted_path(conn))
+    routes(conn).after_user_deleted(conn)
   end
   def respond_delete({:error, _changeset, conn}) do
-    conn
-    |> put_flash(:error, messages(conn).user_could_not_be_deleted(conn))
-    |> redirect(to: routes(conn).path_for(conn, __MODULE__, :edit))
+    routes(conn).after_user_not_deleted(conn)
   end
 
   defp assign_create_path(conn, _opts) do

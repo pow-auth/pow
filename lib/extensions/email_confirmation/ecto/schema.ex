@@ -95,6 +95,18 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   end
   def changeset(changeset, _attrs, _config), do: changeset
 
+  def ensure_confirmation_token_changeset(%Changeset{} = changeset) do
+    changeset
+    |> Changeset.put_change(:email_confirmation_token, changeset.data.email_confirmation_token || UUID.generate())
+    |> Changeset.unique_constraint(:email_confirmation_token)
+  end
+
+  def ensure_confirmation_token_changeset(user) do
+    user
+    |> Changeset.change()
+    |> ensure_confirmation_token_changeset()
+  end
+
   defp built?(changeset), do: Ecto.get_meta(changeset.data, :state) == :built
 
   defp email_reverted?(changeset, attrs) do

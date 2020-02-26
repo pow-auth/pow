@@ -40,4 +40,14 @@ defmodule PowEmailConfirmation.Ecto.Context do
     |> Schema.confirm_email_changeset()
     |> Context.do_update(config)
   end
+
+  @doc """
+  Makes sure the confirmation token is present before send the email.
+  """
+  @spec ensure_confirmation_token(Context.user(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
+  def ensure_confirmation_token(user, config) do
+    user
+    |> Schema.ensure_confirmation_token_changeset()
+    |> Context.do_update(config)
+  end
 end
