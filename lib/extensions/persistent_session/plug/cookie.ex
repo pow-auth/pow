@@ -10,6 +10,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   set along with the user clause as the persistent session value as
   `{[id: user_id], session_metadata: [fingerprint: fingerprint]}`.
 
+  The token used in the client is signed using `Pow.Plug.sign_token/4` to
+  prevent timing attacks.
+
   ## Example
 
     defmodule MyAppWeb.Endpoint do
@@ -84,6 +87,8 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   The unique token will be prepended by the `:otp_app` configuration value, if
   present.
+
+  The token will be signed for public consumption with `Pow.Plug.sign_token/4`.
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, user, config) do
@@ -184,6 +189,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   If a `:session_metadata` keyword list is fetched from the persistent session
   metadata, all the values will be merged into the private
   `:pow_session_metadata` key in the conn.
+
+  The persistent session token will be decoded and verified with
+  `Pow.Plug.verify_token/4`.
   """
   @spec authenticate(Conn.t(), Config.t()) :: Conn.t()
   def authenticate(conn, config) do
@@ -311,16 +319,24 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp client_store_fetch(conn, config) do
-    conn  = Conn.fetch_cookies(conn)
-    token = conn.req_cookies[cookie_key(config)]
+    conn = Conn.fetch_cookies(conn)
 
-    {token, conn}
+    with token when is_binary(token) <- conn.req_cookies[cookie_key(config)],
+         {:ok, token}                <- Plug.verify_token(conn, signing_salt(), token, config) do
+      {token, conn}
+    else
+      _any -> {nil, conn}
+    end
   end
 
-  defp client_store_put(conn, value, config) do
+  defp signing_salt(), do: Atom.to_string(__MODULE__)
+
+  defp client_store_put(conn, token, config) do
+    signed_token = Plug.sign_token(conn, signing_salt(), token, config)
+
     conn
     |> Conn.fetch_cookies()
-    |> Conn.put_resp_cookie(cookie_key(config), value, cookie_opts(config))
+    |> Conn.put_resp_cookie(cookie_key(config), signed_token, cookie_opts(config))
   end
 
   defp client_store_delete(conn, config) do

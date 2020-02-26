@@ -42,7 +42,9 @@ defmodule Pow.Test.ExtensionMocks do
       messages_backend: Module.concat([web_module, Phoenix.Messages]),
       routes_backend: Module.concat([web_module, Phoenix.Routes]),
       extensions: extensions,
-      controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks]
+      controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
+      message_verifier: Pow.Test.MessageVerifier
+    ]
 
     __user_schema__(context_module, extensions)
     __phoenix_endpoint__(web_module, config, opts)

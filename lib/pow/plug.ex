@@ -3,7 +3,7 @@ defmodule Pow.Plug do
   Plug helper methods.
   """
   alias Plug.Conn
-  alias Pow.{Config, Operations}
+  alias Pow.{Config, Operations, Plug.MessageVerifier}
 
   @private_config_key :pow_config
 
@@ -222,5 +222,49 @@ defmodule Pow.Plug do
       {^field, {_msg, [constraint: :unique, constraint_name: _name]}} -> true
       _any                                                            -> false
     end)
+  end
+
+  @doc """
+  Signs a token for public consumption.
+
+  Used to prevent timing attacks with token lookup.
+
+  This uses `Pow.Plug.MessageVerifier` by default, but can be changed if the
+  Pow configuration is set with `:message_verifier`. `Pow.Plug.MessageVerifier`
+  can also be configured in this way if `:message_verifier` is set to
+  `{Pow.Plug.MessageVerifier, key_generator_opts: [length: 64]}`
+  """
+
+  @spec sign_token(Conn.t(), binary(), binary(), Config.t() | nil) :: binary()
+  def sign_token(conn, salt, token, config \\ nil) do
+    config           = config || fetch_config(conn)
+    {module, config} = message_verifier_module(config)
+
+    module.sign(conn, salt, token, config)
+  end
+
+  @doc """
+  Decodes and verifies a token.
+
+  Used to prevent timing attacks with token lookup.
+
+  This uses `Pow.Plug.MessageVerifier` by default, but can be changed if the
+  Pow configuration is set with `:message_verifier`. `Pow.Plug.MessageVerifier`
+  can also be configured in this way if `:message_verifier` is set to
+  `{Pow.Plug.MessageVerifier, key_generator_opts: [length: 64]}`
+  """
+  @spec verify_token(Conn.t(), binary(), binary(), Config.t() | nil) :: {:ok, binary()} | :error
+  def verify_token(conn, salt, token, config \\ nil) do
+    config           = config || fetch_config(conn)
+    {module, config} = message_verifier_module(config)
+
+    module.verify(conn, salt, token, config)
+  end
+
+  defp message_verifier_module(config) do
+    case Config.get(config, :message_verifier, MessageVerifier) do
+      {module, config} -> {module, config}
+      module           -> {module, []}
+    end
   end
 end

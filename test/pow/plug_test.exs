@@ -5,13 +5,14 @@ defmodule Pow.PlugTest do
   alias Plug.{Conn, ProcessStore, Test}
   alias Plug.Session, as: PlugSession
   alias Pow.{Config, Config.ConfigError, Plug, Plug.Session}
-  alias Pow.Test.{ContextMock, Ecto.Users.User, EtsCacheMock}
+  alias Pow.Test.{ContextMock, Ecto.Users.User, EtsCacheMock, MessageVerifier}
 
   @default_config [
     current_user_assigns_key: :current_user,
     users_context: ContextMock,
     cache_store_backend: EtsCacheMock,
-    user: User
+    user: User,
+    message_verifier: MessageVerifier
   ]
   @admin_config Config.put(@default_config, :current_user_assigns_key, :current_admin_user)
 
@@ -84,21 +85,6 @@ defmodule Pow.PlugTest do
     end
   end
 
-  test "delete/1" do
-    EtsCacheMock.init()
-
-    conn = auth_user_conn()
-    assert user = Plug.current_user(conn)
-    assert session_id = fetch_session_id(conn)
-    assert {key, _metadata} = EtsCacheMock.get([namespace: "credentials"], session_id)
-    assert EtsCacheMock.get([namespace: "credentials"], key) == user
-
-    conn = Plug.delete(conn)
-    refute Plug.current_user(conn)
-    refute fetch_session_id(conn)
-    assert EtsCacheMock.get([namespace: "credentials"], session_id) == :not_found
-  end
-
   test "change_user/2" do
     conn = conn()
     assert %Ecto.Changeset{} = Plug.change_user(conn)
@@ -149,6 +135,21 @@ defmodule Pow.PlugTest do
     assert user.id == :deleted
     refute Plug.current_user(conn)
     refute fetch_session_id(conn)
+  end
+
+  test "verify_token/4" do
+    conn =
+      @default_config
+      |> Keyword.put(:message_verifier, Pow.Plug.MessageVerifier)
+      |> conn()
+      |> Map.put(:secret_key_base, String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2))
+
+    signed_token = Plug.sign_token(conn, "salt", "token")
+
+    assert Plug.verify_token(%{conn | secret_key_base: conn.secret_key_base <> "invalid"}, "salt", signed_token) == :error
+    assert Plug.verify_token(conn, "invalid", signed_token) == :error
+    assert Plug.verify_token(conn, "salt", "invalid") == :error
+    assert Plug.verify_token(conn, "salt", signed_token) == {:ok, "token"}
   end
 
   defp auth_user_conn() do

@@ -1,7 +1,8 @@
 defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
   use PowPersistentSession.TestWeb.Phoenix.ConnCase
 
-  alias PowPersistentSession.Store.PersistentSessionCache
+  alias Pow.Plug
+  alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
 
   @valid_params %{"email" => "test@example.com", "password" => "secret1234"}
   @max_age Integer.floor_div(:timer.hours(30) * 24, 1000)
@@ -13,7 +14,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
 
       assert session_fingerprint = conn.private[:pow_session_metadata][:fingerprint]
       assert %{max_age: @max_age, path: "/", value: id} = conn.resp_cookies[@cookie_key]
-      assert PersistentSessionCache.get([backend: ets], id) == {[id: 1], session_metadata: [fingerprint: session_fingerprint]}
+      assert get_from_cache(conn, id, backend: ets) == {[id: 1], session_metadata: [fingerprint: session_fingerprint]}
     end
 
     test "with persistent_session param set to false", %{conn: conn} do
@@ -40,7 +41,13 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
       conn = delete conn, Routes.pow_session_path(conn, :delete)
 
       assert conn.resp_cookies[@cookie_key] == %{max_age: 0, path: "/", universal_time: {{1970, 1, 1}, {0, 0, 0}}}
-      assert PersistentSessionCache.get([backend: ets], id) == :not_found
+      assert get_from_cache(conn, id, backend: ets) == :not_found
     end
+  end
+
+  defp get_from_cache(conn, token, config) do
+    assert {:ok, token} = Plug.verify_token(conn, Atom.to_string(Cookie), token)
+
+    PersistentSessionCache.get(config, token)
   end
 end
