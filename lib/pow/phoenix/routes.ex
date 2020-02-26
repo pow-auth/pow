@@ -35,8 +35,8 @@ defmodule Pow.Phoenix.Routes do
 
   @callback user_not_authenticated_path(Conn.t()) :: binary()
   @callback user_already_authenticated_path(Conn.t()) :: binary()
-  @callback after_sign_out(Conn.t()) :: Conn.t()
-  @callback after_sign_out_path(Conn.t()) :: binary()
+  @callback after_sign_out(Conn.t(), any()) :: Conn.t()
+  @callback after_sign_out_path(Conn.t(), any()) :: binary()
   @callback after_sign_in(Conn.t()) :: Conn.t()
   @callback after_sign_in_path(Conn.t()) :: binary()
   @callback after_registration(Conn.t()) :: Conn.t()
@@ -61,11 +61,11 @@ defmodule Pow.Phoenix.Routes do
       def user_already_authenticated_path(conn),
         do: unquote(__MODULE__).user_already_authenticated_path(conn, __MODULE__)
 
-      def after_sign_out(conn),
-        do: unquote(__MODULE__).after_sign_out(conn, __MODULE__)
+      def after_sign_out(conn, user),
+        do: unquote(__MODULE__).after_sign_out(conn, user, __MODULE__)
 
-      def after_sign_out_path(conn),
-        do: unquote(__MODULE__).after_sign_out_path(conn, __MODULE__)
+      def after_sign_out_path(conn, user),
+        do: unquote(__MODULE__).after_sign_out_path(conn, user, __MODULE__)
 
       def after_sign_in(conn),
         do: unquote(__MODULE__).after_sign_in(conn, __MODULE__)
@@ -135,7 +135,14 @@ defmodule Pow.Phoenix.Routes do
   @doc """
   Path to redirect user to when user has signed out.
   """
-  def after_sign_out_path(conn, routes_module \\ __MODULE__), do: routes_module.session_path(conn, :new)
+
+  def after_sign_out(conn, user \\ nil, routes_module \\ __MODULE__) do
+    conn
+    |> put_flash(:info, messages(conn).signed_out(conn))
+    |> redirect(to: routes_module.after_sign_out_path(conn, user))
+  end
+
+  def after_sign_out_path(conn, _user \\ nil,  routes_module \\ __MODULE__), do: routes_module.session_path(conn, :new)
 
   @doc """
   Path to redirect user to when user has signed in.
@@ -197,12 +204,6 @@ defmodule Pow.Phoenix.Routes do
   By default this is the same as `after_sign_out_path/1`.
   """
   def after_user_deleted_path(conn, routes_module \\ __MODULE__), do: routes_module.after_sign_out_path(conn)
-
-  def after_sign_out(conn, routes_module \\ __MODULE__) do
-    conn
-    |> put_flash(:info, messages(conn).signed_out(conn))
-    |> redirect(to: routes_module.after_sign_out_path(conn))
-  end
 
   @doc false
   def session_path(conn, verb, query_params \\ [], routes_module \\ __MODULE__), do: routes_module.path_for(conn, SessionController, verb, [], query_params)

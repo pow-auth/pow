@@ -49,13 +49,18 @@ defmodule Pow.Phoenix.SessionController do
   end
 
   @doc false
-  @spec process_delete(Conn.t(), map()) :: {:ok, Conn.t()}
-  def process_delete(conn, _params), do: {:ok, Plug.delete(conn)}
+  @spec process_delete(Conn.t(), map()) :: {:ok, any(), Conn.t()}
+  def process_delete(conn, _params) do
+    conn = conn
+    |> Conn.assign(:signed_out_user, Plug.current_user(conn))
+    |> Plug.delete()
+    {:ok, conn}
+  end
 
   @doc false
-  @spec respond_delete({:ok, Conn.t()}) :: Conn.t()
+  @spec respond_delete({:ok, any(), Conn.t()}) :: Conn.t()
   def respond_delete({:ok, conn}) do
-    routes(conn).after_sign_out(conn)
+    routes(conn).after_sign_out(conn, Map.get(conn.assigns, :signed_out_user))
   end
 
   defp assign_request_path(%{params: %{"request_path" => request_path}} = conn, _opts) do
