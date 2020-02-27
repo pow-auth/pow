@@ -8,6 +8,8 @@ We'll set up a [custom authorization plug](../README.md#authorization-plug) wher
 
 First you should follow the [Getting Started](../README.md#getting-started) section in README until before the `WEB_PATH/endpoint.ex` modification.
 
+⚠️: This guide currently requires the master branch of Pow to be included in your project as a dependency, as it uses new methods not available as of `v1.0.18`. You can do this by updating your mix.exs dependencies with `{:pow, git: "https://github.com/danschultzer/pow.git"}`.
+
 ## Routes
 
 Modify `lib/my_app_web/router.ex` with API pipelines, and API endpoints for session and registration controllers:
