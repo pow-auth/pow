@@ -311,7 +311,7 @@ defmodule MyAppWeb.APIAuthPlugTest do
   alias MyAppWeb.APIAuthPlug
   alias MyApp.{Repo, Users.User}
 
-  @pow_config [otp_app: :pow_demo]
+  @pow_config [otp_app: :my_app]
   @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 
   test "can fetch, create, delete, and renew session for user", %{conn: conn} do
