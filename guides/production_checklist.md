@@ -42,6 +42,8 @@ Mnesia will store the database files in the directory `./Mnesia.NODE` in the cur
 config :mnesia, :dir, '/path/to/dir'
 ```
 
+`:mnesia` should be added to `:extra_applications` in `mix.exs` for it to be included in releases.
+
 ## OPTIONAL: Validate that strong passwords are used
 
 [NIST 800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html#-5112-memorized-secret-verifiers) recommends that you reject passwords that are commonly-used, expected, or compromised. The guidelines explicitly mentions the following methods to ensure strong passwords are used:
