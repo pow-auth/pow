@@ -5,7 +5,7 @@ defmodule PowResetPassword.Plug do
   alias Plug.Conn
   alias Pow.{Config, Plug, Store.Backend.EtsCache, UUID}
   alias PowResetPassword.Ecto.Context, as: ResetPasswordContext
-  alias PowResetPassword.{Ecto.Schema, Store.ResetTokenCache}
+  alias PowResetPassword.Store.ResetTokenCache
 
   @doc """
   Creates a changeset from the user fetched in the connection.
@@ -14,7 +14,7 @@ defmodule PowResetPassword.Plug do
   def change_user(conn, params \\ %{}) do
     user = reset_password_user(conn) || user_struct(conn)
 
-    Schema.reset_password_changeset(user, params)
+    user.__struct__.reset_password_changeset(user, params)
   end
 
   defp user_struct(conn) do
@@ -71,9 +71,9 @@ defmodule PowResetPassword.Plug do
   defp signing_salt(), do: Atom.to_string(__MODULE__)
 
   @doc """
-  Verifies the signed token and fetches invited user from store.
+  Verifies the signed token and fetches user from store.
 
-  If a user is found, it'll be assigned to `conn.assign` for key
+  If a user is found, it'll be assigned to `conn.assigns` for key
   `:reset_password_user`.
 
   The token will be decoded and verified with `Pow.Plug.verify_token/4`.
@@ -123,6 +123,9 @@ defmodule PowResetPassword.Plug do
 
   @doc """
   Updates the password for the user fetched in the connection.
+
+  Expects the user to exist in `conn.assigns` for key
+  `:reset_password_user`.
 
   See `create_reset_token/2` for more on `:reset_password_token_store` config
   option.

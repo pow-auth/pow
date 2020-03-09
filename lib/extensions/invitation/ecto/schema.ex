@@ -64,7 +64,11 @@ defmodule PowInvitation.Ecto.Schema do
 
       defdelegate pow_invite_changeset(changeset, invited_by, attrs), to: unquote(__MODULE__), as: :invite_changeset
 
-      defoverridable invite_changeset: 3
+      def accept_invitation_changeset(changeset, attrs), do: pow_accept_invitation_changeset(changeset, attrs)
+
+      defdelegate pow_accept_invitation_changeset(changeset, attrs), to: unquote(__MODULE__), as: :accept_invitation_changeset
+
+      defoverridable invite_changeset: 3, accept_invitation_changeset: 2
     end
   end
 
