@@ -42,37 +42,58 @@ defmodule PowEmailConfirmation.Plug do
   defp signing_salt(), do: Atom.to_string(__MODULE__)
 
   @doc """
-  Verifies the token and confirms the e-mail for the user found with it.
+  Verifies the signed token and fetches user.
 
-  If successful, and a session exists, the session will be regenerated.
+  If a user is found, it'll be assigned to `conn.assigns` for key
+  `:confirm_email_user`.
 
   The token should have been signed with `sign_confirmation_token/2`. The token
   will be decoded and verified with `Pow.Plug.verify_token/4`.
   """
-  @spec confirm_email_by_token(Conn.t(), binary()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
-  def confirm_email_by_token(conn, signed_token) do
+  @spec load_user_by_token(Conn.t(), binary()) :: {:ok, Conn.t()} | {:error, Conn.t()}
+  def load_user_by_token(conn, signed_token) do
     config = Plug.fetch_config(conn)
 
-    conn
-    |> verify_and_get_by_token(signed_token, config)
-    |> maybe_confirm_email(conn, config)
-  end
-
-  defp verify_and_get_by_token(conn, signed_token, config) do
-    case Plug.verify_token(conn, signing_salt(), signed_token, config) do
-      :error       -> nil
-      {:ok, token} -> Context.get_by_confirmation_token(token, config)
+    with {:ok, token}               <- Plug.verify_token(conn, signing_salt(), signed_token, config),
+         user when not is_nil(user) <- Context.get_by_confirmation_token(token, config) do
+      {:ok, Conn.assign(conn, :confirm_email_user, user)}
+    else
+      _any -> {:error, conn}
     end
   end
 
-  defp maybe_confirm_email(nil, conn, _config), do: {:error, nil, conn}
-  defp maybe_confirm_email(user, conn, config) do
-    user
-    |> Context.confirm_email(config)
+  @doc """
+  Confirms the e-mail for the user.
+
+  Expects user to exist in `conn.assigns` for key `:confirm_email_user`.
+
+  If successful, and a session exists, the session will be regenerated.
+  """
+  @spec confirm_email(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
+  def confirm_email(conn, params) when is_map(params) do
+    config = Plug.fetch_config(conn)
+
+    conn
+    |> confirm_email_user()
+    |> Context.confirm_email(params, config)
     |> case do
       {:error, changeset} -> {:error, changeset, conn}
       {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
     end
+  end
+  # TODO: Remove by 1.1.0
+  def confirm_email(conn, token) when is_binary(token) do
+    IO.warn "#{unquote(__MODULE__)}.confirm_email/2 called with token is deprecated, use `load_user_by_token/2` and `confirm_email/2` with map as second argument instead"
+
+    config = Plug.fetch_config(conn)
+
+    token
+    |> Context.get_by_confirmation_token(config)
+    |> maybe_confirm_email(conn, config)
+  end
+
+  defp confirm_email_user(conn) do
+    conn.assigns[:confirm_email_user]
   end
 
   defp maybe_renew_conn(conn, user, config) do
@@ -91,13 +112,13 @@ defmodule PowEmailConfirmation.Plug do
   end
 
   # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `confirm_email_by_token/2`"
-  def confirm_email(conn, token) do
-    config = Plug.fetch_config(conn)
-
-    token
-    |> Context.get_by_confirmation_token(config)
-    |> maybe_confirm_email(conn, config)
+  defp maybe_confirm_email(nil, conn, _config), do: {:error, nil, conn}
+  defp maybe_confirm_email(user, conn, config) do
+    user
+    |> Context.confirm_email(%{}, config)
+    |> case do
+      {:error, changeset} -> {:error, changeset, conn}
+      {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
+    end
   end
 end

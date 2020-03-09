@@ -6,6 +6,9 @@ defmodule PowEmailConfirmation do
   def ecto_schema?(), do: true
 
   @impl true
+  def use_ecto_schema?(), do: true
+
+  @impl true
   def phoenix_controller_callbacks?(), do: true
 
   @impl true

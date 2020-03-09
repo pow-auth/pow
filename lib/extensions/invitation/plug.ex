@@ -44,6 +44,9 @@ defmodule PowInvitation.Plug do
   @doc """
   Updates current user in the connection with the params.
 
+  Expects the invited user to exist in `conn.assigns` for key
+  `:invited_user`.
+
   If successful the session will be regenerated.
   """
   @spec update_user(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
@@ -73,9 +76,9 @@ defmodule PowInvitation.Plug do
   defp signing_salt(), do: Atom.to_string(__MODULE__)
 
   @doc """
-  Verifies the token and fetches invited user by the invitation token.
+  Verifies the signed token and fetches invited user.
 
-  If a user is found, it'll be assigned to `conn.assign` for key
+  If a user is found, it'll be assigned to `conn.assigns` for key
   `:invited_user`.
 
   The token should have been signed with `sign_invitation_token/2`. The token

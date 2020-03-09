@@ -5,8 +5,10 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
   alias Plug.Conn
   alias PowEmailConfirmation.Plug
 
+  plug :load_user_from_confirmation_token when action in [:show]
+
   @spec process_show(Conn.t(), map()) :: {:ok | :error, map(), Conn.t()}
-  def process_show(conn, %{"id" => token}), do: Plug.confirm_email_by_token(conn, token)
+  def process_show(conn, _params), do: Plug.confirm_email(conn, %{})
 
   @spec respond_show({:ok | :error, map(), Conn.t()}) :: Conn.t()
   def respond_show({:ok, _user, conn}) do
@@ -24,6 +26,19 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
     case Pow.Plug.current_user(conn) do
       nil   -> routes(conn).session_path(conn, :new)
       _user -> routes(conn).registration_path(conn, :edit)
+    end
+  end
+
+  defp load_user_from_confirmation_token(%{params: %{"id" => token}} = conn, _opts) do
+    case Plug.load_user_by_token(conn, token) do
+      {:error, conn} ->
+        conn
+        |> put_flash(:error, extension_messages(conn).email_confirmation_failed(conn))
+        |> redirect(to: redirect_to(conn))
+        |> halt()
+
+      {:ok, conn} ->
+        conn
     end
   end
 end

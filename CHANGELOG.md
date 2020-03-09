@@ -9,7 +9,8 @@
 * [`Pow.Plug.Session`] Now sets a global lock when renewing the session
 * [`PowPersistentSession.Plug.Cookie`] Now sets a global lock when authenticating the user
 * [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.sign_confirmation_token/2` to sign the `email_confirmation_token` to prevent timing attacks
-* [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.confirm_email_by_token/2` to verify the signed `email_confirmation_token` to prevent timing attacks
+* [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.load_user_by_token/2` to verify the signed `email_confirmation_token` to prevent timing attacks
+* [`PowEmailConfirmation.Plug`] Added `PowEmailConfirmation.Plug.confirm_email/2` with map as second argument
 * [`PowInvitation.Plug`] Added `PowInvitation.Plug.sign_invitation_token/2` to sign the `invitation_token`
 * [`PowInvitation.Plug`] Added `PowInvitation.Plug.load_invited_user_by_token/2` to verify the signed `invitation_token` to prevent timing attacks
 * [`PowResetPassword.Plug`] Changed `PowResetPassword.Plug.create_reset_token/2` to sign the `:token`
@@ -20,14 +21,21 @@
 * [`Pow.Plug`] Added `Pow.Plug.sign_token/4` to sign tokens
 * [`Pow.Plug`] Added `Pow.Plug.verify_token/4` to decode and verify signed tokens
 * [`Pow.Plug.MessageVerifier`] Added `Pow.Plug.MessageVerifier` module to sign and verify messages
+* [`PowEmailConfirmation.Ecto.Context`] Added `PowEmailConfirmation.Ecto.Context.confirm_email/3`
+* [`PowEmailConfirmation.Ecto.Schema`] Added `confirm_email_changeset/2` and `pow_confirm_email_changeset/2` to the macro
+* [`PowEmailConfirmation.Ecto.Schema`] Added `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/2`
+* [`PowInvitation.Ecto.Schema`] Added `accept_invitation_changeset/2` and `pow_accept_invitation_changeset/2` to the macro
+* [`PowResetPassword.Ecto.Schema`] Added `reset_password_changeset/2` and `pow_reset_password_changeset/2` to the macro
 
 ### Deprecations
 
-* [`PowEmailConfirmation.Plug`] `PowEmailConfirmation.Plug.confirm_email/2` has been deprecated in favor of `PowEmailConfirmation.Plug.confirm_email_by_token/2`
+* [`PowEmailConfirmation.Plug`] `PowEmailConfirmation.Plug.confirm_email/2` with token param as second argument has been deprecated in favor of `PowEmailConfirmation.Plug.load_user_by_token/2`, and `PowEmailConfirmation.Plug.confirm_email/2` with map as second argument
 * [`PowInvitation.Plug`] `PowInvitation.Plug.invited_user_from_token/2` has been deprecated in favor of `PowInvitation.Plug.load_invited_user_by_token/2`
 * [`PowInvitation.Plug`] `PowInvitation.Plug.assign_invited_user/2` has been deprecated
 * [`PowResetPassword.Plug`] `PowResetPassword.Plug.user_from_token/2` has been deprecated in favor of `PowResetPassword.Plug.load_user_by_token/2`
 * [`PowResetPassword.Plug`] `PowResetPassword.Plug.assign_reset_password_user/2` has been deprecated
+* [`PowEmailConfirmation.Ecto.Context`] `PowEmailConfirmation.Ecto.Context.confirm_email/2` deprecated in favor of `PowEmailConfirmation.Ecto.Context.confirm_email/3`
+* [`PowEmailConfirmation.Ecto.Schema`] `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/1` deprecated in favor of `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/2`
 
 ### Documentation
 

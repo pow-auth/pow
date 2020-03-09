@@ -3,7 +3,6 @@ defmodule PowEmailConfirmation.Ecto.Context do
   Handles e-mail confirmation context for user.
   """
   alias Pow.{Config, Ecto.Context, Operations}
-  alias PowEmailConfirmation.Ecto.Schema
 
   @doc """
   Finds a user by the `email_confirmation_token` column.
@@ -32,12 +31,17 @@ defmodule PowEmailConfirmation.Ecto.Context do
   @doc """
   Confirms e-mail.
 
-  See `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/1`.
+  See `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/2`.
   """
-  @spec confirm_email(Context.user(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
-  def confirm_email(user, config) do
+  @spec confirm_email(Context.user(), map(), Config.t()) :: {:ok, Context.user()} | {:error, Context.changeset()}
+  def confirm_email(%user_mod{} = user, params, config) do
     user
-    |> Schema.confirm_email_changeset()
+    |> user_mod.confirm_email_changeset(params)
     |> Context.do_update(config)
   end
+
+  # TODO: Remove by 1.1.0
+  @doc false
+  @deprecated "Use confirm_email/3 instead"
+  def confirm_email(user, config), do: confirm_email(user, %{}, config)
 end
