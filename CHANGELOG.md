@@ -26,6 +26,7 @@
 * [`PowEmailConfirmation.Ecto.Schema`] Added `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/2`
 * [`PowInvitation.Ecto.Schema`] Added `accept_invitation_changeset/2` and `pow_accept_invitation_changeset/2` to the macro
 * [`PowResetPassword.Ecto.Schema`] Added `reset_password_changeset/2` and `pow_reset_password_changeset/2` to the macro
+* [`Pow.Ecto.Schema`] Custom method can now be used for assocs and fields requirement callback by setting `@pow_require_assocs_callback` and `@pow_require_fields_callback` module attributes
 
 ### Deprecations
 

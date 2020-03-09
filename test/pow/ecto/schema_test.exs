@@ -119,4 +119,26 @@ defmodule Pow.Ecto.SchemaTest do
         Module.create(__MODULE__.MissingFieldsUser, contents, __ENV__)
       end
   end
+
+  test "handles custom callback for assocs and field require" do
+    contents =
+      quote do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        @pow_assocs {:belongs_to, :invited_by, __MODULE__, foreign_key: :user_id}
+        @pow_require_assocs_callback :pow_require_assocs_callback
+        @pow_require_fields_callback :pow_require_fields_callback
+
+        schema "users" do
+          timestamps()
+        end
+
+        def pow_require_assocs_callback(_assocs), do: :ok
+
+        def pow_require_fields_callback(_fields), do: :ok
+      end
+
+    Module.create(__MODULE__.NoRaise, contents, __ENV__)
+  end
 end

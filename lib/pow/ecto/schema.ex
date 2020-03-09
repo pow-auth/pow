@@ -113,6 +113,27 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
+  You can set a `@pow_require_assocs_callback` and/or
+  `@pow_require_fields_callback` for custom callback behavior:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema, user_id_field: :email
+
+        @pow_require_assocs_callback :pow_require_assocs_callback
+        @pow_require_fields_callback :pow_require_fields_callback
+
+        def pow_require_assocs_callback(assocs) do
+          IO.warn "Missing assocs:\n\n\#{Enum.join(assocs, "\n")}"
+        end
+
+        def pow_require_fields_callback(fields) do
+          IO.warn "Missing fields:\n\n\#{Enum.join(fields, "\n")}"
+        end
+
+        # ...
+      end
+
   ## Customize Pow changeset
 
   You can extract individual changeset methods to modify the changeset flow
@@ -323,8 +344,8 @@ defmodule Pow.Ecto.Schema do
   defmacro __register_after_compile_validation__ do
     quote do
       def pow_validate_after_compilation!(env, _bytecode) do
-        unquote(__MODULE__).__require_assocs__(__MODULE__)
-        unquote(__MODULE__).__require_fields__(__MODULE__)
+        unquote(__MODULE__).__require_assocs__(__MODULE__, Module.get_attribute(__MODULE__, :pow_require_assocs_callback))
+        unquote(__MODULE__).__require_fields__(__MODULE__, Module.get_attribute(__MODULE__, :pow_require_fields_callback))
       end
 
       @after_compile {__MODULE__, :pow_validate_after_compilation!}
@@ -332,7 +353,7 @@ defmodule Pow.Ecto.Schema do
   end
 
   @doc false
-  def __require_assocs__(module) do
+  def __require_assocs__(module, callback \\ nil) do
     ecto_assocs = Module.get_attribute(module, :ecto_assocs)
 
     module
@@ -345,13 +366,11 @@ defmodule Pow.Ecto.Schema do
       {type, name, queryable}           -> "#{type} #{inspect name}, #{inspect queryable}"
       {type, name, queryable, defaults} -> "#{type} #{inspect name}, #{inspect queryable}, #{inspect defaults}"
     end)
-    |> case do
-      []         -> :ok
-      assoc_defs -> raise_missing_assocs_error(module, assoc_defs)
-    end
+    |> handle_require_assocs_callback(module, callback)
   end
 
-  defp raise_missing_assocs_error(module, assoc_defs) do
+  defp handle_require_assocs_callback([], _module, _callback), do: :ok
+  defp handle_require_assocs_callback(assoc_defs, module, nil) do
     raise SchemaError, message:
       """
       Please define the following association(s) in the schema for #{inspect module}:
@@ -359,9 +378,12 @@ defmodule Pow.Ecto.Schema do
       #{Enum.join(assoc_defs, "\n")}
       """
   end
+  defp handle_require_assocs_callback(assoc_defs, module, callback) do
+    apply(module, callback, [assoc_defs])
+  end
 
   @doc false
-  def __require_fields__(module) do
+  def __require_fields__(module, callback \\ nil) do
     ecto_fields      = Module.get_attribute(module, :ecto_fields)
     changeset_fields = Module.get_attribute(module, :changeset_fields)
 
@@ -373,10 +395,7 @@ defmodule Pow.Ecto.Schema do
       {name, type}           -> "field #{inspect name}, #{inspect type}"
       {name, type, defaults} -> "field #{inspect name}, #{inspect type}, #{inspect defaults}"
     end)
-    |> case do
-      []         -> :ok
-      field_defs -> raise_missing_fields_error(module, field_defs)
-    end
+    |> handle_require_fields_callback(module, callback)
   end
 
   defp missing_field?({name, type, defaults}, ecto_fields, changeset_fields) do
@@ -391,13 +410,17 @@ defmodule Pow.Ecto.Schema do
     not Enum.member?(existing_fields, {name, type})
   end
 
-  defp raise_missing_fields_error(module, field_defs) do
+  defp handle_require_fields_callback([], _module, _callback), do: :ok
+  defp handle_require_fields_callback(field_defs, module, nil) do
     raise SchemaError, message:
       """
       Please define the following field(s) in the schema for #{inspect module}:
 
       #{Enum.join(field_defs, "\n")}
       """
+  end
+  defp handle_require_fields_callback(field_defs, module, callback) do
+    apply(module, callback, [field_defs])
   end
 
   @doc """
