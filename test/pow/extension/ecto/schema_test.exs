@@ -72,25 +72,6 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     end
   end
 
-  module_raised_with =
-    try do
-      defmodule InvalidUser do
-        use Ecto.Schema
-        use Pow.Ecto.Schema,
-          user_id_field: :username
-        use Pow.Extension.Ecto.Schema,
-          extensions: [Pow.Extension.Ecto.SchemaTest.ExtensionMock]
-
-        schema "users" do
-          pow_user_fields()
-
-          timestamps()
-        end
-      end
-    rescue
-      e in RuntimeError -> e.message
-    end
-
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Ecto.Schema
 
@@ -129,7 +110,26 @@ defmodule Pow.Extension.Ecto.SchemaTest do
   end
 
   test "validates attributes" do
-    assert unquote(module_raised_with) == "User ID field error"
+    contents =
+      quote do
+        use Ecto.Schema
+        use Pow.Ecto.Schema,
+          user_id_field: :username
+        use Pow.Extension.Ecto.Schema,
+          extensions: [Pow.Extension.Ecto.SchemaTest.ExtensionMock]
+
+        schema "users" do
+          pow_user_fields()
+
+          timestamps()
+        end
+      end
+
+    assert_raise RuntimeError,
+      "User ID field error",
+      fn ->
+        Module.create(__MODULE__.InvalidUser, contents, __ENV__)
+      end
   end
 
   test "require_schema_field!/3" do

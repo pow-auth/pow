@@ -69,9 +69,9 @@ defmodule Pow.Ecto.SchemaTest do
     assert %{on_delete: :delete_all} = OverrideAssocUser.__schema__(:association, :children)
   end
 
-  module_raised_with =
-    try do
-      defmodule MissingAssocsUser do
+  test "requires assocs defined" do
+    contents =
+      quote do
         use Ecto.Schema
         use Pow.Ecto.Schema
 
@@ -82,23 +82,22 @@ defmodule Pow.Ecto.SchemaTest do
           timestamps()
         end
       end
-    rescue
-      e in Pow.Ecto.Schema.SchemaError -> e.message
-    end
 
-  test "requires assocs defined" do
-    assert unquote(module_raised_with) ==
+    assert_raise Pow.Ecto.Schema.SchemaError,
       """
       Please define the following association(s) in the schema for Pow.Ecto.SchemaTest.MissingAssocsUser:
 
       belongs_to :invited_by, Pow.Ecto.SchemaTest.MissingAssocsUser, [foreign_key: :user_id]
       has_many :invited, Pow.Ecto.SchemaTest.MissingAssocsUser
-      """
+      """,
+      fn ->
+        Module.create(__MODULE__.MissingAssocsUser, contents, __ENV__)
+      end
   end
 
-  module_raised_with =
-    try do
-      defmodule MissingFieldsUser do
+  test "requires fields defined" do
+    contents =
+      quote do
         use Ecto.Schema
         use Pow.Ecto.Schema
 
@@ -106,12 +105,8 @@ defmodule Pow.Ecto.SchemaTest do
           timestamps()
         end
       end
-    rescue
-      e in Pow.Ecto.Schema.SchemaError -> e.message
-    end
 
-  test "requires fields defined" do
-    assert unquote(module_raised_with) ==
+    assert_raise Pow.Ecto.Schema.SchemaError,
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
 
@@ -119,6 +114,9 @@ defmodule Pow.Ecto.SchemaTest do
       field :password_hash, :string
       field :current_password, :string, [virtual: true]
       field :password, :string, [virtual: true]
-      """
+      """,
+      fn ->
+        Module.create(__MODULE__.MissingFieldsUser, contents, __ENV__)
+      end
   end
 end

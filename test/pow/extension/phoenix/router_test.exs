@@ -39,25 +39,6 @@ defmodule Pow.Extension.Phoenix.RouterTest do
     def phoenix_routes, do: @phoenix_routes
   end
 
-  module_raised_with =
-    try do
-      defmodule RouterAliasScope do
-        @moduledoc false
-        use Phoenix.Router
-        use Pow.Phoenix.Router
-        use Pow.Extension.Phoenix.Router,
-          extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
-
-        scope "/", Test do
-          pow_extension_routes()
-        end
-      end
-    rescue
-      e in ArgumentError -> e.message
-    else
-      _ -> raise "Scope with alias didn't throw any error"
-    end
-
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Phoenix.Router
 
@@ -72,8 +53,40 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   end
 
   test "validates no aliases" do
-    assert unquote(module_raised_with) =~ "Pow routes should not be defined inside scopes with aliases: Test"
-    assert unquote(module_raised_with) =~ "scope \"/\", Test do"
+    contents =
+      quote do
+        @moduledoc false
+        use Phoenix.Router
+        use Pow.Phoenix.Router
+        use Pow.Extension.Phoenix.Router,
+          extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
+
+        scope "/", Test do
+          pow_extension_routes()
+        end
+      end
+
+    assert_raise ArgumentError,
+      """
+      Pow routes should not be defined inside scopes with aliases: Test
+
+      Please consider separating your scopes:
+
+        scope "/" do
+          pipe_through :browser
+
+          pow_routes()
+        end
+
+        scope "/", Test do
+          pipe_through :browser
+
+          get "/", PageController, :index
+        end
+      """,
+      fn ->
+        Module.create(__MODULE__.RouterAliasScope, contents, __ENV__)
+      end
   end
 
   test "can override routes" do
