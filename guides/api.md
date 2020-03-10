@@ -75,19 +75,12 @@ defmodule MyAppWeb.APIAuthPlug do
   @impl true
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
-    conn
-    |> fetch_auth_token(config)
-    |> fetch_from_store(conn, config)
-  end
-
-  defp fetch_from_store(nil, conn, _config), do: {conn, nil}
-  defp fetch_from_store(token, conn, config) do
-    config
-    |> store_config()
-    |> CredentialsCache.get(token)
-    |> case do
-      :not_found        -> {conn, nil}
-      {user, _metadata} -> {conn, user}
+    with {:ok, signed_token} <- fetch_auth_token(conn),
+         {:ok, token}        <- verify_token(conn, signed_token, config),
+         {user, _metadata}   <- CredentialsCache.get(store_config(config), token) do
+      {conn, user}
+    else
+      _any -> {conn, nil}
     end
   end
 
@@ -111,14 +104,13 @@ defmodule MyAppWeb.APIAuthPlug do
   @impl true
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config) do
-    case fetch_auth_token(conn, config) do
-      nil ->
-        :ok
-
-      token ->
-        config
-        |> store_config()
-        |> CredentialsCache.delete(token)
+    with {:ok, signed_token} <- fetch_auth_token(conn),
+         {:ok, token}        <- verify_token(conn, signed_token, config) do
+      config
+      |> store_config()
+      |> CredentialsCache.delete(token)
+    else
+      _any -> :ok
     end
 
     conn
@@ -131,15 +123,13 @@ defmodule MyAppWeb.APIAuthPlug do
   """
   @spec renew(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def renew(conn, config) do
-    renew_token  = fetch_auth_token(conn, config)
-    store_config = store_config(config)
-    res          = PersistentSessionCache.get(store_config, renew_token)
-
-    PersistentSessionCache.delete(store_config, renew_token)
-
-    case res do
-      :not_found -> {conn, nil}
-      res        -> load_and_create_session(conn, res, config)
+    with {:ok, signed_renew_token} <- fetch_auth_token(conn),
+         {:ok, renew_token}        <- verify_token(conn, signed_renew_token, config),
+         {clauses, metadata}       <- PersistentSessionCache.get(store_config(config), renew_token),
+         :ok                       <- PersistentSessionCache.delete(store_config(config), renew_token) do
+      load_and_create_session(conn, {clauses, metadata}, config)
+    else
+      _any -> {conn, nil}
     end
   end
 
@@ -156,14 +146,15 @@ defmodule MyAppWeb.APIAuthPlug do
 
   defp signing_salt(), do: Atom.to_string(__MODULE__)
 
-  defp fetch_auth_token(conn, config) do
-    with [token | _rest] <- Conn.get_req_header(conn, "authorization"),
-         {:ok, token}    <- Plug.verify_token(conn, signing_salt(), token, config) do
-      token
-    else
-      _any -> nil
+  defp fetch_auth_token(conn) do
+    case Conn.get_req_header(conn, "authorization") do
+      [token | _rest] -> {:ok, token}
+      _any            -> :error
     end
   end
+
+  defp verify_token(conn, token, config),
+    do: Plug.verify_token(conn, signing_salt(), token, config)
 
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)
@@ -308,14 +299,13 @@ defmodule MyAppWeb.APIAuthPlugTest do
   use MyAppWeb.ConnCase
   doctest MyAppWeb.APIAuthPlug
 
-  alias MyAppWeb.APIAuthPlug
+  alias MyAppWeb.{APIAuthPlug, Endpoint}
   alias MyApp.{Repo, Users.User}
 
   @pow_config [otp_app: :my_app]
-  @secret_key_base String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2)
 
   test "can fetch, create, delete, and renew session for user", %{conn: conn} do
-    conn = %{conn | secret_key_base: @secret_key_base}
+    conn = %{conn | secret_key_base: Endpoint.config(:secret_key_base)}
     user = Repo.insert!(%User{id: 1, email: "test@example.com"})
 
     assert {_conn, nil} = APIAuthPlug.fetch(conn, @pow_config)
@@ -368,7 +358,6 @@ defmodule MyAppWeb.API.V1.RegistrationControllerTest do
       conn = post conn, Routes.api_v1_registration_path(conn, :create, @invalid_params)
 
       assert json = json_response(conn, 500)
-
       assert json["error"]["message"] == "Couldn't create user"
       assert json["error"]["status"] == 500
       assert json["error"]["errors"]["password_confirmation"] == ["does not match confirmation"]
@@ -384,13 +373,9 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   use MyAppWeb.ConnCase
 
   alias MyApp.{Repo, Users.User}
-  alias MyAppWeb.{APIAuthPlug, Endpoint}
   alias Pow.Ecto.Schema.Password
 
-  @pow_config [otp_app: :my_app]
-
   setup %{conn: conn} do
-    conn = %{conn | secret_key_base: Application.get_env(@pow_config[:otp_app], Endpoint)[:secret_key_base]}
     user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
 
     {:ok, user: user, conn: conn}
@@ -412,7 +397,6 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
       conn = post conn, Routes.api_v1_session_path(conn, :create, @invalid_params)
 
       assert json = json_response(conn, 401)
-
       assert json["error"]["message"] == "Invalid email or password"
       assert json["error"]["status"] == 401
     end
@@ -420,8 +404,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
 
   describe "renew/2" do
     setup %{conn: conn, user: user} do
-      {authed_conn, _user} = APIAuthPlug.create(conn, user, @pow_config)
-
+      authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
       {:ok, renew_token: authed_conn.private[:api_renew_token]}
@@ -445,7 +428,6 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
         |> post(Routes.api_v1_session_path(conn, :renew))
 
       assert json = json_response(conn, 401)
-
       assert json["error"]["message"] == "Invalid token"
       assert json["error"]["status"] == 401
     end
@@ -453,8 +435,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
 
   describe "delete/2" do
     setup %{conn: conn, user: user} do
-      {authed_conn, _user} = APIAuthPlug.create(conn, user, @pow_config)
-
+      authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
       {:ok, auth_token: authed_conn.private[:api_auth_token]}
@@ -466,10 +447,8 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
         |> Plug.Conn.put_req_header("authorization", token)
         |> delete(Routes.api_v1_session_path(conn, :delete))
 
-      assert json_response(conn, 200)
-      :timer.sleep(100)
-
-      assert {_conn, nil} = APIAuthPlug.fetch(conn, @pow_config)
+      assert json = json_response(conn, 200)
+      assert json["data"] == %{}
     end
   end
 end
