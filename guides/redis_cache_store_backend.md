@@ -247,7 +247,8 @@ defmodule MyAppWeb.PowRedisCacheTest do
     :timer.sleep(100)
     items = PowRedisCache.all(@default_config, :_)
 
-    assert [{"key1", "value"}, {"key2", "value"} | _rest] = items
+    assert Enum.find(items, fn {key, "value"} -> key == "key1" end)
+    assert Enum.find(items, fn {key, "value"} -> key == "key2" end)
     assert length(items) == 11
 
     PowRedisCache.put(@default_config, {["namespace", "key"], "value"})

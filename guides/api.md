@@ -375,10 +375,10 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   alias MyApp.{Repo, Users.User}
   alias Pow.Ecto.Schema.Password
 
-  setup %{conn: conn} do
+  setup do
     user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
 
-    {:ok, user: user, conn: conn}
+    {:ok, user: user}
   end
 
   describe "create/2" do
