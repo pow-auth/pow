@@ -150,7 +150,11 @@ defmodule Pow.Store.Base do
 
   # TODO: Remove by 1.1.0
   defp has_binary_keys?(store) when store in [EtsCache, MnesiaCache], do: false
-  defp has_binary_keys?(store), do: not function_exported?(store, :all, 2)
+  defp has_binary_keys?(store) do
+    {:module, ^store} = Code.ensure_loaded(store)
+
+    not function_exported?(store, :all, 2)
+  end
 
   # TODO: Remove by 1.1.0
   defp binary_key_put(store, [backend_config, record_or_records]) do
