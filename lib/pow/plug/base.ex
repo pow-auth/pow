@@ -98,11 +98,7 @@ defmodule Pow.Plug.Base do
         Conn.put_private(conn, @before_send_private_key, callbacks)
       end
 
-      defp put_plug(config) do
-        config
-        |> Config.put(:plug, __MODULE__)
-        |> Config.put(:mod, __MODULE__) # TODO: Remove by 1.1.0, this is only for backwards compability
-      end
+      defp put_plug(config), do: Config.put(config, :plug, __MODULE__)
 
       @doc """
       Calls `fetch/2` and assigns the current user to the conn.
@@ -154,24 +150,9 @@ defmodule Pow.Plug.Base do
 
   @spec store(Config.t()) :: {module(), Config.t()}
   def store(config) do
-    config
-    |> Config.get(:credentials_cache_store)
-    |> Kernel.||(fallback_store(config))
-    |> case do
+    case Config.get(config, :credentials_cache_store) do
       {store, store_config} -> {store, store_opts(config, store_config)}
       nil                   -> {CredentialsCache, store_opts(config)}
-    end
-  end
-
-  # TODO: Remove by 1.1.0
-  defp fallback_store(config) do
-    case Config.get(config, :session_store) do
-      nil ->
-        nil
-
-      value ->
-        IO.warn("use of `:session_store` config value is deprecated, use `:credentials_cache_store` instead")
-        value
     end
   end
 

@@ -99,12 +99,6 @@ defmodule Pow.Plug do
     end
   end
 
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `delete/1` instead"
-  @spec clear_authenticated_user(Conn.t()) :: {:ok, Conn.t()}
-  def clear_authenticated_user(conn), do: {:ok, delete(conn)}
-
   @doc """
   Creates a changeset from the current authenticated user.
   """
@@ -171,12 +165,6 @@ defmodule Pow.Plug do
   defp maybe_create_auth({:error, changeset}, conn, _config) do
     {:error, changeset, conn}
   end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `get_plug/1` instead"
-  @spec get_mod(Config.t()) :: atom()
-  def get_mod(config), do: get_plug(config)
 
   @spec get_plug(Config.t()) :: atom()
   def get_plug(config) do

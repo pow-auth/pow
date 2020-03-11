@@ -172,9 +172,4 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     |> Changeset.change(changes)
     |> Changeset.unique_constraint(:email)
   end
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `confirm_email_changeset/2` instead"
-  @doc false
-  def confirm_email_changeset(changeset), do: confirm_email_changeset(changeset, %{})
 end

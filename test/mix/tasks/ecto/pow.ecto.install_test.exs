@@ -90,7 +90,7 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
 
       Mix.Project.in_project(:missing_top_level_ecto_dep, ".", fn _ ->
         # Insurance that we do test for top level ecto inclusion
-        assert Enum.any?(deps(), fn
+        assert Enum.any?(Mix.Dep.load_on_environment([]), fn
           %{app: :ecto_sql} -> true
           _ -> false
         end), "Ecto not loaded by dependency"
@@ -116,14 +116,6 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
 
         assert File.read!("lib/pow/users/user.ex") =~ "defmodule POW.Users.User do"
       end)
-    end
-  end
-
-  # TODO: Refactor to just use Elixir 1.7 or higher by Pow 1.1.0
-  defp deps do
-    case Kernel.function_exported?(Mix.Dep, :load_on_environment, 1) do
-     true -> apply(Mix.Dep, :load_on_environment, [[]])
-     false -> apply(Mix.Dep, :loaded, [[]])
     end
   end
 end

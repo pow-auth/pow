@@ -24,13 +24,6 @@ defmodule PowResetPassword.Plug do
     |> struct()
   end
 
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "No longer used"
-  def assign_reset_password_user(conn, user) do
-    Conn.assign(conn, :reset_password_user, user)
-  end
-
   @doc """
   Finds a user for the provided params, creates a token, and stores the user
   for the token.
@@ -95,23 +88,6 @@ defmodule PowResetPassword.Plug do
 
   defp fetch_user_from_token(token, config) do
     {store, store_config} = store(config)
-
-    store_config
-    |> store.get(token)
-    |> case do
-      :not_found -> nil
-      user       -> user
-    end
-  end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `load_user_by_token/2` instead"
-  def user_from_token(conn, token) do
-    {store, store_config} =
-      conn
-      |> Plug.fetch_config()
-      |> store()
 
     store_config
     |> store.get(token)

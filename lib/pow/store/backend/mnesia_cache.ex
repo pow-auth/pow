@@ -97,12 +97,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   @spec start_link(Config.t()) :: GenServer.on_start()
   def start_link(config) do
-    # TODO: Remove by 1.1.0
-    case Config.get(config, :nodes) do
-      nil    -> :ok
-      _nodes -> IO.warn("use of `:nodes` config value for #{inspect unquote(__MODULE__)} is no longer used")
-    end
-
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
@@ -425,14 +419,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
             |> unwrap()
             |> append_invalidator(invalidators, ttl, config)
 
-          # TODO: Remove by 1.1.0
-          {@mnesia_cache_tab, key, {_key, _value, _config, expire}}, invalidators when is_binary(key) and is_number(expire) ->
-            Logger.warn("[#{inspect __MODULE__}] Deleting old record #{inspect key}")
-
-            :mnesia.delete({@mnesia_cache_tab, key})
-
-            invalidators
-
           {@mnesia_cache_tab, key, _value}, invalidators ->
             Logger.warn("[#{inspect __MODULE__}] Found unexpected record #{inspect key}, please delete it")
 
@@ -462,14 +448,4 @@ defmodule Pow.Store.Backend.MnesiaCache do
   @spec raise_ttl_error :: no_return
   defp raise_ttl_error,
     do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `put/2` instead"
-  @doc false
-  def put(config, key, value), do: put(config, {key, value})
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `all/2` instead"
-  @doc false
-  def keys(config), do: all(config, :_)
 end

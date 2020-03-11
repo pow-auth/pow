@@ -6,11 +6,11 @@ services:
 jobs:
   include:
     - stage: test
-      elixir: 1.6
+      elixir: 1.7
       otp_release: 20.0
       script: &test_scripts
         - mix test
-        - MIX_ENV=test mix credo --ignore design.tagtodo
+        - MIX_ENV=test mix credo
     - stage: test
       elixir: 1.8
       script: *test_scripts

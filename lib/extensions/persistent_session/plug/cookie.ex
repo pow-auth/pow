@@ -230,9 +230,6 @@ defmodule PowPersistentSession.Plug.Cookie do
       user -> {token, {user, metadata}}
     end
   end
-  # TODO: Remove by 1.1.0
-  defp fetch_user({token, user_id}, config),
-    do: fetch_user({token, {user_id, []}}, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"
@@ -287,28 +284,12 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp update_session_metadata(conn, metadata) do
     case Keyword.get(metadata, :session_metadata) do
       nil ->
-        fallback_session_fingerprint(conn, metadata)
+        conn
 
       session_metadata ->
         metadata = Map.get(conn.private, :pow_session_metadata, [])
 
         Conn.put_private(conn, :pow_session_metadata, Keyword.merge(session_metadata, metadata))
-    end
-  end
-
-  # TODO: Remove by 1.1.0
-  defp fallback_session_fingerprint(conn, metadata) do
-    case Keyword.get(metadata, :session_fingerprint) do
-      nil ->
-        conn
-
-      fingerprint ->
-        metadata =
-          conn.private
-          |> Map.get(:pow_session_metadata, [])
-          |> Keyword.put(:fingerprint, fingerprint)
-
-        Conn.put_private(conn, :pow_session_metadata, metadata)
     end
   end
 
@@ -361,17 +342,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp max_age(config) do
-    # TODO: Remove by 1.1.0
-    case Config.get(config, :persistent_session_cookie_max_age) do
-      nil ->
-        config
-        |> PowPersistentSession.Plug.Base.ttl()
-        |> Integer.floor_div(1000)
-
-      max_age ->
-        IO.warn("use of `:persistent_session_cookie_max_age` config value in #{inspect unquote(__MODULE__)} is deprecated, please use `:persistent_session_ttl`")
-
-        max_age
-    end
+    config
+    |> PowPersistentSession.Plug.Base.ttl()
+    |> Integer.floor_div(1000)
   end
 end

@@ -95,20 +95,4 @@ defmodule PowInvitation.Plug do
       _any -> {:error, conn}
     end
   end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `load_invited_user_by_token/2` instead"
-  def invited_user_from_token(conn, token) do
-    config = Plug.fetch_config(conn)
-
-    InvitationContext.get_by_invitation_token(token, config)
-  end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "No longer used"
-  def assign_invited_user(conn, user) do
-    Conn.assign(conn, :invited_user, user)
-  end
 end

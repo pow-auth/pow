@@ -81,16 +81,6 @@ defmodule PowEmailConfirmation.Plug do
       {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
     end
   end
-  # TODO: Remove by 1.1.0
-  def confirm_email(conn, token) when is_binary(token) do
-    IO.warn "#{unquote(__MODULE__)}.confirm_email/2 called with token is deprecated, use `load_user_by_token/2` and `confirm_email/2` with map as second argument instead"
-
-    config = Plug.fetch_config(conn)
-
-    token
-    |> Context.get_by_confirmation_token(config)
-    |> maybe_confirm_email(conn, config)
-  end
 
   defp confirm_email_user(conn) do
     conn.assigns[:confirm_email_user]
@@ -109,16 +99,5 @@ defmodule PowEmailConfirmation.Plug do
     {:ok, clauses2} = Operations.fetch_primary_key_values(current_user, config)
 
     Keyword.equal?(clauses1, clauses2)
-  end
-
-  # TODO: Remove by 1.1.0
-  defp maybe_confirm_email(nil, conn, _config), do: {:error, nil, conn}
-  defp maybe_confirm_email(user, conn, config) do
-    user
-    |> Context.confirm_email(%{}, config)
-    |> case do
-      {:error, changeset} -> {:error, changeset, conn}
-      {:ok, user}         -> {:ok, user, maybe_renew_conn(conn, user, config)}
-    end
   end
 end

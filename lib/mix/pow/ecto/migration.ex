@@ -2,12 +2,7 @@ defmodule Mix.Pow.Ecto.Migration do
   @moduledoc """
   Utilities module for ecto migrations in mix tasks.
   """
-  alias Mix.Generator
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `create_migration_file/3`"
-  defdelegate create_migration_files(repo, name, content), to: __MODULE__, as: :create_migration_file
+  alias Mix.{EctoSQL, Generator}
 
   @doc """
   Creates a migration file for a repo.
@@ -17,7 +12,7 @@ defmodule Mix.Pow.Ecto.Migration do
     base_name = "#{Macro.underscore(name)}.exs"
     path      =
       repo
-      |> source_repo_priv()
+      |> EctoSQL.source_repo_priv()
       |> Path.join("migrations")
       |> maybe_create_directory()
     timestamp = timestamp(path)
@@ -68,14 +63,4 @@ defmodule Mix.Pow.Ecto.Migration do
 
   defp pad(i) when i < 10, do: <<?0, ?0 + i>>
   defp pad(i), do: to_string(i)
-
-  # TODO: Remove by 1.1.0 and only use Ecto 3.0
-  defp source_repo_priv(repo) do
-    mod =
-      if Pow.dependency_vsn_match?(:ecto, "< 3.0.0"),
-        do: Mix.Ecto,
-        else: Mix.EctoSQL
-
-    mod.source_repo_priv(repo)
-  end
 end

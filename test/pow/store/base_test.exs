@@ -74,23 +74,4 @@ defmodule Pow.Store.BaseTest do
       "#{Pow.Config.get(config, :namespace, "cache")}:#{key}"
     end
   end
-
-  # TODO: Remove by 1.1.0
-  test "backwards compatible with binary keys support" do
-    config = [backend: BackwardsCompabilityMock]
-
-    assert BaseMock.put(config, [BackwardsCompabilityMock, :id, 2], :value) == :ok
-    binary_key = "default_namespace:#{:erlang.term_to_binary([BackwardsCompabilityMock, :id, 2])}"
-    assert_received {:put, ^binary_key, :value}
-
-    assert BaseMock.get(config, [BackwardsCompabilityMock, :id, 2]) == :value
-    assert_received {:get, ^binary_key}
-
-    assert BaseMock.delete(config, [BackwardsCompabilityMock, :id, 2]) == :ok
-    assert_received {:delete, ^binary_key}
-
-    assert BaseMock.all(config, [BackwardsCompabilityMock | :_]) == [{[BackwardsCompabilityMock, :id, 2], :value}]
-    assert BaseMock.all(config, [BackwardsCompabilityMock, :id, :_]) == [{[BackwardsCompabilityMock, :id, 2], :value}]
-    assert BaseMock.all(config, [BackwardsCompabilityMock, :id, 3]) == []
-  end
 end

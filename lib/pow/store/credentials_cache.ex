@@ -36,14 +36,11 @@ defmodule Pow.Store.CredentialsCache do
   List all existing sessions for the user fetched from the backend store.
   """
   @spec sessions(Config.t(), map()) :: [binary()]
-  def sessions(config, user), do: fetch_sessions(config, backend_config(config), user)
-
-  # TODO: Refactor by 1.1.0
-  defp fetch_sessions(config, backend_config, user) do
+  def sessions(config, user) do
     {struct, id} = user_to_struct_id!(user, [])
 
     config
-    |> Base.all(backend_config, [struct, :user, id, :session, :_])
+    |> Base.all(backend_config(config), [struct, :user, id, :session, :_])
     |> Enum.map(fn {[^struct, :user, ^id, :session, session_id], _value} ->
       session_id
     end)
@@ -102,10 +99,6 @@ defmodule Pow.Store.CredentialsCache do
         Base.delete(config, backend_config, session_id)
         Base.delete(config, backend_config, session_key)
 
-      # TODO: Remove by 1.1.0
-      {user, _metadata} when is_map(user) ->
-        Base.delete(config, backend_config, session_id)
-
       :not_found ->
         :ok
     end
@@ -122,10 +115,6 @@ defmodule Pow.Store.CredentialsCache do
     with {user_key, metadata} when is_list(user_key) <- Base.get(config, backend_config, session_id),
          user when is_map(user)                      <- Base.get(config, backend_config, user_key) do
       {user, metadata}
-    else
-      # TODO: Remove by 1.1.0
-      {user, metadata} when is_map(user) -> {user, metadata}
-      :not_found -> :not_found
     end
   end
 
@@ -174,20 +163,4 @@ defmodule Pow.Store.CredentialsCache do
 
   @spec raise_error(binary()) :: no_return()
   defp raise_error(message), do: raise message
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `users/2` or `sessions/2` instead"
-  def user_session_keys(config, backend_config, struct) do
-    config
-    |> Base.all(backend_config, [struct, :user, :_, :session, :_])
-    |> Enum.map(fn {key, _value} ->
-      key
-    end)
-  end
-
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `sessions/2` instead"
-  def sessions(config, backend_config, user), do: fetch_sessions(config, backend_config, user)
 end
