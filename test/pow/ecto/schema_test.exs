@@ -69,8 +69,11 @@ defmodule Pow.Ecto.SchemaTest do
     assert %{on_delete: :delete_all} = OverrideAssocUser.__schema__(:association, :children)
   end
 
-  module_raised_with =
-    try do
+  import ExUnit.CaptureIO
+  require Logger
+
+  test "warns assocs defined" do
+    assert capture_io(:stderr, fn ->
       defmodule MissingAssocsUser do
         use Ecto.Schema
         use Pow.Ecto.Schema
@@ -82,12 +85,7 @@ defmodule Pow.Ecto.SchemaTest do
           timestamps()
         end
       end
-    rescue
-      e in Pow.Ecto.Schema.SchemaError -> e.message
-    end
-
-  test "requires assocs defined" do
-    assert unquote(module_raised_with) ==
+    end) =~
       """
       Please define the following association(s) in the schema for Pow.Ecto.SchemaTest.MissingAssocsUser:
 
@@ -96,8 +94,8 @@ defmodule Pow.Ecto.SchemaTest do
       """
   end
 
-  module_raised_with =
-    try do
+  test "warns fields defined" do
+    assert capture_io(:stderr, fn ->
       defmodule MissingFieldsUser do
         use Ecto.Schema
         use Pow.Ecto.Schema
@@ -106,12 +104,7 @@ defmodule Pow.Ecto.SchemaTest do
           timestamps()
         end
       end
-    rescue
-      e in Pow.Ecto.Schema.SchemaError -> e.message
-    end
-
-  test "requires fields defined" do
-    assert unquote(module_raised_with) ==
+    end) =~
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
 

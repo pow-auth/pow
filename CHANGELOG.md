@@ -26,6 +26,7 @@
 * [`PowEmailConfirmation.Ecto.Schema`] Added `PowEmailConfirmation.Ecto.Schema.confirm_email_changeset/2`
 * [`PowInvitation.Ecto.Schema`] Added `accept_invitation_changeset/2` and `pow_accept_invitation_changeset/2` to the macro
 * [`PowResetPassword.Ecto.Schema`] Added `reset_password_changeset/2` and `pow_reset_password_changeset/2` to the macro
+* [`Pow.Ecto.Schema`] Now emits a warning instead of raising error with missing fields/associations
 
 ### Deprecations
 

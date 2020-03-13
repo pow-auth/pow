@@ -94,9 +94,9 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
-  An `@after_compile` callback will raise an error if there are missing fields
-  or associations, so you can forego the `pow_user_fields/0` call, and write
-  out the whole schema instead:
+  An `@after_compile` callback will emit IO warning if there are missing fields
+  or associations. You can forego the `pow_user_fields/0` call, and write out
+  the whole schema instead:
 
       defmodule MyApp.Users.User do
         use Ecto.Schema
@@ -112,6 +112,10 @@ defmodule Pow.Ecto.Schema do
           timestamps()
         end
       end
+
+  If you would like these warnings to be raised during compilation you can add
+  `elixirc_options: [warnings_as_errors: true]` to the project options in
+  `mix.exs`.
 
   ## Customize Pow changeset
 
@@ -347,17 +351,17 @@ defmodule Pow.Ecto.Schema do
     end)
     |> case do
       []         -> :ok
-      assoc_defs -> raise_missing_assocs_error(module, assoc_defs)
+      assoc_defs -> warn_missing_assocs_error(module, assoc_defs)
     end
   end
 
-  defp raise_missing_assocs_error(module, assoc_defs) do
-    raise SchemaError, message:
+  defp warn_missing_assocs_error(module, assoc_defs) do
+    IO.warn(
       """
       Please define the following association(s) in the schema for #{inspect module}:
 
       #{Enum.join(assoc_defs, "\n")}
-      """
+      """)
   end
 
   @doc false
@@ -375,7 +379,7 @@ defmodule Pow.Ecto.Schema do
     end)
     |> case do
       []         -> :ok
-      field_defs -> raise_missing_fields_error(module, field_defs)
+      field_defs -> warn_missing_fields_error(module, field_defs)
     end
   end
 
@@ -391,13 +395,13 @@ defmodule Pow.Ecto.Schema do
     not Enum.member?(existing_fields, {name, type})
   end
 
-  defp raise_missing_fields_error(module, field_defs) do
-    raise SchemaError, message:
+  defp warn_missing_fields_error(module, field_defs) do
+    IO.warn(
       """
       Please define the following field(s) in the schema for #{inspect module}:
 
       #{Enum.join(field_defs, "\n")}
-      """
+      """)
   end
 
   @doc """
