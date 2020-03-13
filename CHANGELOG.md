@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.19 (TBA)
+## v1.0.19 (2020-03-13)
 
 **Warning:** This release will now sign and verify all tokens, causing previous tokens to no longer work. Any sessions and persistent sessions will be invalidated.
 
