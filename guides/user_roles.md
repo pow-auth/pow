@@ -145,6 +145,32 @@ defmodule MyAppWeb.SomeController do
 end
 ```
 
+## Using role permissions with layout
+
+You may wish to render certain sections in your layout for certain roles. First let's add a helper method to the users context:
+
+```elixir
+defmodule MyApp.Users do
+  alias MyApp.{Repo, Users.User}
+
+  # ...
+
+  @spec is_admin?(t()) :: boolean()
+  def is_admin?(%{role: "admin"}), do: true
+  def is_admin?(_any), do: false
+end
+```
+
+Now we can use that helper to conditionally render a section in our templates:
+
+```elixir
+<%= if MyApp.Users.is_admin?(@current_user) do %>
+  <div>
+    <p>You have admin access</p>
+  </div>
+<% end %>
+```
+
 ## Test modules
 
 ```elixir
@@ -192,6 +218,17 @@ defmodule MyApp.UsersTest do
     assert {:ok, user} = Users.set_admin_role(user)
     assert user.role == "admin"
   end
+
+  # Uncomment if you added this method to your users context
+  # test "is_admin?/1" do
+  #   refute Users.is_admin?(nil)
+  #
+  #   assert {:ok, user} = Repo.insert(User.changeset(%User{}, @valid_params))
+  #   refute Users.is_admin?(user)
+  #
+  #   assert {:ok, admin} = Users.create_admin(@valid_params)
+  #   assert Users.is_admin?(admin)
+  # end
 end
 ```
 
