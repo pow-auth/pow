@@ -229,7 +229,7 @@ defmodule MyAppWeb.API.V1.RegistrationController do
     |> Pow.Plug.create_user(user_params)
     |> case do
       {:ok, _user, conn} ->
-        json(conn, %{data: %{token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
 
       {:error, changeset, conn} ->
         errors = Changeset.traverse_errors(changeset, &ErrorHelpers.translate_error/1)
@@ -257,7 +257,7 @@ defmodule MyAppWeb.API.V1.SessionController do
     |> Pow.Plug.authenticate_user(user_params)
     |> case do
       {:ok, conn} ->
-        json(conn, %{data: %{token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
 
       {:error, conn} ->
         conn
@@ -279,7 +279,7 @@ defmodule MyAppWeb.API.V1.SessionController do
         |> json(%{error: %{status: 401, message: "Invalid token"}})
 
       {conn, _user} ->
-        json(conn, %{data: %{token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
     end
   end
 
@@ -337,28 +337,28 @@ defmodule MyAppWeb.APIAuthPlugTest do
   end
 
   test "can create, fetch, renew, and delete session", %{conn: conn, user: user} do
-    assert {_no_auth_conn, nil} = ApiAuthPlug.fetch(conn, @pow_config)
+    assert {_no_auth_conn, nil} = APIAuthPlug.fetch(conn, @pow_config)
 
     assert {%{private: %{api_access_token: access_token, api_renewal_token: renewal_token}}, ^user} =
-        ApiAuthPlug.create(conn, user, @pow_config)
+        APIAuthPlug.create(conn, user, @pow_config)
 
     :timer.sleep(100)
 
-    assert {_conn, ^user} = ApiAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
+    assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
     assert {%{private: %{api_access_token: renewed_access_token, api_renewal_token: renewed_renewal_token}}, ^user} =
-      ApiAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
+      APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
 
     :timer.sleep(100)
 
-    assert {_conn, nil} = ApiAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
-    assert {_conn, nil} = ApiAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
-    assert {_conn, ^user} = ApiAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
+    assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
+    assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
+    assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
 
-    ApiAuthPlug.delete(with_auth_header(conn, renewed_access_token), @pow_config)
+    APIAuthPlug.delete(with_auth_header(conn, renewed_access_token), @pow_config)
     :timer.sleep(100)
 
-    assert {_conn, nil} = ApiAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
-    assert {_conn, nil} = ApiAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config)
+    assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
+    assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config)
   end
 
   defp with_auth_header(conn, token), do: Plug.Conn.put_req_header(conn, "authorization", token)
