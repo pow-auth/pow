@@ -19,6 +19,7 @@ defmodule Pow.Extension.Base do
   @callback phoenix_controller_callbacks?() :: boolean()
   @callback phoenix_messages?() :: boolean()
   @callback phoenix_router?() :: boolean()
+  @callback phoenix_templates() :: [{binary(), [binary()]}]
 
   @doc false
   defmacro __using__(_opts) do
@@ -44,6 +45,10 @@ defmodule Pow.Extension.Base do
       @doc false
       @impl true
       def phoenix_router?(), do: false
+
+      @doc false
+      @impl true
+      def phoenix_templates(), do: []
 
       defoverridable unquote(__MODULE__)
     end

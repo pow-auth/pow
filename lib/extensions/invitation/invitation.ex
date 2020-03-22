@@ -13,4 +13,11 @@ defmodule PowInvitation do
 
   @impl true
   def phoenix_messages?(), do: true
+
+  @impl true
+  def phoenix_templates() do
+    [
+      {"invitation", ~w(new show edit)}
+    ]
+  end
 end

@@ -13,4 +13,11 @@ defmodule PowResetPassword do
 
   @impl true
   def phoenix_router?(), do: true
+
+  @impl true
+  def phoenix_templates() do
+    [
+      {"reset_password", ~w(new edit)}
+    ]
+  end
 end

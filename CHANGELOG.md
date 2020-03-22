@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.20 (TBA)
+
+### Enhancements
+
+* [`Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates`] `mix pow.extension.phoenix.gen.templates` now dynamically loads template list from the extension base module
+
 ## v1.0.19 (2020-03-13)
 
 **Warning:** This release will now sign and verify all tokens, causing previous tokens to no longer work. Any sessions and persistent sessions will be invalidated.
