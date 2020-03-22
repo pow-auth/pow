@@ -32,14 +32,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     |> print_shell_instructions()
   end
 
-  @extension_templates %{
-    PowResetPassword => [
-      {"reset_password", ~w(new edit)}
-    ],
-    PowInvitation => [
-      {"invitation", ~w(new show edit)}
-    ]
-  }
   defp create_template_files({config, _parsed, _invalid}) do
     structure  = Phoenix.parse_structure(config)
     web_module = structure[:web_module]
@@ -50,7 +42,15 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
       config
       |> Extension.extensions(web_app)
       |> Enum.map(fn extension ->
-        templates = Map.get(@extension_templates, extension, [])
+        templates =
+          try do
+            extension.phoenix_templates()
+          rescue
+            # TODO: Remove or refactor by 1.1.0
+            _e in UndefinedFunctionError ->
+              IO.warn("no #{inspect extension} base module to check for Phoenix templates support, please use #{inspect __MODULE__} to implement it")
+              []
+          end
 
         create_views_and_templates(extension, templates, web_module, web_prefix)
 
