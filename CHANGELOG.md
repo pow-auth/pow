@@ -5,6 +5,7 @@
 ### Enhancements
 
 * [`Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates`] `mix pow.extension.phoenix.gen.templates` now dynamically loads template list from the extension base module
+* [`PowResetPassword.Plug`] `PowResetPassword.Plug.load_user_by_token/2` now sets a `:pow_reset_password_decoded_token` key in `conn.private` that will be used in `PowResetPassword.Plug.update_user_password/2`
 
 ## v1.0.19 (2020-03-13)
 

@@ -76,6 +76,10 @@ defmodule PowResetPassword.Plug do
   If a user is found, it'll be assigned to `conn.assigns` for key
   `:reset_password_user`.
 
+  A `:pow_reset_password_decoded_token` key will be assigned in `conn.private`
+  with the decoded token. This is used to invalidate the token when calling
+  `update_user_password/2`.
+
   The token will be decoded and verified with `Pow.Plug.verify_token/4`.
 
   See `create_reset_token/2` for more on `:reset_password_token_store` config
@@ -87,7 +91,13 @@ defmodule PowResetPassword.Plug do
 
     with {:ok, token}               <- Plug.verify_token(conn, signing_salt(), signed_token, config),
          user when not is_nil(user) <- fetch_user_from_token(token, config) do
-      {:ok, Conn.assign(conn, :reset_password_user, user)}
+
+      conn =
+        conn
+        |> Conn.put_private(:pow_reset_password_decoded_token, token)
+        |> Conn.assign(:reset_password_user, user)
+
+      {:ok, conn}
     else
       _any -> {:error, conn}
     end
@@ -124,40 +134,39 @@ defmodule PowResetPassword.Plug do
   @doc """
   Updates the password for the user fetched in the connection.
 
-  Expects the user to exist in `conn.assigns` for key
-  `:reset_password_user`.
+  The user should exist in `conn.assigns` for key `:reset_password_user` and
+  the decoded token in `conn.private` for key
+  `:pow_reset_password_decoded_token`. `load_user_by_token/2` will ensure this.
 
   See `create_reset_token/2` for more on `:reset_password_token_store` config
   option.
-
-  The token will be decoded and verified with `Pow.Plug.verify_token/4`.
   """
   @spec update_user_password(Conn.t(), map()) :: {:ok, map(), Conn.t()} | {:error, map(), Conn.t()}
   def update_user_password(conn, params) do
     config = Plug.fetch_config(conn)
-    token  = conn.params["id"]
 
     conn
     |> reset_password_user()
     |> ResetPasswordContext.update_password(params, config)
-    |> maybe_expire_token(conn, token, config)
-  end
+    |> case do
+      {:ok, user} ->
+        expire_token(conn, config)
 
-  defp maybe_expire_token({:ok, user}, conn, token, config) do
-    case Plug.verify_token(conn, signing_salt(), token, config) do
-      :error       -> :ok
-      {:ok, token} -> expire_token(token, config)
+        {:ok, user, conn}
+
+      {:error, changeset} ->
+        {:error, changeset, conn}
     end
-
-    {:ok, user, conn}
-  end
-  defp maybe_expire_token({:error, changeset}, conn, _token, _config) do
-    {:error, changeset, conn}
   end
 
-  defp expire_token(token, config) do
+  defp expire_token(%{private: %{pow_reset_password_decoded_token: token}}, config) do
     {store, store_config} = store(config)
     store.delete(store_config, token)
+  end
+  defp expire_token(_conn, _config) do
+    IO.warn("no `:pow_reset_password_decoded_token` key found in `conn.private`, please call `#{inspect __MODULE__}.load_user_by_token/2` first")
+
+    :ok
   end
 
   defp reset_password_user(conn) do
