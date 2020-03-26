@@ -11,6 +11,30 @@ defmodule Pow.Store.CredentialsCache do
 
     * `users/2` - to list all current users
     * `sessions/2` - to list all current sessions
+
+  ## Custom credentials cache module
+
+  Pow may use the utility methods in this module. To ensure all required
+  methods has been implemented in a custom credentials cache module, the
+  `@behaviour` of this module should be used:
+
+      defmodule MyApp.CredentialsStore do
+        use Pow.Store.Base,
+          ttl: :timer.minutes(30),
+          namespace: "credentials"
+
+        @behaviour Pow.Store.CredentialsCache
+
+        @impl Pow.Store.CredentialsCache
+        def users(config, struct) do
+          # ...
+        end
+
+        @impl Pow.Store.CredentialsCache
+        def put(config, key, value) do
+          # ...
+        end
+      end
   """
   alias Pow.{Config, Operations, Store.Base}
 

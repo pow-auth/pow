@@ -4,7 +4,7 @@ defmodule Pow.Store.Base do
 
   ## Usage
 
-      defmodule MyApp.CredentialsStore do
+      defmodule MyApp.CustomCache do
         use Pow.Store.Base,
           ttl: :timer.minutes(30),
           namespace: "credentials"
