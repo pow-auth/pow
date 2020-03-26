@@ -70,7 +70,6 @@ defmodule Pow.Ecto.SchemaTest do
   end
 
   import ExUnit.CaptureIO
-  require Logger
 
   test "warns assocs defined" do
     assert capture_io(:stderr, fn ->
