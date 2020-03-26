@@ -18,14 +18,15 @@ defmodule Pow.Store.Base do
   alias Pow.Config
   alias Pow.Store.Backend.{EtsCache, MnesiaCache, Base}
 
+  @type config :: Config.t()
   @type key :: Base.key()
   @type record :: Base.record()
   @type key_match :: Base.key_match()
 
-  @callback put(Config.t(), key(), any()) :: :ok
-  @callback delete(Config.t(), key()) :: :ok
-  @callback get(Config.t(), key()) :: any() | :not_found
-  @callback all(Config.t(), key_match()) :: [record()]
+  @callback put(config(), key(), any()) :: :ok
+  @callback delete(config(), key()) :: :ok
+  @callback get(config(), key()) :: any() | :not_found
+  @callback all(config(), key_match()) :: [record()]
 
   @doc false
   defmacro __using__(defaults) do
@@ -52,7 +53,7 @@ defmodule Pow.Store.Base do
         unquote(__MODULE__).all(config, backend_config(config), key_match)
       end
 
-      @spec backend_config(Config.t()) :: Config.t()
+      @spec backend_config(unquote(__MODULE__).config()) :: unquote(__MODULE__).config()
       def backend_config(config) do
         [
           ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),
@@ -97,28 +98,28 @@ defmodule Pow.Store.Base do
     end
   end
 
-  @spec put(Config.t(), Config.t(), record() | [record()]) :: :ok
+  @spec put(config(), config(), record() | [record()]) :: :ok
   def put(config, backend_config, record_or_records) do
     # TODO: Update by 1.1.0
     backwards_compatible_call(store(config), :put, [backend_config, record_or_records])
   end
 
   @doc false
-  @spec delete(Config.t(), Config.t(), key()) :: :ok
+  @spec delete(config(), config(), key()) :: :ok
   def delete(config, backend_config, key) do
     # TODO: Update by 1.1.0
     backwards_compatible_call(store(config), :delete, [backend_config, key])
   end
 
   @doc false
-  @spec get(Config.t(), Config.t(), key()) :: any() | :not_found
+  @spec get(config(), config(), key()) :: any() | :not_found
   def get(config, backend_config, key) do
     # TODO: Update by 1.1.0
     backwards_compatible_call(store(config), :get, [backend_config, key])
   end
 
   @doc false
-  @spec all(Config.t(), Config.t(), key_match()) :: [record()]
+  @spec all(config(), config(), key_match()) :: [record()]
   def all(config, backend_config, key_match) do
     # TODO: Update by 1.1.0
     backwards_compatible_call(store(config), :all, [backend_config, key_match])

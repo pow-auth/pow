@@ -36,11 +36,11 @@ defmodule Pow.Store.CredentialsCache do
         end
       end
   """
-  alias Pow.{Config, Operations, Store.Base}
+  alias Pow.{Operations, Store.Base}
 
-  @callback users(Config.t(), module()) :: [any()]
-  @callback sessions(Config.t(), map()) :: [binary()]
-  @callback put(Config.t(), binary(), {map(), list()}) :: :ok
+  @callback users(Base.config(), module()) :: [any()]
+  @callback sessions(Base.config(), map()) :: [binary()]
+  @callback put(Base.config(), binary(), {map(), list()}) :: :ok
 
   use Base,
     ttl: :timer.minutes(30),
@@ -51,7 +51,7 @@ defmodule Pow.Store.CredentialsCache do
 
   Sessions for a user can be looked up with `sessions/3`.
   """
-  @spec users(Config.t(), module()) :: [any()]
+  @spec users(Base.config(), module()) :: [any()]
   def users(config, struct) do
     config
     |> Base.all(backend_config(config), [struct, :user, :_])
@@ -63,7 +63,7 @@ defmodule Pow.Store.CredentialsCache do
   @doc """
   List all existing sessions for the user fetched from the backend store.
   """
-  @spec sessions(Config.t(), map()) :: [binary()]
+  @spec sessions(Base.config(), map()) :: [binary()]
   def sessions(config, user), do: fetch_sessions(config, backend_config(config), user)
 
   # TODO: Refactor by 1.1.0
@@ -92,7 +92,7 @@ defmodule Pow.Store.CredentialsCache do
   If metadata has `:fingerprint` any active sessions for the user with the same
   `:fingerprint` in metadata will be deleted.
   """
-  @spec put(Config.t(), binary(), {map(), list()}) :: :ok
+  @spec put(Base.config(), binary(), {map(), list()}) :: :ok
   def put(config, session_id, {user, metadata}) do
     {struct, id} = user_to_struct_id!(user, [])
     user_key     = [struct, :user, id]
@@ -143,7 +143,7 @@ defmodule Pow.Store.CredentialsCache do
   Fetch user credentials from the backend store from session id.
   """
   @impl true
-  @spec get(Config.t(), binary()) :: {map(), list()} | :not_found
+  @spec get(Base.config(), binary()) :: {map(), list()} | :not_found
   def get(config, session_id) do
     backend_config = backend_config(config)
 
