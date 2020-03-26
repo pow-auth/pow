@@ -14,6 +14,10 @@ defmodule Pow.Store.CredentialsCache do
   """
   alias Pow.{Config, Operations, Store.Base}
 
+  @callback users(Config.t(), module()) :: [any()]
+  @callback sessions(Config.t(), map()) :: [binary()]
+  @callback put(Config.t(), binary(), {map(), list()}) :: :ok
+
   use Base,
     ttl: :timer.minutes(30),
     namespace: "credentials"
@@ -64,7 +68,7 @@ defmodule Pow.Store.CredentialsCache do
   If metadata has `:fingerprint` any active sessions for the user with the same
   `:fingerprint` in metadata will be deleted.
   """
-  @impl true
+  @spec put(Config.t(), binary(), {map(), list()}) :: :ok
   def put(config, session_id, {user, metadata}) do
     {struct, id} = user_to_struct_id!(user, [])
     user_key     = [struct, :user, id]
