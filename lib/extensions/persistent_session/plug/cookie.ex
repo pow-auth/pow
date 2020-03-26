@@ -230,9 +230,6 @@ defmodule PowPersistentSession.Plug.Cookie do
       user -> {token, {user, metadata}}
     end
   end
-  # TODO: Remove by 1.1.0
-  defp fetch_user({token, user_id}, config),
-    do: fetch_user({token, {user_id, []}}, config)
 
   defp filter_invalid!([id: _value] = clauses), do: clauses
   defp filter_invalid!(clauses), do: raise "Invalid get_by clauses stored: #{inspect clauses}"

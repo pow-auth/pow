@@ -19,7 +19,7 @@ defmodule Pow.Store.Backend.EtsCache do
   @behaviour Base
   @ets_cache_tab __MODULE__
 
-  @spec start_link(Config.t()) :: GenServer.on_start()
+  @spec start_link(Base.config()) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
@@ -47,7 +47,7 @@ defmodule Pow.Store.Backend.EtsCache do
   # Callbacks
 
   @impl GenServer
-  @spec init(Config.t()) :: {:ok, map()}
+  @spec init(Base.config()) :: {:ok, map()}
   def init(_config) do
     init_table()
 
@@ -55,7 +55,7 @@ defmodule Pow.Store.Backend.EtsCache do
   end
 
   @impl GenServer
-  @spec handle_cast({:cache, Config.t(), Base.record() | [Base.record()]}, map()) :: {:noreply, map()}
+  @spec handle_cast({:cache, Base.config(), Base.record() | [Base.record()]}, map()) :: {:noreply, map()}
   def handle_cast({:cache, config, record_or_records}, %{invalidators: invalidators} = state) do
     invalidators =
       record_or_records
@@ -65,7 +65,7 @@ defmodule Pow.Store.Backend.EtsCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:delete, Config.t(), Base.key()}, map()) :: {:noreply, map()}
+  @spec handle_cast({:delete, Base.config(), Base.key()}, map()) :: {:noreply, map()}
   def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
     invalidators =
       key
@@ -76,7 +76,7 @@ defmodule Pow.Store.Backend.EtsCache do
   end
 
   @impl GenServer
-  @spec handle_info({:invalidate, Config.t(), Base.key()}, map()) :: {:noreply, map()}
+  @spec handle_info({:invalidate, Base.config(), Base.key()}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
     invalidators =
       key
