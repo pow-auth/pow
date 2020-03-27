@@ -113,7 +113,7 @@ That's it! Run `mix ecto.setup` and you can now visit `http://localhost:4000/reg
 
 ### Modify templates
 
-By default, Pow will only expose necessary files.
+By default, Pow exposes as few files as possible.
 
 If you wish to modify the templates, you can generate them (and the view files) using:
 
@@ -211,7 +211,7 @@ Templates and views for extensions can be generated with:
 mix pow.extension.phoenix.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-Please follow the instructions in ["Modify templates"](#modify-templates) to enable the customization of templates and views.
+Please follow the instructions in ["Modify templates"](#modify-templates) to ensure that your custom templates and views will be used.
 
 ### Mailer support
 
