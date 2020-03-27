@@ -6,7 +6,7 @@ The list is not exhaustive, and you should take any appropriate additional steps
 
 ## REQUIRED: Use a persistent cache store
 
-By default the `Pow.Store.Backend.EtsCache` will be used as the cache backend. In production this would mean that all session data will be lost between deploys or server restarts. Furthermore, in clusters the sessions will not be shared between nodes.
+By default the `Pow.Store.Backend.EtsCache` will be used as the cache backend. In production, this would mean that all session data will be lost between deploys or server restarts. Furthermore, in clusters, the sessions will not be shared between nodes.
 
 You should use a persistent (and possibly distributed) cache store like the `Pow.Store.Backend.MnesiaCache`.
 
@@ -36,7 +36,7 @@ end
 
 Update the config with `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
-Mnesia will store the database files in the directory `./Mnesia.NODE` in the current working directory where `NODE` is the node name. By default this is `./Mnesia.nonode@nohost`. You may wish to change the location to a shared directory so you can roll deploys:
+Mnesia will store the database files in the directory `./Mnesia.NODE` in the current working directory where `NODE` is the node name. By default, this is `./Mnesia.nonode@nohost`. You may wish to change the location to a shared directory so you can roll deploys:
 
 ```elixir
 config :mnesia, :dir, '/path/to/dir'
@@ -46,7 +46,7 @@ config :mnesia, :dir, '/path/to/dir'
 
 ## OPTIONAL: Validate that strong passwords are used
 
-[NIST 800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html#-5112-memorized-secret-verifiers) recommends that you reject passwords that are commonly-used, expected, or compromised. The guidelines explicitly mentions the following methods to ensure strong passwords are used:
+[NIST 800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html#-5112-memorized-secret-verifiers) recommends that you reject passwords that are commonly-used, expected, or compromised. The guidelines explicitly mention the following methods to ensure strong passwords are used:
 
 > - Passwords obtained from previous breach corpuses.
 > - Dictionary words.
@@ -74,7 +74,7 @@ end
 
 ## OPTIONAL: Rate limit authentication attempts
 
-You should rate limit authentication attempts according to [NIST 800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html#-5112-memorized-secret-verifiers). Pow doesn't include a rate limiter since this is better dealt with at the proxy or gateway side rather than application side. The minimum requirement would be to rate limit to a maximum of 100 failed authentication attempts per IP.
+You should rate limit authentication attempts according to [NIST 800-63b](https://pages.nist.gov/800-63-3/sp800-63b.html#-5112-memorized-secret-verifiers). Pow doesn't include a rate limiter since this is better dealt with at the proxy or gateway side rather than the application side. The minimum requirement would be to rate limit to a maximum of 100 failed authentication attempts per IP.
 
 You may also wish to [lock accounts](../guides/lock_users.md) that has had too many failed authentication attempts, or require a CAPTCHA to be solved before allowing new attempts.
 
@@ -85,7 +85,7 @@ There are no rate limits for any e-mails sent out with Pow, including `PowEmailC
 Rate limitation should either be handled at the service, or you may be able to set up rate limitation in the Pow mailer. For the latter, here's a simple example using [Hammer](https://github.com/ExHammer/hammer):
 
 ```elixir
-defmodule MyAppWeb.PowMailer do
+defmodule MyAppWeb.Pow.Mailer do
   use Pow.Phoenix.Mailer
 
   # ....
@@ -106,4 +106,4 @@ defmodule MyAppWeb.PowMailer do
 end
 ```
 
-In the above the e-mail delivery will be limited to two e-mails per minute for a single recipient, but you can use different criterias, e.g. limit for e-mails that has same receipient and subject. It's strongly recommended to add tests where appropriate to ensure abuse is not possible.
+In the above, the e-mail delivery will be limited to two e-mails per minute for a single recipient, but you can use different criteria, e.g. limit for e-mails that have the same recipient and subject. It's strongly recommended to add tests where appropriate to ensure abuse is not possible.

@@ -1,8 +1,8 @@
 # Redis cache store backend
 
-For read-only systems, like Heroku, you won't be able to use the built-in Mnesia backend cache for distribution and to persist cache data between restarts. Instead let's use [Redix](https://github.com/whatyouhide/redix) to store our cache data in Redis.
+For read-only systems, like Heroku, you won't be able to use the built-in Mnesia backend cache for distribution and to persist cache data between restarts. Instead, let's use [Redix](https://github.com/whatyouhide/redix) to store our cache data in Redis.
 
-First add Redix to your list of dependencies in `mix.exs`:
+First, add Redix to your list of dependencies in `mix.exs`:
 
 ```elixir
 defp deps do
@@ -13,10 +13,10 @@ defp deps do
 end
 ```
 
-Now set up your `WEB_PATH/pow_redis_cache.ex` like so:
+Now set up your `WEB_PATH/pow/redis_cache.ex` like so:
 
 ```elixir
-defmodule MyAppWeb.PowRedisCache do
+defmodule MyAppWeb.Pow.RedisCache do
   @behaviour Pow.Store.Backend.Base
 
   alias Pow.Config
@@ -198,19 +198,19 @@ Finally update the config with your new Redis cache backend:
 config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
-  cache_store_backend: MyAppWeb.PowRedisCache
+  cache_store_backend: MyAppWeb.Pow.RedisCache
 ```
 
-And now you've a running Redis cache store backend!
+And now you have a running Redis cache store backend!
 
 ## Test module
 
 ```elixir
-defmodule MyAppWeb.PowRedisCacheTest do
+defmodule MyAppWeb.Pow.RedisCacheTest do
   use ExUnit.Case
-  doctest MyAppWeb.PowRedisCache
+  doctest MyAppWeb.Pow.RedisCache
 
-  alias MyAppWeb.PowRedisCache
+  alias MyAppWeb.Pow.RedisCache
 
   @default_config [namespace: "test", ttl: :timer.hours(1)]
 

@@ -1,6 +1,6 @@
 # Multitenancy with Pow
 
-You are able to pass repo options to the methods used in `Pow.Ecto.Context` by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
+You can pass repo options to the methods used in `Pow.Ecto.Context` by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
 
 ```elixir
 config :my_app, :pow,
@@ -17,7 +17,7 @@ plug Pow.Plug.Session, otp_app: :my_app, repo_opts: [prefix: "tenant_a"]
 And you can add it as a custom plug to use a dynamic prefix value:
 
 ```elixir
-defmodule MyAppWeb.PowTenantPlug do
+defmodule MyAppWeb.Pow.TenantPlug do
   def init(config), do: config
 
   def call(conn, config) do
@@ -31,9 +31,9 @@ end
 
 ## Triplex
 
-With the above it will make it very easy to set up multitenancy with [Triplex](https://github.com/ateliware/triplex).
+With the above, it will make it very easy to set up multitenancy with [Triplex](https://github.com/ateliware/triplex).
 
-First update your `endpoint.ex` using a custom plug rather than the default `Pow.Plug.Session`:
+First, update your `endpoint.ex` using a custom plug rather than the default `Pow.Plug.Session`:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do
@@ -42,15 +42,15 @@ defmodule MyAppWeb.Endpoint do
   # ...
 
   plug Plug.Session, @session_options
-  plug MyAppWeb.PowTriplexSessionPlug, otp_app: :my_app
+  plug MyAppWeb.Pow.TriplexSessionPlug, otp_app: :my_app
   # ...
 end
 ```
 
-Then set up `pow_triplex_session_plug.ex`:
+Then set up `WEB_PATH/pow/triplex_session_plug.ex`:
 
 ```elixir
-defmodule MyAppWeb.PowTriplexSessionPlug do
+defmodule MyAppWeb.Pow.TriplexSessionPlug do
   def init(config), do: config
 
   def call(conn, config) do
