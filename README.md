@@ -113,7 +113,7 @@ That's it! Run `mix ecto.setup` and you can now visit `http://localhost:4000/reg
 
 ### Modify templates
 
-By default, Pow will only expose files that are necessary.
+By default, Pow will only expose necessary files.
 
 If you wish to modify the templates, you can generate them (and the view files) using:
 
@@ -211,14 +211,14 @@ Templates and views for extensions can be generated with:
 mix pow.extension.phoenix.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-Please follow the instructions in ["Modify templates"](#modify-templates) to enable customization of templates and views.
+Please follow the instructions in ["Modify templates"](#modify-templates) to enable the customization of templates and views.
 
 ### Mailer support
 
-Many extensions require a mailer to have been set up. Let's create a mailer mock module in  `WEB_PATH/pow_mailer.ex`:
+Many extensions require a mailer to have been set up. Let's create a mailer mock module in  `WEB_PATH/pow/mailer.ex`:
 
 ```elixir
-defmodule MyAppWeb.PowMailer do
+defmodule MyAppWeb.Pow.Mailer do
   use Pow.Phoenix.Mailer
   require Logger
 
@@ -241,7 +241,7 @@ Update `config/config.ex` with `:mailer_backend` key:
 ```elixir
 config :my_app, :pow,
   # ...
-  mailer_backend: MyAppWeb.PowMailer
+  mailer_backend: MyAppWeb.Pow.Mailer
 ```
 
 This mailer module will only output the mail to your log, so you can e.g. try out the reset password and email confirmation links. You should integrate the Pow mailer with your actual mailer system. For Swoosh or Bamboo integration, check out the [Configuring mailer guide](guides/configuring_mailer.md).
@@ -493,7 +493,7 @@ end
 
 You can use `Pow.Plug.current_user/1` to fetch the current user from the connection.
 
-This can be used to show sign in or sign out links in your Phoenix template:
+This can be used to show the sign in or sign out links in your Phoenix template:
 
 ```elixir
 <%= if Pow.Plug.current_user(@conn) do %>
@@ -512,7 +512,7 @@ The current user can also be fetched by using the template assigns set in the co
 
 Enables session-based authorization. The user struct will be collected from a cache store through a GenServer using a unique token generated for the session. The token will be reset every time the authorization level changes (handled by `Pow.Plug`) or after a certain interval (default 15 minutes).
 
-The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case it's recommended to [add a plug](guides/sync_user.md) that reloads the user struct and reassigns it to the connection.
+The user struct fetched can be out of sync with the database if the row in the database is updated by actions outside Pow. In this case, it's recommended to [add a plug](guides/sync_user.md) that reloads the user struct and reassigns it to the connection.
 
 Custom metadata can be set for the session by assigning a private `:pow_session_metadata` key in the conn. Read the `Pow.Plug.Session` module docs for more details.
 
@@ -548,7 +548,7 @@ Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
 
 Remember to add `:mnesia` to your `:extra_applications` so it'll be available for your release build. Mnesia will write files to the current working directory. The path can be changed with `config :mnesia, dir: '/path/to/dir'`.
 
-The MnesiaCache requires write access. If you've a read-only file system you should take a look at the [Redis cache backend store guide](guides/redis_cache_store_backend.md).
+The MnesiaCache requires write access. If you've got a read-only file system you should take a look at the [Redis cache backend store guide](guides/redis_cache_store_backend.md).
 
 ### Pow.Plug.RequireAuthenticated
 

@@ -2,7 +2,7 @@
 
 You may want to update the cached user credentials when an action outside of Pow has updated the user. It's very important to understand that the cached user credentials that Pow fetches in `Pow.Plug.current_user/2` is always to be considered out of date since it's a cached object.
 
-In the following examples we'll imagine that you've added a `plan` column on your `users` table. We may want to use that `plan` to give them access to a certain controller actions. In this case, it's paramount that you load the user from the database.
+In the following examples, we'll imagine that you've added a `plan` column on your `users` table. We may want to use that `plan` to give them access to certain controller actions. In this case, it's paramount that you load the user from the database.
 
 ## Reload the user
 
@@ -24,7 +24,7 @@ defmodule MyAppWeb.ProPlanController do
 end
 ```
 
-This should always be done for any authorization actions, or any other actions that requires the actual value to be known. Do note that only the controllers that has the plug will have the reloaded user. In all other controllers, the old cached credentials will be loaded instead.
+This should always be done for any authorization actions or any other actions that require the actual value to be known. Do note that only the controllers that have the plug will have the reloaded user. In all other controllers, the old cached credentials will be loaded instead.
 
 If you would like to always fetch the user as it is in the database across all your controllers, you could instead set up a module plug and add it to your endpoint:
 
@@ -66,16 +66,16 @@ defmodule MyAppWeb.Endpoint do
 end
 ```
 
-## Update user in credentials cache
+## Update user in the credentials cache
 
-Let's say that you want to show the user `plan` on most pages. In this case we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions uses the below method.
+Let's say that you want to show the user `plan` on most pages. In this case, we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions use the below method.
 
 We can use `Pow.Plug.create/2` to call the plug and update the cached credentials.
 
-First we'll make a helper and import it to our controllers:
+First, we'll make a helper and import it to our controllers:
 
 ```elixir
-defmodule MyAppWeb.PowHelper do
+defmodule MyAppWeb.Pow.Helper do
   @spec sync_user(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def sync_user(conn, user), do: Pow.Plug.create(conn, user)
 end
@@ -90,7 +90,7 @@ defmodule MyAppWeb do
       use Phoenix.Controller, namespace: MyAppWeb
 
       # ...
-      import MyAppWeb.PowHelper
+      import MyAppWeb.Pow.Helper
     end
   end
 
@@ -124,8 +124,8 @@ defmodule MyAppWeb.PlanController do
 end
 ```
 
-As you can see in the above, the cached user credentials will be updated after a successful update of plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign.
+As you can see in the above, the cached user credentials will be updated after a successful update of the plan for the user. Now any subsequent pages being rendered, you'll have access to the updated `plan` value in the current user assign.
 
-Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action may be).
+Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action maybe).
 
-You may also update the `plan` field in a background task. In this case you won't have access to any current session, and you would have to use the `Pow.Store.CredentialsCache.put/3` to update the credentials cache. However, since there are some caveats to this, it's instead recommended to find an alternative solution with the above methods.
+You may also update the `plan` field in a background task. In this case, you won't have access to any current session, and you would have to use the `Pow.Store.CredentialsCache.put/3` to update the credentials cache. However, since there are some caveats to this, it's instead recommended to find an alternative solution with the above methods.

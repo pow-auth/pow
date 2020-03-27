@@ -2,7 +2,7 @@
 
 ## Remove coherence
 
-First we'll remove coherence.
+First, we'll remove coherence.
 
   1. Remove `:coherence` config from `config/config.exs` (also any coherence config in `config/dev.exs`, `config/prod.exs` and `config/test.exs`)
   2. Delete `coherence_messages.ex`, `coherence_web.ex`, `coherence/redirects.ex`, `emails/coherence`, `templates/coherence`, and `views/coherence`.
@@ -42,7 +42,7 @@ config :my_app, :pow,
   user: MyApp.User,
   extensions: [PowEmailConfirmation, PowResetPassword],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
-  mailer_backend: MyAppWeb.PowMailer
+  mailer_backend: MyAppWeb.Pow.Mailer
 ```
 
 Set up `user.ex` to use Pow:
@@ -99,10 +99,10 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
 ## Mailer
 
-Set up `pow_mailer.ex` to enable emails:
+Set up `WEB_PATH/pow/mailer.ex` to enable emails:
 
   ```elixir
-  defmodule MyAppWeb.PowMailer do
+  defmodule MyAppWeb.Pow.Mailer do
     @moduledoc false
     use Pow.Phoenix.Mailer
     use Swoosh.Mailer, otp_app: :my_app
@@ -161,7 +161,7 @@ Set up `router.ex`
 Change `Routes.session_path` to `Routes.pow_session_path`, and
 `Routes.registration_path` to `Routes.pow_registration_path`. Any references to `Coherence.current_user/1`, can be changed to `Pow.Plug.current_user/1`.
 
-That's it! You can now test out your Pow'ered app, and then remove all unused fields/tables after.
+That's it! You can now test out your Pow'ered app and then remove all unused fields/tables after.
 
 ## Keep confirmed_at and confirmation_token data
 
