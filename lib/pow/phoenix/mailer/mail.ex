@@ -39,7 +39,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
 
   @type t :: %__MODULE__{}
 
-  defstruct [:user, :subject, :text, :html, :assigns]
+  defstruct [:conn, :user, :subject, :text, :html, :assigns]
 
   @doc """
   Returns a populated `%Pow.Phoenix.Mailer.Mail{}` map.
@@ -58,7 +58,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
     text    = render(view_module, template, conn, view_assigns, :text)
     html    = render(view_module, template, conn, view_assigns, :html)
 
-    struct(__MODULE__, user: user, subject: subject, text: text, html: html, assigns: assigns)
+    struct(__MODULE__, conn: conn, user: user, subject: subject, text: text, html: html, assigns: assigns)
   end
 
   defp render_subject(view_module, template, assigns) do
