@@ -378,7 +378,7 @@ defmodule MyAppWeb.API.V1.RegistrationControllerTest do
       conn = post conn, Routes.api_v1_registration_path(conn, :create, @valid_params)
 
       assert json = json_response(conn, 200)
-      assert json["data"]["access_token"]
+      assert json["data"]["token"]
       assert json["data"]["renewal_token"]
     end
 
@@ -404,9 +404,9 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   alias Pow.Ecto.Schema.Password
 
   setup do
-    user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
+    Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
 
-    {:ok, user: user}
+    :ok
   end
 
   describe "create/2" do
@@ -417,7 +417,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
       conn = post conn, Routes.api_v1_session_path(conn, :create, @valid_params)
 
       assert json = json_response(conn, 200)
-      assert json["data"]["access_token"]
+      assert json["data"]["token"]
       assert json["data"]["renewal_token"]
     end
 
@@ -431,7 +431,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   end
 
   describe "renew/2" do
-    setup %{conn: conn, user: user} do
+    setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
@@ -445,7 +445,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
         |> post(Routes.api_v1_session_path(conn, :renew))
 
       assert json = json_response(conn, 200)
-      assert json["data"]["access_token"]
+      assert json["data"]["token"]
       assert json["data"]["renewal_token"]
     end
 
@@ -462,7 +462,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   end
 
   describe "delete/2" do
-    setup %{conn: conn, user: user} do
+    setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
