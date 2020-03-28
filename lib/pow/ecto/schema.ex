@@ -25,6 +25,8 @@ defmodule Pow.Ecto.Schema do
   A `@pow_config` module attribute is created containing the options that were
   passed to the macro with the `use Pow.Ecto.Schema, ...` call.
 
+  See `Pow.Ecto.Schema.Changeset` for more.
+
   ## Usage
 
   Configure `lib/my_project/users/user.ex` the following way:

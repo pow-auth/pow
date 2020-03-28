@@ -6,6 +6,8 @@ defmodule Pow.Ecto.Schema.Changeset do
   build in macros in `Pow.Ecto.Schema` should be used. This is to ensure
   that only compile time configuration is used.
 
+  `Pow.Ecto.Schema.Password` is by default used to hash and verify passwords.
+
   ## Configuration options
 
     * `:password_min_length`   - minimum password length, defaults to 8
