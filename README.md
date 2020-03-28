@@ -476,6 +476,12 @@ Add `routes_backend: MyAppWeb.Pow.Routes` to your configuration. You can find al
 
 ### Password hashing function
 
+`Pow.Ecto.Schema.Password` is used to hash and verify with Pbkdf2. It's highly recommended to lower the iterations count in your test environment to speed up your tests:
+
+```elixir
+config :pow, Pow.Ecto.Schema.Password, iterations: 1
+```
+
 You can change the password hashing function easily. For example, this is how you use [comeonin with Argon2](https://github.com/riverrun/argon2_elixir):
 
 ```elixir

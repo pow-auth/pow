@@ -370,9 +370,11 @@ end
 defmodule MyAppWeb.API.V1.RegistrationControllerTest do
   use MyAppWeb.ConnCase
 
+  @password "secret1234"
+
   describe "create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret1234", "password_confirmation" => "secret1234"}}
-    @invalid_params %{"user" => %{"email" => "invalid", "password" => "secret1234", "password_confirmation" => ""}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
+    @invalid_params %{"user" => %{"email" => "invalid", "password" => @password, "password_confirmation" => ""}}
 
     test "with valid params", %{conn: conn} do
       conn = post conn, Routes.api_v1_registration_path(conn, :create, @valid_params)
@@ -401,16 +403,20 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   use MyAppWeb.ConnCase
 
   alias MyApp.{Repo, Users.User}
-  alias Pow.Ecto.Schema.Password
+
+  @password "secret1234"
 
   setup do
-    user = Repo.insert!(%User{email: "test@example.com", password_hash: Password.pbkdf2_hash("secret1234")})
+    user =
+      %User{}
+      |> User.changeset(%{email: "test@example.com", password: @password, password_confirmation: @password})
+      |> Repo.insert!()
 
     {:ok, user: user}
   end
 
   describe "create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret1234"}}
+    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password}}
     @invalid_params %{"user" => %{"email" => "test@example.com", "password" => "invalid"}}
 
     test "with valid params", %{conn: conn} do
