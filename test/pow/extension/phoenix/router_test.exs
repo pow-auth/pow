@@ -7,6 +7,11 @@ defmodule Pow.Extension.Phoenix.RouterTest do
     def phoenix_router?(), do: true
   end
 
+  # To prevent the `TestController.init/1 is undefined` warnings
+  defmodule ExtensionMock.Phoenix.TestController do
+    use Phoenix.Controller, namespace: Pow.Extension.Phoenix.RouterTest
+  end
+
   defmodule ExtensionMock.Phoenix.Router do
     use Pow.Extension.Phoenix.Router.Base
 
@@ -26,7 +31,7 @@ defmodule Pow.Extension.Phoenix.RouterTest do
     use Pow.Extension.Phoenix.Router,
       extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
 
-    scope "/", as: "pow_extension_phoenix_router_test_extension_mock" do
+    scope "/", ExtensionMock.Phoenix, as: "pow_extension_phoenix_router_test_extension_mock" do
       get "/test/:id/overridden", TestController, :edit
       resources "/overridden/test", TestController, only: [:delete]
     end
@@ -67,6 +72,8 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   @conn ConnTest.build_conn()
 
   test "has routes" do
+    assert Enum.count(Router.phoenix_routes()) == 15
+
     assert unquote(Routes.pow_session_path(@conn, :new)) == "/session/new"
     assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :new)) == "/test/new"
   end
@@ -77,10 +84,12 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   end
 
   test "can override routes" do
+    assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController)) == 6
+
     assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :edit, 1)) == "/test/1/overridden"
-    assert Enum.count(Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :edit)) == 1
+    assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController && &1.plug_opts == :edit)) == 1
 
     assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :delete, 1)) == "/overridden/test/1"
-    assert Enum.count(Router.phoenix_routes(), &(&1.plug == TestController && &1.plug_opts == :delete)) == 1
+    assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController && &1.plug_opts == :delete)) == 1
   end
 end

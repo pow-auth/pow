@@ -138,7 +138,7 @@ defmodule Pow.Store.Base do
         apply(store, method, args)
 
       true ->
-        IO.warn("binary key for backend stores is depecated, update `#{store}` to accept erlang terms instead")
+        IO.warn("binary key for backend stores is depecated, update `#{inspect store}` to accept erlang terms instead")
 
         case method do
           :put    -> binary_key_put(store, args)

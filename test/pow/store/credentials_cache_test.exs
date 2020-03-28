@@ -107,7 +107,9 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert CredentialsCache.delete(@config, @backend_config, "key_1") == :ok
     assert CredentialsCache.get(@config, @backend_config, "key_1") == :not_found
 
-    assert CredentialsCache.user_session_keys(@config, @backend_config, User) == []
+    assert_capture_io_eval(quote do
+      assert CredentialsCache.user_session_keys(unquote(@config), unquote(@backend_config), User) == []
+    end, "Pow.Store.CredentialsCache.user_session_keys/3 is deprecated. Use `users/2` or `sessions/2` instead")
 
     user_2 = %UsernameUser{id: 1}
 
@@ -115,8 +117,36 @@ defmodule Pow.Store.CredentialsCacheTest do
     CredentialsCache.put(@config, @backend_config, "key_2", {user_1, a: 1})
     CredentialsCache.put(@config, @backend_config, "key_3", {user_2, a: 1})
 
-    assert CredentialsCache.user_session_keys(@config, @backend_config, User) == [[Pow.Test.Ecto.Users.User, :user, 1, :session, "key_1"], [Pow.Test.Ecto.Users.User, :user, 1, :session, "key_2"]]
-    assert CredentialsCache.user_session_keys(@config, @backend_config, UsernameUser) == [[Pow.Test.Ecto.Users.UsernameUser, :user, 1, :session, "key_3"]]
+    assert_capture_io_eval(quote do
+      assert CredentialsCache.user_session_keys(unquote(@config), unquote(@backend_config), User) == [[Pow.Test.Ecto.Users.User, :user, 1, :session, "key_1"], [Pow.Test.Ecto.Users.User, :user, 1, :session, "key_2"]]
+      assert CredentialsCache.user_session_keys(unquote(@config), unquote(@backend_config), UsernameUser) == [[Pow.Test.Ecto.Users.UsernameUser, :user, 1, :session, "key_3"]]
+    end, "Pow.Store.CredentialsCache.user_session_keys/3 is deprecated. Use `users/2` or `sessions/2` instead")
+  end
+
+
+  alias ExUnit.CaptureIO
+
+  defp assert_capture_io_eval(quoted, message) do
+    System.version()
+    |> Version.match?(">= 1.8.0")
+    |> case do
+      true ->
+        # Due to https://github.com/elixir-lang/elixir/pull/9626 it's necessary to
+        # import `ExUnit.Assertions`
+        pre_elixir_1_10_quoted =
+          quote do
+            import ExUnit.Assertions
+          end
+
+        assert CaptureIO.capture_io(:stderr, fn ->
+          Code.eval_quoted([pre_elixir_1_10_quoted, quoted])
+        end) =~ message
+
+      false ->
+        IO.warn("Please upgrade to Elixir 1.8 to captured and assert IO message: #{inspect message}")
+
+        :ok
+    end
   end
 
   describe "with EtsCache backend" do
