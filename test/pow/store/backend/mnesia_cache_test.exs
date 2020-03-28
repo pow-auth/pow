@@ -346,8 +346,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
-    # Remove logger
+    # Remove logger to prevent double logs and don't log info
     rpc(node, Logger, :remove_backend, [:console])
+    rpc(node, Logger, :configure, [[level: :warn]])
 
     node
   end
