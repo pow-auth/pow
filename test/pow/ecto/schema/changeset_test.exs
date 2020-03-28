@@ -184,22 +184,30 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.errors[:password_hash] == {"can't be blank", [validation: :required]}
     end
 
+    alias ExUnit.CaptureIO
+
     # TODO: Remove by 1.1.0
     test "handle `confirm_password` conversion" do
       params =
         @valid_params
         |> Map.delete("password_confirmation")
         |> Map.put("confirm_password", "secret1234")
-      changeset = User.changeset(%User{}, params)
 
-      assert changeset.valid?
+      assert CaptureIO.capture_io(:stderr, fn ->
+        changeset = User.changeset(%User{}, params)
 
-      params    = Map.put(params, "confirm_password", "invalid")
-      changeset = User.changeset(%User{}, params)
+        assert changeset.valid?
+      end) =~ "passing `confirm_password` value to `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has been deprecated, please use `password_confirmation` instead"
 
-      refute changeset.valid?
-      assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
-      refute changeset.errors[:password_confirmation]
+      params = Map.put(params, "confirm_password", "invalid")
+
+      assert CaptureIO.capture_io(:stderr, fn ->
+        changeset = User.changeset(%User{}, params)
+
+        refute changeset.valid?
+        assert changeset.errors[:confirm_password] == {"does not match confirmation", [validation: :confirmation]}
+        refute changeset.errors[:password_confirmation]
+      end) =~ "passing `confirm_password` value to `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has been deprecated, please use `password_confirmation` instead"
     end
 
     test "can use custom password hash methods" do

@@ -75,22 +75,35 @@ defmodule Pow.Store.BaseTest do
     end
   end
 
+  alias ExUnit.CaptureIO
+
   # TODO: Remove by 1.1.0
   test "backwards compatible with binary keys support" do
     config = [backend: BackwardsCompabilityMock]
 
-    assert BaseMock.put(config, [BackwardsCompabilityMock, :id, 2], :value) == :ok
-    binary_key = "default_namespace:#{:erlang.term_to_binary([BackwardsCompabilityMock, :id, 2])}"
-    assert_received {:put, ^binary_key, :value}
+    key = [BackwardsCompabilityMock, :id, 2]
+    binary_key = "default_namespace:#{:erlang.term_to_binary(key)}"
+    binary_key_warning = "binary key for backend stores is depecated, update `Pow.Store.BaseTest.BackwardsCompabilityMock` to accept erlang terms instead"
 
-    assert BaseMock.get(config, [BackwardsCompabilityMock, :id, 2]) == :value
-    assert_received {:get, ^binary_key}
+    assert CaptureIO.capture_io(:stderr, fn ->
+      assert BaseMock.put(config, key, :value) == :ok
+      assert_received {:put, ^binary_key, :value}
+    end) =~ binary_key_warning
 
-    assert BaseMock.delete(config, [BackwardsCompabilityMock, :id, 2]) == :ok
-    assert_received {:delete, ^binary_key}
+    assert CaptureIO.capture_io(:stderr, fn ->
+      assert BaseMock.get(config, key) == :value
+      assert_received {:get, ^binary_key}
+    end) =~ binary_key_warning
 
-    assert BaseMock.all(config, [BackwardsCompabilityMock | :_]) == [{[BackwardsCompabilityMock, :id, 2], :value}]
-    assert BaseMock.all(config, [BackwardsCompabilityMock, :id, :_]) == [{[BackwardsCompabilityMock, :id, 2], :value}]
-    assert BaseMock.all(config, [BackwardsCompabilityMock, :id, 3]) == []
+    assert CaptureIO.capture_io(:stderr, fn ->
+      assert BaseMock.delete(config, key) == :ok
+      assert_received {:delete, ^binary_key}
+    end)
+
+    assert CaptureIO.capture_io(:stderr, fn ->
+      assert BaseMock.all(config, [BackwardsCompabilityMock | :_]) == [{key, :value}]
+      assert BaseMock.all(config, [BackwardsCompabilityMock, :id, :_]) == [{key, :value}]
+      assert BaseMock.all(config, [BackwardsCompabilityMock, :id, 3]) == []
+    end)
   end
 end

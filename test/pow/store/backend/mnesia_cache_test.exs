@@ -115,9 +115,40 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
     # TODO: Remove by 1.1.0
     test "backwards compatible" do
-      assert MnesiaCache.put(@default_config, "key", "value") == :ok
+      assert_capture_io_eval(quote do
+        assert MnesiaCache.put(unquote(@default_config), "key", "value") == :ok
+      end, "Pow.Store.Backend.MnesiaCache.put/3 is deprecated. Use `put/2` instead")
+
       :timer.sleep(50)
-      assert MnesiaCache.keys(@default_config) == [{"key", "value"}]
+
+      assert_capture_io_eval(quote do
+        assert MnesiaCache.keys(unquote(@default_config)) == [{"key", "value"}]
+      end, "Pow.Store.Backend.MnesiaCache.keys/1 is deprecated. Use `all/2` instead")
+    end
+  end
+
+  alias ExUnit.CaptureIO
+
+  defp assert_capture_io_eval(quoted, message) do
+    System.version()
+    |> Version.match?(">= 1.8.0")
+    |> case do
+      true ->
+        # Due to https://github.com/elixir-lang/elixir/pull/9626 it's necessary to
+        # import `ExUnit.Assertions`
+        pre_elixir_1_10_quoted =
+          quote do
+            import ExUnit.Assertions
+          end
+
+        assert CaptureIO.capture_io(:stderr, fn ->
+          Code.eval_quoted([pre_elixir_1_10_quoted, quoted])
+        end) =~ message
+
+      false ->
+        IO.warn("Please upgrade to Elixir 1.8 to captured and assert IO message: #{inspect message}")
+
+        :ok
     end
   end
 
@@ -315,8 +346,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
-    # Remove logger
+    # Remove logger to prevent double logs and don't log info
     rpc(node, Logger, :remove_backend, [:console])
+    rpc(node, Logger, :configure, [[level: :warn]])
 
     node
   end

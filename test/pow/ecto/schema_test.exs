@@ -69,10 +69,10 @@ defmodule Pow.Ecto.SchemaTest do
     assert %{on_delete: :delete_all} = OverrideAssocUser.__schema__(:association, :children)
   end
 
-  import ExUnit.CaptureIO
+  alias ExUnit.CaptureIO
 
   test "warns assocs defined" do
-    assert capture_io(:stderr, fn ->
+    assert CaptureIO.capture_io(:stderr, fn ->
       defmodule MissingAssocsUser do
         use Ecto.Schema
         use Pow.Ecto.Schema
@@ -94,7 +94,7 @@ defmodule Pow.Ecto.SchemaTest do
   end
 
   test "warns fields defined" do
-    assert capture_io(:stderr, fn ->
+    assert CaptureIO.capture_io(:stderr, fn ->
       defmodule MissingFieldsUser do
         use Ecto.Schema
         use Pow.Ecto.Schema
