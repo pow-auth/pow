@@ -318,8 +318,15 @@ You may notice that the renew mechanism looks like refresh tokens in OAuth 2.0, 
 
 ## Test modules
 
+If you want fast tests don't forget to add to your `config/test.exs`
+
+```elixir
+config :pow, Pow.Ecto.Schema.Password, iterations: 1
+```
+
 ```elixir
 # test/my_app_web/api_auth_plug_test.exs
+
 defmodule MyAppWeb.APIAuthPlugTest do
   use MyAppWeb.ConnCase
   doctest MyAppWeb.APIAuthPlug
@@ -367,6 +374,7 @@ end
 
 ```elixir
 # test/my_app_web/controllers/api/v1/registration_controller_test.exs
+
 defmodule MyAppWeb.API.V1.RegistrationControllerTest do
   use MyAppWeb.ConnCase
 
@@ -397,6 +405,7 @@ end
 
 ```elixir
 # test/my_app_web/controllers/api/v1/session_controller_test.exs
+
 defmodule MyAppWeb.API.V1.SessionControllerTest do
   use MyAppWeb.ConnCase
 
