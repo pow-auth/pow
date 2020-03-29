@@ -48,6 +48,7 @@ defmodule ExDoc.Pow.Markdown do
   defp convert_to_docs_html_url("lib/extensions/invitation/README"), do: "pow_invitation"
   defp convert_to_docs_html_url("guides/" <> guide), do: guide
   defp convert_to_docs_html_url("../../../guides/" <> guide), do: guide
+  defp convert_to_docs_html_url("../guides/" <> guide), do: guide
   defp convert_to_docs_html_url(path), do: path
 
   defp convert_to_source_url("../lib/" <> path, extension, source_url), do: source_url <> "/lib/" <> path <> extension
