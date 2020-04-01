@@ -215,7 +215,6 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
   @default_config [namespace: "test", ttl: :timer.hours(1)]
 
   setup do
-    start_supervised!({Redix, host: "localhost", port: 6379, name: :redix})
     Redix.command!(:redix, ["FLUSHALL"])
 
     :ok
