@@ -210,7 +210,7 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
   use ExUnit.Case
   doctest MyAppWeb.Pow.RedisCache
 
-  alias MyAppWeb.Pow.RedisCache
+  alias MyAppWeb.Pow.RedisCache, as: PowRedisCache
 
   @default_config [namespace: "test", ttl: :timer.hours(1)]
 
