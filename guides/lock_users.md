@@ -93,6 +93,8 @@ defmodule MyAppWeb.EnsureUserNotLockedPlug do
 
       plug MyAppWeb.EnsureUserNotLockedPlug
   """
+  import Plug.Conn, only: [halt: 1]
+
   alias MyAppWeb.Router.Helpers, as: Routes
   alias Phoenix.Controller
   alias Plug.Conn
@@ -119,6 +121,7 @@ defmodule MyAppWeb.EnsureUserNotLockedPlug do
     |> Plug.delete()
     |> Controller.put_flash(:error, "Sorry, your account is locked.")
     |> Controller.redirect(to: Routes.pow_session_path(conn, :new))
+    |> halt()
   end
   defp maybe_halt(_any, conn), do: conn
 end
