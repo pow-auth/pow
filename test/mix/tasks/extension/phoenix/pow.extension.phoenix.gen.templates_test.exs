@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
     File.cd!(@tmp_path, fn ->
       Templates.run(~w(--extension PowPersistentSession))
 
-      assert_received {:mix_shell, :info, ["Warning: No view or template files generated for PowPersistentSession as no templates has been defined for it."]}
+      assert_received {:mix_shell, :info, ["Notice: No view or template files will be generated for PowPersistentSession as this extension doesn't have any views defined."]}
     end)
   end
 
