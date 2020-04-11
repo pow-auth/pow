@@ -318,7 +318,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp client_store_fetch(conn, config) do
     conn = Conn.fetch_cookies(conn)
 
-    with token when is_binary(token) <- conn.req_cookies[cookie_key(config)],
+    with token when is_binary(token) <- conn.cookies[cookie_key(config)],
          {:ok, token}                <- Plug.verify_token(conn, signing_salt(), token, config) do
       {token, conn}
     else
