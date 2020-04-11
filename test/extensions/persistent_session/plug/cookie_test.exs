@@ -358,7 +358,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
   defp persistent_cookie(conn, cookie_key, id) do
     cookies = Map.new([{cookie_key, id}])
-    %{conn | req_cookies: cookies, cookies: cookies}
+    %{conn | cookies: cookies}
   end
 
   defp run_plug(conn, config \\ []) do
