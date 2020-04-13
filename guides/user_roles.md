@@ -226,7 +226,7 @@ defmodule MyApp.UsersTest do
   #   assert {:ok, user} = Repo.insert(User.changeset(%User{}, @valid_params))
   #   refute Users.is_admin?(user)
   #
-  #   assert {:ok, admin} = Users.create_admin(@valid_params)
+  #   assert {:ok, admin} = Users.create_admin(%{@valid_params | email: "test2@example.com"})
   #   assert Users.is_admin?(admin)
   # end
 end
