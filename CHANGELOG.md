@@ -2,6 +2,8 @@
 
 ## v1.0.20 (TBA)
 
+Now supports Phoenix 1.5.
+
 ### Enhancements
 
 * [`Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates`] `mix pow.extension.phoenix.gen.templates` now dynamically loads template list from the extension base module
