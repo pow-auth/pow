@@ -12,6 +12,8 @@ defmodule Pow.Phoenix.SessionTemplate do
   ],
   button_label: "Sign in") %>
 
-  <span><%%= link "Register", to: Routes.<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.RegistrationController) %>_path(@conn, :new) %></span>
+  <%%= if Kernel.function_exported?(Routes, :<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.RegistrationController) %>_path, 2) do %>
+    <span><%%= link "Register", to: Routes.<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.RegistrationController) %>_path(@conn, :new) %></span>
+  <%% end %>
   """
 end
