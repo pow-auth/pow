@@ -41,6 +41,12 @@ defmodule MyAppWeb.Endpoint do
 
   # ...
 
+  # You should load the tenant with Triplex before calling the
+  # `TriplexSessionPlug`. If you use the `ParamPlug` you could add it here:
+  # plug Triplex.ParamPlug, param: :subdomain
+
+  # ...
+
   plug Plug.Session, @session_options
   plug MyAppWeb.Pow.TriplexSessionPlug, otp_app: :my_app
   # ...
