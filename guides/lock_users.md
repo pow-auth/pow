@@ -194,3 +194,34 @@ defmodule MyAppWeb.Router do
   # ...
 end
 ```
+
+## Test module
+
+```elixir
+defmodule MyAppWeb.PageControllerTest do
+  use MyAppWeb.ConnCase
+  alias MyApp.Users.User
+  alias MyApp.Repo
+
+  describe "page_controller" do
+    test "non-locked users can access protected page", %{conn: conn} do
+      {:ok, user} = Repo.insert(%User{email: "test@test.com"})
+      conn = Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)
+      conn = get(conn, "/")
+      assert html_response(conn, 200) =~ "Welcome to Phoenix!"
+    end
+
+    test "locked users cannot access protected page", %{conn: conn} do
+      {:ok, user} = Repo.insert(%User{email: "test@test.com"})
+      {:ok, user} = MyApp.Users.lock(user)
+      conn = Pow.Plug.assign_current_user(conn, user, otp_app: :my_app)
+      conn = get(conn, "/")
+      assert html_response(conn, 302)
+
+      assert conn.private.plug_session["phoenix_flash"] == %{
+               "error" => "Sorry, your account is locked."
+             }
+    end
+  end
+end
+```
