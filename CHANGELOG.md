@@ -2,7 +2,7 @@
 
 ## v1.0.20 (TBA)
 
-Now supports Phoenix 1.5.
+Now supports Phoenix 1.5, and requires Elixir 1.7 or higher.
 
 ### Enhancements
 
