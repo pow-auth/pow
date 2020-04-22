@@ -164,7 +164,8 @@ defmodule Pow.Test.ExtensionMocks do
 
       using do
         quote do
-          use Phoenix.ConnTest
+          import Plug.Conn
+          import Phoenix.ConnTest
           import ControllerAssertions
 
           alias Router.Helpers, as: Routes
