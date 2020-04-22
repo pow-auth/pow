@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.20 (TBA)
+## v1.0.20 (2020-04-22)
 
 Now supports Phoenix 1.5, and requires Elixir 1.7 or higher.
 
