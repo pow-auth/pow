@@ -13,6 +13,7 @@ First you should follow the [Getting Started](../README.md#getting-started) sect
 Modify `lib/my_app_web/router.ex` with API pipelines, and API endpoints for session and registration controllers:
 
 ```elixir
+# lib/my_app_web/router.ex
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
 
@@ -64,6 +65,7 @@ As you can see, the above also shows how you can set up the browser pipeline in 
 Create `lib/my_app_web/api_auth_plug.ex` with the following:
 
 ```elixir
+# lib/my_app_web/api_auth_plug.ex
 defmodule MyAppWeb.APIAuthPlug do
   @moduledoc false
   use Pow.Plug.Base
@@ -437,7 +439,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   end
 
   describe "renew/2" do
-    setup %{conn: conn, user: user} do
+    setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
@@ -468,7 +470,7 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   end
 
   describe "delete/2" do
-    setup %{conn: conn, user: user} do
+    setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
       :timer.sleep(100)
 
