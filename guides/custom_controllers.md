@@ -8,7 +8,7 @@ First you should follow the [Getting Started](../README.md#getting-started) sect
 
 ## Routes
 
-Modify your `lib/my_app_web/router.ex` to use your custom session and registration controllers instead of the default Pow controllers:
+Modify your `WEB_PATH/router.ex` to use your custom session and registration controllers instead of the default Pow controllers:
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -45,7 +45,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-And create `lib/my_app_web/auth_error_handler.ex`:
+And create `WEB_PATH/auth_error_handler.ex`:
 
 ```elixir
 defmodule MyAppWeb.AuthErrorHandler do
@@ -74,7 +74,7 @@ This module will make sure that unauthenticated user can't log out, and authenti
 
 We'll be using `Pow.Plug` for the heavy lifting, and customizing the response handling in our controllers.
 
-Create `lib/my_app_web/controllers/registration_controller.ex`:
+Create `WEB_PATH/controllers/registration_controller.ex`:
 
 ```elixir
 defmodule MyAppWeb.RegistrationController do
@@ -111,7 +111,7 @@ defmodule MyAppWeb.RegistrationController do
 end
 ```
 
-Create `lib/my_app_web/controllers/session_controller.ex`:
+Create `WEB_PATH/controllers/session_controller.ex`:
 
 ```elixir
 defmodule MyAppWeb.SessionController do
@@ -151,7 +151,7 @@ end
 
 ### Templates
 
-Create `lib/my_app_web/templates/registration/new.html.eex`:
+Create `WEB_PATH/templates/registration/new.html.eex`:
 
 ```elixir
 <%= form_for @changeset, Routes.signup_path(@conn, :create), fn f -> %>
@@ -171,7 +171,7 @@ Create `lib/my_app_web/templates/registration/new.html.eex`:
 <% end %>
 ```
 
-Create `lib/my_app_web/templates/session/new.html.eex`:
+Create `WEB_PATH/templates/session/new.html.eex`:
 
 ```elixir
 <h1>Log in</h1>
@@ -183,7 +183,7 @@ Create `lib/my_app_web/templates/session/new.html.eex`:
 <% end %>
 ```
 
-Remember to create the view files `lib/my_app_web/views/registration_view.ex` and `lib/my_app_web/views/session_view.ex` too.
+Remember to create the view files `WEB_PATH/views/registration_view.ex` and `WEB_PATH/views/session_view.ex` too.
 
 ## Further customization
 

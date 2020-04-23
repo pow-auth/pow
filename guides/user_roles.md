@@ -7,12 +7,13 @@ Adding user roles is very simple, and you won't need an extension for this. This
 Add a `role` column to your user schema. In our example, we'll set the default role to `user` and add a `changeset_role/2` method that ensures the role can only be `user` or `admin`.
 
 ```elixir
+# lib/my_app/users/user.ex
 defmodule MyApp.Users.User do
   use Ecto.Schema
   use Pow.Ecto.Schema
 
   schema "users" do
-    field :role, :string, default: "user"
+    field :role, :string, null: false, default: "user"
 
     pow_user_fields()
 
@@ -31,6 +32,7 @@ end
 To keep your app secure you shouldn't allow any direct calls to `changeset_role/2` with params provided by the user. Instead you should set up methods in your users context module to either create an admin user or update the role of an existing user:
 
 ```elixir
+# lib/my_app/users.ex
 defmodule MyApp.Users do
   alias MyApp.{Repo, Users.User}
 
@@ -60,6 +62,7 @@ Now you can safely call either `MyApp.Users.create_admin/1` or `MyApp.Users.set_
 This is all the work you'll need to control access:
 
 ```elixir
+# lib/my_app_web/ensure_role_plug.ex
 defmodule MyAppWeb.EnsureRolePlug do
   @moduledoc """
   This plug ensures that a user has a particular role.
@@ -111,6 +114,7 @@ end
 Now you can add `plug MyAppWeb.EnsureRolePlug, :admin` to your pipeline in `router.ex`:
 
 ```elixir
+# lib/my_app_web/router.ex
 defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use Pow.Phoenix.Router
@@ -134,6 +138,7 @@ end
 Or you can add it to your controller(s):
 
 ```elixir
+# lib/my_app_web/controllers/some_controller.ex
 defmodule MyAppWeb.SomeController do
   use MyAppWeb, :controller
 
@@ -150,6 +155,7 @@ end
 You may wish to render certain sections in your layout for certain roles. First let's add a helper method to the users context:
 
 ```elixir
+# lib/my_app/users/user.ex
 defmodule MyApp.Users do
   alias MyApp.{Repo, Users.User}
 
@@ -174,6 +180,7 @@ Now we can use that helper to conditionally render a section in our templates:
 ## Test modules
 
 ```elixir
+# test/my_app/users/user_test.exs
 defmodule MyApp.Users.UserTest do
   use MyApp.DataCase
 
@@ -199,6 +206,7 @@ end
 ```
 
 ```elixir
+# test/my_app/users_test.exs
 defmodule MyApp.UsersTest do
   use MyApp.DataCase
 
@@ -233,6 +241,7 @@ end
 ```
 
 ```elixir
+# test/my_app_web/ensure_role_plug_test.exs
 defmodule MyAppWeb.EnsureRolePlugTest do
   use MyAppWeb.ConnCase
 
