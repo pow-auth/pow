@@ -5,6 +5,7 @@ For read-only systems, like Heroku, you won't be able to use the built-in Mnesia
 First, add Redix to your list of dependencies in `mix.exs`:
 
 ```elixir
+# mix.exs
 defp deps do
   [
     # ...
@@ -16,6 +17,7 @@ end
 Now set up your `WEB_PATH/pow/redis_cache.ex` like so:
 
 ```elixir
+# lib/my_app_web/pow/redis_cache.ex
 defmodule MyAppWeb.Pow.RedisCache do
   @behaviour Pow.Store.Backend.Base
 
@@ -177,6 +179,11 @@ We are converting keys to binary keys since we can't directly use the Erlang ter
 We'll need to start the Redix application on our app startup, so in `application.ex` add `{Redix, name: :redix}` to your supervision tree:
 
 ```elixir
+# lib/my_app/application.ex
+defmodule MyApp.Application do
+
+  # ...
+
   def start(_type, _args) do
     import Supervisor.Spec
 
@@ -188,6 +195,9 @@ We'll need to start the Redix application on our app startup, so in `application
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  # ...
+end
 ```
 
 By default localhost Redis is used, but you can update this by using a Redis URI: `{Redix, {"redis://:secret@redix.example.com:6380/1", [name: :redix]}}`
@@ -195,6 +205,7 @@ By default localhost Redis is used, but you can update this by using a Redis URI
 Finally update the config with your new Redis cache backend:
 
 ```elixir
+# config/config.ex
 config :my_app, :pow,
   user: MyApp.Users.User,
   repo: MyApp.Repo,
@@ -206,6 +217,7 @@ And now you have a running Redis cache store backend!
 ## Test module
 
 ```elixir
+# test/my_app_web/pow/redis_cache_test.exs
 defmodule MyAppWeb.Pow.RedisCacheTest do
   use ExUnit.Case
   doctest MyAppWeb.Pow.RedisCache
