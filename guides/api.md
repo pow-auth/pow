@@ -10,7 +10,7 @@ First you should follow the [Getting Started](../README.md#getting-started) sect
 
 ## Routes
 
-Modify `lib/my_app_web/router.ex` with API pipelines, and API endpoints for session and registration controllers:
+Modify `WEB_PATH/router.ex` with API pipelines, and API endpoints for session and registration controllers:
 
 ```elixir
 # lib/my_app_web/router.ex
@@ -62,7 +62,7 @@ As you can see, the above also shows how you can set up the browser pipeline in 
 
 ## API authorization plug for Pow
 
-Create `lib/my_app_web/api_auth_plug.ex` with the following:
+Create `WEB_PATH/api_auth_plug.ex` with the following:
 
 ```elixir
 # lib/my_app_web/api_auth_plug.ex
@@ -195,7 +195,7 @@ The above module includes renewal logic, and will return both an auth token and 
 
 ## API authorization error handler
 
-Create `lib/my_app_web/api_auth_error_handler.ex` with the following:
+Create `WEB_PATH/api_auth_error_handler.ex` with the following:
 
 ```elixir
 defmodule MyAppWeb.APIAuthErrorHandler do
@@ -215,7 +215,7 @@ Now the protected routes will return a 401 error when an invalid token is used.
 
 ## Add API controllers
 
-Create `lib/my_app_web/controllers/api/v1/registration_controller.ex`:
+Create `WEB_PATH/controllers/api/v1/registration_controller.ex`:
 
 ```elixir
 defmodule MyAppWeb.API.V1.RegistrationController do
@@ -244,7 +244,7 @@ defmodule MyAppWeb.API.V1.RegistrationController do
 end
 ```
 
-Create `lib/my_app_web/controllers/api/v1/session_controller.ex`:
+Create `WEB_PATH/controllers/api/v1/session_controller.ex`:
 
 ```elixir
 defmodule MyAppWeb.API.V1.SessionController do
