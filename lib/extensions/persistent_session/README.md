@@ -6,7 +6,7 @@ This extension can reissue sessions by setting a cookie with a token that may be
 
 Follow the instructions for extensions in [README.md](../../../README.md#add-extensions-support), and set `PowPersistentSession` in the `:extensions` list.
 
-Add the following plug after the pow session plug in your `endpoint.ex`:
+Add the following plug after the pow session plug in your `WEB_PATH/endpoint.ex`:
 
 ```elixir
 defmodule MyAppWeb.Endpoint do

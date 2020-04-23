@@ -8,7 +8,7 @@ config :my_app, :pow,
   repo_opts: [prefix: "tenant_a"]
 ```
 
-You can also pass the prefix option to `Pow.Plug.Session` in your `endpoint.ex`:
+You can also pass the prefix option to `Pow.Plug.Session` in your `WEB_PATH/endpoint.ex`:
 
 ```elixir
 plug Pow.Plug.Session, otp_app: :my_app, repo_opts: [prefix: "tenant_a"]
