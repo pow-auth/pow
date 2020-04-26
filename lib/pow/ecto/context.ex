@@ -35,21 +35,15 @@ defmodule Pow.Ecto.Context do
     * `:user` - the user schema module (required)
     * `:repo_opts` - keyword list options for the repo, `:prefix` can be set here
   """
-  alias Pow.{Config, Ecto.Schema, Operations}
+  alias Pow.{Config, Context, Ecto.Schema, Operations}
 
-  @type user :: map()
-  @type changeset :: map()
-
-  @callback authenticate(map()) :: user() | nil
-  @callback create(map()) :: {:ok, user()} | {:error, changeset()}
-  @callback update(user(), map()) :: {:ok, user()} | {:error, changeset()}
-  @callback delete(user()) :: {:ok, user()} | {:error, changeset()}
-  @callback get_by(Keyword.t() | map()) :: user() | nil
+  @type user :: Context.user()
+  @type changeset :: Context.changeset()
 
   @doc false
   defmacro __using__(config) do
     quote do
-      @behaviour unquote(__MODULE__)
+      @behaviour Context
 
       @pow_config unquote(config)
 
@@ -79,7 +73,7 @@ defmodule Pow.Ecto.Context do
         unquote(__MODULE__).get_by(clauses, @pow_config)
       end
 
-      defoverridable unquote(__MODULE__)
+      defoverridable Context
     end
   end
 
