@@ -191,7 +191,7 @@ defmodule MyAppWeb.APIAuthPlug do
 end
 ```
 
-The above module includes renewal logic, and will return both an auth token and renewal token when a session is created. Be aware that the delete method doesn't invalidate the renewal token, since we only receive the auth token.
+The above module includes renewal logic, and will return both an auth token and renewal token when a session is created.
 
 ## API authorization error handler
 
