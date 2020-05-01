@@ -54,7 +54,12 @@ defmodule Pow.Plug do
   """
   @spec put_config(Conn.t(), Config.t()) :: Conn.t()
   def put_config(conn, config) do
-    Conn.put_private(conn, @private_config_key, config)
+    new_config =
+      conn
+      |> Map.get(:private, %{})
+      |> Map.get(@private_config_key, [])
+      |> Config.merge(config)
+    Conn.put_private(conn, @private_config_key, new_config)
   end
 
   @doc """
