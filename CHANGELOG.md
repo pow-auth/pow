@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.21 (TBA)
+
+### Bug fixes
+
+* [`PowEmailConfirmation.Ecto.Schema`] `PowEmailConfirmation.Ecto.Schema.changeset/3` no longer sets the email to the unconfirmed email when the same email change is set twice
+
 ## v1.0.20 (2020-04-22)
 
 Now supports Phoenix 1.5, and requires Elixir 1.7 or higher.
