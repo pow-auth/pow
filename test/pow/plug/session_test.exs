@@ -32,6 +32,21 @@ defmodule Pow.Plug.SessionTest do
     assert conn.private[:pow_config] == expected_config
   end
 
+  test "call/2 uses existing config with no plug options", %{conn: conn} do
+    assert_raise Pow.Config.ConfigError, "Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.", fn ->
+      run_plug(conn, [])
+    end
+
+    conn =
+      conn
+      |> Plug.put_config([a: 1])
+      |> run_plug([])
+
+    expected_config = [mod: Session, plug: Session] ++ [a: 1]
+
+    assert conn.private[:pow_config] == expected_config
+  end
+
   test "call/2 with assigned current_user", %{conn: conn} do
     conn =
       conn
