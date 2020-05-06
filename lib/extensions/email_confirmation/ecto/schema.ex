@@ -96,10 +96,12 @@ defmodule PowEmailConfirmation.Ecto.Schema do
       email_changed?(changeset) ->
         current_email = changeset.data.email
         changed_email = Changeset.get_field(changeset, :email)
+        changeset     = set_unconfirmed_email(changeset, current_email, changed_email)
 
-        changeset
-        |> put_email_confirmation_token()
-        |> set_unconfirmed_email(current_email, changed_email)
+        case unconfirmed_email_changed?(changeset) do
+          true -> put_email_confirmation_token(changeset)
+          false -> changeset
+        end
 
       true ->
         changeset
@@ -117,10 +119,10 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   end
 
   defp email_changed?(changeset) do
-    changed_email     = Changeset.get_change(changeset, :email)
-    unconfirmed_email = changeset.data.unconfirmed_email
-
-    changed_email && changed_email != unconfirmed_email
+    case Changeset.get_change(changeset, :email) do
+      nil  -> false
+      _any -> true
+    end
   end
 
   defp put_email_confirmation_token(changeset) do
@@ -133,6 +135,13 @@ defmodule PowEmailConfirmation.Ecto.Schema do
     changeset
     |> Changeset.put_change(:email, current_email)
     |> Changeset.put_change(:unconfirmed_email, new_email)
+  end
+
+  defp unconfirmed_email_changed?(changeset) do
+    case Changeset.get_change(changeset, :unconfirmed_email) do
+      nil  -> false
+      _any -> true
+    end
   end
 
   @doc """

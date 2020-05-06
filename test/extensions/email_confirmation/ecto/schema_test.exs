@@ -105,6 +105,7 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
       changeset = User.changeset(user, params)
 
       assert changeset.valid?
+      refute Ecto.Changeset.get_change(changeset, :email)
       refute Ecto.Changeset.get_change(changeset, :unconfirmed_email)
       refute Ecto.Changeset.get_change(changeset, :email_confirmation_token)
     end
