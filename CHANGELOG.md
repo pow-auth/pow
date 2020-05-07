@@ -2,6 +2,10 @@
 
 ## v1.0.21 (TBA)
 
+### Enhancements
+
+* [`Pow.Plug.Base`] Will now use the existing `:pow_config` in the `conn` when no plug options has been set
+
 ### Bug fixes
 
 * [`PowEmailConfirmation.Ecto.Schema`] `PowEmailConfirmation.Ecto.Schema.changeset/3` no longer sets the email to the unconfirmed email when the same email change is set twice

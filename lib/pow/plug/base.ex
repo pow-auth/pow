@@ -69,6 +69,9 @@ defmodule Pow.Plug.Base do
       @doc """
       Configures the connection for Pow, and fetches user.
 
+      If no options have been passed to the plug, the existing configuration
+      will be pulled with `Pow.Plug.fetch_config/1`
+
       `:plug` is appended to the passed configuration, so the current plug will
       be used in any subsequent calls to create, update and delete user
       credentials from the connection. The configuration is then set for the
@@ -78,6 +81,7 @@ defmodule Pow.Plug.Base do
       will be called.
       """
       @impl true
+      def call(conn, []), do: call(conn, Plug.fetch_config(conn))
       def call(conn, config) do
         config = put_plug(config)
         conn   = Plug.put_config(conn, config)
