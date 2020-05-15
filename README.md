@@ -75,7 +75,7 @@ defmodule MyAppWeb.Endpoint do
 
   plug Plug.Session, @session_options
   plug Pow.Plug.Session, otp_app: :my_app
-  plug MyAppWeb.Phoenix.Router
+  plug MyAppWeb.Router
 end
 ```
 
