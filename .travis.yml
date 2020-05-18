@@ -1,6 +1,6 @@
 language: elixir
 elixir: 1.10
-otp_release: 22.0
+otp_release: 23.0
 services:
   - postgresql
 jobs:
@@ -13,6 +13,7 @@ jobs:
         - MIX_ENV=test mix credo --ignore design.tagtodo
     - stage: test
       elixir: 1.8
+      otp_release: 22.0
       script: *test_scripts
     - stage: test
       script: *test_scripts
