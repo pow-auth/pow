@@ -311,7 +311,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
       Logger.info("[#{inspect __MODULE__}] Mnesia cluster initiated on #{inspect node()}")
     else
       {:error, reason} ->
-        Logger.error("[inspect __MODULE__}] Couldn't initialize mnesia cluster because: #{inspect reason}")
+        Logger.error("[#{inspect __MODULE__}] Couldn't initialize mnesia cluster because: #{inspect reason}")
         {:error, reason}
     end
   end
