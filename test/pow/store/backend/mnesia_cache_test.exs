@@ -180,7 +180,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     test "will join cluster" do
       # Init node a and write to it
       node_a = spawn_node("a")
-      {:ok, _pid} = :rpc.call(node_a, MnesiaCache, :start_link, [@default_config])
+      {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, @default_config}])
       assert :rpc.call(node_a, :mnesia, :table_info, [MnesiaCache, :storage_type]) == :disc_copies
       assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == []
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
@@ -191,7 +191,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # Join cluster with node b and ensures that it has node a data
       node_b = spawn_node("b")
       config = @default_config ++ [extra_db_nodes: [node_a]]
-      {:ok, _pid} = :rpc.call(node_b, MnesiaCache, :start_link, [config])
+      {:ok, _pid} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
       assert :rpc.call(node_b, :mnesia, :table_info, [MnesiaCache, :storage_type]) == :disc_copies
       assert :rpc.call(node_b, :mnesia, :system_info, [:extra_db_nodes]) == [node_a]
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
@@ -227,7 +227,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       startup_timestamp = System.monotonic_time(:millisecond)
       node_a = spawn_node("a")
       config = @default_config ++ [extra_db_nodes: [node_b]]
-      {:ok, _pid} = :rpc.call(node_a, MnesiaCache, :start_link, [config])
+      {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
