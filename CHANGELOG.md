@@ -9,6 +9,7 @@
 ### Bug fixes
 
 * [`PowEmailConfirmation.Ecto.Schema`] `PowEmailConfirmation.Ecto.Schema.changeset/3` no longer sets the email to the unconfirmed email when the same email change is set twice
+* [`Pow.Extension.Phoenix.Messages`] Fixed fallback message dializer warning
 
 ## v1.0.20 (2020-04-22)
 
