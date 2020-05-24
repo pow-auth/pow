@@ -75,7 +75,7 @@ defmodule Pow.Extension.Phoenix.Messages do
         method_name = unquote(__MODULE__).method_name(unquote(extension), method)
 
         quote do
-          @spec unquote(method)(Conn.t()) :: binary()
+          @spec unquote(method)(Conn.t()) :: Messages.message()
           def unquote(method)(conn) do
             unquote(__MODULE__).unquote(method_name)(conn)
           end
