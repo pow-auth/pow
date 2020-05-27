@@ -34,7 +34,8 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
   When a user can't be created and the changeset has a unique constraint error
   for the `:email` field, the user will experience the same success flow as if
   the user could be created, but no e-mail is sent out. This prevents
-  user enumeration.
+  user enumeration. If `pow_prevent_user_enumeration: false` is set in
+  `conn.private` the form with error will be shown instead.
   """
   use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
