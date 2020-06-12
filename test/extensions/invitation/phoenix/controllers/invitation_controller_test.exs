@@ -115,7 +115,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       refute_received {:mail_mock, _mail}
 
-      assert redirected_to(conn) == Routes.pow_invitation_invitation_path(conn, :show, "valid")
+      assert redirected_to(conn) == Routes.pow_invitation_invitation_path(conn, :show, sign_token("valid"))
     end
   end
 
