@@ -45,7 +45,7 @@ defmodule Pow.Ecto.Context do
     quote do
       @behaviour Context
 
-      @pow_config unquote(config)
+      @pow_config Keyword.put_new(unquote(config), :users_context, __MODULE__)
 
       def authenticate(params), do: pow_authenticate(params)
       def create(params), do: pow_create(params)

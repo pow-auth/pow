@@ -34,6 +34,8 @@ defmodule Pow.Ecto.ContextTest do
   @username_config [repo: Repo, user: UsernameUser]
 
   defmodule CustomUsers do
+    use Context, repo: Repo, user: User
+
     def get_by([email: :test]), do: %User{email: :ok, password_hash: Password.pbkdf2_hash("secret1234")}
   end
 
@@ -104,6 +106,7 @@ defmodule Pow.Ecto.ContextTest do
       params = Map.put(@valid_params, "email", :test)
 
       assert %User{email: :ok} = Context.authenticate(params, @config ++ [users_context: CustomUsers])
+      assert %User{email: :ok} = CustomUsers.authenticate(params)
     end
 
     test "prevents timing attack" do
