@@ -48,7 +48,7 @@ This will add the following files to your app:
 
 ```bash
 LIB_PATH/users/user.ex
-PRIV_PATH/repo/migrations/TIMESTAMP_create_user.ex
+PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
 ```
 
 Add the following to `config/config.exs`:
