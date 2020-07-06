@@ -6,6 +6,7 @@
 
 * [`Pow.Plug.Base`] Will now use the existing `:pow_config` in the `conn` when no plug options has been set
 * [`PowInvitation.Phoenix.InvitationController`] Fixed bug where user was incorrectly redirected to the show action with unsigned token when user struct has no e-mail
+* [`Pow.Ecto.Schema`] Now only emits warning for primitive Ecto types
 
 ### Bug fixes
 
