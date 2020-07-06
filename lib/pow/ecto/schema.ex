@@ -119,6 +119,9 @@ defmodule Pow.Ecto.Schema do
   `elixirc_options: [warnings_as_errors: true]` to the project options in
   `mix.exs`.
 
+  The warning is also emitted if the field has an invalid primitive Ecto type.
+  It'll not be emitted for custom Ecto types.
+
   ## Customize Pow changeset
 
   You can extract individual changeset methods to modify the changeset flow
@@ -146,7 +149,7 @@ defmodule Pow.Ecto.Schema do
   `use Pow.Ecto.Schema, ...` call. This can be fetched by using the
   `@pow_config` module attribute.
   """
-  alias Ecto.Changeset
+  alias Ecto.{Changeset, Type}
   alias Pow.Config
 
   defmodule SchemaError do
@@ -394,7 +397,11 @@ defmodule Pow.Ecto.Schema do
   defp missing_field?({name, type}, ecto_fields, _changeset_fields),
     do: missing_field?(name, type, ecto_fields)
   defp missing_field?(name, type, existing_fields) do
-    not Enum.member?(existing_fields, {name, type})
+    not Enum.any?(existing_fields, fn
+      {^name, ^type}  -> true
+      {^name, e_type} -> not Type.primitive?(e_type)
+      _any            -> false
+    end)
   end
 
   defp warn_missing_fields_error(module, field_defs) do

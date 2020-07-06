@@ -113,4 +113,57 @@ defmodule Pow.Ecto.SchemaTest do
       field :password, :string, [virtual: true]
       """
   end
+
+  test "warns invalid fields defined" do
+    assert CaptureIO.capture_io(:stderr, fn ->
+      defmodule InvalidFieldUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        schema "users" do
+          field :email, :utc_datetime
+          field :password_hash, :string
+          field :current_password, :string, virtual: true
+          field :password, :string, virtual: true
+
+          timestamps()
+        end
+      end
+    end) =~
+      """
+      Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.InvalidFieldUser:
+
+      field :email, :string, [null: false]
+      """
+  end
+
+  test "doesn't warn for field with custom type" do
+    assert CaptureIO.capture_io(:stderr, fn ->
+      defmodule CustomType do
+        use Ecto.Type
+
+        def type, do: :binary
+
+        def cast(value), do: {:ok, value}
+
+        def load(value), do: {:ok, value}
+
+        def dump(value), do: {:ok, value}
+      end
+
+      defmodule CustomFieldTypeUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        schema "users" do
+          field :email, CustomType
+          field :password_hash, :string
+          field :current_password, :string, virtual: true
+          field :password, :string, virtual: true
+
+          timestamps()
+        end
+      end
+    end) == ""
+  end
 end
