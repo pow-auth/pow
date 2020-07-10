@@ -16,7 +16,7 @@ defmodule Pow.Plug.RequireAuthenticated do
   @doc false
   @spec init(Config.t()) :: atom()
   def init(config) do
-    Config.get(config, :error_handler) || raise_no_error_handler()
+    Config.get(config, :error_handler) || raise_no_error_handler!()
   end
 
   @doc false
@@ -34,8 +34,7 @@ defmodule Pow.Plug.RequireAuthenticated do
   end
   defp maybe_halt(_user, conn, _handler), do: conn
 
-  @spec raise_no_error_handler :: no_return
-  defp raise_no_error_handler do
-    Config.raise_error("No :error_handler configuration option provided. It's required to set this when using #{inspect __MODULE__}.")
-  end
+  @spec raise_no_error_handler!() :: no_return()
+  defp raise_no_error_handler!,
+    do: Config.raise_error("No :error_handler configuration option provided. It's required to set this when using #{inspect __MODULE__}.")
 end

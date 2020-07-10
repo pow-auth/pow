@@ -26,11 +26,10 @@ defmodule PowPersistentSession.Plug do
   end
 
   defp pow_persistent_session(conn) do
-    conn.private[:pow_persistent_session] || raise_no_plug_error()
+    conn.private[:pow_persistent_session] || raise_no_plug_error!()
   end
 
-  @spec raise_no_plug_error :: no_return
-  defp raise_no_plug_error do
-    Config.raise_error("PowPersistentSession plug module not installed. Please add the PowPersistentSession.Plug.Cookie plug to your endpoint.")
-  end
+  @spec raise_no_plug_error!() :: no_return()
+  defp raise_no_plug_error!,
+    do: Config.raise_error("PowPersistentSession plug module not installed. Please add the PowPersistentSession.Plug.Cookie plug to your endpoint.")
 end

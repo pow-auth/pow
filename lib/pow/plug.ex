@@ -64,7 +64,7 @@ defmodule Pow.Plug do
   """
   @spec fetch_config(Conn.t()) :: Config.t()
   def fetch_config(%{private: private}) do
-    private[@private_config_key] || no_config_error()
+    private[@private_config_key] || no_config_error!()
   end
 
   @doc """
@@ -180,7 +180,7 @@ defmodule Pow.Plug do
 
   @spec get_plug(Config.t()) :: atom()
   def get_plug(config) do
-    config[:plug] || no_plug_error()
+    config[:plug] || no_plug_error!()
   end
 
   @doc """
@@ -201,15 +201,13 @@ defmodule Pow.Plug do
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config), do: get_plug(config).do_delete(conn, config)
 
-  @spec no_config_error :: no_return
-  defp no_config_error do
-    Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
-  end
+  @spec no_config_error!() :: no_return()
+  defp no_config_error!,
+    do: Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
 
-  @spec no_plug_error :: no_return
-  defp no_plug_error do
-    Config.raise_error("Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.")
-  end
+  @spec no_plug_error!() :: no_return()
+  defp no_plug_error!,
+    do: Config.raise_error("Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.")
 
   @doc false
   @spec __prevent_user_enumeration__(Conn.t(), any()) :: boolean()

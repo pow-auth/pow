@@ -184,7 +184,7 @@ defmodule Pow.Extension.Ecto.Schema do
   method should either raise an exception, or return `:ok`. Compilation will
   fail when the exception is raised.
   """
-  @spec validate!(Config.t(), atom()) :: :ok | no_return
+  @spec validate!(Config.t(), atom()) :: :ok
   def validate!(config, module) do
     config
     |> schema_modules()
@@ -211,7 +211,7 @@ defmodule Pow.Extension.Ecto.Schema do
 
   If the field doesn't exist, it'll raise an exception.
   """
-  @spec require_schema_field!(atom(), atom(), atom()) :: :ok | no_return
+  @spec require_schema_field!(atom(), atom(), atom()) :: :ok
   def require_schema_field!(module, field, extension) do
     fields = module.__schema__(:fields)
 
@@ -219,11 +219,11 @@ defmodule Pow.Extension.Ecto.Schema do
     |> Enum.member?(field)
     |> case do
       true  -> :ok
-      false -> raise_missing_field_error(module, field, extension)
+      false -> raise_missing_field_error!(module, field, extension)
     end
   end
 
-  defp raise_missing_field_error(module, field, extension) do
-    raise SchemaError, message: "A `#{inspect field}` schema field should be defined in #{inspect module} to use #{inspect extension}"
-  end
+  @spec raise_missing_field_error!(module(), atom(), atom()) :: no_return()
+  defp raise_missing_field_error!(module, field, extension),
+    do: raise SchemaError, message: "A `#{inspect field}` schema field should be defined in #{inspect module} to use #{inspect extension}"
 end

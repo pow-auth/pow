@@ -7,7 +7,7 @@ defmodule Mix.Pow do
   @doc """
   Raises an exception if the project is an umbrella app.
   """
-  @spec no_umbrella!(binary()) :: :ok | no_return
+  @spec no_umbrella!(binary()) :: :ok
   def no_umbrella!(task) do
     if Project.umbrella?() do
       Mix.raise("mix #{task} can only be run inside an application directory")
@@ -19,7 +19,7 @@ defmodule Mix.Pow do
   # TODO: Remove by 1.1.0
   @doc false
   @deprecated "Use `ensure_ecto!` or `ensure_phoenix!` instead"
-  @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok | no_return
+  @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok
   def ensure_dep!(task, dep, _args) do
     fetch_deps()
     |> top_level_dep_in_deps?(dep)
@@ -35,7 +35,7 @@ defmodule Mix.Pow do
   @doc """
   Raises an exception if application doesn't have Ecto as dependency.
   """
-  @spec ensure_ecto!(binary(), OptionParser.argv()) :: :ok | no_return
+  @spec ensure_ecto!(binary(), OptionParser.argv()) :: :ok
   def ensure_ecto!(task, _args) do
     deps = fetch_deps()
 
@@ -66,7 +66,7 @@ defmodule Mix.Pow do
   @doc """
   Raises an exception if application doesn't have Phoenix as dependency.
   """
-  @spec ensure_phoenix!(binary(), OptionParser.argv()) :: :ok | no_return
+  @spec ensure_phoenix!(binary(), OptionParser.argv()) :: :ok
   def ensure_phoenix!(task, _args) do
     case top_level_dep_in_deps?(fetch_deps(), :phoenix) do
       true -> :ok
@@ -117,7 +117,7 @@ defmodule Mix.Pow do
   def schema_options_from_args(_any), do: %{schema_name: "Users.User", schema_plural: "users"}
 
   @doc false
-  @spec validate_schema_args!([binary()], binary()) :: map() | no_return()
+  @spec validate_schema_args!([binary()], binary()) :: map()
   def validate_schema_args!([schema, plural | _rest] = args, task) do
     cond do
       not schema_valid?(schema) ->
@@ -150,7 +150,7 @@ defmodule Mix.Pow do
   # TODO: Remove by 1.1.0
   @doc false
   @deprecated "Please use `Pow.Phoenix.parse_structure/1` instead"
-  @spec context_app :: atom() | no_return
+  @spec context_app :: atom()
   def context_app do
     this_app = otp_app()
 
@@ -166,7 +166,7 @@ defmodule Mix.Pow do
   end
 
   @doc false
-  @spec otp_app :: atom() | no_return
+  @spec otp_app :: atom()
   def otp_app do
     Keyword.fetch!(Mix.Project.config(), :app)
   end

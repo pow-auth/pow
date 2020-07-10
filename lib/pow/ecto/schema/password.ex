@@ -86,7 +86,7 @@ defmodule Pow.Ecto.Schema.Password do
         [digest, iterations, salt, hash]
 
       _ ->
-        raise_not_valid_password_hash()
+        raise_not_valid_password_hash!()
     end
   end
 
@@ -97,7 +97,7 @@ defmodule Pow.Ecto.Schema.Password do
     Pbkdf2.compare(hash, secret_hash)
   end
 
-  defp raise_not_valid_password_hash do
-    raise ArgumentError, "not a valid encoded password hash"
-  end
+  @spec raise_not_valid_password_hash!() :: no_return()
+  defp raise_not_valid_password_hash!,
+    do: raise ArgumentError, "not a valid encoded password hash"
 end

@@ -3,7 +3,7 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
   alias Phoenix.ConnTest
   alias Pow.Phoenix.{Messages, Routes}
 
-  @spec assert_authenticated_redirect(Plug.Conn.t()) :: no_return
+  @spec assert_authenticated_redirect(Plug.Conn.t()) :: Macro.t()
   defmacro assert_authenticated_redirect(conn) do
     quote do
       routes = Keyword.get(unquote(conn).private.pow_config, :routes_backend, Routes)
@@ -13,7 +13,7 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
     end
   end
 
-  @spec assert_not_authenticated_redirect(Plug.Conn.t()) :: no_return
+  @spec assert_not_authenticated_redirect(Plug.Conn.t()) :: Macro.t()
   defmacro assert_not_authenticated_redirect(conn) do
     quote bind_quoted: [conn: conn] do
       router = Module.concat([conn.private.phoenix_router, Helpers])
