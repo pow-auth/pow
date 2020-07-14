@@ -36,9 +36,17 @@ defmodule MyAppWeb.Pow.Mailer do
 
   @impl true
   def process(email) do
-    email
-    |> deliver()
-    |> log_warnings()
+    # An asynchronous process should be used here to prevent enumeration
+    # attacks. Synchronous e-mail delivery can reveal whether a user already
+    # exists in the system or not.
+
+    Task.start(fn ->
+      email
+      |> deliver()
+      |> log_warnings()
+    end)
+
+    :ok
   end
 
   defp log_warnings({:error, reason}) do
@@ -88,7 +96,11 @@ defmodule MyAppWeb.Pow.Mailer do
 
   @impl true
   def process(email) do
-    deliver_now(email)
+    # An asynchronous process should be used here to prevent enumeration
+    # attacks. Synchronous e-mail delivery can reveal whether a user already
+    # exists in the system or not.
+
+    deliver_later(email)
   end
 end
 ```
