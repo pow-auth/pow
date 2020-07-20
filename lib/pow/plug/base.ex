@@ -63,7 +63,6 @@ defmodule Pow.Plug.Base do
       import unquote(__MODULE__)
 
       @doc false
-      @impl true
       def init(config), do: config
 
       @doc """
@@ -80,7 +79,6 @@ defmodule Pow.Plug.Base do
       If a user can't be fetched with `Pow.Plug.current_user/2`, `do_fetch/2`
       will be called.
       """
-      @impl true
       def call(conn, []), do: call(conn, Plug.fetch_config(conn))
       def call(conn, config) do
         config = put_plug(config)

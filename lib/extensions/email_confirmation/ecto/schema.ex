@@ -28,7 +28,7 @@ defmodule PowEmailConfirmation.Ecto.Schema do
 
   use Pow.Extension.Ecto.Schema.Base
   alias Ecto.Changeset
-  alias Pow.{Config, Extension.Ecto.Schema, UUID}
+  alias Pow.{Extension.Ecto.Schema, UUID}
 
   @doc false
   @impl true
@@ -82,7 +82,6 @@ defmodule PowEmailConfirmation.Ecto.Schema do
   value. A unique `:email_confirmation_token` will be generated.
   """
   @impl true
-  @spec changeset(Changeset.t(), map(), Config.t()) :: Changeset.t()
   def changeset(%{valid?: true} = changeset, attrs, _config) do
     cond do
       built?(changeset) ->

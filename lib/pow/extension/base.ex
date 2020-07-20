@@ -27,27 +27,21 @@ defmodule Pow.Extension.Base do
       @behaviour unquote(__MODULE__)
 
       @doc false
-      @impl true
       def ecto_schema?(), do: false
 
       @doc false
-      @impl true
       def use_ecto_schema?(), do: false
 
       @doc false
-      @impl true
       def phoenix_controller_callbacks?(), do: false
 
       @doc false
-      @impl true
       def phoenix_messages?(), do: false
 
       @doc false
-      @impl true
       def phoenix_router?(), do: false
 
       @doc false
-      @impl true
       def phoenix_templates(), do: []
 
       defoverridable unquote(__MODULE__)

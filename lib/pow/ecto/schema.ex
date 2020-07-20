@@ -166,10 +166,10 @@ defmodule Pow.Ecto.Schema do
       @behaviour unquote(__MODULE__)
       @pow_config unquote(config)
 
-      @spec changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
+      @doc false
       def changeset(user_or_changeset, attrs), do: pow_changeset(user_or_changeset, attrs)
 
-      @spec verify_password(Ecto.Schema.t(), binary()) :: boolean()
+      @doc false
       def verify_password(user, password), do: pow_verify_password(user, password)
 
       defoverridable unquote(__MODULE__)

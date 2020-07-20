@@ -33,22 +33,22 @@ defmodule Pow.Store.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
-      @impl unquote(__MODULE__)
+      @doc false
       def put(config, key, value) do
         unquote(__MODULE__).put(config, backend_config(config), {key, value})
       end
 
-      @impl unquote(__MODULE__)
+      @doc false
       def delete(config, key) do
         unquote(__MODULE__).delete(config, backend_config(config), key)
       end
 
-      @impl unquote(__MODULE__)
+      @doc false
       def get(config, key) do
         unquote(__MODULE__).get(config, backend_config(config), key)
       end
 
-      @impl unquote(__MODULE__)
+      @doc false
       def all(config, key_match) do
         unquote(__MODULE__).all(config, backend_config(config), key_match)
       end

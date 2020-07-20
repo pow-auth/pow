@@ -43,10 +43,10 @@ defmodule PowPersistentSession.Plug.Base do
 
       import unquote(__MODULE__)
 
-      @impl true
+      @doc false
       def init(config), do: config
 
-      @impl true
+      @doc false
       def call(conn, config) do
         config =
           conn
