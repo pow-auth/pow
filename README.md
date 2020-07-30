@@ -274,7 +274,7 @@ Now generate the view and template files:
 mix pow.extension.phoenix.mailer.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-This will generate view files in `WEB_PATH/views/mailer/`, and html and text templates in `WEB_PATH/templates/mailer` directory.
+This will generate view files in `WEB_PATH/views/POW_EXTENSION/mailer/`, and html and text templates in `WEB_PATH/templates/POW_EXTENSION/mailer/` directory.
 
 Add `web_mailer_module: MyAppWeb` to the configuration so Pow will use the views you've just generated:
 
