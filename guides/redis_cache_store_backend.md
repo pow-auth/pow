@@ -47,7 +47,7 @@ defmodule MyAppWeb.Pow.RedisCache do
       |> Enum.reject(&is_nil/1)
       |> case do
         []     -> :ok
-        errors -> raise "Redis returned errors: #{inspect errors}"
+        errors -> raise "Redix failed SET because of #{inspect errors}"
       end
     end)
 
@@ -81,9 +81,9 @@ defmodule MyAppWeb.Pow.RedisCache do
       |> redis_key(key)
       |> to_binary_redis_key()
 
-    case Redix.command(@redix_instance_name, ["GET", key]) do
-      {:ok, nil}   -> :not_found
-      {:ok, value} -> :erlang.binary_to_term(value)
+    case Redix.command!(@redix_instance_name, ["GET", key]) do
+      nil   -> :not_found
+      value -> :erlang.binary_to_term(value)
     end
   end
 
@@ -109,9 +109,9 @@ defmodule MyAppWeb.Pow.RedisCache do
   defp do_scan(config, compiled_match_spec, iterator) do
     prefix = to_binary_redis_key([namespace(config)]) <> ":*"
 
-    case Redix.command(@redix_instance_name, ["SCAN", iterator, "MATCH", prefix]) do
-      {:ok, [iterator, res]} -> {filter_or_load_value(compiled_match_spec, res, config), iterator}
-    end
+    [iterator, res] = Redix.command!(@redix_instance_name, ["SCAN", iterator, "MATCH", prefix])
+
+    {filter_or_load_value(compiled_match_spec, res, config), iterator}
   end
 
   defp filter_or_load_value(compiled_match_spec, keys, config) do
@@ -138,14 +138,14 @@ defmodule MyAppWeb.Pow.RedisCache do
   defp populate_values(records, config) do
     binary_keys = Enum.map(records, fn {key, nil} -> binary_redis_key(config, key) end)
 
-    case Redix.command(@redix_instance_name, ["MGET"] ++ binary_keys) do
-      {:ok, values} ->
-        values = Enum.map(values, &:erlang.binary_to_term/1)
+    values =
+      @redix_instance_name
+      |> Redix.command!(["MGET"] ++ binary_keys)
+      |> Enum.map(&:erlang.binary_to_term/1)
 
-        records
-        |> zip_values(values)
-        |> Enum.reject(fn {_key, value} -> is_nil(value) end)
-    end
+    records
+    |> zip_values(values)
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
   end
 
   defp zip_values([{key, nil} | next1], [value | next2]) do
@@ -278,7 +278,7 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
       assert CaptureLog.capture_log(fn ->
         RedisCache.put(@default_config, {"key", "value"})
         :timer.sleep(100)
-      end) =~ "(RuntimeError) Redis returned errors: [%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}]"
+      end) =~ "(RuntimeError) Redix failed SET because of [%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}]"
     end
   end
 
