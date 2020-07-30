@@ -37,7 +37,21 @@ defmodule MyAppWeb.Pow.RedisCache do
         |> put_command(value, ttl)
       end)
 
-    Redix.noreply_pipeline(@redix_instance_name, commands)
+    Task.start(fn ->
+      @redix_instance_name
+      |> Redix.pipeline!(commands)
+      |> Enum.map(fn
+        "OK"  -> nil
+        error -> error
+      end)
+      |> Enum.reject(&is_nil/1)
+      |> case do
+        []     -> :ok
+        errors -> raise "Redis returned errors: #{inspect errors}"
+      end
+    end)
+
+    :ok
   end
 
   defp put_command(key, value, ttl) do
@@ -53,7 +67,11 @@ defmodule MyAppWeb.Pow.RedisCache do
       |> redis_key(key)
       |> to_binary_redis_key()
 
-    Redix.noreply_command(@redix_instance_name, ["DEL", key])
+    Task.start(fn ->
+      Redix.command!(@redix_instance_name, ["DEL", key])
+    end)
+
+    :ok
   end
 
   @impl true
@@ -222,6 +240,7 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
   use ExUnit.Case
   doctest MyAppWeb.Pow.RedisCache
 
+  alias ExUnit.CaptureLog
   alias MyAppWeb.Pow.RedisCache
 
   @default_config [namespace: "test", ttl: :timer.hours(1)]
@@ -242,6 +261,25 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     RedisCache.delete(@default_config, "key")
     :timer.sleep(100)
     assert RedisCache.get(@default_config, "key") == :not_found
+  end
+
+  describe "with redis errors" do
+    setup do
+      ["maxmemory", value] = Redix.command!(:redix, ["CONFIG", "GET", "maxmemory"])
+
+      Redix.command!(:redix, ["CONFIG", "SET", "maxmemory", "10"])
+
+      on_exit(fn ->
+        Redix.command!(:redix, ["CONFIG", "SET", "maxmemory", value])
+      end)
+    end
+
+    test "logs error" do
+      assert CaptureLog.capture_log(fn ->
+        RedisCache.put(@default_config, {"key", "value"})
+        :timer.sleep(100)
+      end) =~ "(RuntimeError) Redis returned errors: [%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}]"
+    end
   end
 
   test "can put multiple records at once" do
