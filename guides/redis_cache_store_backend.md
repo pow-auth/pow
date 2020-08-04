@@ -88,8 +88,8 @@ defmodule MyAppWeb.Pow.RedisCache do
   end
 
   @impl true
-  def all(config, match_spec) do
-    compiled_match_spec = :ets.match_spec_compile([{{match_spec, :_}, [], [:"$_"]}])
+  def all(config, key_match) do
+    compiled_match_spec = :ets.match_spec_compile([{{key_match, :_}, [], [:"$_"]}])
 
     Stream.resource(
       fn -> do_scan(config, compiled_match_spec, "0") end,
