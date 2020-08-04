@@ -2,11 +2,16 @@ defmodule Pow.Store.Backend.Base do
   @moduledoc """
   Used to set up API for key-value cache store.
 
+  [Erlang match specification](https://erlang.org/doc/apps/erts/match_spec.html)
+  format is used for the second argument `all/2` callback. The second argument
+  is only for the key match, and will look like
+  `[:namespace_1, :namespace_2, :_]` or `[:namespace_1, :_, :namespace_2]`.
+
   ## Usage
 
   This is an example using [Cachex](https://hex.pm/packages/cachex):
 
-      defmodule MyApp.CachexCache do
+      defmodule MyAppWeb.Pow.CachexCache do
         @behaviour Pow.Store.Backend.Base
 
         alias Pow.Config
@@ -22,14 +27,18 @@ defmodule Pow.Store.Backend.Base do
               {wrap_namespace(config, key), value}
             end)
 
-          Cachex.put_many(@cachex_tab, records, ttl: Config.get(config, :ttl))
+          {:ok, true} = Cachex.put_many(@cachex_tab, records, ttl: Config.get(config, :ttl))
+
+          :ok
         end
 
         @impl true
         def delete(config, key) do
           key = wrap_namespace(config, key)
 
-          Cachex.del(@cachex_tab, key)
+          {:ok, _value} = Cachex.del(@cachex_tab, key)
+
+          :ok
         end
 
         @impl true
@@ -43,12 +52,17 @@ defmodule Pow.Store.Backend.Base do
         end
 
         @impl true
-        def all(config, match_spec) do
-          query = Cachex.Query.create(match_spec, :key)
+        def all(config, key_match) do
+          query =
+            [{
+              {:_, wrap_namespace(config, key_match), :"$2", :"$3", :"$4"},
+              [Cachex.Query.unexpired_clause()],
+              [ :"$_" ]
+            }]
 
           @cachex_tab
           |> Cachex.stream!(query)
-          |> Enum.map(fn {key, value} -> {unwrap_namespace(key), value} end)
+          |> Enum.map(fn {_, key, _, _, value} -> {unwrap_namespace(key), value} end)
         end
 
         defp wrap_namespace(config, key) do

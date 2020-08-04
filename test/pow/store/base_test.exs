@@ -8,7 +8,7 @@ defmodule Pow.Store.BaseTest do
     def get(_config, :backend), do: :mock_backend
     def get(config, :config), do: config
 
-    def all(_config, _match_spec), do: []
+    def all(_config, _key_match), do: []
   end
 
   defmodule BaseMock do
