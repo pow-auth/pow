@@ -88,12 +88,9 @@ defmodule Pow.Store.Backend.EtsCache do
 
   defp table_get(key, config) do
     ets_key = ets_key(config, key)
-
-    @ets_cache_tab
-    |> :ets.lookup(ets_key)
-    |> case do
-      [{^ets_key, value} | _rest] -> value
-      []                          -> :not_found
+    case :ets.lookup(@ets_cache_tab, ets_key) do
+      [{^ets_key, value}] -> value
+      []                  -> :not_found
     end
   end
 
