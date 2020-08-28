@@ -71,6 +71,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   alias Pow.{Config, Operations, Plug, UUID}
 
   @cookie_key "persistent_session"
+  @telemetry_event [:pow_persistent_session, :plug, :cookie]
 
   @doc """
   Sets a persistent session cookie with a randomly generated unique token.
@@ -92,31 +93,19 @@ defmodule PowPersistentSession.Plug.Cookie do
   """
   @spec create(Conn.t(), map(), Config.t()) :: Conn.t()
   def create(conn, user, config) do
+    metadata         = Map.get(conn.private, :pow_persistent_session_metadata, [])
+    token            = gen_token(config)
+    {user, metadata} = persistent_session_value(user, metadata, conn)
+
     conn
     |> delete(config)
-    |> before_send_create(user, config)
+    |> before_send_create(token, {user, metadata}, config)
   end
 
-  defp before_send_create(conn, user, config) do
-    {store, store_config} = store(config)
-    token                 = gen_token(config)
-    value                 = persistent_session_value(conn, user, config)
+  defp gen_token(config) do
+    uuid = UUID.generate()
 
-    register_before_send(conn, fn conn ->
-      store.put(store_config, token, value)
-
-      client_store_put(conn, token, config)
-    end)
-  end
-
-  defp persistent_session_value(conn, user, config) do
-    clauses  = user_to_get_by_clauses!(user, config)
-    metadata =
-      conn.private
-      |> Map.get(:pow_persistent_session_metadata, [])
-      |> maybe_put_fingerprint_in_session_metadata(conn)
-
-    {clauses, metadata}
+    Plug.prepend_with_namespace(config, uuid)
   end
 
   defp user_to_get_by_clauses!(user, config) do
@@ -124,6 +113,12 @@ defmodule PowPersistentSession.Plug.Cookie do
       {:ok, clauses}  -> clauses
       {:error, error} -> raise error
     end
+  end
+
+  defp persistent_session_value(user, metadata, conn) do
+    metadata = maybe_put_fingerprint_in_session_metadata(metadata, conn)
+
+    {user, metadata}
   end
 
   defp maybe_put_fingerprint_in_session_metadata(metadata, conn) do
@@ -144,6 +139,27 @@ defmodule PowPersistentSession.Plug.Cookie do
     end
   end
 
+  defp before_send_create(conn, token, {user, metadata}, config) do
+    {store, store_config} = store(config)
+    session_fingerprint   = get_session_fingerprint(conn)
+    clauses               = user_to_get_by_clauses!(user, config)
+
+    register_before_send(conn, fn conn ->
+      store.put(store_config, token, {clauses, metadata})
+
+      trigger_telemetry_event(config, :create, %{
+        conn: conn,
+        session_fingerprint: session_fingerprint,
+        user: user})
+
+      client_store_put(conn, token, config)
+    end)
+  end
+
+  defp trigger_telemetry_event(config, action, %{conn: _conn, session_fingerprint: _session_fingerprint, user: _user} = metadata) do
+    Pow.telemetry_event(config, @telemetry_event, action, metadata)
+  end
+
   @doc """
   Expires the persistent session.
 
@@ -155,6 +171,9 @@ defmodule PowPersistentSession.Plug.Cookie do
   def delete(conn, config), do: before_send_delete(conn, config)
 
   defp before_send_delete(conn, config) do
+    session_fingerprint = get_session_fingerprint(conn)
+    user                = Plug.current_user(conn)
+
     register_before_send(conn, fn conn ->
       case client_store_fetch(conn, config) do
         {nil, conn} ->
@@ -163,9 +182,20 @@ defmodule PowPersistentSession.Plug.Cookie do
         {token, conn} ->
           expire_token_in_store(token, config)
 
+          trigger_telemetry_event(config, :delete, %{
+            conn: conn,
+            session_fingerprint: session_fingerprint,
+            user: user})
+
           client_store_delete(conn, config)
       end
     end)
+  end
+
+  defp get_session_fingerprint(conn) do
+    conn.private
+    |> Map.get(:pow_session_metadata, [])
+    |> Keyword.get(:fingerprint)
   end
 
   defp expire_token_in_store(token, config) do
@@ -307,12 +337,6 @@ defmodule PowPersistentSession.Plug.Cookie do
 
         Conn.put_private(conn, :pow_session_metadata, metadata)
     end
-  end
-
-  defp gen_token(config) do
-    uuid = UUID.generate()
-
-    Plug.prepend_with_namespace(config, uuid)
   end
 
   defp client_store_fetch(conn, config) do

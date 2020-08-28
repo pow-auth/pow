@@ -349,11 +349,59 @@ defmodule PowPersistentSession.Plug.CookieTest do
     assert get_from_cache(conn, id, backend: ets) == :not_found
   end
 
-  defp conn_with_session_plug(config) do
-    :get
-    |> Test.conn("/")
+  describe "with telemetry logging" do
+    setup do
+      pid    = self()
+      events = [
+        [:pow_persistent_session, :plug, :cookie, :create],
+        [:pow_persistent_session, :plug, :cookie, :delete]
+      ]
+
+      :telemetry.attach_many("event-handler-#{inspect pid}", events, fn event, measurements, metadata, send_to: pid ->
+        send(pid, {:event, event, measurements, metadata})
+      end, send_to: pid)
+    end
+
+    test "logs create and delete", %{conn: conn, config: config} do
+      user = %User{id: 1}
+
+      conn =
+        conn
+        |> init_plug(config)
+        |> Session.do_create(user, config)
+        |> run_create(user, config)
+
+      assert_receive {:event, [:pow_persistent_session, :plug, :cookie, :create], _measurements, metadata}
+      assert metadata[:conn]
+      assert metadata[:user] == user
+      assert metadata[:session_fingerprint]
+
+      conn
+      |> recycle_session_conn(config)
+      |> init_plug(config)
+      |> run_delete(config)
+
+      assert_receive {:event, [:pow_persistent_session, :plug, :cookie, :delete], _measurements, metadata}
+      assert metadata[:conn]
+      assert metadata[:user] == user
+      assert metadata[:session_fingerprint]
+    end
+  end
+
+  defp conn_with_session_plug(config, conn \\ nil) do
+    conn
+    |> Kernel.||(Test.conn(:get, "/"))
     |> PlugSession.call(PlugSession.init(store: ProcessStore, key: "foobar"))
     |> Session.call(Session.init(config))
+  end
+
+  defp recycle_session_conn(old_conn, config) do
+    conn =
+      :get
+      |> Test.conn("/")
+      |> Test.recycle_cookies(old_conn)
+
+    conn_with_session_plug(config, conn)
   end
 
   defp persistent_cookie(conn, cookie_key, id) do
