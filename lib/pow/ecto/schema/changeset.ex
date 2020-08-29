@@ -62,6 +62,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   Calls `confirm_password_changeset/3` and `new_password_changeset/3`.
   """
   @spec password_changeset(Ecto.Schema.t() | Changeset.t(), map(), Config.t()) :: Changeset.t()
+  def password_changeset(%{valid?: false} = user_or_changeset, _params, _config), do: user_or_changeset
   def password_changeset(user_or_changeset, params, config) do
     user_or_changeset
     |> confirm_password_changeset(params, config)

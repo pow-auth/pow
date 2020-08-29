@@ -181,6 +181,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
     @password "password1234"
     @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
     @valid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => @password}}
+    @invalid_password %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => "invalid"}}
     @invalid_params %{"user" => %{"email" => "invalid", "password" => @password, "password_confirmation" => "invalid"}}
 
     test "already signed in", %{conn: conn} do
@@ -230,6 +231,19 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert html =~ "<label for=\"user_email\">Email</label>"
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid\">"
       assert html =~ "<span class=\"help-block\">has invalid format</span>"
+      assert html =~ "<label for=\"user_password\">Password</label>"
+      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
+      refute html =~ "<span class=\"help-block\">does not match confirmation</span>"
+      refute conn.private[:plug_session]["auth"]
+    end
+
+    test "with invalid password", %{conn: conn} do
+      conn = put conn, Routes.pow_invitation_invitation_path(conn, :update, sign_token("valid"), @invalid_password)
+
+      assert html = html_response(conn, 200)
+      assert html =~ "<label for=\"user_email\">Email</label>"
+      refute html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid\">"
+      refute html =~ "<span class=\"help-block\">has invalid format</span>"
       assert html =~ "<label for=\"user_password\">Password</label>"
       assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
       assert html =~ "<span class=\"help-block\">does not match confirmation</span>"

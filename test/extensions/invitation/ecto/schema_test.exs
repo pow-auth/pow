@@ -76,6 +76,7 @@ defmodule PowInvitation.Ecto.SchemaTest do
   describe "accept_invitation_changeset/2" do
     @password "password12"
     @valid_params %{email: "test@example.com", password: @password, password_confirmation: @password}
+    @invalid_password %{email: "test@example.com"}
     @invalid_params %{email: "foo"}
 
     test "with valid params" do
@@ -91,6 +92,14 @@ defmodule PowInvitation.Ecto.SchemaTest do
 
       refute changeset.valid?
       assert changeset.errors[:email]
+      refute changeset.errors[:password]
+    end
+
+    test "with invalid password" do
+      changeset = Schema.accept_invitation_changeset(%User{}, @invalid_password)
+
+      refute changeset.valid?
+      refute changeset.errors[:email]
       assert changeset.errors[:password]
     end
 
