@@ -45,10 +45,11 @@ defmodule MyAppWeb.Pow.RedisCache do
     commands =
       record_or_records
       |> List.wrap()
-      |> Enum.map(fn {key, value} ->
+      |> Enum.reduce([], fn {key, value}, acc ->
         config
-        |> binary_redis_key(key)
-        |> put_command(value, ttl)
+        |> redis_key(key)
+        |> command_builder(&put_command(&1, value, ttl))
+        |> flatten(acc)
       end)
 
     maybe_async(config, fn ->
@@ -56,23 +57,51 @@ defmodule MyAppWeb.Pow.RedisCache do
       |> Redix.pipeline!(commands)
       |> Enum.map(fn
         "OK"  -> nil
+        1     -> nil
         error -> error
       end)
       |> Enum.reject(&is_nil/1)
       |> case do
         []     -> :ok
-        errors -> raise "Redix failed SET because of #{inspect errors}"
+        errors -> raise "Redix received unexpected response #{inspect errors}"
       end
     end)
 
     :ok
   end
 
-  defp put_command(key, value, ttl) do
+  defp put_command({key, []}, value, ttl) do
+    key   = to_binary_redis_key(key)
     value = :erlang.term_to_binary(value)
 
     ["SET", key, value, "PX", ttl]
   end
+  defp put_command({prefix, key}, _value, ttl) do
+    prefix = to_binary_redis_key(prefix)
+    key    = to_binary_redis_key(key)
+
+    [
+      ["SADD", prefix, key],
+      ["PEXPIRE", prefix, ttl]
+    ]
+  end
+
+  defp command_builder(key, method) do
+    count = Enum.count(key)
+
+    1..count
+    |> Enum.map(fn i ->
+      key
+      |> Enum.split(i)
+      |> method.()
+    end)
+    |> Enum.reduce([], &flatten/2)
+  end
+
+  defp flatten([item | _rest] = items, acc) when is_list(item)  do
+    Enum.reduce(items, acc, &flatten/2)
+  end
+  defp flatten(item, acc), do: acc ++ [item]
 
   defp maybe_async(config, fun) do
     case Config.get(config, :writes, :sync) do
@@ -83,16 +112,28 @@ defmodule MyAppWeb.Pow.RedisCache do
 
   @impl true
   def delete(config, key) do
-    key =
+    commands =
       config
       |> redis_key(key)
-      |> to_binary_redis_key()
+      |> command_builder(&delete_command/1)
 
     maybe_async(config, fn ->
-      Redix.command!(@redix_instance_name, ["DEL", key])
+      Redix.pipeline!(@redix_instance_name, commands)
     end)
 
     :ok
+  end
+
+  def delete_command({prefix, []}) do
+    prefix = to_binary_redis_key(prefix)
+
+    ["DEL", prefix]
+  end
+  def delete_command({prefix, key}) do
+    prefix = to_binary_redis_key(prefix)
+    key    = to_binary_redis_key(key)
+
+    ["SREM", prefix, key]
   end
 
   @impl true
@@ -111,32 +152,40 @@ defmodule MyAppWeb.Pow.RedisCache do
   @impl true
   def all(config, key_match) do
     compiled_match_spec = :ets.match_spec_compile([{{key_match, :_}, [], [:"$_"]}])
+    key_match           = redis_key(config, key_match)
+
+    {prefix, _match} =
+      case Enum.find_index(key_match, & &1 == :_) do
+        nil -> {redis_key(config, []), key_match}
+        i   -> Enum.split(key_match, i)
+      end
 
     Stream.resource(
-      fn -> do_scan(config, compiled_match_spec, "0") end,
-      &stream_scan(config, compiled_match_spec, &1),
+      fn -> do_scan(config, prefix, compiled_match_spec, "0") end,
+      &stream_scan(config, prefix, compiled_match_spec, &1),
       fn _ -> :ok end)
     |> Enum.to_list()
   end
 
-  defp stream_scan(_config, _compiled_match_spec, {[], "0"}), do: {:halt, nil}
-  defp stream_scan(config, compiled_match_spec, {[], iterator}) do
-    result = do_scan(config, compiled_match_spec, iterator)
+  defp stream_scan(_config, _prefix, _compiled_match_spec, {[], "0"}), do: {:halt, nil}
+  defp stream_scan(config, prefix, compiled_match_spec, {[], iterator}) do
+    result = do_scan(config, prefix, compiled_match_spec, iterator)
 
-    stream_scan(config, compiled_match_spec, result)
+    stream_scan(config, prefix, compiled_match_spec, result)
   end
-  defp stream_scan(_config, _compiled_match_spec, {keys, iterator}), do: {keys, {[], iterator}}
+  defp stream_scan(_config, _prefix, _compiled_match_spec, {keys, iterator}), do: {keys, {[], iterator}}
 
-  defp do_scan(config, compiled_match_spec, iterator) do
-    prefix = to_binary_redis_key([namespace(config)]) <> ":*"
+  defp do_scan(config, prefix, compiled_match_spec, iterator) do
+    prefix = to_binary_redis_key(prefix)
 
-    [iterator, res] = Redix.command!(@redix_instance_name, ["SCAN", iterator, "MATCH", prefix])
+    [iterator, res] = Redix.command!(@redix_instance_name, ["SSCAN", prefix, iterator])
 
-    {filter_or_load_value(compiled_match_spec, res, config), iterator}
+    {filter_or_load_value(compiled_match_spec, prefix, res, config), iterator}
   end
 
-  defp filter_or_load_value(compiled_match_spec, keys, config) do
+  defp filter_or_load_value(compiled_match_spec, prefix, keys, config) do
     keys
+    |> Enum.map(&"#{prefix}:#{&1}")
     |> Enum.map(&convert_key/1)
     |> Enum.sort()
     |> :ets.match_spec_run(compiled_match_spec)
