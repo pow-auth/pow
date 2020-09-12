@@ -346,6 +346,15 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     assert RedisCache.get(config, "key") == :not_found
   end
 
+  test "delete removes from redis sets" do
+    RedisCache.put(@default_config, {["namespace", "key1"], "value"})
+    RedisCache.put(@default_config, {["namespace", "key2"], "value"})
+    assert redix_smembers_decoded("namespace") == ["key1", "key2"]
+
+    RedisCache.delete(@default_config, ["namespace", "key1"])
+    assert redix_smembers_decoded("namespace") == ["key2"]
+  end
+
   describe "with redis errors" do
     setup do
       ["maxmemory", value] = Redix.command!(:redix, ["CONFIG", "GET", "maxmemory"])
@@ -388,14 +397,50 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     config = Keyword.put(@default_config, :ttl, 50)
 
     RedisCache.put(config, {"key", "value"})
-    RedisCache.put(config, [{"key1", "1"}, {"key2", "2"}])
+    RedisCache.put(config, [{"key1", "1"}, {["namespace", "key2"], "2"}])
     assert RedisCache.get(config, "key") == "value"
     assert RedisCache.get(config, "key1") == "1"
-    assert RedisCache.get(config, "key2") == "2"
-    :timer.sleep(100)
+    assert RedisCache.get(config, ["namespace", "key2"]) == "2"
+    assert redix_smembers_decoded("namespace") == ["key2"]
+    RedisCache.put(Keyword.put(@default_config, :ttl, 200), [{["namespace", "key3"], "3"}])
+    assert redix_smembers_decoded("namespace") == ["key3", "key2"]
+    :timer.sleep(50)
     assert RedisCache.get(config, "key") == :not_found
     assert RedisCache.get(config, "key1") == :not_found
-    assert RedisCache.get(config, "key2") == :not_found
+    assert RedisCache.get(config, ["namespace", "key2"]) == :not_found
+    assert RedisCache.get(config, ["namespace", "key3"]) == "3"
+    assert redix_smembers_decoded("namespace") == ["key3"]
+    :timer.sleep(100)
+    assert RedisCache.get(config, ["namespace", "key3"]) == :not_found
+    assert redix_smembers_decoded("namespace") == []
+  end
+
+  defp redix_smembers_decoded(key) do
+    encoded_prefix =
+      [@default_config[:namespace]]
+      |> Kernel.++(List.wrap(key))
+      |> Enum.map(fn part ->
+        part
+        |> :erlang.term_to_binary()
+        |> Base.url_encode64(padding: false)
+      end)
+      |> Enum.join(":")
+
+    :redix
+    |> Redix.command!(["SMEMBERS", encoded_prefix])
+    |> Enum.map(fn encoded_key ->
+      encoded_key
+      |> String.split(":")
+      |> Enum.map(fn part ->
+        part
+        |> Base.url_decode64!(padding: false)
+        |> :erlang.binary_to_term()
+      end)
+      |> case do
+        [key] -> key
+        key   -> key
+      end
+    end)
   end
 end
 ```
