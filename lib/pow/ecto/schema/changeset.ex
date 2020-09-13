@@ -364,10 +364,8 @@ defmodule Pow.Ecto.Schema.Changeset do
     do: sanitized_local_part =~ ~r<^[\p{L}\p{M}0-9!#$%&'*+-/=?^_`{|}~\.]+$>u
 
   defp validate_domain(domain) do
-    sanitized_domain = remove_comments(domain)
-
     labels =
-      sanitized_domain
+      domain
       |> remove_comments()
       |> String.split(".")
 
