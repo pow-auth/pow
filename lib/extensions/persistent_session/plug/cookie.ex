@@ -149,7 +149,7 @@ defmodule PowPersistentSession.Plug.Cookie do
 
   If a persistent session cookie exists the token in the persistent session
   cache will be deleted, and cookie deleted with
-  `Plug.Conn.delete_resp_cookie/3.
+  `Plug.Conn.delete_resp_cookie/3`.
   """
   @spec delete(Conn.t(), Config.t()) :: Conn.t()
   def delete(conn, config), do: before_send_delete(conn, config)
