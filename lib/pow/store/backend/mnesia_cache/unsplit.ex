@@ -124,7 +124,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     |> List.delete(:schema)
     |> List.foldl([], fn table, acc ->
       nodes     = get_all_nodes_for_table(table)
-      is_shared = Enum.member?(nodes, node) && Enum.member?(nodes, node())
+      is_shared = node in nodes && node() in nodes
 
       case is_shared do
         true  -> [table | acc]
@@ -188,8 +188,8 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     all_nodes    = get_all_nodes_for_table(@mnesia_cache_tab)
     island_nodes = Enum.concat(island_a, island_b)
 
-    oldest_node = all_nodes |> Enum.reverse() |> Enum.find(&Enum.member?(island_nodes, &1))
+    oldest_node = all_nodes |> Enum.reverse() |> Enum.find(&(&1 in island_nodes))
 
-    Enum.member?(island_a, oldest_node)
+    oldest_node in island_a
   end
 end

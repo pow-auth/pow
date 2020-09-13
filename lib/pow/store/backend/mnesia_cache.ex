@@ -184,7 +184,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
         invalidators
 
       {_value, expire} ->
-        case Enum.max([expire - timestamp(), 0]) do
+        case Kernel.max(expire - timestamp(), 0) do
           0 ->
             key
             |> table_delete(config)
@@ -224,9 +224,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp table_get(key, config) do
-    config
-    |> fetch(key)
-    |> case do
+    case fetch(config, key) do
       {value, _expire} -> value
       nil              -> :not_found
     end
@@ -234,12 +232,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   defp fetch(config, key) do
     mnesia_key = mnesia_key(config, key)
-
-    {@mnesia_cache_tab, mnesia_key}
-    |> :mnesia.dirty_read()
-    |> case do
-      [{@mnesia_cache_tab, ^mnesia_key, value} | _rest] -> value
-      []                                                -> nil
+    case :mnesia.dirty_read({@mnesia_cache_tab, mnesia_key}) do
+      [{@mnesia_cache_tab, ^mnesia_key, value}] -> value
+      []                                        -> nil
     end
   end
 
@@ -285,9 +280,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   defp init_mnesia(config) do
-    config
-    |> find_active_cluster_nodes()
-    |> case do
+    case find_active_cluster_nodes(config) do
       []    -> init_cluster(config)
       nodes -> join_cluster(config, nodes)
     end
