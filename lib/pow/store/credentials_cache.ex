@@ -169,13 +169,13 @@ defmodule Pow.Store.CredentialsCache do
 
     {mod, key_values}
   end
-  defp user_to_struct_id!(_user, _config), do: raise_error "Only structs can be stored as credentials"
+  defp user_to_struct_id!(_user, _config), do: raise "Only structs can be stored as credentials"
 
   defp fetch_primary_key_values!(user, config) do
     user
     |> Operations.fetch_primary_key_values(config)
     |> case do
-      {:error, error} -> raise_error error
+      {:error, error} -> raise error
       {:ok, clauses}  -> clauses
     end
   end
@@ -199,9 +199,6 @@ defmodule Pow.Store.CredentialsCache do
       end
     end)
   end
-
-  @spec raise_error(binary()) :: no_return()
-  defp raise_error(message), do: raise message
 
   # TODO: Remove by 1.1.0
   @doc false

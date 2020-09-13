@@ -27,7 +27,7 @@ defmodule MyAppWeb.Pow.RedisCache do
 
   @impl true
   def put(config, record_or_records) do
-    ttl      = Config.get(config, :ttl) || raise_ttl_error()
+    ttl      = Config.get(config, :ttl) || raise_ttl_error!()
     commands =
       record_or_records
       |> List.wrap()
@@ -186,8 +186,8 @@ defmodule MyAppWeb.Pow.RedisCache do
     end)
   end
 
-  @spec raise_ttl_error :: no_return
-  defp raise_ttl_error,
+  @spec raise_ttl_error! :: no_return()
+  defp raise_ttl_error!,
     do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 end
 ```
