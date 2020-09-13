@@ -13,6 +13,7 @@
 * [`PowEmailConfirmation.Ecto.Schema`] `PowEmailConfirmation.Ecto.Schema.changeset/3` no longer sets the email to the unconfirmed email when the same email change is set twice
 * [`Pow.Extension.Phoenix.Messages`] Fixed fallback message dializer warning
 * [`Pow.Ecto.Context`] Fixed bug where the macro didn't add `:users_context` to the Pow config in the module resulting in `Pow.Ecto.Context.get_by/2` being called instead of `get_by/1` in the custom context
+* [`Pow.Ecto.Schema.Changeset`] The `Pow.Ecto.Schema.Changeset.validate_email/1` method has been improved per specifications to support wider unicode support, fully-qualified domain validation, and comments
 
 ## v1.0.20 (2020-04-22)
 

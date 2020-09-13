@@ -286,18 +286,31 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
   end
 
   test "validate_email/1" do
-    # Format
+    # Local-part and domain from https://en.wikipedia.org/wiki/Email_address#Syntax
+    assert Changeset.validate_email("John..Doe@example.com") == {:error, "consective dots in local-part"}
+    assert Changeset.validate_email("\".John.Doe\"@example.com") == :ok
+    assert Changeset.validate_email("\"John.Doe.\"@example.com") == :ok
+    assert Changeset.validate_email("\"John..Doe\"@example.com") == :ok
+    assert Changeset.validate_email("john.smith(comment)@example.com") == :ok
+    assert Changeset.validate_email("(comment)john.smith@example.com") == :ok
+    assert Changeset.validate_email("john.smith@(comment)example.com") == :ok
+    assert Changeset.validate_email("john.smith@example.com(comment)") == :ok
+
+    # Examples from https://en.wikipedia.org/wiki/Email_address#Examples
     assert Changeset.validate_email("simple@example.com") == :ok
     assert Changeset.validate_email("very.common@example.com") == :ok
     assert Changeset.validate_email("disposable.style.email.with+symbol@example.com") == :ok
     assert Changeset.validate_email("other.email-with-hyphen@example.com") == :ok
     assert Changeset.validate_email("fully-qualified-domain@example.com") == :ok
+    assert Changeset.validate_email("user.name+tag+sorting@example.com") == :ok
     assert Changeset.validate_email("x@example.com") == :ok
     assert Changeset.validate_email("example-indeed@strange-example.com") == :ok
     assert Changeset.validate_email("admin@mailserver1") == :ok
     assert Changeset.validate_email("example@s.example") == :ok
     assert Changeset.validate_email("\" \"@example.org") == :ok
     assert Changeset.validate_email("\"john..doe\"@example.org") == :ok
+    assert Changeset.validate_email("mailhost!username@example.org") == :ok
+    assert Changeset.validate_email("user%example.com@example.org") == :ok
 
     assert Changeset.validate_email("Abc.example.com") == {:error, "invalid format"}
     assert Changeset.validate_email("A@b@c@example.com") == {:error, "invalid characters in local-part"}
@@ -306,19 +319,55 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     assert Changeset.validate_email("this is\"not\\allowed@example.com") == {:error, "invalid characters in local-part"}
     assert Changeset.validate_email("this\\ still\\\"not\\\\allowed@example.com") == {:error, "invalid characters in local-part"}
     assert Changeset.validate_email("1234567890123456789012345678901234567890123456789012345678901234+x@example.com") == {:error, "local-part too long"}
+    assert Changeset.validate_email("i_like_underscore@but_its_not_allow_in_this_part.example.com") == {:error, "invalid characters in dns label"}
 
-    # Unicode
+    # Unicode from https://en.wikipedia.org/wiki/Email_address#Internationalization_examples
     assert Changeset.validate_email("Pelé@example.com") == :ok
     assert Changeset.validate_email("δοκιμή@παράδειγμα.δοκιμή") == :ok
     assert Changeset.validate_email("我買@屋企.香港") == :ok
     assert Changeset.validate_email("二ノ宮@黒川.日本") == :ok
     assert Changeset.validate_email("медведь@с-балалайкой.рф") == :ok
+    assert Changeset.validate_email("संपर्क@डाटामेल.भारत") == :ok
 
-    # All error cases
+    # Test cases from https://tools.ietf.org/html/rfc3696#section-3
+    # Quote issues corrected with https://www.rfc-editor.org/errata/rfc3696
+    assert Changeset.validate_email("\"Abc\\@def\"@example.com") == :ok
+    assert Changeset.validate_email("\"Fred\\ Bloggs\"@example.com") == :ok
+    assert Changeset.validate_email("\"Joe.\\\\Blow\"@example.com") == :ok
+    assert Changeset.validate_email("\"Abc@def\"@example.com") == :ok
+    assert Changeset.validate_email("\"Fred Bloggs\"@example.com") == :ok
+    assert Changeset.validate_email("user+mailbox@example.com") == :ok
+    assert Changeset.validate_email("customer/department=shipping@example.com") == :ok
+    assert Changeset.validate_email("$A12345@example.com") == :ok
+    assert Changeset.validate_email("!def!xyz%abc@example.com") == :ok
+    assert Changeset.validate_email("_somename@example.com") == :ok
+
+    # IP not allowed
+    refute Changeset.validate_email("jsmith@[192.168.2.1]") == :error
+    refute Changeset.validate_email("jsmith@[IPv6:2001:db8::1]") == :error
+
+    # Other successs cases
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 63)}.#{String.duplicate("x", 63)}.#{String.duplicate("x", 63)}.#{String.duplicate("x", 63)}") == :ok
+    assert Changeset.validate_email("john.doe@1.2.com") == :ok
+    assert Changeset.validate_email("john.doe@example.x1") == :ok
+    assert Changeset.validate_email("john.doe@sub-domain-with-hyphen.domain-with-hyphen.com") == :ok
+
+    # Other error cases
+    assert Changeset.validate_email("noatsign") == {:error, "invalid format"}
     assert Changeset.validate_email("john..doe@example.com") == {:error, "consective dots in local-part"}
-    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 256)}") == {:error, "domain too long"}
-    assert Changeset.validate_email("john.doe@-example.com") == {:error, "domain begins with hyphen"}
-    assert Changeset.validate_email("john.doe@example-") == {:error, "domain ends with hyphen"}
-    assert Changeset.validate_email("john.doe@invaliddomain$") == {:error, "invalid characters in domain"}
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 63)}.#{String.duplicate("x", 63)}.#{String.duplicate("x", 63)}.#{String.duplicate("x", 60)}.com") == {:error, "domain too long"}
+    assert Changeset.validate_email("john.doe@-example.com") == {:error, "dns label begins with hyphen"}
+    assert Changeset.validate_email("john.doe@-example.example.com") == {:error, "dns label begins with hyphen"}
+    assert Changeset.validate_email("john.doe@example-.com") == {:error, "dns label ends with hyphen"}
+    assert Changeset.validate_email("john.doe@example-.example.com") == {:error, "dns label ends with hyphen"}
+    assert Changeset.validate_email("john.doe@invaliddomain$") == {:error, "invalid characters in dns label"}
+    assert Changeset.validate_email("john(comment)doe@example.com") == {:error, "invalid characters in local-part"}
+    assert Changeset.validate_email("johndoe@example(comment).com") == {:error, "invalid characters in dns label"}
+    assert Changeset.validate_email("john.doe@.") == {:error, "dns label is too short"}
+    assert Changeset.validate_email("john.doe@.com") == {:error, "dns label is too short"}
+    assert Changeset.validate_email("john.doe@example.") == {:error, "dns label is too short"}
+    assert Changeset.validate_email("john.doe@example.1") == {:error, "tld cannot be all-numeric"}
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 64)}.com") == {:error, "dns label too long"}
+    assert Changeset.validate_email("john.doe@#{String.duplicate("x", 64)}.example.com") == {:error, "dns label too long"}
   end
 end

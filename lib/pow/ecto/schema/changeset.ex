@@ -301,34 +301,42 @@ defmodule Pow.Ecto.Schema.Changeset do
     - only have letters, digits, hyphen, and dots
 
   Unicode characters are permitted in both local-part and domain.
+
+  The implementation is based on
+  [RFC 3696](https://tools.ietf.org/html/rfc3696#section-3).
+
+  IP addresses are not allowed as per the RFC 3696 specification: "The domain
+  name can also be replaced by an IP address in square brackets, but that form
+  is strongly discouraged except for testing and troubleshooting purposes.".
   """
   @spec validate_email(binary()) :: :ok | {:error, any()}
   def validate_email(email) do
-    [domain | rest] =
+    [domain | local_parts] =
       email
       |> String.split("@")
       |> Enum.reverse()
 
     local_part =
-      rest
+      local_parts
       |> Enum.reverse()
       |> Enum.join("@")
 
     cond do
-      String.length(local_part) > 64 -> {:error, "local-part too long"}
-      String.length(domain) > 255    -> {:error, "domain too long"}
-      local_part == ""               -> {:error, "invalid format"}
-      true                           -> validate_email(local_part, domain)
+      String.length(local_part) > 64      -> {:error, "local-part too long"}
+      String.length(domain) > 255         -> {:error, "domain too long"}
+      local_part == ""                    -> {:error, "invalid format"}
+      local_part_only_quoted?(local_part) -> validate_domain(domain)
+      true                                -> validate_email(local_part, domain)
     end
   end
 
   defp validate_email(local_part, domain) do
-    sanitized_local_part = remove_quotes_from_local_part(local_part)
+    sanitized_local_part =
+      local_part
+      |> remove_comments()
+      |> remove_quotes_from_local_part()
 
     cond do
-      local_part_only_quoted?(local_part) ->
-        validate_domain(domain)
-
       local_part_consective_dots?(sanitized_local_part) ->
         {:error, "consective dots in local-part"}
 
@@ -340,22 +348,63 @@ defmodule Pow.Ecto.Schema.Changeset do
     end
   end
 
+  defp local_part_only_quoted?(local_part),
+    do: local_part =~ ~r/^"[^\"]+"$/
+
   defp remove_quotes_from_local_part(local_part),
     do: Regex.replace(~r/(^\".*\"$)|(^\".*\"\.)|(\.\".*\"$)?/, local_part, "")
 
-  defp local_part_only_quoted?(local_part), do: local_part =~ ~r/^"[^\"]+"$/
+  defp remove_comments(any),
+    do: Regex.replace(~r/(^\(.*\))|(\(.*\)$)?/, any, "")
 
-  defp local_part_consective_dots?(local_part), do: local_part =~ ~r/\.\./
+  defp local_part_consective_dots?(local_part),
+    do: local_part =~ ~r/\.\./
 
   defp local_part_valid_characters?(sanitized_local_part),
-    do: sanitized_local_part =~ ~r<^[\p{L}0-9!#$%&'*+-/=?^_`{|}~\.]+$>u
+    do: sanitized_local_part =~ ~r<^[\p{L}\p{M}0-9!#$%&'*+-/=?^_`{|}~\.]+$>u
 
   defp validate_domain(domain) do
-    cond do
-      String.first(domain) == "-"     -> {:error, "domain begins with hyphen"}
-      String.last(domain) == "-"      -> {:error, "domain ends with hyphen"}
-      domain =~ ~r/^[\p{L}0-9-\.]+$/u -> :ok
-      true                            -> {:error, "invalid characters in domain"}
+    sanitized_domain = remove_comments(domain)
+
+    labels =
+      sanitized_domain
+      |> remove_comments()
+      |> String.split(".")
+
+    labels
+    |> validate_tld()
+    |> validate_dns_labels()
+  end
+
+  defp validate_tld(labels) do
+    labels
+    |> List.last()
+    |> Kernel.=~(~r/^[0-9]+$/)
+    |> case do
+      true  -> {:error, "tld cannot be all-numeric"}
+      false -> {:ok, labels}
     end
   end
+
+  defp validate_dns_labels({:ok, labels}) do
+    Enum.reduce_while(labels, :ok, fn
+      label, :ok    -> {:cont, validate_dns_label(label)}
+      _label, error -> {:halt, error}
+    end)
+  end
+  defp validate_dns_labels({:error, error}), do: {:error, error}
+
+  defp validate_dns_label(label) do
+    cond do
+      label == ""                        -> {:error, "dns label is too short"}
+      String.length(label) > 63          -> {:error, "dns label too long"}
+      String.first(label) == "-"         -> {:error, "dns label begins with hyphen"}
+      String.last(label) == "-"          -> {:error, "dns label ends with hyphen"}
+      dns_label_valid_characters?(label) -> :ok
+      true                               -> {:error, "invalid characters in dns label"}
+    end
+  end
+
+  defp dns_label_valid_characters?(label),
+    do: label =~ ~r/^[\p{L}\p{M}0-9-]+$/u
 end
