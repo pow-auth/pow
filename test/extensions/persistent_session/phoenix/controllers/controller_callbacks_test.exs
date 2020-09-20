@@ -3,7 +3,7 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
 
   alias Pow.Plug
   alias PowPersistentSession.{Plug.Cookie, Store.PersistentSessionCache}
-  alias PowPersistentSession.Test.Users.User
+  alias PowPersistentSession.Test.{Users.User, RepoMock}
 
   @valid_params %{"email" => "test@example.com", "password" => "secret1234"}
   @max_age Integer.floor_div(:timer.hours(30) * 24, 1000)
@@ -11,11 +11,12 @@ defmodule PowPersistentSession.Phoenix.ControllerCallbacksTest do
 
   describe "Pow.Phoenix.SessionController.create/2" do
     test "generates cookie", %{conn: conn, ets: ets} do
-      conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
+      expected_user = RepoMock.get_by(User, [email: "test@example.com"], [])
+      conn          = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
 
       assert session_fingerprint = conn.private[:pow_session_metadata][:fingerprint]
       assert %{max_age: @max_age, path: "/", value: id} = conn.resp_cookies[@cookie_key]
-      assert {%User{id: 1}, session_metadata: [fingerprint: ^session_fingerprint]} = get_from_cache(conn, id, backend: ets)
+      assert {^expected_user, session_metadata: [fingerprint: ^session_fingerprint]} = get_from_cache(conn, id, backend: ets)
     end
 
     test "with persistent_session param set to false", %{conn: conn} do
