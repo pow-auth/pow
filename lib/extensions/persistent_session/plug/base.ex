@@ -87,6 +87,7 @@ defmodule PowPersistentSession.Plug.Base do
     store_config
     |> Keyword.put_new(:backend, Config.get(config, :cache_store_backend, EtsCache))
     |> Keyword.put_new(:ttl, ttl(config))
+    |> Keyword.put_new(:pow_config, config)
   end
 
   @ttl :timer.hours(24) * 30

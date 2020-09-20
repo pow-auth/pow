@@ -172,8 +172,10 @@ defmodule Pow.Store.CredentialsCache do
   defp user_to_struct_id!(_user, _config), do: raise "Only structs can be stored as credentials"
 
   defp fetch_primary_key_values!(user, config) do
+    pow_config = Keyword.get(config, :pow_config)
+
     user
-    |> Operations.fetch_primary_key_values(config)
+    |> Operations.fetch_primary_key_values(pow_config)
     |> case do
       {:error, error} -> raise error
       {:ok, clauses}  -> clauses

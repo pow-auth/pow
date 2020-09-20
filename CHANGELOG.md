@@ -5,6 +5,9 @@
 ### Enhancements
 
 * [`PowPersistentSession.Plug.Cookie`] Now stores the user struct instead of clauses
+* [`PowPersistentSession.Plug.Base`] Now includes `:pow_config` in the store config
+* [`PowResetPassword.Plug`] Now includes `:pow_config` in the store config
+* [`Pow.Plug.Base`] Now includes `:pow_config` in the store config
 
 ## v1.0.21 (2020-09-13)
 
