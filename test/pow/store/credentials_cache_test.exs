@@ -60,6 +60,28 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert ets.get(@backend_config, [User, :user, 1, :session, "key_1"]) == :not_found
   end
 
+  defmodule ContextMock do
+    def get_by([id: 1]), do: %User{id: :loaded}
+  end
+
+  test "get/2 when reload: true" do
+    config = @config ++ [reload: true, pow_config: [users_context: ContextMock]]
+
+    CredentialsCache.put(config, "session_id", {%User{id: 1}, a: 1})
+
+    assert CredentialsCache.get(config, "session_id") == {%User{id: :loaded}, a: 1}
+  end
+
+  test "get/2 when reload: true without :pow_config" do
+    config = @config ++ [reload: true]
+
+    CredentialsCache.put(config, "session_id", {%User{id: 1}, a: 1})
+
+    assert_raise RuntimeError, "No `:pow_config` value found in the store config.", fn ->
+      CredentialsCache.get(config, "session_id")
+    end
+  end
+
   test "put/3 invalidates sessions with identical fingerprint" do
     user = %User{id: 1}
 

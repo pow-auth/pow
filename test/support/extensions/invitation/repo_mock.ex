@@ -27,8 +27,7 @@ defmodule PowInvitation.Test.RepoMock do
   end
   def insert(%{valid?: false} = changeset, _opts), do: {:error, %{changeset | action: :insert}}
 
-  def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
-
+  def get_by(User, [id: 1], _opts), do: Process.get({:user, 1})
   def get_by(User, [invitation_token: "valid"], _opts), do: %{@user | invitation_token: "valid"}
   def get_by(User, [invitation_token: "valid_but_accepted"], _opts), do: %{@user | invitation_accepted_at: :now}
   def get_by(User, [invitation_token: "invalid"], _opts), do: nil

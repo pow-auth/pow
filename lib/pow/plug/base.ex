@@ -180,6 +180,8 @@ defmodule Pow.Plug.Base do
   end
 
   defp store_opts(config, store_config \\ []) do
-    Keyword.put_new(store_config, :backend, Config.get(config, :cache_store_backend, EtsCache))
+    store_config
+    |> Keyword.put_new(:backend, Config.get(config, :cache_store_backend, EtsCache))
+    |> Keyword.put_new(:pow_config, config)
   end
 end

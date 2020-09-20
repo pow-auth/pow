@@ -174,14 +174,6 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
 
       assert {:ok, _conn} = Plug.load_user_by_token(conn, token)
     end
-
-    test "with missing user", %{conn: conn} do
-      token = create_reset_token(conn, "missing@example.com")
-      conn  = put conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params)
-
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :info) == "The password has been updated."
-    end
   end
 
   defp create_reset_token(conn, email) do
