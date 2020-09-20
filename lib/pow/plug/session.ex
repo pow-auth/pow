@@ -162,6 +162,9 @@ defmodule Pow.Plug.Session do
   will always be overridden. If no `:fingerprint` exists in the metadata a
   random UUID value will be generated as its value.
 
+  Any existing active sessions with the same `:fingerprint` in metadata will
+  be deleted.
+
   The session id will be signed for public consumption with
   `Pow.Plug.sign_token/4`.
 
@@ -193,14 +196,38 @@ defmodule Pow.Plug.Session do
 
   defp gen_fingerprint(), do: UUID.generate()
 
-  defp before_send_create(conn, value, config) do
+  defp before_send_create(conn, {user, metadata}, config) do
     {store, store_config} = store(config)
     session_id            = gen_session_id(config)
 
     register_before_send(conn, fn conn ->
-      store.put(store_config, session_id, value)
+      delete_user_sessions_with_fingerprint(store, store_config, user, metadata)
+
+      store.put(store_config, session_id, {user, metadata})
 
       client_store_put(conn, session_id, config)
+    end)
+  end
+
+  defp delete_user_sessions_with_fingerprint(store, store_config, user, metadata) do
+    case Keyword.get(metadata, :fingerprint) do
+      nil         -> :ok
+      fingerprint -> do_delete_user_sessions_with_fingerprint(store, store_config, user, fingerprint)
+    end
+  end
+
+  defp do_delete_user_sessions_with_fingerprint(store, store_config, user, fingerprint) do
+    store_config
+    |> store.sessions(user)
+    |> Enum.map(& {&1, store.get(store_config, &1)})
+    |> Enum.each(fn
+      {session_id, {_user, metadata}} ->
+        with ^fingerprint <- Keyword.get(metadata, :fingerprint) do
+          store.delete(store_config, session_id)
+        end
+
+      {_session_id, :not_found} ->
+        :ok
     end)
   end
 
