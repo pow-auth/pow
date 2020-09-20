@@ -136,7 +136,7 @@ defmodule Pow.Operations do
   Takes a struct and will reload it.
 
   The clauses are fetched with `fetch_primary_key_values/2`, and the struct
-  loaded with `get_by/2`. A `RunTime` exception will be raised if the clauses
+  loaded with `get_by/2`. A `RuntimeError` exception will be raised if the clauses
   could not be fetched.
   """
   @spec reload(struct(), Config.t()) :: struct() | nil
