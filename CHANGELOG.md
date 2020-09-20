@@ -10,6 +10,7 @@
 * [`Pow.Plug.Base`] Now includes `:pow_config` in the store config
 * [`Pow.Operations`] Added `Pow.Operations.reload/2` to reload structs
 * [`PowPersistentSession.Store.PersistentSessionCache`] Update `PowPersistentSession.Store.PersistentSessionCache.get/2` to reload the user using `Pow.Operations.reload/2`
+* [`Pow.Store.CredentialsCache`] Now support `reload: true` configuration so once fetched from the cache the user object will be reloaded through the context module
 
 ## v1.0.21 (2020-09-13)
 

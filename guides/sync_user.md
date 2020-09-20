@@ -4,7 +4,15 @@ You may want to update the cached user credentials when an action outside of Pow
 
 In the following examples, we'll imagine that you've added a `plan` column on your `users` table. We may want to use that `plan` to give them access to certain controller actions. In this case, it's paramount that you load the user from the database.
 
-## Reload the user
+## Update `Pow.Store.CredentialsCache` config
+
+If you wish to load the user object each time it's fetched from the cache, all you have to do is to set `reload: true` for the `Pow.Store.CredentialsCache` config by adding this to your Pow config:
+
+```elixir
+credentials_cache_store: {Pow.Store.CredentialsCache, reload: true}
+```
+
+## Reload the user with a plug
 
 ```elixir
 defmodule MyAppWeb.ProPlanController do

@@ -22,7 +22,7 @@ defmodule PowPersistentSession.Store.PersistentSessionCache do
   defp reload(:not_found, _config), do: :not_found
   # TODO: Remove by 1.1.0
   defp reload({clauses, metadata}, config) when is_list(clauses) do
-    pow_config = Keyword.get(config, :pow_config)
+    pow_config = fetch_pow_config!(config)
 
     case Operations.get_by(clauses, pow_config) do
       nil  -> nil
@@ -30,11 +30,13 @@ defmodule PowPersistentSession.Store.PersistentSessionCache do
     end
   end
   defp reload({user, metadata}, config) do
-    pow_config = Keyword.get(config, :pow_config)
+    pow_config = fetch_pow_config!(config)
 
     case Operations.reload(user, pow_config) do
       nil  -> nil
       user -> {user, metadata}
     end
   end
+
+  defp fetch_pow_config!(config), do: Keyword.get(config, :pow_config) || raise "No `:pow_config` value found in the store config."
 end

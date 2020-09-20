@@ -35,6 +35,12 @@ defmodule Pow.Store.CredentialsCache do
           # ...
         end
       end
+
+  ## Configuration options
+
+    * `:reload` - boolean value for whether the user object should be loaded
+      from the context. Defaults false.
+
   """
   alias Pow.{Operations, Store.Base}
 
@@ -148,14 +154,25 @@ defmodule Pow.Store.CredentialsCache do
     backend_config = backend_config(config)
 
     with {user_key, metadata} when is_list(user_key) <- Base.get(config, backend_config, session_id),
-         user when is_map(user)                      <- Base.get(config, backend_config, user_key) do
+         user when is_map(user)                      <- Base.get(config, backend_config, user_key),
+         user when not is_nil(user)                  <- maybe_reload(user, config) do
       {user, metadata}
     else
       # TODO: Remove by 1.1.0
       {user, metadata} when is_map(user) -> {user, metadata}
       :not_found -> :not_found
+      nil -> :not_found
     end
   end
+
+  defp maybe_reload(user, config) do
+    case Keyword.get(config, :reload, false) do
+      true  -> Operations.reload(user, fetch_pow_config!(config))
+      _any -> user
+    end
+  end
+
+  defp fetch_pow_config!(config), do: Keyword.get(config, :pow_config) || raise "No `:pow_config` value found in the store config."
 
   defp user_to_struct_id!(%mod{} = user, config) do
     key_values =
