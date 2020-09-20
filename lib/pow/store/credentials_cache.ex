@@ -166,6 +166,7 @@ defmodule Pow.Store.CredentialsCache do
   end
 
   defp maybe_reload(user, config) do
+    # TODO: By 1.1.0 set this to `true` and update docs
     case Keyword.get(config, :reload, false) do
       true  -> Operations.reload(user, fetch_pow_config!(config))
       _any -> user
