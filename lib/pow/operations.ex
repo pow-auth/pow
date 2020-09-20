@@ -131,4 +131,19 @@ defmodule Pow.Operations do
     end
   end
   defp map_primary_key_values([], _struct, acc), do: {:ok, acc}
+
+  @doc """
+  Takes a struct and will reload it.
+
+  The clauses are fetched with `fetch_primary_key_values/2`, and the struct
+  loaded with `get_by/2`. A `RunTime` exception will be raised if the clauses
+  could not be fetched.
+  """
+  @spec reload(struct(), Config.t()) :: struct() | nil
+  def reload(struct, config) do
+    case fetch_primary_key_values(struct, config) do
+      {:error, error} -> raise error
+      {:ok, clauses}  -> get_by(clauses, config)
+    end
+  end
 end

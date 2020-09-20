@@ -68,7 +68,7 @@ defmodule PowPersistentSession.Plug.Cookie do
   use PowPersistentSession.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Operations, Plug, UUID}
+  alias Pow.{Config, Plug, UUID}
 
   @cookie_key "persistent_session"
 
@@ -196,10 +196,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   defp do_authenticate(conn, token, config) do
     {store, store_config} = store(config)
 
-    {token, store.get(store_config, token)}
-    |> reload_user(config)
-    |> case do
-      :error ->
+    case {token, store.get(store_config, token)} do
+      {_token, :not_found} ->
         conn
 
       {token, nil} ->
@@ -209,30 +207,6 @@ defmodule PowPersistentSession.Plug.Cookie do
 
       {token, {user, metadata}} ->
         lock_auth_user(conn, token, user, metadata, config)
-    end
-  end
-
-  defp reload_user({_token, :not_found}, _config), do: :error
-  # TODO: Remove by 1.1.0
-  defp reload_user({token, {clauses, metadata}}, config) when is_list(clauses) do
-    case Operations.get_by(clauses, config) do
-      nil  -> {token, nil}
-      user -> {token, {user, metadata}}
-    end
-  end
-  defp reload_user({token, {user, metadata}}, config) do
-    user
-    |> load_from_user!(config)
-    |> case do
-      nil  -> {token, nil}
-      user -> {token, {user, metadata}}
-    end
-  end
-
-  defp load_from_user!(user, config) do
-    case Operations.fetch_primary_key_values(user, config) do
-      {:error, error} -> raise error
-      {:ok, clauses}  -> Operations.get_by(clauses, config)
     end
   end
 
