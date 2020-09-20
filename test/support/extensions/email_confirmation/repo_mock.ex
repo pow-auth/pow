@@ -14,6 +14,7 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     }, state: :loaded)
   end
 
+  def get_by(User, [id: 1], _opts), do: Process.get({:user, 1})
   def get_by(User, [email: "test@example.com"], _opts), do: user()
   def get_by(User, [email: "with-unconfirmed-changed-email@example.com"], _opts) do
     %{user() | unconfirmed_email: "new@example.com", email_confirmed_at: DateTime.utc_now()}
@@ -73,17 +74,14 @@ defmodule PowEmailConfirmation.Test.RepoMock do
     {:ok, user}
   end
 
-  def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
-
   defmodule Invitation do
     @moduledoc false
     alias PowEmailConfirmation.PowInvitation.Test.Users.User
     alias PowEmailConfirmation.Test.RepoMock
 
+    def get_by(User, [id: 1], _opts), do: Process.get({:user, 1})
     def get_by(User, [invitation_token: "token"], _opts), do: Ecto.put_meta(%User{id: 1, email: "test@example.com"}, state: :loaded)
 
     def update(changeset, opts), do: RepoMock.update(changeset, opts)
-
-    def get_by!(User, [id: 1], _opts), do: Process.get({:user, 1})
   end
 end

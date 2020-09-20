@@ -7,6 +7,5 @@ defmodule PowPersistentSession.Test.RepoMock do
 
   def get_by(User, [id: 1], _opts), do: @user
   def get_by(User, [id: -1], _opts), do: nil
-
   def get_by(User, [email: "test@example.com"], _opts), do: @user
 end
