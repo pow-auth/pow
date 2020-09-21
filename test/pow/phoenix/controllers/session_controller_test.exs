@@ -62,7 +62,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     end
 
     test "with valid params", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.pow_session_path(conn, :create, @valid_params))
+
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "signed_in"
       assert %{id: 1} = Plug.current_user(conn)
@@ -70,7 +71,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     end
 
     test "with invalid params", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, @invalid_params)
+      conn = post(conn, Routes.pow_session_path(conn, :create, @invalid_params))
+
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "The provided login details did not work. Please verify your credentials, and try again."
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
@@ -81,7 +83,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     end
 
     test "with valid params and request_path", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@valid_params, "request_path", "/custom-url"))
+      conn = post(conn, Routes.pow_session_path(conn, :create, Map.put(@valid_params, "request_path", "/custom-url")))
+
       assert redirected_to(conn) == "/custom-url"
       assert get_flash(conn, :info) == "signed_in"
       assert %{id: 1} = Plug.current_user(conn)
@@ -89,7 +92,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     end
 
     test "with invalid params and request_path", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, Map.put(@invalid_params, "request_path", "/custom-url"))
+      conn = post(conn, Routes.pow_session_path(conn, :create, Map.put(@invalid_params, "request_path", "/custom-url")))
+
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "The provided login details did not work. Please verify your credentials, and try again."
       assert html =~ "?request_path=%2Fcustom-url"
@@ -104,7 +108,8 @@ defmodule Pow.Phoenix.SessionControllerTest do
     end
 
     test "removes authenticated", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.pow_session_path(conn, :create, @valid_params))
+
       assert %{id: 1} = Plug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
       assert_receive {:ets, :put, [{_key, _value} | _rest], _opts}
