@@ -13,7 +13,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     @valid_params %{"email" => "test@example.com", "password" => @password}
 
     test "when current email unconfirmed", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params})
+      conn = post(conn, Routes.pow_session_path(conn, :create, %{"user" => @valid_params}))
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
       assert redirected_to(conn) == "/after_signed_in"
@@ -29,7 +29,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when current email has been confirmed", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "confirmed-email@example.com")})
+      conn = post(conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "confirmed-email@example.com")}))
 
       assert PowPlug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
@@ -38,7 +38,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when current email confirmed and has unconfirmed changed email", %{conn: conn} do
-      conn = post conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "with-unconfirmed-changed-email@example.com")})
+      conn = post(conn, Routes.pow_session_path(conn, :create, %{"user" => Map.put(@valid_params, "email", "with-unconfirmed-changed-email@example.com")}))
 
       assert %{id: 1} = PowPlug.current_user(conn)
       assert conn.private[:plug_session]["auth"]
@@ -53,7 +53,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     @valid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => @password}}
 
     test "with valid params", %{conn: conn} do
-      conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params))
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
       assert redirected_to(conn) == "/after_registration"
@@ -69,7 +69,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "with invalid params and email taken", %{conn: conn} do
-      conn = post conn, Routes.pow_registration_path(conn, :create, @invalid_params_email_taken)
+      conn = post(conn, Routes.pow_registration_path(conn, :create, @invalid_params_email_taken))
 
       assert html = html_response(conn, 200)
       refute html =~ "<span class=\"help-block\">has already been taken</span>"
@@ -77,7 +77,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "with valid params and email taken", %{conn: conn} do
-      conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params_email_taken)
+      conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params_email_taken))
 
       assert get_flash(conn, :error) == "You'll need to confirm your e-mail before you can sign in. An e-mail confirmation link has been sent to you."
       assert redirected_to(conn) == "/after_registration"
@@ -113,7 +113,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when email changes", %{conn: conn} do
-      conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @change_email_params})
+      conn = put(conn, Routes.pow_registration_path(conn, :update, %{"user" => @change_email_params}))
 
       assert %{id: 1, email: "test@example.com", email_confirmation_token: new_token} = PowPlug.current_user(conn)
 
@@ -129,7 +129,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
     end
 
     test "when email hasn't changed", %{conn: conn} do
-      conn = put conn, Routes.pow_registration_path(conn, :update, %{"user" => @params})
+      conn = put(conn, Routes.pow_registration_path(conn, :update, %{"user" => @params}))
 
       assert get_flash(conn, :info) == "Your account has been updated."
       assert %{id: 1, unconfirmed_email: nil, email_confirmation_token: nil} = PowPlug.current_user(conn)

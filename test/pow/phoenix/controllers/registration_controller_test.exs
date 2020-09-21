@@ -56,7 +56,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     end
 
     test "with valid params", %{conn: conn} do
-      conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params))
+
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "user_created"
       assert %{id: 1} = Plug.current_user(conn)
@@ -64,7 +65,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     end
 
     test "with invalid params", %{conn: conn} do
-      conn = post conn, Routes.pow_registration_path(conn, :create, @invalid_params)
+      conn = post(conn, Routes.pow_registration_path(conn, :create, @invalid_params))
+
       assert html = html_response(conn, 200)
       assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
       assert html =~ "<label for=\"user_password\">Password</label>"
@@ -184,7 +186,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
   end
 
   defp create_user_and_sign_in(conn) do
-    conn = post conn, Routes.pow_registration_path(conn, :create, @valid_params)
+    conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params))
+
     assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]
     assert_receive {:ets, :put, [{_key, _value} | _rest], _opts}

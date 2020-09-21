@@ -280,7 +280,7 @@ defmodule MyAppWeb.Admin.UserControllerTest do
     test "locks user", %{conn: conn} do
       user = user_fixture()
 
-      conn = post conn, Routes.admin_user_path(conn, :lock, user.id)
+      conn = post(conn, Routes.admin_user_path(conn, :lock, user.id))
 
       assert get_flash(conn, :info) == "User has been locked."
       assert redirected_to(conn) == "/"
@@ -289,7 +289,7 @@ defmodule MyAppWeb.Admin.UserControllerTest do
     test "with already locked user", %{conn: conn} do
       {:ok, user} = Users.lock(user_fixture())
 
-      conn = post conn, Routes.admin_user_path(conn, :lock, user.id)
+      conn = post(conn, Routes.admin_user_path(conn, :lock, user.id))
 
       assert get_flash(conn, :error) == "User couldn't be locked."
       assert redirected_to(conn) == "/"
@@ -375,7 +375,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
     test "with user", %{conn: conn} do
       user = user_fixture()
 
-      conn = post conn, Routes.reset_password_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.reset_password_path(conn, :create, @valid_params))
 
       assert get_flash(conn, :info)
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
@@ -386,7 +386,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
     test "with locked user", %{conn: conn} do
       {:ok, user} = Users.lock(user_fixture())
 
-      conn = post conn, Routes.reset_password_path(conn, :create, @valid_params)
+      conn = post(conn, Routes.reset_password_path(conn, :create, @valid_params))
 
       assert get_flash(conn, :info)
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
