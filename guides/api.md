@@ -107,6 +107,9 @@ defmodule MyAppWeb.APIAuthPlug do
       |> Conn.put_private(:api_access_token, sign_token(conn, access_token, config))
       |> Conn.put_private(:api_renewal_token, sign_token(conn, renewal_token, config))
 
+    # The store caches will use their default `:ttl` settting. To change the
+    # `:ttl`, `Keyword.put(store_config, :ttl, :timer.minutes(10))` can be
+    # passed in as the first argument instead of `store_config`.
     CredentialsCache.put(store_config, access_token, {user, [renewal_token: renewal_token]})
     PersistentSessionCache.put(store_config, renewal_token, {user, [access_token: access_token]})
 
