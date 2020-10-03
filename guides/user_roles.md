@@ -155,7 +155,7 @@ end
 You may wish to render certain sections in your layout for certain roles. First let's add a helper method to the users context:
 
 ```elixir
-# lib/my_app/users/user.ex
+# lib/my_app/users.ex
 defmodule MyApp.Users do
   alias MyApp.{Repo, Users.User}
 
