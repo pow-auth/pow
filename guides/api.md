@@ -182,7 +182,7 @@ defmodule MyAppWeb.APIAuthPlug do
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)
 
-    [backend: backend]
+    [backend: backend, pow_config: config]
   end
 end
 ```

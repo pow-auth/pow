@@ -2,6 +2,8 @@
 
 ## v1.0.22 (TBA)
 
+This release introduces a breaking change for the API guide. Please check migration section below.
+
 ### Enhancements
 
 * [`PowPersistentSession.Plug.Cookie`] Now stores the user struct instead of clauses
@@ -11,6 +13,16 @@
 * [`Pow.Operations`] Added `Pow.Operations.reload/2` to reload structs
 * [`PowPersistentSession.Store.PersistentSessionCache`] Update `PowPersistentSession.Store.PersistentSessionCache.get/2` to reload the user using `Pow.Operations.reload/2`
 * [`Pow.Store.CredentialsCache`] Now support `reload: true` configuration so once fetched from the cache the user object will be reloaded through the context module
+
+### Documentation
+
+* Updated the [API guide](guides/api.md) as it's no longer necessary to load the user struct
+
+### Migration
+
+If you've used an API setup for previous version, you'll see ``(RuntimeError) No `:pow_config` value found in the store config.`` errors raised. It's recommended to replace your `APIAuthPlug` with the updated version in the API guide.
+
+The larger refactor of cache setup in Pow `v1.0.22` means that user struct is always expected to be passed in and returned by the stores, so it is no longer necessary to load the user in the API plug. The `PowPersistentSession.Store.PersistentSessionCache` has fallback logic to handle the deprecated clauses keyword list, and will load the user correctly.
 
 ## v1.0.21 (2020-09-13)
 
