@@ -217,36 +217,6 @@ defmodule PowPersistentSession.Plug.CookieTest do
    end
 
   # TODO: Remove by 1.1.0
-  test "call/2 is backwards-compatible with user fetch clause", %{conn: conn, user: user} do
-    id   = store_in_cache(conn, "test", {[id: user.id], []})
-    conn =
-      conn
-      |> persistent_cookie(@cookie_key, id)
-      |> run_plug()
-
-    assert Plug.current_user(conn) == user
-    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
-    refute new_id == id
-    assert get_from_cache(conn, id) == :not_found
-    assert get_from_cache(conn, new_id) == {user, []}
-  end
-
-  # TODO: Remove by 1.1.0
-  test "call/2 is backwards-compatible with just user fetch clause", %{conn: conn, user: user} do
-    id   = store_in_cache(conn, "test", [id: user.id])
-    conn =
-      conn
-      |> persistent_cookie(@cookie_key, id)
-      |> run_plug()
-
-    assert Plug.current_user(conn) == user
-    assert %{value: new_id, max_age: @max_age, path: "/"} = conn.resp_cookies[@cookie_key]
-    refute new_id == id
-    assert get_from_cache(conn, id) == :not_found
-    assert get_from_cache(conn, new_id) == {user, []}
-  end
-
-  # TODO: Remove by 1.1.0
   test "call/2 is backwards-compatible with `:session_fingerprint` metadata", %{conn: conn, user: user} do
     id   = store_in_cache(conn, "test", {user, session_fingerprint: "fingerprint"})
     conn =
