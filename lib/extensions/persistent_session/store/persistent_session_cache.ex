@@ -7,6 +7,13 @@ defmodule PowPersistentSession.Store.PersistentSessionCache do
   alias Pow.{Operations, Store.Base}
 
   @impl true
+  @spec put(Base.config(), binary(), {map(), list()}) :: :ok
+  def put(config, id, {user, metadata}) do
+    Base.put(config, backend_config(config), {id, {user, metadata}})
+  end
+
+  @impl true
+  @spec get(Base.config(), binary()) :: {map(), list()} | nil | :not_found
   def get(config, id) do
     config
     |> Base.get(backend_config(config), id)

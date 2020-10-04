@@ -39,6 +39,12 @@ defmodule PowPersistentSession.Store.PersistentSessionCacheTest do
     assert ets.get(@backend_config, "key_1") == :not_found
   end
 
+  test "get/2 when user doesn't exist" do
+    PersistentSessionCache.put(@config, "token", {%User{id: :missing}, []})
+
+    refute PersistentSessionCache.get(@config, "token")
+  end
+
   # TODO: Remove by 1.1.0
   test "get/2 is backwards-compatible with user fetch clause", %{ets: ets} do
     ets.put(@backend_config, {"token", {[id: 1], [a: 1]}})
