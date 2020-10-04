@@ -152,21 +152,14 @@ defmodule MyAppWeb.APIAuthPlug do
 
     with {:ok, signed_token} <- fetch_access_token(conn),
          {:ok, token}        <- verify_token(conn, signed_token, config),
-         {clauses, metadata} <- PersistentSessionCache.get(store_config, token) do
+         {user, metadata}    <- PersistentSessionCache.get(store_config, token) do
 
       CredentialsCache.delete(store_config, metadata[:access_token])
       PersistentSessionCache.delete(store_config, token)
 
-      load_and_create_session(conn, {clauses, metadata}, config)
+      create(conn, user, config)
     else
       _any -> {conn, nil}
-    end
-  end
-
-  defp load_and_create_session(conn, {clauses, _metadata}, config) do
-    case Pow.Operations.get_by(clauses, config) do
-      nil  -> {conn, nil}
-      user -> create(conn, user, config)
     end
   end
 
@@ -189,7 +182,7 @@ defmodule MyAppWeb.APIAuthPlug do
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)
 
-    [backend: backend]
+    [backend: backend, pow_config: config]
   end
 end
 ```
