@@ -182,6 +182,10 @@ defmodule PowPersistentSession.Plug.Cookie do
   metadata, all the values will be merged into the private
   `:pow_session_metadata` key in the conn.
 
+  If the persistent session cache returns a `nil` value the persistent session
+  will be deleted as it means the context method could not find the associated
+  user.
+
   The persistent session token will be decoded and verified with
   `Pow.Plug.verify_token/4`.
   """
