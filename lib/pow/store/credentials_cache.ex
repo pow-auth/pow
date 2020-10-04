@@ -149,7 +149,7 @@ defmodule Pow.Store.CredentialsCache do
   Fetch user credentials from the backend store from session id.
   """
   @impl true
-  @spec get(Base.config(), binary()) :: {map(), list()} | :not_found
+  @spec get(Base.config(), binary()) :: {map(), list()} | nil | :not_found
   def get(config, session_id) do
     backend_config = backend_config(config)
 
@@ -161,14 +161,14 @@ defmodule Pow.Store.CredentialsCache do
       # TODO: Remove by 1.1.0
       {user, metadata} when is_map(user) -> {user, metadata}
       :not_found -> :not_found
-      nil -> :not_found
+      nil -> nil
     end
   end
 
   defp maybe_reload(user, config) do
     # TODO: By 1.1.0 set this to `true` and update docs
     case Keyword.get(config, :reload, false) do
-      true  -> Operations.reload(user, fetch_pow_config!(config))
+      true -> Operations.reload(user, fetch_pow_config!(config))
       _any -> user
     end
   end

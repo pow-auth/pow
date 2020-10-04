@@ -238,6 +238,13 @@ defmodule Pow.Plug.Session do
   defp convert_old_session_value(any), do: any
 
   defp handle_fetched_session_value({_session_id, :not_found}, conn, _config), do: {conn, nil}
+  defp handle_fetched_session_value({session_id, nil}, conn, config) do
+    {store, store_config} = store(config)
+
+    store.delete(store_config, session_id)
+
+    {conn, nil}
+  end
   defp handle_fetched_session_value({session_id, {user, metadata}}, conn, config) when is_list(metadata) do
     conn
     |> Conn.put_private(:pow_session_metadata, metadata)
