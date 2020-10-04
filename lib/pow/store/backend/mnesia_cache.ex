@@ -2,9 +2,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
   @moduledoc """
   GenServer based key value Mnesia cache store with auto expiration.
 
-  When the MnesiaCache starts, it'll initialize invalidators for all stored
-  keys using the `expire` value. If the `expire` datetime is past, it'll
-  send call the invalidator immediately.
+  When the MnesiaCache starts, it will initialize invalidators for all stored
+  keys using the `expire` value. If the `expire` datetime is past, it will
+  call the invalidator immediately.
 
   Mnesia will create a `Mnesia.Node` directory in the current working directory
   to write files to. This can be changed by setting the `-mnesia dir` config:
@@ -21,7 +21,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   The MnesiaCache is built to handle multi-node setup.
 
-  If you initialize with `extra_db_nodes: Node.list()`, it'll automatically
+  If you initialize with `extra_db_nodes: Node.list()`, it will automatically
   connect to the cluster. If there is no other nodes available, the data
   persisted to disk will be loaded, but if a cluster is running, the data in
   the existing cluster nodes will be loaded instead of the local data. This
