@@ -245,6 +245,28 @@ defmodule Pow.Plug.SessionTest do
     assert conn.assigns[:current_user] == @user
   end
 
+  defmodule ContextMock do
+    def get_by([id: :missing]), do: nil
+  end
+
+  test "call/2 when user doesn't exist in database and CredentialsCache reloads", %{conn: conn} do
+    session_id = store_in_cache("token", {%User{id: :missing}, inserted_at: :os.system_time(:millisecond)})
+
+    config =
+      @default_opts
+      |> Keyword.put(:users_context, ContextMock)
+      |> Keyword.put(:credentials_cache_store, {Pow.Store.CredentialsCache, reload: true})
+
+    conn =
+      conn
+      |> Conn.fetch_session()
+      |> Conn.put_session(config[:session_key], session_id)
+      |> run_plug(config)
+
+    refute conn.assigns[:current_user]
+    assert get_from_cache(session_id) == :not_found
+  end
+
   # TODO: Remove by 1.1.0
   test "backwards compatible", %{conn: conn} do
     ttl             = 100

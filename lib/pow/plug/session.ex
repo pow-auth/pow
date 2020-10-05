@@ -125,6 +125,10 @@ defmodule Pow.Plug.Session do
   The metadata of the session will be assigned as a private
   `:pow_session_metadata` key in the conn so it may be used in `create/3`.
 
+  If the credentials cache returns a `nil` value the session will be
+  immediately deleted as it means the context method could not find the
+  associated user.
+
   The session id will be decoded and verified with `Pow.Plug.verify_token/4`.
 
   See `do_fetch/2` for more.
@@ -238,6 +242,13 @@ defmodule Pow.Plug.Session do
   defp convert_old_session_value(any), do: any
 
   defp handle_fetched_session_value({_session_id, :not_found}, conn, _config), do: {conn, nil}
+  defp handle_fetched_session_value({session_id, nil}, conn, config) do
+    {store, store_config} = store(config)
+
+    store.delete(store_config, session_id)
+
+    {conn, nil}
+  end
   defp handle_fetched_session_value({session_id, {user, metadata}}, conn, config) when is_list(metadata) do
     conn
     |> Conn.put_private(:pow_session_metadata, metadata)
