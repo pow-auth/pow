@@ -8,10 +8,8 @@ defmodule Pow.Application do
   The EtsCache will be started by default.
   """
   def start(_type, _args) do
-    import Supervisor.Spec
-
     children = [
-      worker(Pow.Store.Backend.EtsCache, [[]])
+      Pow.Store.Backend.EtsCache
     ]
     opts = [
       strategy: :one_for_one,

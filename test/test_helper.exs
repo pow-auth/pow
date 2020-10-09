@@ -32,4 +32,4 @@ for extension <- Application.get_env(:pow, :extension_test_modules) do
 end
 
 # Make sure we can run distribution tests
-:os.cmd('epmd -daemon')
+System.cmd("epmd", ["-daemon"])
