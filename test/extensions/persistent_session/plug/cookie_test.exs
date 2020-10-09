@@ -282,7 +282,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     |> init_plug(config)
     |> run_create(user, config)
 
-    assert_received {:ets, :put, [{_key, {user, session_metadata: [fingerprint: "fingerprint"]}}], _config}
+    assert_received {:ets, :put, [{_key, {^user, session_metadata: [fingerprint: "fingerprint"]}}], _config}
   end
 
   test "create/3 with custom metadata", %{conn: conn, config: config, user: user} do
@@ -291,7 +291,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
     |> init_plug(config)
     |> run_create(user, config)
 
-    assert_received {:ets, :put, [{_key, {user, session_metadata: [a: 1]}}], _config}
+    assert_received {:ets, :put, [{_key, {^user, session_metadata: [a: 1]}}], _config}
   end
 
   test "delete/3", %{conn: conn, config: config, user: user} do
