@@ -1,3 +1,18 @@
+<!--
+font name: Fertigo_PRO
+font link: https://www.fontspring.com/fonts/exljbris/fertigo-pro/fertigo-pro-regular
+font author: Exljbris
+font author site: https://www.exljbris.com/
+
+icon designer: Roberto Chiaveri
+icon designer link: /robertochiaveri
+        
+
+fontColor: {"gradient-0":"#0D7CE9","gradient-1":"#28C4E0"}
+bgColor: {"hex":"transparent"}
+iconColor: {"gradient-0":"#0D7CE9","gradient-1":"#28C4E0"}
+sloganColor: {"hex":"#0D7CE9"}
+-->
 <svg width="250" height="100" xmlns="http://www.w3.org/2000/svg">
  <!---->
  <defs>
