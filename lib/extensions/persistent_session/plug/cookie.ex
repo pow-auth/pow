@@ -29,7 +29,7 @@ defmodule PowPersistentSession.Plug.Cookie do
 
     * `:cache_store_backend` - see `PowPersistentSession.Plug.Base`
 
-    * `:persistent_session_cookie_key` - session key name. This defaults to
+    * `:persistent_session_cookie_key` - cookie key name. This defaults to
       "persistent_session". If `:otp_app` is used it'll automatically prepend
       the key with the `:otp_app` value.
 
