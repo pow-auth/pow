@@ -31,7 +31,7 @@ defmodule Pow.MixProject do
   end
 
   defp extra_applications(:test), do: [:ecto, :logger, :mnesia]
-  defp extra_applications(_), do: [:logger]
+  defp extra_applications(_), do: [:logger, :mnesia]
 
   defp deps do
     [
