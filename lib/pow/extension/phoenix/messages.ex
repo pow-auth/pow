@@ -22,7 +22,9 @@ defmodule Pow.Extension.Phoenix.Messages do
 
   Remember to update configuration with `messages_backend: MyAppWeb.Pow.Messages`.
   """
+  alias Plug.Conn
   alias Pow.Extension
+  alias Pow.Phoenix.Messages
 
   @doc false
   defmacro __using__(config) do
