@@ -166,10 +166,8 @@ defmodule Pow.Ecto.Schema do
       @behaviour unquote(__MODULE__)
       @pow_config unquote(config)
 
-      @spec changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
       def changeset(user_or_changeset, attrs), do: pow_changeset(user_or_changeset, attrs)
 
-      @spec verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def verify_password(user, password), do: pow_verify_password(user, password)
 
       defoverridable unquote(__MODULE__)
@@ -191,7 +189,6 @@ defmodule Pow.Ecto.Schema do
         pow_method_name = String.to_atom("pow_#{method}")
 
         quote do
-          @spec unquote(pow_method_name)(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
           def unquote(pow_method_name)(user_or_changeset, attrs) do
             unquote(__MODULE__).Changeset.unquote(method)(user_or_changeset, attrs, @pow_config)
           end
@@ -201,7 +198,6 @@ defmodule Pow.Ecto.Schema do
     quote do
       import unquote(__MODULE__), only: [pow_user_fields: 0]
 
-      @spec pow_changeset(Ecto.Schema.t() | Changeset.t(), map()) :: Changeset.t()
       def pow_changeset(user_or_changeset, attrs) do
         user_or_changeset
         |> pow_user_id_field_changeset(attrs)
@@ -211,7 +207,6 @@ defmodule Pow.Ecto.Schema do
 
       unquote(quoted_changeset_methods)
 
-      @spec pow_verify_password(Ecto.Schema.t(), binary()) :: boolean()
       def pow_verify_password(user, password) do
         unquote(__MODULE__).Changeset.verify_password(user, password, @pow_config)
       end

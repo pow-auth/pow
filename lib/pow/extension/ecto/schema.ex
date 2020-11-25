@@ -89,7 +89,6 @@ defmodule Pow.Extension.Ecto.Schema do
   @doc false
   defmacro __pow_extension_methods__ do
     quote do
-      @spec pow_extension_changeset(Changeset.t(), map()) :: Changeset.t()
       def pow_extension_changeset(changeset, attrs) do
         unquote(__MODULE__).changeset(changeset, attrs, @pow_extension_config)
       end
