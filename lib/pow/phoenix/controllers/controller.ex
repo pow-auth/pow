@@ -40,13 +40,7 @@ defmodule Pow.Phoenix.Controller do
 
       plug :pow_layout, unquote(config)
 
-      @doc """
-      See `Pow.Phoenix.Controller.action/3` for more.
-      """
-      @spec action(Conn.t(), Keyword.t()) :: Conn.t()
-      def action(conn, _opts) do
-        unquote(__MODULE__).action(__MODULE__, conn, conn.params)
-      end
+      def action(conn, _opts), do: unquote(__MODULE__).action(__MODULE__, conn, conn.params)
 
       defp pow_layout(conn, _config), do: ViewHelpers.layout(conn)
 
@@ -57,25 +51,9 @@ defmodule Pow.Phoenix.Controller do
   @doc false
   defmacro __define_helper_methods__ do
     quote do
-      @doc """
-      See `Pow.Phoenix.Controller.messages/2` for more.
+      def messages(conn), do: unquote(__MODULE__).messages(conn, Messages)
 
-      `Pow.Phoenix.Messages` is used as fallback.
-      """
-      @spec messages(Conn.t()) :: atom()
-      def messages(conn) do
-        unquote(__MODULE__).messages(conn, Messages)
-      end
-
-      @doc """
-      See `Pow.Phoenix.Controller.routes/2` for more.
-
-      `Pow.Phoenix.Routes` is used as fallback.
-      """
-      @spec routes(Conn.t()) :: atom()
-      def routes(conn) do
-        unquote(__MODULE__).routes(conn, Routes)
-      end
+      def routes(conn), do: unquote(__MODULE__).routes(conn, Routes)
 
       defoverridable messages: 1, routes: 1
     end

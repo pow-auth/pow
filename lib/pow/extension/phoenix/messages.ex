@@ -58,7 +58,6 @@ defmodule Pow.Extension.Phoenix.Messages do
   @doc false
   defmacro __define_message_method__(extension, method_name, fallback_method) do
     quote bind_quoted: [extension: extension, method_name: method_name, fallback_method: fallback_method] do
-      @spec unquote(method_name)(Conn.t()) :: Messages.message()
       def unquote(method_name)(conn) do
         unquote(extension).unquote(fallback_method)(conn)
       end
@@ -75,7 +74,6 @@ defmodule Pow.Extension.Phoenix.Messages do
         method_name = unquote(__MODULE__).method_name(unquote(extension), method)
 
         quote do
-          @spec unquote(method)(Conn.t()) :: Messages.message()
           def unquote(method)(conn) do
             unquote(__MODULE__).unquote(method_name)(conn)
           end

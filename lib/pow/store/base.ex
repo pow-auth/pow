@@ -53,7 +53,6 @@ defmodule Pow.Store.Base do
         unquote(__MODULE__).all(config, backend_config(config), key_match)
       end
 
-      @spec backend_config(unquote(__MODULE__).config()) :: unquote(__MODULE__).config()
       def backend_config(config) do
         [
           ttl: Config.get(config, :ttl, unquote(defaults[:ttl])),

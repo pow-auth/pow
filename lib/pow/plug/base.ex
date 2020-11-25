@@ -113,7 +113,6 @@ defmodule Pow.Plug.Base do
 
       The user is assigned to the conn with `Pow.Plug.assign_current_user/3`.
       """
-      @spec do_fetch(Conn.t(), Config.t()) :: Conn.t()
       def do_fetch(conn, config) do
         conn
         |> fetch(config)
@@ -125,7 +124,6 @@ defmodule Pow.Plug.Base do
 
       The user is assigned to the conn with `Pow.Plug.assign_current_user/3`.
       """
-      @spec do_create(Conn.t(), map(), Config.t()) :: Conn.t()
       def do_create(conn, user, config) do
         conn
         |> create(user, config)
@@ -138,7 +136,6 @@ defmodule Pow.Plug.Base do
       The user assigned is removed from the conn with
       `Pow.Plug.assign_current_user/3`.
       """
-      @spec do_delete(Conn.t(), Config.t()) :: Conn.t()
       def do_delete(conn, config) do
         conn
         |> delete(config)
