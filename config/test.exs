@@ -10,7 +10,8 @@ config :pow, Pow.Test.Phoenix.Endpoint, endpoint_config
 config :pow, Pow.Test.Ecto.Repo,
   database: "pow_test",
   pool: Ecto.Adapters.SQL.Sandbox,
-  priv: "test/support/ecto/priv"
+  priv: "test/support/ecto/priv",
+  url: System.get_env("POSTGRES_URL")
 
 config :mnesia, dir: 'tmp/mnesia'
 
