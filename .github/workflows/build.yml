@@ -1,0 +1,62 @@
+name: CI
+
+on: 
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.11
+            otp: 23.0
+          - elixir: 1.7
+            otp: 22.0.2
+          - elixir: 1.8
+            otp: 22.0.2
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get
+      - run: mix test
+        env:
+          POSTGRES_URL: ecto://postgres:postgres@localhost/pow_test
+      - run: MIX_ENV=test mix credo --ignore design.tagtodo
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    name: Deploy published release
+    env:
+      HEX_API_KEY: ${{secrets.HEX_API_KEY}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 23.0
+          elixir-version: 1.11
+      - run: mix deps.get
+      - run: mix hex.publish --yes
