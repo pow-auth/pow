@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.22 (TBA)
+## v1.0.22 (2021-01-27)
 
 This release introduces a deprecation for the default API guide implementation. Please check migration section below.
 
