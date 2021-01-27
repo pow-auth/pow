@@ -27,8 +27,21 @@ defmodule PowPersistentSession.Store.PersistentSessionCache do
   defp convert_old_value(clauses) when is_list(clauses), do: {clauses, []}
 
   defp reload(:not_found, _config), do: :not_found
+  defp reload(value, config) do
+    case Keyword.has_key?(config, :pow_config) do
+      true ->
+        do_reload(value, config)
+
+      # TODO: Remove by 1.1.0
+      false ->
+        IO.warn("#{inspect __MODULE__}.get/2 call without `:pow_config` in second argument is deprecated, find the migration step in the changelog.")
+
+        value
+    end
+  end
+
   # TODO: Remove by 1.1.0
-  defp reload({clauses, metadata}, config) when is_list(clauses) do
+  defp do_reload({clauses, metadata}, config) when is_list(clauses) do
     pow_config = fetch_pow_config!(config)
 
     case Operations.get_by(clauses, pow_config) do
@@ -36,7 +49,7 @@ defmodule PowPersistentSession.Store.PersistentSessionCache do
       user -> {user, metadata}
     end
   end
-  defp reload({user, metadata}, config) do
+  defp do_reload({user, metadata}, config) do
     pow_config = fetch_pow_config!(config)
 
     case Operations.reload(user, pow_config) do
