@@ -43,14 +43,14 @@ defmodule Pow.MixProject do
       {:phoenix_html, ">= 2.0.0 and <= 3.0.0"},
       {:plug, ">= 1.5.0 and < 2.0.0", optional: true},
 
-      {:phoenix_ecto, "~> 4.1", only: [:dev, :test]},
-      {:credo, "~> 1.2", only: [:dev, :test]},
-      {:jason, "~> 1.0", only: [:dev, :test]}, # Credo requires jason to exist also in :dev
+      {:phoenix_ecto, "~> 4.2", only: [:dev, :test]},
+      {:credo, "~> 1.5", only: [:dev, :test]},
+      {:jason, "~> 1.2", only: [:dev, :test]}, # Credo requires jason to exist also in :dev
 
-      {:ex_doc, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.23", only: :dev},
 
-      {:ecto_sql, "~> 3.3", only: [:test]},
-      {:plug_cowboy, "~> 2.1", only: [:test]},
+      {:ecto_sql, "~> 3.5", only: [:test]},
+      {:plug_cowboy, "~> 2.4", only: [:test]},
       {:postgrex, "~> 0.15", only: [:test]}
     ]
   end
