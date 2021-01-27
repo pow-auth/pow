@@ -2,6 +2,7 @@ defmodule PowPersistentSession.Store.PersistentSessionCacheTest do
   use ExUnit.Case
   doctest PowPersistentSession.Store.PersistentSessionCache
 
+  alias ExUnit.CaptureIO
   alias PowPersistentSession.Store.PersistentSessionCache
   alias Pow.Test.Ecto.Users.User
   alias Pow.Test.EtsCacheMock
@@ -59,5 +60,16 @@ defmodule PowPersistentSession.Store.PersistentSessionCacheTest do
     ets.put(@backend_config, {"token", id: 1})
 
     assert PersistentSessionCache.get(@config, "token") == {%User{id: {:loaded, 1}}, []}
+  end
+
+  # TODO: Remove by 1.1.0
+  test "get/2 is backwards-compatible with missing `:pow_config` in second argument" do
+    user_1 = %User{id: 1}
+    store_config = Keyword.delete(@config, :pow_config)
+    PersistentSessionCache.put(store_config, "token", {user_1, a: 1})
+
+    assert CaptureIO.capture_io(:stderr, fn ->
+      assert PersistentSessionCache.get(Keyword.delete(@config, :pow_config), "token") == {user_1, a: 1}
+    end) =~ "PowPersistentSession.Store.PersistentSessionCache.get/2 call without `:pow_config` in second argument is deprecated, find the migration step in the changelog."
   end
 end
