@@ -227,7 +227,7 @@ defmodule MyAppWeb.API.V1.RegistrationController do
     |> Pow.Plug.create_user(user_params)
     |> case do
       {:ok, _user, conn} ->
-        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private.api_access_token, renewal_token: conn.private.api_renewal_token}})
 
       {:error, changeset, conn} ->
         errors = Changeset.traverse_errors(changeset, &ErrorHelpers.translate_error/1)
@@ -255,7 +255,7 @@ defmodule MyAppWeb.API.V1.SessionController do
     |> Pow.Plug.authenticate_user(user_params)
     |> case do
       {:ok, conn} ->
-        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private.api_access_token, renewal_token: conn.private.api_renewal_token}})
 
       {:error, conn} ->
         conn
@@ -277,7 +277,7 @@ defmodule MyAppWeb.API.V1.SessionController do
         |> json(%{error: %{status: 401, message: "Invalid token"}})
 
       {conn, _user} ->
-        json(conn, %{data: %{access_token: conn.private[:api_access_token], renewal_token: conn.private[:api_renewal_token]}})
+        json(conn, %{data: %{access_token: conn.private.api_access_token, renewal_token: conn.private.api_renewal_token}})
     end
   end
 
