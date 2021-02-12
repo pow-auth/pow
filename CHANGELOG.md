@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.23 (TBA)
+
+## Enhanceents
+
+* [`Pow.Ecto.Schema`] Now excludes `:current_password` and `:password` from inspect
+
 ## v1.0.22 (2021-01-27)
 
 This release introduces a deprecation for the default API guide implementation. Please check migration section below.

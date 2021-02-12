@@ -6,8 +6,8 @@ defmodule Pow.Ecto.Schema.Fields do
 
   @attrs [
     {:password_hash, :string},
-    {:current_password, :string, virtual: true},
-    {:password, :string, virtual: true}
+    {:current_password, :string, virtual: true, redact: true},
+    {:password, :string, virtual: true, redact: true}
   ]
 
   @doc """

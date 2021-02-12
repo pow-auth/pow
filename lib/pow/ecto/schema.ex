@@ -70,7 +70,7 @@ defmodule Pow.Ecto.Schema do
 
         schema "users" do
           field :encrypted_password, :string
-          field :password_hash, :string, source: :encrypted_password
+          field :password_hash, :string, source: :encrypted_password, redact: true
 
           pow_user_fields()
 
@@ -107,9 +107,9 @@ defmodule Pow.Ecto.Schema do
         schema "users" do
           field :email,            :string, null: false
           field :password_hash,    :string
-          field :current_password, :string, virtual: true
-          field :password,         :string, virtual: true
-          field :confirm_password, :string, virtual: true
+          field :current_password, :string, virtual: true, redact: true
+          field :password,         :string, virtual: true, redact: true
+          field :confirm_password, :string, virtual: true, redact: true
 
           timestamps()
         end

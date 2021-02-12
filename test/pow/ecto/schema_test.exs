@@ -8,7 +8,13 @@ defmodule Pow.Ecto.SchemaTest do
     user = %User{}
 
     assert Map.has_key?(user, :email)
+    assert Map.has_key?(user, :password_hash)
     assert Map.has_key?(user, :current_password)
+    assert Map.has_key?(user, :password)
+
+    assert user.__struct__.__schema__(:fields) == [:email, :password_hash]
+    assert user.__struct__.__schema__(:redact_fields) == [:current_password, :password]
+
     refute Map.has_key?(user, :username)
 
     user = %UsernameUser{}
@@ -109,8 +115,8 @@ defmodule Pow.Ecto.SchemaTest do
 
       field :email, :string, [null: false]
       field :password_hash, :string
-      field :current_password, :string, [virtual: true]
-      field :password, :string, [virtual: true]
+      field :current_password, :string, [virtual: true, redact: true]
+      field :password, :string, [virtual: true, redact: true]
       """
   end
 
@@ -123,8 +129,8 @@ defmodule Pow.Ecto.SchemaTest do
         schema "users" do
           field :email, :utc_datetime
           field :password_hash, :string
-          field :current_password, :string, virtual: true
-          field :password, :string, virtual: true
+          field :current_password, :string, virtual: true, redact: true
+          field :password, :string, virtual: true, redact: true
 
           timestamps()
         end
@@ -158,8 +164,8 @@ defmodule Pow.Ecto.SchemaTest do
         schema "users" do
           field :email, CustomType
           field :password_hash, :string
-          field :current_password, :string, virtual: true
-          field :password, :string, virtual: true
+          field :current_password, :string, virtual: true, redact: true
+          field :password, :string, virtual: true, redact: true
 
           timestamps()
         end
