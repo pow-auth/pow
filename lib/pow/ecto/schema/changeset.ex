@@ -87,6 +87,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> maybe_validate_password(config)
     |> maybe_put_password_hash(config)
     |> maybe_validate_password_hash()
+    |> Changeset.prepare_changes(&Changeset.delete_change(&1, :password))
   end
 
   # TODO: Remove `confirm_password` support by 1.1.0
@@ -153,6 +154,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> reset_current_password_field()
     |> Changeset.cast(params, [:current_password])
     |> maybe_validate_current_password(config)
+    |> Changeset.prepare_changes(&Changeset.delete_change(&1, :current_password))
   end
 
   defp reset_current_password_field(%{data: user} = changeset) do

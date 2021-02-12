@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.23 (TBA)
+
+### Enhancements
+
+* [`Pow.Ecto.Context`] No longer automatically reloads the struct after insert or update
+
 ## v1.0.22 (2021-01-27)
 
 This release introduces a deprecation for the default API guide implementation. Please check migration section below.
