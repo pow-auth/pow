@@ -26,6 +26,31 @@ defmodule PowInvitation.Ecto.Schema do
           timestamps()
         end
       end
+
+  ## Customize PowInvitation changeset
+
+  You can extract individual changeset methods to modify the changeset flow
+  entirely. As an example, this is how you can invite a user through email
+  while using `username` as the user id field:
+
+      defmodule MyApp.Users.User do
+        use Ecto.Schema
+        use Pow.Ecto.Schema,
+          user_id_field: :username
+
+        import PowInvitation.Ecto.Schema,
+          only: [invitation_token_changeset: 1, invited_by_changeset: 2]
+
+        # ...
+
+        def invite_changeset(user_or_changeset, invited_by, attrs) do
+          user_or_changeset
+          |> cast(attrs, [:email])
+          |> validate_required([:email])
+          |> invitation_token_changeset()
+          |> invited_by_changeset(invited_by)
+        end
+      end
   """
 
   use Pow.Extension.Ecto.Schema.Base
@@ -83,6 +108,8 @@ defmodule PowInvitation.Ecto.Schema do
   A unique `:invitation_token` will be generated, and `invited_by` association
   will be set. Only the user id will be set, and the persisted user won't have
   any password for authentication.
+
+  Calls `invitation_token_changeset/1` and `invited_by_changeset/2`.
   """
   @spec invite_changeset(Ecto.Schema.t() | Changeset.t(), Ecto.Schema.t(), map()) :: Changeset.t()
   def invite_changeset(%Changeset{data: user} = changeset, invited_by, attrs) do
@@ -97,16 +124,29 @@ defmodule PowInvitation.Ecto.Schema do
     |> invite_changeset(invited_by, attrs)
   end
 
-  defp invitation_token_changeset(changeset) do
+  @doc """
+  Sets the invitation token.
+  """
+  @spec invitation_token_changeset(Ecto.Schema.t() | Changeset.t()) :: Changeset.t()
+  def invitation_token_changeset(changeset) do
     changeset
-    |> Changeset.put_change(:invitation_token, UUID.generate())
+    |> Changeset.change(%{invitation_token: UUID.generate()})
     |> Changeset.unique_constraint(:invitation_token)
   end
 
-  defp invited_by_changeset(%Changeset{data: data} = changeset, invited_by) do
+  @doc """
+  Sets the invited by association.
+  """
+  @spec invited_by_changeset(Ecto.Schema.t() | Changeset.t(), Ecto.Schema.t()) :: Changeset.t()
+  def invited_by_changeset(%Changeset{data: data} = changeset, invited_by) do
     data = Ecto.build_assoc(invited_by, :invited_users, data)
 
     Changeset.assoc_constraint(%{changeset | data: data}, :invited_by)
+  end
+  def invited_by_changeset(user, invited_by) do
+    user
+    |> Changeset.change()
+    |> invited_by_changeset(invited_by)
   end
 
   @doc """
