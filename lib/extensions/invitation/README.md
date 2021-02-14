@@ -16,22 +16,6 @@ Follow the instructions for extensions in [README.md](../../../README.md#add-ext
 
 There are numerous ways you can modify the invitation flow. Here's a few common setups to get your started.
 
-### Using a non default `user_id_field`
-
-If you want to set `user_id_field` to be something other than `email` such as `username`, use a custom `invited_changeset/3` to allow the `user_id_field` to be nil until the user can accept the invitation and set their own `username`:
-
-```elixir
-  def invite_changeset(user_or_changeset, invited_by, attrs) do
-    user_or_changeset
-    |> cast(attrs, [:email])
-    |> validate_required([:email])
-    |> put_change(:invitation_token, Pow.UUID.generate())
-    |> unique_constraint(:invitation_token)
-    |> put_assoc(:invited_by, invited_by)
-    |> assoc_constraint(:invited_by)
-  end
-```
-
 ### Parent organization or team
 
 If your users belongs to a parent organization or team, you can set up the `invite_changeset/3` to carry over the id for invitations:
