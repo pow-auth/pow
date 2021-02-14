@@ -39,12 +39,6 @@ defmodule Pow.Ecto.ContextTest do
     def get_by([email: :test]), do: %User{email: :ok, password_hash: Password.pbkdf2_hash("secret1234")}
   end
 
-  defmodule ReloadErrorUsers do
-    use Context, repo: Repo, user: User
-
-    def get_by([id: _any]), do: nil
-  end
-
   describe "authenticate/2" do
     @password "secret1234"
     @valid_params %{"email" => "test@example.com", "password" => @password}
@@ -149,12 +143,6 @@ defmodule Pow.Ecto.ContextTest do
 
       assert Users.create(:test_macro) == :ok
     end
-
-    test "when can't be reloaded after write" do
-      assert_raise RuntimeError, ~r/Record does not exist: %Pow.Test.Ecto.Users.User{/, fn ->
-        Context.create(@valid_params, @config ++ [users_context: ReloadErrorUsers])
-      end
-    end
   end
 
   describe "update/2" do
@@ -188,12 +176,6 @@ defmodule Pow.Ecto.ContextTest do
       refute user.password
 
       assert Users.update(user, :test_macro) == :ok
-    end
-
-    test "when can't be reloaded after write", %{user: user} do
-      assert_raise RuntimeError, ~r/Record does not exist: %Pow.Test.Ecto.Users.User{/, fn ->
-        Context.update(user, @valid_params, @config ++ [users_context: ReloadErrorUsers])
-      end
     end
   end
 

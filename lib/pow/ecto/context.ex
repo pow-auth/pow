@@ -192,10 +192,9 @@ defmodule Pow.Ecto.Context do
   @spec do_insert(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_insert(changeset, config) do
     opts = repo_opts(config, [:prefix])
+    repo = Config.repo!(config)
 
-    changeset
-    |> Config.repo!(config).insert(opts)
-    |> reload_after_write(config)
+    repo.insert(changeset, opts)
   end
 
   @doc """
@@ -206,19 +205,9 @@ defmodule Pow.Ecto.Context do
   @spec do_update(changeset(), Config.t()) :: {:ok, user()} | {:error, changeset()}
   def do_update(changeset, config) do
     opts = repo_opts(config, [:prefix])
+    repo = Config.repo!(config)
 
-    changeset
-    |> Config.repo!(config).update(opts)
-    |> reload_after_write(config)
-  end
-
-  defp reload_after_write({:error, changeset}, _config), do: {:error, changeset}
-  defp reload_after_write({:ok, struct}, config) do
-    # When ecto updates/inserts, has_many :through associations are set to nil.
-    # So we'll just reload when writes happen.
-    struct  = Operations.reload(struct, config) || raise "Record does not exist: #{inspect struct}"
-
-    {:ok, struct}
+    repo.update(changeset, opts)
   end
 
   # TODO: Remove by 1.1.0
