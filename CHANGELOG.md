@@ -7,6 +7,7 @@
 * [`Pow.Ecto.Context`] No longer automatically reloads the struct after insert or update
 * [`PowInvitation.Ecto.Schema`] Added `PowInvitation.Ecto.Schema.invitation_token_changeset/1`
 * [`PowInvitation.Ecto.Schema`] Added `PowInvitation.Ecto.Schema.invited_by_changeset/2`
+* [`Pow.Ecto.Schema.Password.Pbkdf2`] Now uses `:crypto.mac/4` if available to support OTP 24
 
 ## v1.0.22 (2021-01-27)
 
