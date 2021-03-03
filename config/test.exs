@@ -13,8 +13,6 @@ config :pow, Pow.Test.Ecto.Repo,
   priv: "test/support/ecto/priv",
   url: System.get_env("POSTGRES_URL")
 
-config :mnesia, dir: 'tmp/mnesia'
-
 config :pow, Pow.Ecto.Schema.Password, iterations: 1
 
 config :phoenix, :json_library, Jason

@@ -12,7 +12,7 @@ defmodule Pow.MixProject do
       start_permanent: Mix.env() == :prod,
       compilers: [:phoenix] ++ Mix.compilers(),
       deps: deps(),
-      xref: xref(),
+      xref: [exclude: [:mnesia]],
 
       # Hex
       description: "Robust user authentication solution",
@@ -26,15 +26,10 @@ defmodule Pow.MixProject do
 
   def application do
     [
-      extra_applications: extra_applications(Mix.env()),
+      extra_applications: [:logger],
       mod: {Pow.Application, []}
     ]
   end
-
-  defp extra_applications(:test), do: [:ecto, :logger, :mnesia]
-  defp extra_applications(_), do: [:logger]
-
-  defp xref, do: [xref: [exclude: :mnesia]]
 
   defp deps do
     [
