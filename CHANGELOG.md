@@ -9,6 +9,10 @@
 * [`PowInvitation.Ecto.Schema`] Added `PowInvitation.Ecto.Schema.invited_by_changeset/2`
 * [`Pow.Ecto.Schema.Password.Pbkdf2`] Now uses `:crypto.mac/4` if available to support OTP 24
 
+## Bug fixes
+
+* [`Pow.Store.Backend.MnesiaCache`] No longer triggers Elixir 1.11 dependency warnings
+
 ## v1.0.22 (2021-01-27)
 
 This release introduces a deprecation for the default API guide implementation. Please check migration section below.
