@@ -31,7 +31,7 @@ end
 
 ## Triplex
 
-With the above, it will make it very easy to set up multitenancy with [Triplex](https://github.com/ateliware/triplex).
+[Triplex](https://github.com/ateliware/triplex) is a Database multitenancy package. Pow can be easily configured to work with Triplex.
 
 Update your `WEB_PATH/endpoint.ex` using a custom plug rather than the default `Pow.Plug.Session`:
 
@@ -69,6 +69,33 @@ defmodule MyAppWeb.Pow.TriplexSessionPlug do
     Pow.Plug.Session.call(conn, config)
   end
 end
+```
+
+If you choose to create tenants as part of the user registration flow, it can be accomplished using a [custom controller](../custom_controllers.md).
+
+```elixir
+# lib/my_app_web/controllers/registration_controller.ex
+
+# ...
+
+def create(conn, %{"user" => user_params}) do
+  tenant_name = Map.get(user_params, "account")
+
+  Triplex.create_schema(tenant_name, Repo, fn(tenant, repo) ->
+    Repo.transaction(fn ->
+      {:ok, _} = Triplex.migrate(tenant, repo)
+      {:ok, user} = Pow.Ecto.Context.create(user_params,
+        otp_app: :my_app,
+        repo_opts: [prefix: tenant]
+      )
+    end)
+  end)
+
+  # ...
+
+end
+
+# ...
 ```
 
 ## Test module

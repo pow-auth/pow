@@ -1,6 +1,6 @@
 # Custom controllers
 
-*Please note that if you just wish to modify the templates, then you should follow the [Modify templates](../README.md#modify-templates) section(s) in the README. This guide is meant for allowing complete control over flow.*
+_Please note that if you just wish to modify the templates, then you should follow the [Modify templates](../README.md#modify-templates) section(s) in the README. This guide is meant for allowing complete control over flow._
 
 Pow makes it easy to use custom controllers leveraging the underlying Pow logic. It is ideal for cases where you need to control the flow, e.g., protect the registration process in a certain way.
 
@@ -8,7 +8,7 @@ First you should follow the [Getting Started](../README.md#getting-started) sect
 
 ## Routes
 
-Modify your `WEB_PATH/router.ex` to use your custom session and registration controllers instead of the default Pow controllers:
+Modify your `WEB_PATH/router.ex` to use your custom session and registration controllers instead of the default Pow controllers. Add or update your pipelines to include `Pow.Plug.RequireAuthenticated` and `Pow.Plug.RequireNotAuthenticated` with a custom `AuthErrorHandler`.
 
 ```elixir
 defmodule MyAppWeb.Router do
