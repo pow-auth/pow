@@ -8,6 +8,7 @@
 * [`PowInvitation.Ecto.Schema`] Added `PowInvitation.Ecto.Schema.invitation_token_changeset/1`
 * [`PowInvitation.Ecto.Schema`] Added `PowInvitation.Ecto.Schema.invited_by_changeset/2`
 * [`Pow.Ecto.Schema.Password.Pbkdf2`] Now uses `:crypto.mac/4` if available to support OTP 24
+* [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now returns `:info` instead of `:error` message for when the user has to confirm their email
 
 ## Bug fixes
 

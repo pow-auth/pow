@@ -64,7 +64,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     end
   end
   def before_respond(Pow.Phoenix.RegistrationController, :update, {:ok, user, conn}, _config) do
-    warn_unconfirmed(conn, user)
+    return_path = routes(conn).after_user_updated_path(conn)
+
+    warn_unconfirmed(conn, user, return_path)
   end
   def before_respond(Pow.Phoenix.SessionController, :create, {:ok, conn}, _config) do
     return_path = routes(conn).after_sign_in_path(conn)
@@ -72,7 +74,9 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     halt_unconfirmed(conn, {:ok, conn}, return_path)
   end
   def before_respond(PowInvitation.Phoenix.InvitationController, :update, {:ok, user, conn}, _config) do
-    warn_unconfirmed(conn, user)
+    return_path = routes(conn).after_registration_path(conn)
+
+    warn_unconfirmed(conn, user, return_path)
   end
 
   defp halt_unconfirmed(conn, success_response, return_path) do
@@ -97,26 +101,30 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacks do
     error = extension_messages(conn).email_confirmation_required(conn)
 
     conn
-    |> Phoenix.Controller.put_flash(:error, error)
+    |> Phoenix.Controller.put_flash(:info, error)
     |> Phoenix.Controller.redirect(to: return_path)
   end
 
-  defp warn_unconfirmed(%{params: %{"user" => %{"email" => email}}} = conn, %{unconfirmed_email: email} = user) do
+  defp warn_unconfirmed(%{params: %{"user" => %{"email" => email}}} = conn, %{unconfirmed_email: email} = user, return_path) do
     case Plug.pending_email_change?(conn) do
-      true  -> warn_and_send_confirmation_email(conn)
+      true  -> warn_and_send_confirmation_email(conn, return_path)
       false -> {:ok, user, conn}
     end
   end
-  defp warn_unconfirmed(conn, user), do: {:ok, user, conn}
+  defp warn_unconfirmed(conn, user, _return_path), do: {:ok, user, conn}
 
-  defp warn_and_send_confirmation_email(conn) do
+  defp warn_and_send_confirmation_email(conn, return_path) do
     user  = PowPlug.current_user(conn)
     error = extension_messages(conn).email_confirmation_required_for_update(conn)
-    conn  = Phoenix.Controller.put_flash(conn, :error, error)
 
     send_confirmation_email(user, conn)
 
-    {:ok, user, conn}
+    conn =
+      conn
+      |> Phoenix.Controller.put_flash(:info, error)
+      |> Phoenix.Controller.redirect(to: return_path)
+
+    {:halt, conn}
   end
 
   @doc """
