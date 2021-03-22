@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.23 (TBA)
+## v1.0.23 (2021-03-22)
 
 ### Enhancements
 
