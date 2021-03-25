@@ -8,7 +8,7 @@ First you should follow the [Getting Started](../README.md#getting-started) sect
 
 ## Routes
 
-Modify your `WEB_PATH/router.ex` to use your custom session and registration controllers instead of the default Pow controllers. Add or update your pipelines to include `Pow.Plug.RequireAuthenticated` and `Pow.Plug.RequireNotAuthenticated` with a custom `AuthErrorHandler`.
+Modify your `WEB_PATH/router.ex` to set up the Pow plugs in `:protected` and `:not_authenticated` pipelines with a custom error handler, and add the routes for your custom session and registration controllers:
 
 ```elixir
 defmodule MyAppWeb.Router do
