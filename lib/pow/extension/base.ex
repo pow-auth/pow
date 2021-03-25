@@ -73,9 +73,11 @@ defmodule Pow.Extension.Base do
         [extension]
         |> Kernel.++(module_list)
         |> Module.concat()
-        |> Code.ensure_compiled?()
+        |> ensure_compiled?()
     end
   end
+
+  defp ensure_compiled?(module), do: match?({:module, ^module}, Code.ensure_compiled(module))
 
   defp has_extension_module?(extension, ["Ecto", "Schema"]), do: extension.ecto_schema?()
   defp has_extension_module?(extension, ["Phoenix", "ControllerCallbacks"]), do: extension.phoenix_controller_callbacks?()
