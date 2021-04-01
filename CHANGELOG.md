@@ -2,7 +2,13 @@
 
 ## v1.0.24 (TBA)
 
+### Enhancements
+
 * [`Pow.Store.Backend.MnesiaCache`] Now accepts `extra_db_nodes: {module, function, arguments}` to fetch nodes when MnesiaCache starts up
+
+### Bug fixes
+
+* [`Pow.Store.Backend.MnesiaCache`] Now handles initialization errors
 
 ## v1.0.23 (2021-03-22)
 
@@ -14,7 +20,7 @@
 * [`Pow.Ecto.Schema.Password.Pbkdf2`] Now uses `:crypto.mac/4` if available to support OTP 24
 * [`PowEmailConfirmation.Phoenix.ControllerCallbacks`] Now returns `:info` instead of `:error` message for when the user has to confirm their email
 
-## Bug fixes
+### Bug fixes
 
 * [`Pow.Store.Backend.MnesiaCache`] No longer triggers Elixir 1.11 dependency warnings
 

@@ -135,11 +135,15 @@ defmodule Pow.Store.Backend.MnesiaCache do
   # Callbacks
 
   @impl GenServer
-  @spec init(Base.config()) :: {:ok, map()}
+  @spec init(Base.config()) :: {:ok, map()} | {:stop, any()}
   def init(config) do
-    init_mnesia(config)
+    case init_mnesia(config) do
+      :ok ->
+        {:ok, %{invalidators: init_invalidators(config)}}
 
-    {:ok, %{invalidators: init_invalidators(config)}}
+      {:error, error} ->
+        {:stop, error}
+    end
   end
 
   @impl GenServer
@@ -312,6 +316,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
          :ok <- wait_for_table(config) do
 
       Logger.info("[#{inspect __MODULE__}] Mnesia cluster initiated on #{inspect node()}")
+
+      :ok
     else
       {:error, reason} ->
         Logger.error("[#{inspect __MODULE__}] Couldn't initialize mnesia cluster because: #{inspect reason}")
