@@ -316,6 +316,19 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
 
+    test "when init fails" do
+      :mnesia.kill()
+
+      # Start Mnesia on node a uninitialized
+      node_a = spawn_node("a")
+      :ok = :rpc.call(node_a, :mnesia, :start, [])
+
+      # Join cluster with node b
+      node_b = spawn_node("b")
+      config = @default_config ++ [extra_db_nodes: {Node, :list, []}]
+      {:error, {{:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+    end
+
     test "handles `extra_db_nodes: {module, function, arguments}`" do
       :mnesia.kill()
 
