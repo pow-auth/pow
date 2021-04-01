@@ -22,10 +22,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
   The MnesiaCache is built to handle multi-node setup.
 
   If you initialize with `extra_db_nodes: Node.list()`, it will automatically
-  connect to the cluster. If you use `extra_db_nodes: :all`, it will
-  automatically connect to all visible nodes at MnesiaCache runtime. This is
-  useful for when nodes are dynamically connected somewhere before in the
-  supervision tree. MFA is also accepted: `extra_db_nodes: {Node, :list, []}`.
+  connect to the cluster. You can also use MFA:
+  `extra_db_nodes: {Node, :list, []}`. This is useful for when nodes are
+  dynamically connected before MnesiaCache startup in the supervision tree.
 
   If there is no other nodes available, the data persisted to disk will be
   loaded, but if a cluster is running, the data in the existing cluster nodes
@@ -76,8 +75,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   ## Initialization options
 
-    * `:extra_db_nodes` - list of nodes in cluster to connect to. Use `:all` to
-      automatically connect to all visible nodes.
+    * `:extra_db_nodes` - list of nodes or MFA returning a list of nodes in
+      cluster to connect to.
 
     * `:table_opts` - options to add to table definition. This value defaults
       to `[disc_copies: [node()]]`.
@@ -297,7 +296,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
     db_nodes =
       case db_nodes do
-        :all -> visible_nodes
         {mod, fun, args} -> apply(mod, fun, args)
         nodes -> nodes
       end

@@ -316,24 +316,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
 
-    test "finds all visible nodes with `extra_db_nodes: :all`" do
-      :mnesia.kill()
-
-      # Init node a and write to it
-      node_a = spawn_node("a")
-      {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, @default_config}])
-      assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == []
-      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
-
-      # Join cluster with node b
-      node_b = spawn_node("b")
-      assert :rpc.call(node_b, Node, :connect, [node_a])
-      config = @default_config ++ [extra_db_nodes: :all]
-      {:ok, _pid} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
-      assert :rpc.call(node_b, :mnesia, :system_info, [:extra_db_nodes]) == [node_a]
-      assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
-    end
-
     test "handles `extra_db_nodes: {module, function, arguments}`" do
       :mnesia.kill()
 
@@ -351,8 +333,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
     end
   end
-
-  def extra_nodes_fun(nodes), do: nodes
 
   defp spawn_node(sname) do
     fn -> init_node(sname) end
