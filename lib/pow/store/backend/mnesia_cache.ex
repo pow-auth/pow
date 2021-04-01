@@ -25,7 +25,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   connect to the cluster. If you use `extra_db_nodes: :all`, it will
   automatically connect to all visible nodes at MnesiaCache runtime. This is
   useful for when nodes are dynamically connected somewhere before in the
-  supervision tree.
+  supervision tree. MFA is also accepted: `extra_db_nodes: {Node, :list, []}`.
 
   If there is no other nodes available, the data persisted to disk will be
   loaded, but if a cluster is running, the data in the existing cluster nodes
@@ -294,7 +294,13 @@ defmodule Pow.Store.Backend.MnesiaCache do
   defp find_active_cluster_nodes(config) do
     visible_nodes = Node.list()
     db_nodes      = Config.get(config, :extra_db_nodes, [])
-    db_nodes      = if db_nodes == :all, do: visible_nodes, else: db_nodes
+
+    db_nodes =
+      case db_nodes do
+        :all -> visible_nodes
+        {mod, fun, args} -> apply(mod, fun, args)
+        nodes -> nodes
+      end
 
     db_nodes
     |> Enum.filter(& &1 in visible_nodes)
