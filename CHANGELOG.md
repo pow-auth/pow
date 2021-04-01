@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.24 (TBA)
+
+* [`Pow.Store.Backend.MnesiaCache`] Now accepts `extra_db_nodes: :all` to automatically connect to all visible nodes
+
+
 ## v1.0.23 (2021-03-22)
 
 ### Enhancements

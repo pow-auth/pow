@@ -22,11 +22,15 @@ defmodule Pow.Store.Backend.MnesiaCache do
   The MnesiaCache is built to handle multi-node setup.
 
   If you initialize with `extra_db_nodes: Node.list()`, it will automatically
-  connect to the cluster. If there is no other nodes available, the data
-  persisted to disk will be loaded, but if a cluster is running, the data in
-  the existing cluster nodes will be loaded instead of the local data. This
-  could potentially cause data loss, but is an accepted risk as all data stored
-  by Pow should be ephemeral.
+  connect to the cluster. If you use `extra_db_nodes: :all`, it will
+  automatically connect to all visible nodes at MnesiaCache runtime. This is
+  useful for when nodes are dynamically connected somewhere before in the
+  supervision tree.
+
+  If there is no other nodes available, the data persisted to disk will be
+  loaded, but if a cluster is running, the data in the existing cluster nodes
+  will be loaded instead of the local data. This could potentially cause data
+  loss, but is an accepted risk as all data stored by Pow should be ephemeral.
 
   When a cache key expires, the expiration will be verified before deletion to
   ensure that it hasn't been updated by another node. When a key is updated on
@@ -72,7 +76,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
   ## Initialization options
 
-    * `:extra_db_nodes` - list of nodes in cluster to connect to.
+    * `:extra_db_nodes` - list of nodes in cluster to connect to. Use `:all` to
+      automatically connect to all visible nodes.
 
     * `:table_opts` - options to add to table definition. This value defaults
       to `[disc_copies: [node()]]`.
@@ -289,6 +294,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   defp find_active_cluster_nodes(config) do
     visible_nodes = Node.list()
     db_nodes      = Config.get(config, :extra_db_nodes, [])
+    db_nodes      = if db_nodes == :all, do: visible_nodes, else: db_nodes
 
     db_nodes
     |> Enum.filter(& &1 in visible_nodes)
