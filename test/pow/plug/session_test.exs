@@ -145,6 +145,8 @@ defmodule Pow.Plug.SessionTest do
 
     @timeout :timer.seconds(5)
 
+    defdelegate sessions(config, user), to: CredentialsCache
+
     defdelegate put(config, session_id, record_or_records), to: CredentialsCache
 
     defdelegate get(config, session_id), to: CredentialsCache
@@ -367,6 +369,36 @@ defmodule Pow.Plug.SessionTest do
       session_id = conn.private[:plug_session]["test_app_auth"]
       assert {:ok, decoded_session_id} = Plug.verify_token(conn, Atom.to_string(Session), session_id)
       assert String.starts_with?(decoded_session_id, "test_app_")
+    end
+
+    test "invalidates sessions with identical fingerprint", %{conn: new_conn} do
+      conn =
+        new_conn
+        |> init_plug()
+        |> run_do_create(@user)
+
+      assert session_id = get_session_id(conn)
+      assert {@user, metadata} = get_from_cache(session_id)
+      assert fingerprint = metadata[:fingerprint]
+
+      timestamp        = :os.system_time(:millisecond)
+      other_session_id = store_in_cache("token", {@user, inserted_at: timestamp, fingerprint: fingerprint})
+
+      assert Enum.count(CredentialsCache.sessions(@store_config, @user)) == 2
+
+      conn =
+        new_conn
+        |> init_plug()
+        |> Conn.put_private(:pow_session_metadata, fingerprint: fingerprint)
+        |> run_do_create(@user)
+
+      assert new_session_id = get_session_id(conn)
+      assert {@user, new_metadata} = get_from_cache(new_session_id)
+      assert metadata[:fingerprint] == new_metadata[:fingerprint]
+
+      assert Enum.count(CredentialsCache.sessions(@store_config, @user)) == 1
+      assert get_from_cache(session_id) == :not_found
+      assert get_from_cache(other_session_id) == :not_found
     end
   end
 

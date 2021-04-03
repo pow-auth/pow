@@ -94,9 +94,6 @@ defmodule Pow.Store.CredentialsCache do
     - `{session_id, {[user_struct, :user, user_id], metadata}}`
     - `{[user_struct, :user, user_id], user}`
     - `{[user_struct, :user, user_id, :session, session_id], inserted_at}`
-
-  If metadata has `:fingerprint` any active sessions for the user with the same
-  `:fingerprint` in metadata will be deleted.
   """
   @spec put(Base.config(), binary(), {map(), list()}) :: :ok
   def put(config, session_id, {user, metadata}) do
@@ -108,8 +105,6 @@ defmodule Pow.Store.CredentialsCache do
       {user_key, user},
       {session_key, :os.system_time(:millisecond)}
     ]
-
-    delete_user_sessions_with_fingerprint(config, user, metadata)
 
     Base.put(config, backend_config(config), records)
   end
@@ -198,26 +193,6 @@ defmodule Pow.Store.CredentialsCache do
       {:error, error} -> raise error
       {:ok, clauses}  -> clauses
     end
-  end
-
-  defp delete_user_sessions_with_fingerprint(config, user, metadata) do
-    case Keyword.get(metadata, :fingerprint) do
-      nil         -> :ok
-      fingerprint -> do_delete_user_sessions_with_fingerprint(config, user, fingerprint)
-    end
-  end
-
-  defp do_delete_user_sessions_with_fingerprint(config, user, fingerprint) do
-    backend_config = backend_config(config)
-
-    config
-    |> sessions(user)
-    |> Enum.each(fn session_id ->
-      with {_user_key, metadata} when is_list(metadata) <- Base.get(config, backend_config, session_id),
-           ^fingerprint <- Keyword.get(metadata, :fingerprint) do
-        delete(config, session_id)
-      end
-    end)
   end
 
   # TODO: Remove by 1.1.0

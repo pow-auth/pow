@@ -37,6 +37,8 @@ This release introduces a deprecation for the default API guide implementation. 
 * [`Pow.Operations`] Added `Pow.Operations.reload/2` to reload structs
 * [`PowPersistentSession.Store.PersistentSessionCache`] Update `PowPersistentSession.Store.PersistentSessionCache.get/2` to reload the user using `Pow.Operations.reload/2`
 * [`Pow.Store.CredentialsCache`] Now support `reload: true` configuration so once fetched from the cache the user object will be reloaded through the context module
+* [`Pow.Store.CredentialsCache`] No longer invalidates active sessions with the same fingerprint when `Pow.Store.CredentialsCache.put/2` is called
+* [`Pow.Plug.Session`] Will invalidate any other sessions with the same `:fingerprint` if any is set in session metadata when `Pow.Plug.Session.create/3` is called
 
 ### Documentation
 
