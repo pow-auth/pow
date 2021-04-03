@@ -28,7 +28,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
           children = [
             MyApp.Repo,
             MyAppWeb.Endpoint,
-            {Pow.Store.Backend.MnesiaCache, extra_db_nodes: Node.list()},
+            {Pow.Store.Backend.MnesiaCache, extra_db_nodes: {Node, :list, []}},
             Pow.Store.Backend.MnesiaCache.Unsplit
           ]
 
