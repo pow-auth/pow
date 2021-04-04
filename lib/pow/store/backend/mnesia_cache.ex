@@ -400,7 +400,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.add_table_copy(@mnesia_cache_tab, node(), copy_type) do
       {:atomic, :ok}                      -> :ok
       {:aborted, {:already_exists, _, _}} -> :ok
-      any                                 -> {:error, {:sync_table, any}}
+      any                                 -> {:error, {:add_table_copy, any}}
     end
   end
 

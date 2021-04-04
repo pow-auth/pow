@@ -392,8 +392,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       node_b = spawn_node("b")
       config = @default_config ++ [extra_db_nodes: {Node, :list, []}]
       subscribe_log_events(node_b)
-      assert {:error, {{:sync_table, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
-      assert_receive {:log, _node, :error, "Couldn't join mnesia cluster because: {:sync_table, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}"}, @assertion_timeout
+      assert {:error, {{:add_table_copy, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      assert_receive {:log, _node, :error, "Couldn't join mnesia cluster because: {:add_table_copy, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}"}, @assertion_timeout
     end
 
     test "handles `extra_db_nodes: {module, function, arguments}`" do
