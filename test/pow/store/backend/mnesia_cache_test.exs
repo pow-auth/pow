@@ -242,6 +242,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == :not_found
     end
 
+    @assertion_timeout 500
+
     test "recovers from netsplit with MnesiaCache.Unsplit" do
       node_a = spawn_node("a")
       {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, @default_config}])
@@ -282,10 +284,18 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "b"
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1_b"]) == "value"
 
+      # Set up logger event listener
+      Process.register(self(), :test_process)
+      add_logger_backend(node_a)
+      add_logger_backend(node_b)
+
       # Reconnect
       connect(node_b, node_a)
 
-      # Node a wins recovery and node b purges its data
+      # Node a used as master cluster and node b is purged
+      flush_loggers([node_a, node_b])
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :info, "[Pow.Store.Backend.MnesiaCache.Unsplit] :\"b@127.0.0.1\" has been healed and joined [:\"a@127.0.0.1\"]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
@@ -296,24 +306,48 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :dirty_read, [{:node_a_table, :key}]) == [{:node_a_table, :key, "a"}]
       assert :rpc.call(node_b, :mnesia, :dirty_read, [{:node_b_table, :key}]) == [{:node_b_table, :key, "b"}]
 
+      flush_process_mailbox()
+
       # Shared tables unrelated to Pow can't reconnect
       {:atomic, :ok} = :rpc.call(node_a, :mnesia, :create_table, [:shared, [disc_copies: [node_a]]])
       {:atomic, :ok} = :rpc.call(node_b, :mnesia, :add_table_copy, [:shared, node_b, :disc_copies])
       disconnect(node_b, node_a)
       connect(node_b, node_a)
+      flush_loggers([node_a, node_b])
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :error, "[Pow.Store.Backend.MnesiaCache.Unsplit] Can't force reload unexpected tables [:shared]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
+
+      flush_process_mailbox()
 
       # Can't reconnect if table not defined in flush table
-      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: [:unrelated]]])
-      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
+      reset_unsplit_trigger_inconsistent_database(node_b, node_a, flush_tables: [:unrelated])
+      flush_loggers([node_a, node_b])
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :error, "[Pow.Store.Backend.MnesiaCache.Unsplit] Can't force reload unexpected tables [:shared]"}, @assertion_timeout
+      assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_b]
 
-      # Can reconnect if `:flush_tables` is set as `:all` or with table
-      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: [:shared]]])
+      flush_process_mailbox()
+
+      # Can reconnect if `:flush_tables` is set to table
+      reset_unsplit_trigger_inconsistent_database(node_b, node_a, flush_tables: [:shared])
+      flush_loggers([node_a, node_b])
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :info, "[Pow.Store.Backend.MnesiaCache.Unsplit] :\"b@127.0.0.1\" has been healed and joined [:\"a@127.0.0.1\"]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
+
+      # Resetting back to netsplit state
       disconnect(node_b, node_a)
       connect(node_b, node_a)
+      flush_loggers([node_a, node_b])
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :error, "[Pow.Store.Backend.MnesiaCache.Unsplit] Can't force reload unexpected tables [:shared]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
-      :rpc.call(node_a, MnesiaCache.Unsplit, :__heal__, [node_b, [flush_tables: :all]])
+
+      # Can reconnect if `:flush_tables` is set to `:all`
+      reset_unsplit_trigger_inconsistent_database(node_b, node_a, flush_tables: :all)
+      assert_receive {:log, _node, :warn, "[Pow.Store.Backend.MnesiaCache.Unsplit] Detected netsplit on " <> _reported_node}, @assertion_timeout
+      assert_receive {:log, _node, :info, "[Pow.Store.Backend.MnesiaCache.Unsplit] :\"b@127.0.0.1\" has been healed and joined [:\"a@127.0.0.1\"]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
 
@@ -327,7 +361,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # Join cluster with node b
       node_b = spawn_node("b")
       config = @default_config ++ [extra_db_nodes: {Node, :list, []}]
-      {:error, {{:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      assert {:error, {{:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
     end
 
     test "handles `extra_db_nodes: {module, function, arguments}`" do
@@ -377,9 +411,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
-    # Remove logger to prevent double logs and don't log info
+    # Remove logger to prevent logs
     rpc(node, Logger, :remove_backend, [:console])
-    rpc(node, Logger, :configure, [[level: :warn]])
 
     node
   end
@@ -396,6 +429,40 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   defp connect(node_a, node_b) do
     true = :rpc.call(node_a, Node, :connect, [node_b])
     :timer.sleep(500)
+  end
+
+  defp add_logger_backend(node) do
+    {:module, TestLogger, _, _} = rpc(node, Module, :create, [TestLogger,
+      quote do
+        def init(__MODULE__), do: {:ok, %{}}
+
+        def handle_event({level, _gl, {Logger, msg, _ts, meta}}, state) do
+          :rpc.call(:"master@127.0.0.1", Kernel, :send, [:test_process, {:log, node(), level, to_string(msg)}])
+
+          {:ok, state}
+        end
+      end, Macro.Env.location(__ENV__)])
+    :ok = rpc(node, Logger, :flush, [])
+    {:ok, _pid} = rpc(node, Logger, :add_backend, [TestLogger])
+  end
+
+  defp flush_loggers(nodes) do
+    for node <- nodes, do: :rpc.call(node, Logger, :flush, [])
+  end
+
+  defp flush_process_mailbox() do
+    receive do
+      _ -> flush_process_mailbox()
+    after
+      0 -> nil
+    end
+  end
+
+  defp reset_unsplit_trigger_inconsistent_database(node, cluster_node, config) do
+    :ok = :rpc.block_call(node, Supervisor, :terminate_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+    :ok = :rpc.block_call(node, Supervisor, :delete_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+    {:ok, pid} = :rpc.block_call(node, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache.Unsplit, config}])
+    :rpc.call(node, Kernel, :send, [pid, {:mnesia_system_event, {:inconsistent_database, nil, cluster_node}}])
   end
 
   # TODO: Remove by 1.1.0

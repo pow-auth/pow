@@ -92,9 +92,6 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     {:noreply, state}
   end
 
-  @doc false
-  def __heal__(node, config), do: autoheal(node, config)
-
   defp autoheal(node, config) do
     :running_db_nodes
     |> :mnesia.system_info()
