@@ -98,12 +98,12 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     |> Enum.member?(node)
     |> case do
       true ->
-        Logger.info("[#{inspect __MODULE__}] #{inspect node} has already healed and joined #{inspect node()}")
+        Logger.info("#{inspect node} has already healed and joined #{inspect node()}")
 
         :ok
 
       false ->
-        Logger.warn("[#{inspect __MODULE__}] Detected netsplit on #{inspect node}")
+        Logger.warn("Detected netsplit on #{inspect node}")
 
         heal(node, config)
     end
@@ -153,7 +153,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
         do_force_reload(tables, node)
 
       unflushable_tables ->
-        Logger.error("[#{inspect __MODULE__}] Can't force reload unexpected tables #{inspect unflushable_tables}")
+        Logger.error("Can't force reload unexpected tables #{inspect unflushable_tables}")
 
         {:error, {:unexpected_tables, tables}}
     end
@@ -168,7 +168,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
       :ok = :rpc.block_call(node, :mnesia, :start, [])
       :ok = :rpc.call(node, :mnesia, :wait_for_tables, [tables, :timer.seconds(15)])
 
-      Logger.info("[#{inspect __MODULE__}] #{inspect node} has been healed and joined #{inspect master_nodes}")
+      Logger.info("#{inspect node} has been healed and joined #{inspect master_nodes}")
     end
 
     :ok
