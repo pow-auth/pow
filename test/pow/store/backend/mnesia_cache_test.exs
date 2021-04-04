@@ -114,6 +114,14 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(config, "key") == :not_found
     end
 
+    test "when initiated with unexpected records" do
+      :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], :invalid_value})
+
+      assert CaptureLog.capture_log(fn ->
+        restart(@default_config)
+      end) =~ "[warn]  Found unexpected record [\"pow:test\", \"key\"], please delete it"
+    end
+
     # TODO: Remove by 1.1.0
     test "backwards compatible" do
       assert_capture_io_eval(quote do
@@ -360,7 +368,19 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
     end
 
-    test "when init fails" do
+    test "when init create cluster fails" do
+      :mnesia.kill()
+      Process.register(self(), :test_process)
+
+      # Start Mnesia with configuration error
+      node_a = spawn_node("a")
+      config = @default_config ++ [table_opts: [disc_copies: [:invalid_node]]]
+      subscribe_log_events(node_a)
+      assert {:error, {{:create_table, {:aborted, {:not_active, Pow.Store.Backend.MnesiaCache, :invalid_node}}}, _}} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      assert_receive {:log, _node, :error, "Couldn't initialize mnesia cluster because: {:create_table, {:aborted, {:not_active, Pow.Store.Backend.MnesiaCache, :invalid_node}}}"}, @assertion_timeout
+    end
+
+    test "when init join cluster fails" do
       :mnesia.kill()
       Process.register(self(), :test_process)
 
@@ -372,8 +392,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       node_b = spawn_node("b")
       config = @default_config ++ [extra_db_nodes: {Node, :list, []}]
       subscribe_log_events(node_b)
-      assert {:error, {{:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
-      assert_receive {:log, _node, :error, "Couldn't join mnesia cluster because: {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}"}, @assertion_timeout
+      assert {:error, {{:sync_table, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}, _}} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      assert_receive {:log, _node, :error, "Couldn't join mnesia cluster because: {:sync_table, {:aborted, {:no_exists, {Pow.Store.Backend.MnesiaCache, :cstruct}}}}"}, @assertion_timeout
     end
 
     test "handles `extra_db_nodes: {module, function, arguments}`" do
@@ -498,7 +518,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       assert CaptureLog.capture_log(fn ->
         start(@default_config)
-      end) =~ "Deleting old record \"pow:test:key1\""
+      end) =~ "[warn]  Deleting old record \"pow:test:key1\""
 
       assert :mnesia.dirty_read({MnesiaCache, key}) == []
     end

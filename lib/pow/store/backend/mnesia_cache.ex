@@ -368,6 +368,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.change_table_copy_type(:schema, node(), copy_type) do
       {:atomic, :ok}                               -> :ok
       {:aborted, {:already_exists, :schema, _, _}} -> :ok
+      any                                          -> {:error, {:change_table_copy_type, any}}
     end
   end
 
@@ -389,6 +390,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.create_table(@mnesia_cache_tab, table_def) do
       {:atomic, :ok}                                   -> :ok
       {:aborted, {:already_exists, @mnesia_cache_tab}} -> :ok
+      any                                              -> {:error, {:create_table, any}}
     end
   end
 
@@ -398,7 +400,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.add_table_copy(@mnesia_cache_tab, node(), copy_type) do
       {:atomic, :ok}                      -> :ok
       {:aborted, {:already_exists, _, _}} -> :ok
-      any                                 -> {:error, any}
+      any                                 -> {:error, {:sync_table, any}}
     end
   end
 
