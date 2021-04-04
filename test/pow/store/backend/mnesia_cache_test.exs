@@ -2,6 +2,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   use ExUnit.Case
   doctest Pow.Store.Backend.MnesiaCache
 
+  alias ExUnit.CaptureLog
   alias Pow.{Config, Config.ConfigError, Store.Backend.MnesiaCache}
 
   @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
@@ -420,7 +421,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       :stopped = :mnesia.stop()
 
-      start(@default_config)
+      assert CaptureLog.capture_log(fn ->
+        start(@default_config)
+      end) =~ "Deleting old record \"pow:test:key1\""
 
       assert :mnesia.dirty_read({MnesiaCache, key}) == []
     end
