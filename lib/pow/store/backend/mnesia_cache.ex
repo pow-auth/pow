@@ -315,12 +315,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
          :ok <- create_table(config),
          :ok <- wait_for_table(config) do
 
-      Logger.info("[#{inspect __MODULE__}] Mnesia cluster initiated on #{inspect node()}")
+      Logger.info("Mnesia cluster initiated on #{inspect node()}")
 
       :ok
     else
       {:error, reason} ->
-        Logger.error("[#{inspect __MODULE__}] Couldn't initialize mnesia cluster because: #{inspect reason}")
+        Logger.error("Couldn't initialize mnesia cluster because: #{inspect reason}")
         {:error, reason}
     end
   end
@@ -333,12 +333,12 @@ defmodule Pow.Store.Backend.MnesiaCache do
          :ok <- sync_table(config, cluster_nodes),
          :ok <- wait_for_table(config) do
 
-      Logger.info("[#{inspect __MODULE__}] Joined mnesia cluster nodes #{inspect cluster_nodes} for #{inspect node()}")
+      Logger.info("Joined mnesia cluster nodes #{inspect cluster_nodes} for #{inspect node()}")
 
       :ok
     else
       {:error, reason} ->
-        Logger.error("[#{inspect __MODULE__}] Couldn't join mnesia cluster because: #{inspect reason}")
+        Logger.error("Couldn't join mnesia cluster because: #{inspect reason}")
         {:error, reason}
     end
   end
@@ -368,6 +368,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.change_table_copy_type(:schema, node(), copy_type) do
       {:atomic, :ok}                               -> :ok
       {:aborted, {:already_exists, :schema, _, _}} -> :ok
+      any                                          -> {:error, {:change_table_copy_type, any}}
     end
   end
 
@@ -389,6 +390,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.create_table(@mnesia_cache_tab, table_def) do
       {:atomic, :ok}                                   -> :ok
       {:aborted, {:already_exists, @mnesia_cache_tab}} -> :ok
+      any                                              -> {:error, {:create_table, any}}
     end
   end
 
@@ -398,7 +400,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case :mnesia.add_table_copy(@mnesia_cache_tab, node(), copy_type) do
       {:atomic, :ok}                      -> :ok
       {:aborted, {:already_exists, _, _}} -> :ok
-      any                                 -> {:error, any}
+      any                                 -> {:error, {:sync_table, any}}
     end
   end
 
@@ -436,14 +438,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
           # TODO: Remove by 1.1.0
           {@mnesia_cache_tab, key, {_key, _value, _config, expire}}, invalidators when is_binary(key) and is_number(expire) ->
-            Logger.warn("[#{inspect __MODULE__}] Deleting old record #{inspect key}")
+            Logger.warn("Deleting old record #{inspect key}")
 
             :mnesia.delete({@mnesia_cache_tab, key})
 
             invalidators
 
           {@mnesia_cache_tab, key, _value}, invalidators ->
-            Logger.warn("[#{inspect __MODULE__}] Found unexpected record #{inspect key}, please delete it")
+            Logger.warn("Found unexpected record #{inspect key}, please delete it")
 
             invalidators
         end,

@@ -550,7 +550,13 @@ defmodule MyApp.Application do
 end
 ```
 
-Update the config `cache_store_backend: Pow.Store.Backend.MnesiaCache`.
+Update `config/config.ex` with `:cache_store_backend` key:
+
+```elixir
+config :my_app, :pow,
+  # ...
+  cache_store_backend: Pow.Store.Backend.MnesiaCache
+```
 
 Remember to add `:mnesia` to your `:extra_applications` so it'll be available for your release build. Mnesia will write files to the current working directory. The path can be changed with `config :mnesia, dir: '/path/to/dir'`.
 
