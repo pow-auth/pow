@@ -6,6 +6,7 @@
 
 * [`Pow.Store.Backend.MnesiaCache`] Now accepts `extra_db_nodes: {module, function, arguments}` to fetch nodes when MnesiaCache starts up
 * [`PowEmailConfirmation.Phoenix.Messages`] Added `PowEmailConfirmation.Phoenix.Messages.invalid_token/1`
+* [`Pow.Store.CredentialsCache`] Now outputs an IO warning when a `:ttl` longer than 30 minutes is used
 
 ### Bug fixes
 
