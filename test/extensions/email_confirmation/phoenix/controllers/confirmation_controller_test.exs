@@ -47,7 +47,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("invalid")))
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :error) == "The email address couldn't be confirmed."
+      assert get_flash(conn, :error) == "The confirmation token is invalid or has expired."
 
       refute Process.get({:user, 1})
     end
@@ -56,7 +56,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
 
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
-      assert get_flash(conn, :error) == "The email address couldn't be confirmed."
+      assert get_flash(conn, :error) == "The confirmation token is invalid or has expired."
 
       refute Process.get({:user, 1})
     end
