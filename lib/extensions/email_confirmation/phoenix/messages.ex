@@ -15,6 +15,12 @@ defmodule PowEmailConfirmation.Phoenix.Messages do
   """
   def email_confirmation_failed(_conn), do: "The email address couldn't be confirmed."
 
+
+  @doc """
+  Flash message to show when a invalid confirmation link is used.
+  """
+  def invalid_token(_conn), do: "The confirmation token is invalid or has expired."
+
   @doc """
   Flash message to show when user is signs in or registers but e-mail is yet
   to be confirmed.

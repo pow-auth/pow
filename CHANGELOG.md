@@ -5,6 +5,7 @@
 ### Enhancements
 
 * [`Pow.Store.Backend.MnesiaCache`] Now accepts `extra_db_nodes: {module, function, arguments}` to fetch nodes when MnesiaCache starts up
+* [`PowEmailConfirmation.Phoenix.Messages`] Added `PowEmailConfirmation.Phoenix.Messages.invalid_token/1`
 
 ### Bug fixes
 

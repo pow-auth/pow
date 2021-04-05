@@ -33,7 +33,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
     case Plug.load_user_by_token(conn, token) do
       {:error, conn} ->
         conn
-        |> put_flash(:error, extension_messages(conn).email_confirmation_failed(conn))
+        |> put_flash(:error, extension_messages(conn).invalid_token(conn))
         |> redirect(to: redirect_to(conn))
         |> halt()
 
