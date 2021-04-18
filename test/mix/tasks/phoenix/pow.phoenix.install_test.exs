@@ -81,6 +81,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
         def project do
           [
+            app: :missing_top_level_phoenix_dep,
             deps: [
               {:phoenix_dep, path: "dep/"}
             ]

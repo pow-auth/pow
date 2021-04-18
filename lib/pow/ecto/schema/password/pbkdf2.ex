@@ -15,7 +15,7 @@ defmodule Pow.Ecto.Schema.Password.Pbkdf2 do
   end
 
   defp compare(<<x, left::binary>>, <<y, right::binary>>, acc) do
-    xorred = x ^^^ y
+    xorred = bxor(x, y)
     compare(left, right, acc ||| xorred)
   end
 
