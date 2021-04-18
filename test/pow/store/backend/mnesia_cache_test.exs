@@ -110,7 +110,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], {"value", :os.system_time(:millisecond) + 150}})
       :timer.sleep(100)
       assert MnesiaCache.get(config, "key") == "value"
-      :timer.sleep(50)
+      :timer.sleep(100)
       assert MnesiaCache.get(config, "key") == :not_found
     end
 
