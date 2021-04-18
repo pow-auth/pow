@@ -67,6 +67,7 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
 
         def project do
           [
+            app: :missing_top_level_ecto_dep,
             deps: [
               {:ecto_dep, path: "ecto_dep/"}
             ]
