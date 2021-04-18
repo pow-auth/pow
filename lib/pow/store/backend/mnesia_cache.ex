@@ -438,14 +438,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
           # TODO: Remove by 1.1.0
           {@mnesia_cache_tab, key, {_key, _value, _config, expire}}, invalidators when is_binary(key) and is_number(expire) ->
-            Logger.warn("Deleting old record #{inspect key}")
+            Logger.warn("Deleting old record in the mnesia cache: #{inspect key}")
 
             :mnesia.delete({@mnesia_cache_tab, key})
 
             invalidators
 
           {@mnesia_cache_tab, key, _value}, invalidators ->
-            Logger.warn("Found unexpected record #{inspect key}, please delete it")
+            Logger.warn("Found an unexpected record in the mnesia cache, please delete it: #{inspect key}")
 
             invalidators
         end,
