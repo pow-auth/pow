@@ -184,7 +184,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :ok
     end
 
-    @startup_wait_time 3_000
+    @startup_wait_time 3_500
     @assertion_timeout 500
 
     test "will join cluster" do
@@ -249,6 +249,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
       expected_msg = "Joined mnesia cluster nodes [#{inspect node_b}] for #{inspect node_a}"
       assert_receive {:log, ^node_a, :info, ^expected_msg}, @assertion_timeout
+      startup_time = System.monotonic_time(:millisecond) - startup_timestamp
+      assert (startup_time - 100) < @startup_wait_time, "Node start up took longer than #{@startup_wait_time - 100}ms (#{startup_time}ms)"
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
@@ -257,8 +259,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :ok = :slave.stop(node_b)
 
       # Node a invalidates short TTL value written on node b
-      startup_time = System.monotonic_time(:millisecond) - startup_timestamp
-      :timer.sleep(@startup_wait_time - startup_time + 100)
+      time = System.monotonic_time(:millisecond) - startup_timestamp
+      :timer.sleep(@startup_wait_time - time + 100)
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == :not_found
     end
 
