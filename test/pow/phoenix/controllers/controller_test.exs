@@ -42,10 +42,10 @@ defmodule Pow.Phoenix.ControllerTest do
     end
 
     test "{:halt, conn} from before_process", %{conn: conn} do
-      defmodule HaltsBeforeRespond do
+      defmodule HaltsBeforeProcess do
         use Pow.Extension.Phoenix.ControllerCallbacks.Base
 
-        def before_process(SessionController, :new, {:ok, _changeset, conn}, _config) do
+        def before_process(SessionController, :new, conn, _config) do
           {:halt, conn |> Conn.put_private(:test_info, "HALTED!")}
         end
 
@@ -56,7 +56,7 @@ defmodule Pow.Phoenix.ControllerTest do
 
       conn =
         conn
-        |> Conn.put_private(:pow_config, user: User, controller_callbacks: HaltsBeforeRespond)
+        |> Conn.put_private(:pow_config, user: User, controller_callbacks: HaltsBeforeProcess)
         |> Conn.put_private(:phoenix_action, :new)
 
       conn = Controller.action(SessionController, conn, %{})
