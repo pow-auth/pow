@@ -22,5 +22,45 @@ defmodule Pow.Phoenix.ControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ ":web_module new session"
     end
+
+    test "{:halt, conn} from before_respond", %{conn: conn} do
+      defmodule HaltsBeforeRespond do
+        use Pow.Extension.Phoenix.ControllerCallbacks.Base
+
+        def before_respond(SessionController, :new, {:ok, _changeset, conn}, _config) do
+          {:halt, conn |> Conn.put_private(:test_info, "HALTED!")}
+        end
+      end
+
+      conn =
+        conn
+        |> Conn.put_private(:pow_config, user: User, controller_callbacks: HaltsBeforeRespond)
+        |> Conn.put_private(:phoenix_action, :new)
+
+      conn = Controller.action(SessionController, conn, %{})
+      assert conn.private[:test_info] == "HALTED!"
+    end
+
+    test "{:halt, conn} from before_process", %{conn: conn} do
+      defmodule HaltsBeforeRespond do
+        use Pow.Extension.Phoenix.ControllerCallbacks.Base
+
+        def before_process(SessionController, :new, {:ok, _changeset, conn}, _config) do
+          {:halt, conn |> Conn.put_private(:test_info, "HALTED!")}
+        end
+
+        def before_respond(SessionController, :new, _, _config) do
+          raise "Should not be called."
+        end
+      end
+
+      conn =
+        conn
+        |> Conn.put_private(:pow_config, user: User, controller_callbacks: HaltsBeforeRespond)
+        |> Conn.put_private(:phoenix_action, :new)
+
+      conn = Controller.action(SessionController, conn, %{})
+      assert conn.private[:test_info] == "HALTED!"
+    end
   end
 end
