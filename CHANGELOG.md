@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Removed
+
+* [`Pow.Store.CredentialsCache`] Remove IO warning when a `:ttl` longer than 30 minutes is used.
+
 ## v1.0.24 (2021-05-27)
 
 ### Enhancements

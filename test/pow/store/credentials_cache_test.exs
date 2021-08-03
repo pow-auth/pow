@@ -2,7 +2,6 @@ defmodule Pow.Store.CredentialsCacheTest do
   use ExUnit.Case
   doctest Pow.Store.CredentialsCache
 
-  alias ExUnit.CaptureIO
   alias Pow.Store.{Backend.EtsCache, CredentialsCache}
   alias Pow.Test.Ecto.Users.{User, UsernameUser}
   alias Pow.Test.EtsCacheMock
@@ -59,14 +58,6 @@ defmodule Pow.Store.CredentialsCacheTest do
     assert ets.get(@backend_config, "key_1") == :not_found
     assert ets.get(@backend_config, [User, :user, 1]) == %{user_1 | email: :updated}
     assert ets.get(@backend_config, [User, :user, 1, :session, "key_1"]) == :not_found
-  end
-
-  test "when using unsafe session ttl" do
-    config = @config ++ [ttl: :timer.minutes(30) + 1]
-
-    assert CaptureIO.capture_io(:stderr, fn ->
-      CredentialsCache.put(config, "key_1", {%User{id: 1}, a: 1})
-    end) =~ "warning: `:ttl` value for sessions should be no longer than 30 minutes to prevent session hijack, please consider lowering the value"
   end
 
   test "get/2 when reload: true without :pow_config" do

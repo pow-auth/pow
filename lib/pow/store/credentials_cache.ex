@@ -14,7 +14,6 @@ defmodule Pow.Store.CredentialsCache do
 
   The `:ttl` should be maximum 30 minutes per
   [OWASP recommendations](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-expiration).
-  A warning will be output for any sessions created with a longer TTL.
 
   ## Custom credentials cache module
 
@@ -46,14 +45,11 @@ defmodule Pow.Store.CredentialsCache do
       from the context. Defaults false.
 
   """
-  alias Pow.{Config, Operations, Store.Base}
+  alias Pow.{Operations, Store.Base}
 
   @callback users(Base.config(), module()) :: [any()]
   @callback sessions(Base.config(), map()) :: [binary()]
   @callback put(Base.config(), binary(), {map(), list()}) :: :ok
-
-  # Per https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-expiration
-  @recommended_max_idle_timeout :timer.minutes(30)
 
   use Base,
     ttl: :timer.minutes(30),
@@ -121,20 +117,8 @@ defmodule Pow.Store.CredentialsCache do
     backend_config =
       config
       |> backend_config()
-      |> warn_maximum_timeout()
 
     Base.put(config, backend_config, records)
-  end
-
-  defp warn_maximum_timeout(config) do
-    if Config.get(config, :ttl, 0) > @recommended_max_idle_timeout do
-      IO.warn(
-        """
-        warning: `:ttl` value for sessions should be no longer than #{round(@recommended_max_idle_timeout / 1_000 / 60)} minutes to prevent session hijack, please consider lowering the value
-        """)
-    end
-
-    config
   end
 
   @doc """
