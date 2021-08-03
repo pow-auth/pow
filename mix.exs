@@ -42,7 +42,7 @@ defmodule Pow.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test]},
       {:jason, "~> 1.2", only: [:dev, :test]}, # Credo requires jason to exist also in :dev
 
-      {:ex_doc, "~> 0.23", only: :dev},
+      {:ex_doc, "~> 0.25", only: :dev},
 
       {:ecto_sql, "~> 3.5", only: [:test]},
       {:plug_cowboy, "~> 2.4", only: [:test]},

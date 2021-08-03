@@ -2,7 +2,7 @@ defmodule Pow.Extension.Base do
   @moduledoc """
   Used to set up extensions to enable parts of extension for auto-discovery.
 
-  This exists to prevent unnecessary `Code.ensure_compiled?/1` calls, and will
+  This exists to prevent unnecessary `Code.ensure_compiled/1` calls, and will
   let the extension define what modules it has.
 
   ## Usage
@@ -58,7 +58,7 @@ defmodule Pow.Extension.Base do
   Checks whether an extension has a certain module.
 
   If a base extension module doesn't exist, or is configured improperly,
-  `Code.ensure_compiled?/1` will be used instead to see whether the module
+  `Code.ensure_compiled/1` will be used instead to see whether the module
   exists for the extension.
   """
   @spec has?(atom(), [any()]) :: boolean()
