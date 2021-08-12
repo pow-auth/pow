@@ -11,6 +11,10 @@ defmodule ExDoc.Pow.Markdown do
 
   @behaviour ExDoc.Markdown
 
+  @impl ExDoc.Markdown
+  defdelegate available?, to: Earmark
+
+  @impl ExDoc.Markdown
   def to_ast(text, opts) do
     config     = Mix.Project.config()[:docs]
     source_url = config[:source_url] <> "/" <> source_ref_pattern(config[:source_url], config[:source_ref])
