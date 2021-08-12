@@ -7,6 +7,8 @@ defmodule Pow.Ecto.ContextTest do
     use Ecto.Schema
     use Pow.Ecto.Schema, password_hash_methods: {&__MODULE__.send_hash_password/1, &__MODULE__.send_verify_password/2}
 
+    @ecto_derive_inspect_for_redacted_fields false
+
     alias Pow.Ecto.Schema.Password
 
     schema "users" do

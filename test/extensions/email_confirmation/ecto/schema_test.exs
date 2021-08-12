@@ -15,6 +15,8 @@ defmodule PowEmailConfirmation.Ecto.SchemaTest do
     use Pow.Extension.Ecto.Schema,
       extensions: [PowEmailConfirmation]
 
+    @ecto_derive_inspect_for_redacted_fields false
+
     schema "users" do
       pow_user_fields()
 
