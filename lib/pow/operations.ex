@@ -114,13 +114,18 @@ defmodule Pow.Operations do
   """
   @spec fetch_primary_key_values(struct(), Config.t()) :: {:ok, keyword()} | {:error, term()}
   def fetch_primary_key_values(%mod{} = struct, _config) do
-    mod
-    |> function_exported?(:__schema__, 1)
-    |> case do
-      true  -> mod.__schema__(:primary_key)
-      false -> [:id]
+    cond do
+      not Code.ensure_loaded?(mod) ->
+        {:error, "The module #{inspect mod} does not exist"}
+
+      function_exported?(mod, :__schema__, 1) ->
+        :primary_key
+        |> mod.__schema__()
+        |> map_primary_key_values(struct, [])
+
+      true ->
+        map_primary_key_values([:id], struct, [])
     end
-    |> map_primary_key_values(struct, [])
   end
 
   defp map_primary_key_values([], %mod{}, []), do: {:error, "No primary keys found for #{inspect mod}"}
