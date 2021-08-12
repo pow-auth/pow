@@ -26,6 +26,8 @@ defmodule Pow.Ecto.SchemaTest do
     use Ecto.Schema
     use Pow.Ecto.Schema
 
+    @ecto_derive_inspect_for_redacted_fields false
+
     schema "users" do
       field :password_hash, :string, source: :encrypted_password
 
@@ -46,6 +48,8 @@ defmodule Pow.Ecto.SchemaTest do
     @moduledoc false
     use Ecto.Schema
     use Pow.Ecto.Schema
+
+    @ecto_derive_inspect_for_redacted_fields false
 
     @pow_assocs {:has_many, :users, __MODULE__}
 
@@ -108,9 +112,9 @@ defmodule Pow.Ecto.SchemaTest do
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
 
       field :email, :string, [null: false]
-      field :password_hash, :string
-      field :current_password, :string, [virtual: true]
-      field :password, :string, [virtual: true]
+      field :password_hash, :string, [redact: true]
+      field :current_password, :string, [virtual: true, redact: true]
+      field :password, :string, [virtual: true, redact: true]
       """
   end
 
@@ -122,9 +126,9 @@ defmodule Pow.Ecto.SchemaTest do
 
         schema "users" do
           field :email, :utc_datetime
-          field :password_hash, :string
-          field :current_password, :string, virtual: true
-          field :password, :string, virtual: true
+          field :password_hash, :string, redact: true
+          field :current_password, :string, virtual: true, redact: true
+          field :password, :string, virtual: true, redact: true
 
           timestamps()
         end
@@ -155,11 +159,13 @@ defmodule Pow.Ecto.SchemaTest do
         use Ecto.Schema
         use Pow.Ecto.Schema
 
+        @ecto_derive_inspect_for_redacted_fields false
+
         schema "users" do
           field :email, CustomType
-          field :password_hash, :string
-          field :current_password, :string, virtual: true
-          field :password, :string, virtual: true
+          field :password_hash, :string, redact: true
+          field :current_password, :string, virtual: true, redact: true
+          field :password, :string, virtual: true, redact: true
 
           timestamps()
         end

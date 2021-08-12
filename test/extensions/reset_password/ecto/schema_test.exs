@@ -12,6 +12,8 @@ defmodule PowResetPassword.Ecto.SchemaTest do
     use Pow.Extension.Ecto.Schema,
       extensions: [PowResetPassword]
 
+    @ecto_derive_inspect_for_redacted_fields false
+
     schema "users" do
       field :password_reset_at, :utc_datetime
 
