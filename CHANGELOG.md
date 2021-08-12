@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.25 (TBA)
+
+### Bug fixes
+
+* [`Pow.Operations`] `Pow.Operations.fetch_primary_key_values/2` now ensures that module exists and is loaded before deriving primary keys
+
 ## v1.0.24 (2021-05-27)
 
 ### Enhancements

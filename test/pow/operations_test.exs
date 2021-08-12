@@ -55,5 +55,9 @@ defmodule Pow.OperationsTest do
       assert Operations.fetch_primary_key_values(%CompositePrimaryFieldsUser{some_id: 1, another_id: 2}, @config) == {:ok, some_id: 1, another_id: 2}
       assert Operations.fetch_primary_key_values(%NonEctoUser{id: 1}, @config) == {:ok, id: 1}
     end
+
+    test "requires module exists" do
+      assert Operations.fetch_primary_key_values(%{__struct__: Invalid}, @config) == {:error, "The module Invalid does not exist"}
+    end
   end
 end
