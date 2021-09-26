@@ -2,6 +2,8 @@
 
 ## v1.0.25 (TBA)
 
+Now supports `phoenix_html` 3.x.x.
+
 ### Enhancements
 
 * [`Pow.Ecto.Schema.Fields`] The `:password_hash`, `:current_password`, and `:password` fields now have `redact: true` option set

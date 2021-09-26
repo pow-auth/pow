@@ -21,7 +21,8 @@ defmodule Mix.Pow do
   @deprecated "Use `ensure_ecto!` or `ensure_phoenix!` instead"
   @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok
   def ensure_dep!(task, dep, _args) do
-    fetch_deps()
+    []
+    |> Dep.load_on_environment()
     |> top_level_dep_in_deps?(dep)
     |> case do
       true ->
@@ -37,7 +38,7 @@ defmodule Mix.Pow do
   """
   @spec ensure_ecto!(binary(), OptionParser.argv()) :: :ok
   def ensure_ecto!(task, _args) do
-    deps = fetch_deps()
+    deps = Dep.load_on_environment([])
 
     cond do
       top_level_dep_in_deps?(deps, :ecto) -> :ok
@@ -53,22 +54,15 @@ defmodule Mix.Pow do
     end)
   end
 
-  # TODO: Remove by 1.1.0 and only support Elixir 1.7
-  defp fetch_deps do
-    System.version()
-    |> Version.match?("~> 1.6.0")
-    |> case do
-      true  -> apply(Dep, :loaded, [[]])
-      false -> apply(Dep, :load_on_environment, [[]])
-    end
-  end
-
   @doc """
   Raises an exception if application doesn't have Phoenix as dependency.
   """
   @spec ensure_phoenix!(binary(), OptionParser.argv()) :: :ok
   def ensure_phoenix!(task, _args) do
-    case top_level_dep_in_deps?(fetch_deps(), :phoenix) do
+    []
+    |> Dep.load_on_environment()
+    |> top_level_dep_in_deps?(:phoenix)
+    |> case do
       true -> :ok
       false -> Mix.raise("mix #{task} can only be run inside an application directory that has :phoenix as dependency")
     end
