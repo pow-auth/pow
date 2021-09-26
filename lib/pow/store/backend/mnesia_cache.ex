@@ -90,6 +90,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
     * `:namespace` - string value to use for namespacing keys, defaults to
       "cache".
+
+    * `:writes` - set to `:async` to do asynchronous writes. Defauts to
+      `:sync`.
   """
   use GenServer
   alias Pow.{Config, Store.Backend.Base}
@@ -114,12 +117,26 @@ defmodule Pow.Store.Backend.MnesiaCache do
   def put(config, record_or_records) do
     ttl = ttl!(config)
 
-    GenServer.cast(__MODULE__, {:cache, config, record_or_records, ttl})
+    case Config.get(config, :writes, :sync) do
+      :sync ->
+        records = table_insert(record_or_records, ttl, config)
+        GenServer.cast(__MODULE__, {:append_validators, config, records, ttl})
+
+      :async ->
+        GenServer.cast(__MODULE__, {:cache, config, record_or_records, ttl})
+    end
   end
 
   @impl Base
   def delete(config, key) do
-    GenServer.cast(__MODULE__, {:delete, config, key})
+    case Config.get(config, :writes, :sync) do
+      :sync ->
+        key = table_delete(key, config)
+        GenServer.cast(__MODULE__, {:clear_invalidator, config, key})
+
+      :async ->
+        GenServer.cast(__MODULE__, {:delete, config, key})
+    end
   end
 
   @impl Base
@@ -147,12 +164,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   @impl GenServer
-  @spec handle_cast({:cache, Base.config(), Base.record() | [Base.record()], integer()}, map()) :: {:noreply, map()}
-  def handle_cast({:cache, config, record_or_records, ttl}, %{invalidators: invalidators} = state) do
+  @spec handle_cast({:append_validators, Base.config(), [Base.record()], integer()}, map()) :: {:noreply, map()}
+  def handle_cast({:append_validators, config, records, ttl}, %{invalidators: invalidators} = state) do
     invalidators =
-      record_or_records
-      |> table_insert(ttl, config)
-      |> Enum.reduce(invalidators, fn {key, _}, invalidators ->
+      Enum.reduce(records, invalidators, fn {key, _}, invalidators ->
         append_invalidator(key, invalidators, ttl, config)
       end)
 
@@ -161,14 +176,25 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:delete, Base.config(), Base.key() | [Base.key()]}, map()) :: {:noreply, map()}
-  def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
-    invalidators =
-      key
-      |> table_delete(config)
-      |> clear_invalidator(invalidators)
+  @spec handle_cast({:cache, Base.config(), Base.record() | [Base.record()], integer()}, map()) :: {:noreply, map()}
+  def handle_cast({:cache, config, record_or_records, ttl}, state) do
+    records = table_insert(record_or_records, ttl, config)
+
+    handle_cast({:append_validators, config, records, ttl}, state)
+  end
+
+  @spec handle_cast({:clear_invalidator, Base.config(), Base.key() | [Base.key()]}, map()) :: {:noreply, map()}
+  def handle_cast({:clear_invalidator, _config, key}, %{invalidators: invalidators} = state) do
+    invalidators = clear_invalidator(key, invalidators)
 
     {:noreply, %{state | invalidators: invalidators}}
+  end
+
+  @spec handle_cast({:delete, Base.config(), Base.key() | [Base.key()]}, map()) :: {:noreply, map()}
+  def handle_cast({:delete, config, key}, state) do
+    key = table_delete(key, config)
+
+    handle_cast({:clear_invalidator, config, key}, state)
   end
 
   @spec handle_cast({:refresh_invalidators, Base.config()}, map()) :: {:noreply, map()}

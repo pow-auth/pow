@@ -4,7 +4,7 @@ defmodule Pow.Store.Backend.EtsCacheTest do
 
   alias Pow.{Config, Store.Backend.EtsCache}
 
-  @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
+  @default_config [namespace: "pow:test"]
 
   setup do
     start_supervised!({EtsCache, []})
@@ -16,48 +16,46 @@ defmodule Pow.Store.Backend.EtsCacheTest do
     assert EtsCache.get(@default_config, "key") == :not_found
 
     EtsCache.put(@default_config, {"key", "value"})
-    :timer.sleep(100)
     assert EtsCache.get(@default_config, "key") == "value"
 
     EtsCache.delete(@default_config, "key")
-    :timer.sleep(100)
     assert EtsCache.get(@default_config, "key") == :not_found
   end
 
-  test "can put multiple records at once" do
-    EtsCache.put(@default_config, [{"key1", "1"}, {"key2", "2"}])
-    :timer.sleep(100)
-    assert EtsCache.get(@default_config, "key1") == "1"
-    assert EtsCache.get(@default_config, "key2") == "2"
-  end
-
-  test "with no `:ttl` option" do
-    config = [namespace: "pow:test"]
+  test "with `writes: :async` config option" do
+    config = Keyword.put(@default_config, :writes, :async)
 
     EtsCache.put(config, {"key", "value"})
+    assert EtsCache.get(config, "key") == :not_found
     :timer.sleep(100)
     assert EtsCache.get(config, "key") == "value"
 
     EtsCache.delete(config, "key")
+    assert EtsCache.get(config, "key") == "value"
     :timer.sleep(100)
+    assert EtsCache.get(config, "key") == :not_found
+  end
+
+  test "can put multiple records at once" do
+    EtsCache.put(@default_config, [{"key1", "1"}, {"key2", "2"}])
+    assert EtsCache.get(@default_config, "key1") == "1"
+    assert EtsCache.get(@default_config, "key2") == "2"
   end
 
   test "can match fetch all" do
     EtsCache.put(@default_config, {"key1", "value"})
     EtsCache.put(@default_config, {"key2", "value"})
     EtsCache.put(@default_config, {["namespace", "key"], "value"})
-    :timer.sleep(100)
 
     assert EtsCache.all(@default_config, :_) ==  [{"key1", "value"}, {"key2", "value"}]
     assert EtsCache.all(@default_config, ["namespace", :_]) ==  [{["namespace", "key"], "value"}]
   end
 
-  test "records auto purge" do
-    config = Config.put(@default_config, :ttl, 100)
+  test "with `:ttl` option records auto purge" do
+    config = Config.put(@default_config, :ttl, 50)
 
     EtsCache.put(config, {"key", "value"})
     EtsCache.put(config, [{"key1", "1"}, {"key2", "2"}])
-    :timer.sleep(50)
     assert EtsCache.get(config, "key") == "value"
     assert EtsCache.get(config, "key1") == "1"
     assert EtsCache.get(config, "key2") == "2"
@@ -72,8 +70,6 @@ defmodule Pow.Store.Backend.EtsCacheTest do
     assert_capture_io_eval(quote do
       assert EtsCache.put(unquote(@default_config), "key", "value") == :ok
     end, "Pow.Store.Backend.EtsCache.put/3 is deprecated. Use `put/2` instead")
-
-    :timer.sleep(50)
 
     assert_capture_io_eval(quote do
       assert EtsCache.keys(unquote(@default_config)) == [{"key", "value"}]
