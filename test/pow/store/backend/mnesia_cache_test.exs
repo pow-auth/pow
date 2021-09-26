@@ -35,7 +35,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(@default_config, "key") == :not_found
 
       MnesiaCache.put(@default_config, {"key", "value"})
-      :timer.sleep(100)
       assert MnesiaCache.get(@default_config, "key") == "value"
 
       restart(@default_config)
@@ -43,15 +42,27 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(@default_config, "key") == "value"
 
       MnesiaCache.delete(@default_config, "key")
-      :timer.sleep(100)
       assert MnesiaCache.get(@default_config, "key") == :not_found
+    end
+
+    test "with `writes: :async` config option" do
+      config = Keyword.put(@default_config, :writes, :async)
+
+      MnesiaCache.put(config, {"key", "value"})
+      assert MnesiaCache.get(config, "key") == :not_found
+      :timer.sleep(100)
+      assert MnesiaCache.get(config, "key") == "value"
+
+      MnesiaCache.delete(config, "key")
+      assert MnesiaCache.get(config, "key") == "value"
+      :timer.sleep(100)
+      assert MnesiaCache.get(config, "key") == :not_found
     end
 
     test "can put multiple records" do
       assert MnesiaCache.get(@default_config, "key") == :not_found
 
       MnesiaCache.put(@default_config, [{"key1", "1"}, {"key2", "2"}])
-      :timer.sleep(100)
       assert MnesiaCache.get(@default_config, "key1") == "1"
       assert MnesiaCache.get(@default_config, "key2") == "2"
 
@@ -71,18 +82,16 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       MnesiaCache.put(@default_config, {"key1", "value"})
       MnesiaCache.put(@default_config, {"key2", "value"})
       MnesiaCache.put(@default_config, {["namespace", "key"], "value"})
-      :timer.sleep(100)
 
       assert MnesiaCache.all(@default_config, :_) ==  [{"key1", "value"}, {"key2", "value"}]
       assert MnesiaCache.all(@default_config, ["namespace", :_]) ==  [{["namespace", "key"], "value"}]
     end
 
     test "records auto purge with persistent storage" do
-      config = Config.put(@default_config, :ttl, 100)
+      config = Config.put(@default_config, :ttl, 50)
 
       MnesiaCache.put(config, {"key", "value"})
       MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
-      :timer.sleep(50)
       assert MnesiaCache.get(config, "key") == "value"
       assert MnesiaCache.get(config, "key1") == "1"
       assert MnesiaCache.get(config, "key2") == "2"
@@ -94,7 +103,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # After restart
       MnesiaCache.put(config, {"key", "value"})
       MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
-      :timer.sleep(50)
       restart(config)
       assert MnesiaCache.get(config, "key") == "value"
       assert MnesiaCache.get(config, "key1") == "1"
@@ -106,7 +114,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # After record expiration updated reschedules
       MnesiaCache.put(config, {"key", "value"})
-      :timer.sleep(50)
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], {"value", :os.system_time(:millisecond) + 150}})
       :timer.sleep(100)
       assert MnesiaCache.get(config, "key") == "value"
@@ -127,8 +134,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert_capture_io_eval(quote do
         assert MnesiaCache.put(unquote(@default_config), "key", "value") == :ok
       end, "Pow.Store.Backend.MnesiaCache.put/3 is deprecated. Use `put/2` instead")
-
-      :timer.sleep(50)
 
       assert_capture_io_eval(quote do
         assert MnesiaCache.keys(unquote(@default_config)) == [{"key", "value"}]
@@ -200,7 +205,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == []
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
       assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_set_on_a", "value"}])
-      :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_set_on_a"]) == "value"
 
       # Join cluster with node b and ensures that it has node a data
@@ -217,13 +221,11 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Write to node b can be fetched on node a
       assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_set_on_b", "value"}])
-      :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_set_on_b"]) == "value"
 
       # Set short TTL on node a
-      config = Config.put(@default_config, :ttl, 150)
+      config = Config.put(@default_config, :ttl, 100)
       assert :rpc.call(node_a, MnesiaCache, :put, [config, {"short_ttl_key_set_on_a", "value"}])
-      :timer.sleep(50)
 
       # Stop node a
       :ok = :slave.stop(node_a)
@@ -236,9 +238,8 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_set_on_a"]) == :not_found
 
       # Continue writing to node b with short TTL
-      config = Config.put(@default_config, :ttl, @startup_wait_time + 100)
+      config = Config.put(@default_config, :ttl, @startup_wait_time + 50)
       assert :rpc.call(node_b, MnesiaCache, :put, [config, {"short_ttl_key_2_set_on_b", "value"}])
-      :timer.sleep(50)
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
 
       # Start node a and join cluster
@@ -250,7 +251,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       expected_msg = "Joined mnesia cluster nodes [#{inspect node_b}] for #{inspect node_a}"
       assert_receive {:log, ^node_a, :info, ^expected_msg}, @assertion_timeout
       startup_time = System.monotonic_time(:millisecond) - startup_timestamp
-      assert (startup_time - 100) < @startup_wait_time, "Node start up took longer than #{@startup_wait_time - 100}ms (#{startup_time}ms)"
+      assert (startup_time - 50) < @startup_wait_time, "Node start up took longer than #{@startup_wait_time - 50}ms (#{startup_time}ms)"
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_a, node_b]
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
@@ -286,7 +287,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Ensure that data writing on node a is replicated on node b
       assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_1", "value"}])
-      :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "value"
 
@@ -298,7 +298,6 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, MnesiaCache, :put, [@default_config, {"key_1_a", "value"}])
       assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_1", "b"}])
       assert :rpc.call(node_b, MnesiaCache, :put, [@default_config, {"key_1_b", "value"}])
-      :timer.sleep(50)
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1"]) == "a"
       assert :rpc.call(node_a, MnesiaCache, :get, [@default_config, "key_1_a"]) == "value"
       assert :rpc.call(node_b, MnesiaCache, :get, [@default_config, "key_1"]) == "b"

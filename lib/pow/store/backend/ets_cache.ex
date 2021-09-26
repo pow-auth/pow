@@ -12,6 +12,9 @@ defmodule Pow.Store.Backend.EtsCache do
       is not provided, or is set to nil, the records will never expire.
 
     * `:namespace` - value to use for namespacing keys. Defaults to "cache".
+
+    * `:writes` - set to `:async` to do asynchronous writes. Defauts to
+      `:sync`.
   """
   use GenServer
   alias Pow.{Config, Store.Backend.Base}
@@ -26,12 +29,24 @@ defmodule Pow.Store.Backend.EtsCache do
 
   @impl Base
   def put(config, record_or_records) do
-    GenServer.cast(__MODULE__, {:cache, config, record_or_records})
+    case Config.get(config, :writes, :sync) do
+      :sync ->
+        GenServer.call(__MODULE__, {:cache, config, record_or_records})
+
+      :async ->
+        GenServer.cast(__MODULE__, {:cache, config, record_or_records})
+    end
   end
 
   @impl Base
   def delete(config, key) do
-    GenServer.cast(__MODULE__, {:delete, config, key})
+    case Config.get(config, :writes, :sync) do
+      :sync ->
+        GenServer.call(__MODULE__, {:delete, config, key})
+
+      :async ->
+        GenServer.cast(__MODULE__, {:delete, config, key})
+    end
   end
 
   @impl Base
@@ -52,6 +67,21 @@ defmodule Pow.Store.Backend.EtsCache do
     init_table()
 
     {:ok, %{invalidators: %{}}}
+  end
+
+  @impl GenServer
+  @spec handle_call({:cache, Base.config(), Base.record() | [Base.record()]}, GenServer.from(), map()) :: {:noreply, map()}
+  def handle_call({:cache, config, record_or_records}, _from, state) do
+    {:noreply, state} = handle_cast({:cache, config, record_or_records}, state)
+
+    {:reply, :ok, state}
+  end
+
+  @spec handle_call({:delete, Base.config(), Base.key()}, GenServer.from(), map()) :: {:noreply, map()}
+  def handle_call({:delete, config, key}, _from, state) do
+    {:noreply, state} = handle_cast({:delete, config, key}, state)
+
+    {:reply, :ok, state}
   end
 
   @impl GenServer

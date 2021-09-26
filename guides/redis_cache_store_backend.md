@@ -19,6 +19,19 @@ Now set up your `WEB_PATH/pow/redis_cache.ex` like so:
 ```elixir
 # lib/my_app_web/pow/redis_cache.ex
 defmodule MyAppWeb.Pow.RedisCache do
+  @moduledoc """
+  Redis based key value store with auto expiration.
+
+  ## Configuration options
+
+    * `:ttl` - integer value in milliseconds for ttl of records. If this value
+      is not provided, or is set to nil, the records will never expire.
+
+    * `:namespace` - value to use for namespacing keys. Defaults to "cache".
+
+    * `:writes` - set to `:async` to do asynchronous writes. Defauts to
+      `:sync`.
+  """
   @behaviour Pow.Store.Backend.Base
 
   alias Pow.Config
@@ -27,7 +40,8 @@ defmodule MyAppWeb.Pow.RedisCache do
 
   @impl true
   def put(config, record_or_records) do
-    ttl      = Config.get(config, :ttl) || raise_ttl_error!()
+    ttl = Config.get(config, :ttl) || raise_ttl_error!()
+
     commands =
       record_or_records
       |> List.wrap()
@@ -37,7 +51,7 @@ defmodule MyAppWeb.Pow.RedisCache do
         |> put_command(value, ttl)
       end)
 
-    Task.start(fn ->
+    maybe_async(config, fn ->
       @redix_instance_name
       |> Redix.pipeline!(commands)
       |> Enum.map(fn
@@ -60,6 +74,13 @@ defmodule MyAppWeb.Pow.RedisCache do
     ["SET", key, value, "PX", ttl]
   end
 
+  defp maybe_async(config, fun) do
+    case Config.get(config, :writes, :sync) do
+      :sync -> fun.()
+      :async -> Task.start(fun)
+    end
+  end
+
   @impl true
   def delete(config, key) do
     key =
@@ -67,7 +88,7 @@ defmodule MyAppWeb.Pow.RedisCache do
       |> redis_key(key)
       |> to_binary_redis_key()
 
-    Task.start(fn ->
+    maybe_async(config, fn ->
       Redix.command!(@redix_instance_name, ["DEL", key])
     end)
 
@@ -240,7 +261,6 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
   use ExUnit.Case
   doctest MyAppWeb.Pow.RedisCache
 
-  alias ExUnit.CaptureLog
   alias MyAppWeb.Pow.RedisCache
 
   @default_config [namespace: "test", ttl: :timer.hours(1)]
@@ -255,12 +275,26 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     assert RedisCache.get(@default_config, "key") == :not_found
 
     RedisCache.put(@default_config, {"key", "value"})
-    :timer.sleep(100)
     assert RedisCache.get(@default_config, "key") == "value"
 
     RedisCache.delete(@default_config, "key")
-    :timer.sleep(100)
     assert RedisCache.get(@default_config, "key") == :not_found
+  end
+
+  test "with `writes: :async` config option" do
+    config = Keyword.put(@default_config, :writes, :async)
+
+    assert RedisCache.get(config, "key") == :not_found
+
+    RedisCache.put(config, {"key", "value"})
+    assert RedisCache.get(config, "key") == :not_found
+    :timer.sleep(100)
+    assert RedisCache.get(config, "key") == "value"
+
+    RedisCache.delete(config, "key")
+    assert RedisCache.get(config, "key") == "value"
+    :timer.sleep(100)
+    assert RedisCache.get(config, "key") == :not_found
   end
 
   describe "with redis errors" do
@@ -274,17 +308,15 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
       end)
     end
 
-    test "logs error" do
-      assert CaptureLog.capture_log(fn ->
+    test "raises error" do
+      assert_raise(RuntimeError, "Redix failed SET because of [%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}]", fn ->
         RedisCache.put(@default_config, {"key", "value"})
-        :timer.sleep(100)
-      end) =~ "(RuntimeError) Redix failed SET because of [%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}]"
+      end)
     end
   end
 
   test "can put multiple records at once" do
     RedisCache.put(@default_config, [{"key1", "1"}, {"key2", "2"}])
-    :timer.sleep(100)
     assert RedisCache.get(@default_config, "key1") == "1"
     assert RedisCache.get(@default_config, "key2") == "2"
   end
@@ -293,7 +325,6 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     assert RedisCache.all(@default_config, :_) == []
 
     for number <- 1..11, do: RedisCache.put(@default_config, {"key#{number}", "value"})
-    :timer.sleep(100)
     items = RedisCache.all(@default_config, :_)
 
     assert Enum.find(items, fn {key, "value"} -> key == "key1" end)
@@ -301,17 +332,14 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     assert length(items) == 11
 
     RedisCache.put(@default_config, {["namespace", "key"], "value"})
-    :timer.sleep(100)
-
     assert RedisCache.all(@default_config, ["namespace", :_]) ==  [{["namespace", "key"], "value"}]
   end
 
   test "records auto purge" do
-    config = Keyword.put(@default_config, :ttl, 100)
+    config = Keyword.put(@default_config, :ttl, 50)
 
     RedisCache.put(config, {"key", "value"})
     RedisCache.put(config, [{"key1", "1"}, {"key2", "2"}])
-    :timer.sleep(50)
     assert RedisCache.get(config, "key") == "value"
     assert RedisCache.get(config, "key1") == "1"
     assert RedisCache.get(config, "key2") == "2"

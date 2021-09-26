@@ -8,10 +8,16 @@ Now supports Phoenix 1.6.x, and `phoenix_html` 3.x.x.
 
 * [`Pow.Ecto.Schema.Fields`] The `:password_hash`, `:current_password`, and `:password` fields now have `redact: true` option set
 * [`Pow.Phoenix.Controller`] `Pow.Phoenix.Controller.action/3` now properly handles `{:halt, conn}` returned in the `before_process` callback
+* [`Pow.Store.Backend.EtsCache`] Now does synchronous writes unless `writes: :async` is passed in config options
+* [`Pow.Store.Backend.MnesiaCache`] Now does synchronous writes unless `writes: :async` is passed in config options
 
 ### Bug fixes
 
 * [`Pow.Operations`] `Pow.Operations.fetch_primary_key_values/2` now ensures that module exists and is loaded before deriving primary keys
+
+### Documentation
+
+* Updated [redis guide](guides/redis_cache_store_backend.md) to use synchronous writes unless `writes: :async` is passed in config options
 
 ## v1.0.24 (2021-05-27)
 
