@@ -2,7 +2,7 @@
 
 ## v1.0.25 (TBA)
 
-Now supports `phoenix_html` 3.x.x.
+Now supports Phoenix 1.6.x, and `phoenix_html` 3.x.x.
 
 ### Enhancements
 
