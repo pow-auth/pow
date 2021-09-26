@@ -68,8 +68,8 @@ defmodule Pow.Phoenix.Controller do
   """
   @spec action(atom(), Conn.t(), map()) :: Conn.t()
   def action(controller, %{private: private} = conn, params) do
-    action    = private.phoenix_action
-    config    = Plug.fetch_config(conn)
+    action = private.phoenix_action
+    config = Plug.fetch_config(conn)
     callbacks = Config.get(config, :controller_callbacks)
 
     conn
@@ -79,6 +79,7 @@ defmodule Pow.Phoenix.Controller do
     |> respond_action(controller, action)
   end
 
+  defp process_action({:halt, conn}, _controller, _action, _params), do: {:halt, conn}
   defp process_action(conn, controller, action, params) do
     apply(controller, String.to_atom("process_#{action}"), [conn, params])
   end
@@ -88,6 +89,8 @@ defmodule Pow.Phoenix.Controller do
     apply(controller, String.to_atom("respond_#{action}"), [results])
   end
 
+  defp maybe_callback({:halt, conn}, _callbacks, _hook, _controller, _action, _config),
+    do: {:halt, conn}
   defp maybe_callback(results, nil, _hook, _controller, _action, _config), do: results
   defp maybe_callback(results, callbacks, hook, controller, action, config) do
     apply(callbacks, hook, [controller, action, results, config])

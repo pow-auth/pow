@@ -7,6 +7,7 @@ Now supports Phoenix 1.6.x, and `phoenix_html` 3.x.x.
 ### Enhancements
 
 * [`Pow.Ecto.Schema.Fields`] The `:password_hash`, `:current_password`, and `:password` fields now have `redact: true` option set
+* [`Pow.Phoenix.Controller`] `Pow.Phoenix.Controller.action/3` now properly handles `{:halt, conn}` returned in the `before_process` callback
 
 ### Bug fixes
 
