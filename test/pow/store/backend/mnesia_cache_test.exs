@@ -234,7 +234,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Ensure that node b invalidates with TTL set on node a
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_set_on_a"]) == "value"
-      :timer.sleep(50)
+      :timer.sleep(100)
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_set_on_a"]) == :not_found
 
       # Continue writing to node b with short TTL
