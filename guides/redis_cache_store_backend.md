@@ -111,7 +111,7 @@ defmodule MyAppWeb.Pow.RedisCache do
     ]
   end
 
-  defp current_timestamp(), do: DateTime.to_unix(DateTime.utc_now(), :millisecond)
+  defp current_timestamp, do: DateTime.to_unix(DateTime.utc_now(), :millisecond)
 
   defp command_builder(key, method) do
     count = Enum.count(key)
@@ -415,9 +415,12 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     end
 
     test "raises error" do
-      assert_raise(RuntimeError, ~r/#{Regex.escape("Redix received unexpected response [{%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}, ")}/, fn ->
+      expected_error_message =
+        "Redix received unexpected response [{%Redix.Error{message: \"OOM command not allowed when used memory > 'maxmemory'.\"}, "
+
+      assert_raise RuntimeError, ~r/#{Regex.escape(expected_error_message)}/, fn ->
         RedisCache.put(@default_config, {"key", "value"})
-      end)
+      end
     end
   end
 
