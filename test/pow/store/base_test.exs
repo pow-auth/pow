@@ -32,15 +32,13 @@ defmodule Pow.Store.BaseTest do
 
   test "preset config can be overridden" do
     default_config  = []
-    override_config = [ttl: 100, namespace: "overridden_namespace"]
+    override_config = [ttl: 50, namespace: "overridden_namespace"]
 
     assert BaseMock.get(default_config, :test) == :not_found
     assert BaseMock.get(override_config, :test) == :not_found
 
     BaseMock.put(default_config, :test, :value)
     BaseMock.put(override_config, :test, :value)
-    :timer.sleep(50)
-
     assert BaseMock.get(default_config, :test) == :value
     assert BaseMock.get(override_config, :test) == :value
     :timer.sleep(50)
