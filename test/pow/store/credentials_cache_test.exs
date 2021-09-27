@@ -201,11 +201,8 @@ defmodule Pow.Store.CredentialsCacheTest do
       user_1 = %User{id: 1}
       config = [backend: EtsCache]
 
-      CredentialsCache.put(config ++ [ttl: 150], "key_1", {user_1, a: 1})
-      :timer.sleep(50)
-      CredentialsCache.put(config ++ [ttl: 200], "key_2", {user_1, a: 2})
-      :timer.sleep(50)
-
+      CredentialsCache.put(config ++ [ttl: 50], "key_1", {user_1, a: 1})
+      CredentialsCache.put(config ++ [ttl: 100], "key_2", {user_1, a: 2})
       assert CredentialsCache.get(config, "key_1") == {user_1, a: 1}
       assert CredentialsCache.get(config, "key_2") == {user_1, a: 2}
       assert CredentialsCache.sessions(config, user_1) == ["key_1", "key_2"]

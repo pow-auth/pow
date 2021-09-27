@@ -415,8 +415,6 @@ defmodule Pow.Plug.SessionTest do
       timestamp  = :os.system_time(:millisecond)
       session_id = store_in_cache("credentials_cache_test", {@user, inserted_at: timestamp}, [])
 
-      :timer.sleep(100)
-
       conn =
         conn
         |> Conn.fetch_session()

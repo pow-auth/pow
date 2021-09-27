@@ -340,20 +340,15 @@ defmodule MyAppWeb.APIAuthPlugTest do
     assert {%{private: %{api_access_token: access_token, api_renewal_token: renewal_token}}, ^user} =
         APIAuthPlug.create(conn, user, @pow_config)
 
-    :timer.sleep(100)
-
     assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
     assert {%{private: %{api_access_token: renewed_access_token, api_renewal_token: renewed_renewal_token}}, ^user} =
       APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
-
-    :timer.sleep(100)
 
     assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
     assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
     assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
 
     APIAuthPlug.delete(with_auth_header(conn, renewed_access_token), @pow_config)
-    :timer.sleep(100)
 
     assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
     assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config)
@@ -437,7 +432,6 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   describe "renew/2" do
     setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
-      :timer.sleep(100)
 
       {:ok, renewal_token: authed_conn.private[:api_renewal_token]}
     end
@@ -468,7 +462,6 @@ defmodule MyAppWeb.API.V1.SessionControllerTest do
   describe "delete/2" do
     setup %{conn: conn} do
       authed_conn = post(conn, Routes.api_v1_session_path(conn, :create, @valid_params))
-      :timer.sleep(100)
 
       {:ok, access_token: authed_conn.private[:api_access_token]}
     end

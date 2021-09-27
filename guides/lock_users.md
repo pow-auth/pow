@@ -407,8 +407,6 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
       |> Pow.Plug.fetch_config()
       |> Pow.Config.get(:cache_store_backend, Pow.Store.Backend.EtsCache)
 
-    :timer.sleep(100)
-
     [backend: backend]
     |> ResetTokenCache.all([:_])
     |> Enum.filter(fn {_key, %{id: id}} -> id == user.id end)
