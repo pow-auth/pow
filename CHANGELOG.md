@@ -18,6 +18,7 @@ Now supports Phoenix 1.6.x, and `phoenix_html` 3.x.x.
 ### Documentation
 
 * Updated [redis guide](guides/redis_cache_store_backend.md) to use synchronous writes unless `writes: :async` is passed in config options
+* Updated [redis guide](guides/redis_cache_store_backend.md) to use optimized lookups with sorted keys
 
 ## v1.0.24 (2021-05-27)
 
