@@ -451,7 +451,7 @@ defmodule MyAppWeb.Pow.RedisCacheTest do
     assert RedisCache.get(config, "key1") == "1"
     assert RedisCache.get(config, ["namespace", "key2"]) == "2"
     assert redix_zmembers_decoded("namespace") == ["key2"]
-    RedisCache.put(Keyword.put(@default_config, :ttl, 200), [{["namespace", "key3"], "3"}])
+    RedisCache.put(Keyword.put(@default_config, :ttl, 150), [{["namespace", "key3"], "3"}])
     assert redix_zmembers_decoded("namespace") == ["key2", "key3"]
     :timer.sleep(100)
     assert RedisCache.get(config, "key") == :not_found

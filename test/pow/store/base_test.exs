@@ -41,7 +41,7 @@ defmodule Pow.Store.BaseTest do
     BaseMock.put(override_config, :test, :value)
     assert BaseMock.get(default_config, :test) == :value
     assert BaseMock.get(override_config, :test) == :value
-    :timer.sleep(50)
+    :timer.sleep(100)
 
     assert BaseMock.get(default_config, :test) == :value
     assert BaseMock.get(override_config, :test) == :not_found
