@@ -91,7 +91,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     * `:namespace` - string value to use for namespacing keys, defaults to
       "cache".
 
-    * `:writes` - set to `:async` to do asynchronous writes. Defauts to
+    * `:writes` - set to `:async` to do asynchronous writes. Defaults to
       `:sync`.
   """
   use GenServer

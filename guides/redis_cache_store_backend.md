@@ -48,7 +48,7 @@ defmodule MyAppWeb.Pow.RedisCache do
 
     * `:namespace` - value to use for namespacing keys. Defaults to "cache".
 
-    * `:writes` - set to `:async` to do asynchronous writes. Defauts to
+    * `:writes` - set to `:async` to do asynchronous writes. Defaults to
       `:sync`.
   """
 
