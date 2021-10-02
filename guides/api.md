@@ -102,16 +102,20 @@ defmodule MyAppWeb.APIAuthPlug do
     store_config  = store_config(config)
     access_token  = Pow.UUID.generate()
     renewal_token = Pow.UUID.generate()
-    conn          =
+
+    conn =
       conn
       |> Conn.put_private(:api_access_token, sign_token(conn, access_token, config))
       |> Conn.put_private(:api_renewal_token, sign_token(conn, renewal_token, config))
+      |> Conn.register_before_send(fn conn ->
+        # The store caches will use their default `:ttl` setting. To change the
+        # `:ttl`, `Keyword.put(store_config, :ttl, :timer.minutes(10))` can be
+        # passed in as the first argument instead of `store_config`.
+        CredentialsCache.put(store_config, access_token, {user, [renewal_token: renewal_token]})
+        PersistentSessionCache.put(store_config, renewal_token, {user, [access_token: access_token]})
 
-    # The store caches will use their default `:ttl` setting. To change the
-    # `:ttl`, `Keyword.put(store_config, :ttl, :timer.minutes(10))` can be
-    # passed in as the first argument instead of `store_config`.
-    CredentialsCache.put(store_config, access_token, {user, [renewal_token: renewal_token]})
-    PersistentSessionCache.put(store_config, renewal_token, {user, [access_token: access_token]})
+        conn
+      end)
 
     {conn, user}
   end
@@ -130,8 +134,12 @@ defmodule MyAppWeb.APIAuthPlug do
          {:ok, token}        <- verify_token(conn, signed_token, config),
          {_user, metadata}   <- CredentialsCache.get(store_config, token) do
 
-      PersistentSessionCache.delete(store_config, metadata[:renewal_token])
-      CredentialsCache.delete(store_config, token)
+      Conn.register_before_send(conn, fn conn ->
+        PersistentSessionCache.delete(store_config, metadata[:renewal_token])
+        CredentialsCache.delete(store_config, token)
+
+        conn
+      end)
     else
       _any -> :ok
     end
@@ -154,10 +162,17 @@ defmodule MyAppWeb.APIAuthPlug do
          {:ok, token}        <- verify_token(conn, signed_token, config),
          {user, metadata}    <- PersistentSessionCache.get(store_config, token) do
 
-      CredentialsCache.delete(store_config, metadata[:access_token])
-      PersistentSessionCache.delete(store_config, token)
+      {conn, user} = create(conn, user, config)
 
-      create(conn, user, config)
+      conn =
+        Conn.register_before_send(conn, fn conn ->
+          CredentialsCache.delete(store_config, metadata[:access_token])
+          PersistentSessionCache.delete(store_config, token)
+
+          conn
+        end)
+
+      {conn, user}
     else
       _any -> {conn, nil}
     end
@@ -324,6 +339,7 @@ defmodule MyAppWeb.APIAuthPlugTest do
 
   alias MyAppWeb.{APIAuthPlug, Endpoint}
   alias MyApp.{Repo, Users.User}
+  alias Plug.Conn
 
   @pow_config [otp_app: :my_app]
 
@@ -335,24 +351,27 @@ defmodule MyAppWeb.APIAuthPlugTest do
   end
 
   test "can create, fetch, renew, and delete session", %{conn: conn, user: user} do
-    assert {_no_auth_conn, nil} = APIAuthPlug.fetch(conn, @pow_config)
+    assert {_res_conn, nil} = run(APIAuthPlug.fetch(conn, @pow_config))
 
-    assert {%{private: %{api_access_token: access_token, api_renewal_token: renewal_token}}, ^user} =
-        APIAuthPlug.create(conn, user, @pow_config)
+    assert {res_conn, ^user} = run(APIAuthPlug.create(conn, user, @pow_config))
+    assert %{private: %{api_access_token: access_token, api_renewal_token: renewal_token}} = res_conn
 
-    assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
-    assert {%{private: %{api_access_token: renewed_access_token, api_renewal_token: renewed_renewal_token}}, ^user} =
-      APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
+    assert {_res_conn, ^user} = run(APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config))
+    assert {res_conn, ^user} = run(APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config))
+    assert %{private: %{api_access_token: renewed_access_token, api_renewal_token: renewed_renewal_token}} = res_conn
 
-    assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config)
-    assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config)
-    assert {_conn, ^user} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
+    assert {_res_conn, nil} = run(APIAuthPlug.fetch(with_auth_header(conn, access_token), @pow_config))
+    assert {_res_conn, nil} = run(APIAuthPlug.renew(with_auth_header(conn, renewal_token), @pow_config))
+    assert {_res_conn, ^user} = run(APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config))
 
-    APIAuthPlug.delete(with_auth_header(conn, renewed_access_token), @pow_config)
+    run(APIAuthPlug.delete(with_auth_header(conn, renewed_access_token), @pow_config))
 
-    assert {_conn, nil} = APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config)
-    assert {_conn, nil} = APIAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config)
+    assert {_res_conn, nil} = run(APIAuthPlug.fetch(with_auth_header(conn, renewed_access_token), @pow_config))
+    assert {_res_conn, nil} = run(APIAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config))
   end
+
+  defp run({conn, value}), do: {run(conn), value}
+  defp run(conn), do: Conn.send_resp(conn, 200, "")
 
   defp with_auth_header(conn, token), do: Plug.Conn.put_req_header(conn, "authorization", token)
 end
