@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.26 (TBA)
+
+* Updated [api guide](guides/api.md) to use `Plug.Conn.register_before_send/2` for token writes
+
 ## v1.0.25 (2021-09-26)
 
 Now supports Phoenix 1.6.x, and `phoenix_html` 3.x.x.
