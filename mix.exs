@@ -57,7 +57,10 @@ defmodule Pow.MixProject do
     [
       maintainers: ["Dan Shultzer"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/danschultzer/pow"},
+      links: %{
+        "GitHub" => "https://github.com/danschultzer/pow",
+        "Sponsor" => "https://github.com/sponsors/danschultzer"
+      },
       files: ~w(lib LICENSE mix.exs README.md)
     ]
   end
