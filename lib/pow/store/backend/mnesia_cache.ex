@@ -60,7 +60,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
             MyAppWeb.Endpoint,
             Pow.Store.Backend.MnesiaCache
             # # Or in a distributed system:
-            # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: {Node, :list, []},
+            # {Pow.Store.Backend.MnesiaCache, extra_db_nodes: {Node, :list, []}},
             # Pow.Store.Backend.MnesiaCache.Unsplit # Recover from netsplit
           ]
 
