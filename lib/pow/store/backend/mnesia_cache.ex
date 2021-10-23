@@ -373,6 +373,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     case Application.start(:mnesia) do
       {:error, {:already_started, :mnesia}} -> :ok
       :ok                                   -> :ok
+      {:error, error}                       -> {:error, error}
     end
   end
 

@@ -2,6 +2,12 @@
 
 ## v1.0.26 (TBA)
 
+### Bug fixes
+
+* [`Pow.Store.Backend.MnesiaCache`] Now properly handles Mnesia application start errors
+
+### Documentation
+
 * Updated [api guide](guides/api.md) to use `Plug.Conn.register_before_send/2` for token writes
 
 ## v1.0.25 (2021-09-26)
