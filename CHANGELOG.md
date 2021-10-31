@@ -2,6 +2,10 @@
 
 ## v1.0.26 (TBA)
 
+### Enhancemnets
+
+* [`Pow.Store.Backend.MnesiaCache.Unsplit`] The unsplit module will now initialize the Mnesia cluster when nodes are connected lazily by resetting the Mnesia schema
+
 ### Bug fixes
 
 * [`Pow.Store.Backend.MnesiaCache`] Now properly handles Mnesia application start errors

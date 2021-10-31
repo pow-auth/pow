@@ -39,6 +39,26 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
         # ...
       end
 
+  ## Auto initialize cluster
+
+  If nodes are lazily connected a race condition can occur in which the
+  `Pow.Store.Backend.MnesiaCache` is running on each node without being
+  connected in a Mnesia cluster.
+
+  To ensure that cluster will automatically initialize,
+  `Pow.Store.Backend.MnesiaCache.Unsplit` will reset the most recent node's
+  Mnesia schema when connecting to another node or a cluster. This will only
+  occur if the Mnesia node has never been connected to the other node(s) and
+  the other node currently runs the Mnesia cache GenServer.
+
+  The `Pow.Store.Backend.MnesiaCache` GenServer will be restarted, using the same
+  `:extra_db_nodes` configuration as when it was first initialized. Therefor
+  it's important that a MFA is used like `{Node, :list, []}` for the auto
+  initialization to succeed.
+
+  Please be aware the reset of the Mnesia node will result in data loss for the
+  node.
+
   ## Strategy for multiple libraries using the Mnesia instance
 
   It's strongly recommended to take into account any libraries that will be
@@ -50,12 +70,19 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   part of the affected tables so this module can self-heal without the job
   queue table set in `:flush_tables`.
 
+  There may still be data loss if nodes are lazily connected. Please read the
+  "Auto initialize cluster" section above.
+
   ## Initialization options
 
     * `:flush_tables` - list of tables that may be flushed and restored from
       the oldest node in the cluster. Defaults to `false` when only the
       MnesiaCache table will be flushed. Use `:all` if you want to flush all
       affected tables. Be aware that this may cause data loss.
+
+    * `:auto_initialize_cluster` - a boolean value to automatically initialize
+      the Mnesia cluster by resetting the node Mnesia schema when new nodes are
+      connected, defaults to `true`.
   """
   use GenServer
   require Logger
@@ -74,9 +101,18 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   @impl true
   @spec init(Config.t()) :: {:ok, map()}
   def init(config) do
-    :mnesia.subscribe(:system)
+    {:ok, _node} = :mnesia.subscribe(:system)
+    :ok = :net_kernel.monitor_nodes(true)
 
     {:ok, %{config: config}}
+  end
+
+  @impl true
+  @spec handle_info({:nodeup | :nodedown, atom()}, map()) :: {:noreply, map()}
+  def handle_info({:nodeup, node}, %{config: config} = state) do
+    :global.trans({__MODULE__, self()}, fn -> autoinit(node, config) end)
+
+    {:noreply, state}
   end
 
   @impl true
@@ -90,6 +126,56 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   @impl true
   def handle_info(_event, state) do
     {:noreply, state}
+  end
+
+  defp autoinit(node, config) do
+    cond do
+      Config.get(config, :auto_initialize_cluster, true) != true ->
+        :ok
+
+      node in :mnesia.system_info(:db_nodes) ->
+        :ok
+
+      is_nil(:rpc.call(node, Process, :whereis, [Pow.Store.Backend.MnesiaCache])) ->
+        :ok
+
+      true ->
+        do_autoinit(node, config)
+    end
+  end
+
+  defp do_autoinit(node, config) do
+    local_cluster_nodes = :mnesia.system_info(:running_db_nodes)
+    remote_cluster_nodes = :rpc.call(node, :mnesia, :system_info, [:running_db_nodes])
+
+    case {local_cluster_nodes, remote_cluster_nodes} do
+      {[_local_node], [_remote_node]} ->
+        Logger.info("Connection to #{inspect node} established with no mnesia cluster found for either #{inspect node()} or #{inspect node}")
+
+        {local_node_uptime, _} = :erlang.statistics(:wall_clock)
+        {remote_node_uptime, _} = :rpc.call(node, :erlang, :statistics, [:wall_clock])
+
+        if local_node_uptime < remote_node_uptime do
+          reset_node(node, config)
+        else
+          Logger.info("Skipping reset for #{inspect node()} as #{inspect node} is the most recent node")
+        end
+
+      {[_local_node], _remote_cluster_nodes} ->
+        Logger.info("Connection to #{inspect node} established with no mnesia cluster running on #{inspect node()}")
+        reset_node(node, config)
+
+      {_local_cluster_nodes, _remote_cluster_node_or_nodes} ->
+        Logger.info("Connection to #{inspect node} established with #{inspect node()} already being part of a mnesia cluster")
+    end
+  end
+
+  defp reset_node(node, _config) do
+    Logger.warn("Resetting mnesia on #{inspect node()} and restarting the mnesia cache to connect to #{inspect node}")
+
+    :mnesia.stop()
+    :mnesia.delete_schema([node()])
+    Process.exit(Process.whereis(Pow.Store.Backend.MnesiaCache), :kill)
   end
 
   defp autoheal(node, config) do
