@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.26 (TBA)
+## v1.0.26 (2021-11-06)
 
 ### Enhancemnets
 
