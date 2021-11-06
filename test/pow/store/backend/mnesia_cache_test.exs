@@ -184,6 +184,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       on_exit(fn ->
         :slave.stop(:'a@127.0.0.1')
         :slave.stop(:'b@127.0.0.1')
+        :slave.stop(:'c@127.0.0.1')
       end)
 
       :ok
@@ -263,6 +264,87 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       time = System.monotonic_time(:millisecond) - startup_timestamp
       :timer.sleep(@startup_wait_time - time + 100)
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == :not_found
+    end
+
+    test "automaticaly joins cluster with MnesiaCache.Unsplit" do
+      :mnesia.kill()
+
+      # Initialize three separate nodes
+      node_a = spawn_node("a")
+      node_b = spawn_node("b")
+      node_c = spawn_node("c")
+      disconnect(node_a, node_b)
+      disconnect(node_a, node_c)
+      disconnect(node_b, node_c)
+
+      # Subscribe to logger events
+      Process.register(self(), :test_process)
+      subscribe_log_events(node_a)
+      subscribe_log_events(node_b)
+      subscribe_log_events(node_c)
+
+      # Start the mnesia cache and unsplit on all nodes
+      config = @default_config ++ [extra_db_nodes: {Node, :list, []}]
+
+      {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      {:ok, _pid} = :rpc.call(node_a, Supervisor, :start_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+      {:ok, _pid} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      {:ok, _pid} = :rpc.call(node_b, Supervisor, :start_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+      {:ok, _pid} = :rpc.call(node_c, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache, config}])
+      {:ok, _pid} = :rpc.call(node_c, Supervisor, :start_child, [Pow.Supervisor, MnesiaCache.Unsplit])
+
+      assert_receive {:log, node_a, :info, "Mnesia cluster initiated on :\"a@127.0.0.1\""}, @assertion_timeout
+      assert_receive {:log, node_b, :info, "Mnesia cluster initiated on :\"b@127.0.0.1\""}, @assertion_timeout
+      assert_receive {:log, node_c, :info, "Mnesia cluster initiated on :\"c@127.0.0.1\""}, @assertion_timeout
+      assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == []
+      assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_a]
+      assert :rpc.call(node_b, :mnesia, :system_info, [:extra_db_nodes]) == []
+      assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_b]
+      assert :rpc.call(node_c, :mnesia, :system_info, [:extra_db_nodes]) == []
+      assert :rpc.call(node_c, :mnesia, :system_info, [:running_db_nodes]) == [node_c]
+
+      # Connect the two most recent nodes
+      connect(node_b, node_c)
+
+      # Node b and node c will compete to be the first to set the global lock
+      assert_receive {:log, node, type, message}, @assertion_timeout
+      case {node, type, message} do
+        {^node_c, :info, "Connection to :\"b@127.0.0.1\" established with no mnesia cluster found for either :\"c@127.0.0.1\" or :\"b@127.0.0.1\""} ->
+          :ok
+
+        {^node_b, :info, "Connection to :\"c@127.0.0.1\" established with no mnesia cluster found for either :\"b@127.0.0.1\" or :\"c@127.0.0.1\""} ->
+          assert_receive {:log, ^node_b, :info, "Skipping reset for :\"b@127.0.0.1\" as :\"c@127.0.0.1\" is the most recent node"}, @assertion_timeout
+          assert_receive {:log, ^node_c, :info, "Connection to :\"b@127.0.0.1\" established with no mnesia cluster found for either :\"c@127.0.0.1\" or :\"b@127.0.0.1\""}, @assertion_timeout
+      end
+
+      assert_receive {:log, ^node_c, :warn, "Resetting mnesia on :\"c@127.0.0.1\" and restarting the mnesia cache to connect to :\"b@127.0.0.1\""}, @assertion_timeout
+      assert_receive {:log, ^node_c, :info, "Application mnesia exited: :stopped"}, @assertion_timeout
+      assert_receive {:log, ^node_c, :info, "Joined mnesia cluster nodes [:\"b@127.0.0.1\"] for :\"c@127.0.0.1\""}, @assertion_timeout
+
+      assert :rpc.call(node_b, :mnesia, :system_info, [:extra_db_nodes]) == []
+      assert Enum.sort(:rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes])) == [node_b, node_c]
+      assert :rpc.call(node_c, :mnesia, :system_info, [:extra_db_nodes]) == [node_b]
+      assert Enum.sort(:rpc.call(node_c, :mnesia, :system_info, [:running_db_nodes])) == [node_b, node_c]
+
+      # connect the oldest node with cluster
+      connect(node_a, node_b)
+
+      # Node a and node b will compete to be the first to set the global lock
+      assert_receive {:log, node, type, message}, @assertion_timeout
+      case {node, type, message} do
+        {^node_b, :info, "Connection to :\"a@127.0.0.1\" established with :\"b@127.0.0.1\" already being part of a mnesia cluster"} ->
+          assert_receive {:log, ^node_a, :info, "Connection to :\"b@127.0.0.1\" established with no mnesia cluster running on :\"a@127.0.0.1\""}, @assertion_timeout
+
+        {^node_a, :info, "Connection to :\"b@127.0.0.1\" established with no mnesia cluster running on :\"a@127.0.0.1\""} ->
+          :ok
+      end
+
+      assert_receive {:log, ^node_a, :warn, "Resetting mnesia on :\"a@127.0.0.1\" and restarting the mnesia cache to connect to :\"b@127.0.0.1\""}, @assertion_timeout
+      assert_receive {:log, ^node_a, :info, "Application mnesia exited: :stopped"}, @assertion_timeout
+      assert_receive {:log, ^node_a, :info, "Joined mnesia cluster nodes [:\"b@127.0.0.1\"] for :\"a@127.0.0.1\""}, @assertion_timeout
+
+      assert :rpc.call(node_a, :mnesia, :system_info, [:extra_db_nodes]) == [node_b]
+      assert Enum.sort(:rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes])) == [node_a, node_b, node_c]
     end
 
     test "recovers from netsplit with MnesiaCache.Unsplit" do
