@@ -130,19 +130,19 @@ defmodule MyAppWeb.APIAuthPlug do
   def delete(conn, config) do
     store_config = store_config(config)
 
-    with {:ok, signed_token} <- fetch_access_token(conn),
-         {:ok, token}        <- verify_token(conn, signed_token, config),
-         {_user, metadata}   <- CredentialsCache.get(store_config, token) do
-
+    conn =
       Conn.register_before_send(conn, fn conn ->
-        PersistentSessionCache.delete(store_config, metadata[:renewal_token])
-        CredentialsCache.delete(store_config, token)
+        with {:ok, signed_token} <- fetch_access_token(conn),
+             {:ok, token} <- verify_token(conn, signed_token, config),
+             {_user, metadata} <- CredentialsCache.get(store_config, token) do
+          PersistentSessionCache.delete(store_config, metadata[:renewal_token])
+          CredentialsCache.delete(store_config, token)
+        else
+          _any -> :ok
+        end
 
         conn
       end)
-    else
-      _any -> :ok
-    end
 
     conn
   end
