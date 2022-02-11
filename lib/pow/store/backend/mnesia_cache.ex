@@ -330,9 +330,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
         nodes -> nodes
       end
 
-    db_nodes
-    |> Enum.filter(& &1 in visible_nodes)
-    |> Enum.filter(&:rpc.block_call(&1, :mnesia, :system_info, [:is_running]) == :yes)
+    Enum.filter(db_nodes, fn node ->
+      node in visible_nodes and :rpc.block_call(node, :mnesia, :system_info, [:is_running]) == :yes
+    end)
   end
 
   defp init_cluster(config) do
