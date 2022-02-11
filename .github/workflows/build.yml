@@ -27,8 +27,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.12.0
-            otp: 24.0
+          - elixir: 1.13.3
+            otp: 24.2
           - elixir: 1.7
             otp: 22.0.2
           - elixir: 1.8

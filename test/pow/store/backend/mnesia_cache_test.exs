@@ -124,9 +124,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     test "when initiated with unexpected records" do
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], :invalid_value})
 
-      assert CaptureLog.capture_log(fn ->
+      assert CaptureLog.capture_log([format: "[$level]  $message", colors: [enabled: false]], fn ->
         restart(@default_config)
-      end) =~ "[warn]  Found an unexpected record in the mnesia cache, please delete it: [\"pow:test\", \"key\"]"
+      end) =~ ~r/\[(warn|warning|)\]  #{Regex.escape("Found an unexpected record in the mnesia cache, please delete it: [\"pow:test\", \"key\"]")}/
     end
 
     # TODO: Remove by 1.1.0
@@ -599,9 +599,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       :stopped = :mnesia.stop()
 
-      assert CaptureLog.capture_log(fn ->
+      assert CaptureLog.capture_log([format: "[$level]  $message", colors: [enabled: false]], fn ->
         start(@default_config)
-      end) =~ "[warn]  Deleting old record in the mnesia cache: \"pow:test:key1\""
+      end) =~ ~r/\[(warn|warning|)\]  #{Regex.escape("Deleting old record in the mnesia cache: \"pow:test:key1\"")}/
 
       assert :mnesia.dirty_read({MnesiaCache, key}) == []
     end
