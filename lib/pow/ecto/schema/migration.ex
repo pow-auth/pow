@@ -25,7 +25,7 @@ defmodule Pow.Ecto.Schema.Migration do
       create table(:<%= schema.table %><%= if schema.binary_id do %>, primary_key: false<% end %>) do
   <%= if schema.binary_id do %>      add :id, :binary_id, primary_key: true
   <% end %><%= for {k, v} <- schema.attrs do %>      add <%= inspect k %>, <%= inspect v %><%= schema.migration_defaults[k] %>
-  <% end %><%= for {_, i, _, s} <- schema.assocs do %>      add <%= if(String.ends_with?(inspect(i), "_id"), do: inspect(i), else: inspect(i) <> "_id") %>, references(<%= inspect(s) %>, on_delete: :nothing<%= if schema.binary_id do %>, type: :binary_id<% end %>)
+  <% end %><%= for {_, i, _, s} <- schema.assocs do %>      add <%= if(String.ends_with?(inspect(i), "_id"), do: inspect(i), else: inspect(i) <> "_id") %>, references(<%= inspect(s) %><%= schema.reference_defaults[i] %><%= if schema.binary_id do %>, type: :binary_id<% end %>)<%= schema.migration_defaults[i] %>
   <% end %>
         timestamps()
       end
@@ -66,6 +66,7 @@ defmodule Pow.Ecto.Schema.Migration do
     migration_attrs    = migration_attrs(attrs)
     binary_id          = opts[:binary_id]
     migration_defaults = defaults(migration_attrs)
+    reference_defaults = reference_defaults(migration_attrs)
     {assocs, attrs}    = partition_attrs(context_base, migration_attrs)
     indexes            = migration_indexes(indexes, table)
 
@@ -76,6 +77,7 @@ defmodule Pow.Ecto.Schema.Migration do
       binary_id: binary_id,
       attrs: attrs,
       migration_defaults: migration_defaults,
+      reference_defaults: reference_defaults,
       assocs: assocs,
       indexes: indexes
     }
@@ -85,6 +87,7 @@ defmodule Pow.Ecto.Schema.Migration do
     attrs
     |> Enum.reject(&is_virtual?/1)
     |> Enum.map(&to_migration_attr/1)
+    |> Enum.map(&to_reference_attr/1)
   end
 
   defp is_virtual?({_name, _type}), do: false
@@ -99,10 +102,18 @@ defmodule Pow.Ecto.Schema.Migration do
     to_migration_attr({name, type})
   end
   defp to_migration_attr({name, type, defaults}) do
-    defaults = Enum.map_join(defaults, ", ", fn {k, v} -> "#{k}: #{v}" end)
-
-    {name, type, ", #{defaults}"}
+    {name, type, ", #{join_defaults(defaults)}"}
   end
+
+  defp join_defaults(defaults), do: Enum.map_join(defaults, ", ", fn {k, v} -> "#{k}: #{inspect v}" end)
+
+  defp to_reference_attr({name, {:references, source}, defaults}) do
+    {name, {:references, source, ", on_delete: :nothing"}, defaults}
+  end
+  defp to_reference_attr({name, {:references, source, reference_defaults}, defaults}) do
+    {name, {:references, source, ", #{join_defaults(reference_defaults)}"}, defaults}
+  end
+  defp to_reference_attr({name, type, defaults}), do: {name, type, defaults}
 
   defp defaults(attrs) do
     Enum.map(attrs, fn {key, _value, defaults} ->
@@ -110,16 +121,27 @@ defmodule Pow.Ecto.Schema.Migration do
     end)
   end
 
+  defp reference_defaults(attrs) do
+    attrs
+    |> Enum.filter(fn
+      {_key, {:references, _source, _reference_defaults}, _defaults} -> true
+      _any -> false
+    end)
+    |> Enum.map(fn {key, {:references, _source, reference_defaults}, _defaults} ->
+      {key, reference_defaults}
+    end)
+  end
+
   defp partition_attrs(context_base, attrs) do
     {assocs, attrs} =
       Enum.split_with(attrs, fn
-        {_, {:references, _}, _} -> true
+        {_, {:references, _, _}, _} -> true
         _ -> false
       end)
 
     attrs  = Enum.map(attrs, fn {key_id, type, _defaults} -> {key_id, type} end)
     assocs =
-      Enum.map(assocs, fn {key_id, {:references, source}, _} ->
+      Enum.map(assocs, fn {key_id, {:references, source, _}, _} ->
         key = String.replace(Atom.to_string(key_id), "_id", "")
         context = Macro.camelize(source)
         schema = Macro.camelize(key)
