@@ -55,7 +55,7 @@ defmodule Pow.MixProject do
 
   defp package do
     [
-      maintainers: ["Dan Shultzer"],
+      maintainers: ["Dan Schultzer"],
       licenses: ["MIT"],
       links: %{
         "GitHub" => "https://github.com/danschultzer/pow",
