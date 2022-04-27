@@ -230,7 +230,7 @@ defmodule Pow.Phoenix.Router do
     end
   end
 
-  @spec validate_scope!(atom() | [%Phoenix.Router.Scope{}]) :: :ok
+  @spec validate_scope!(atom() | [Phoenix.Router.Scope.t()]) :: :ok
   def validate_scope!(module) when is_atom(module) do
     module
     |> Module.get_attribute(:phoenix_top_scopes)
