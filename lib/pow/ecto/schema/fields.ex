@@ -17,7 +17,7 @@ defmodule Pow.Ecto.Schema.Fields do
   def attrs(config) do
     user_id_field = Schema.user_id_field(config)
 
-    [{user_id_field, :string, []}] ++ @attrs
+    [{user_id_field, :string}] ++ @attrs
   end
 
   @doc """
