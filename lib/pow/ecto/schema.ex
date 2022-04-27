@@ -105,7 +105,7 @@ defmodule Pow.Ecto.Schema do
         use Pow.Ecto.Schema, user_id_field: :email
 
         schema "users" do
-          field :email,            :string, null: false
+          field :email,            :string
           field :password_hash,    :string
           field :current_password, :string, virtual: true
           field :password,         :string, virtual: true

@@ -111,7 +111,7 @@ defmodule Pow.Ecto.SchemaTest do
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
 
-      field :email, :string, [null: false]
+      field :email, :string
       field :password_hash, :string, [redact: true]
       field :current_password, :string, [virtual: true, redact: true]
       field :password, :string, [virtual: true, redact: true]
@@ -137,7 +137,7 @@ defmodule Pow.Ecto.SchemaTest do
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.InvalidFieldUser:
 
-      field :email, :string, [null: false]
+      field :email, :string
       """
   end
 
