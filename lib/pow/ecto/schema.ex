@@ -366,13 +366,16 @@ defmodule Pow.Ecto.Schema do
 
   @doc false
   def __require_fields__(module) do
-    ecto_fields      = Module.get_attribute(module, :ecto_fields)
+    ecto_fields = Module.get_attribute(module, :ecto_fields)
+    # Pre Ecto v3.8.0
     changeset_fields = Module.get_attribute(module, :changeset_fields)
+    # Ecto v3.8.0+
+    ecto_virtual_fields = Module.get_attribute(module, :ecto_virtual_fields)
 
     module
     |> Module.get_attribute(:pow_fields)
     |> Enum.reverse()
-    |> Enum.filter(&missing_field?(&1, ecto_fields, changeset_fields))
+    |> Enum.filter(&missing_field?(&1, ecto_fields, changeset_fields || ecto_virtual_fields))
     |> Enum.map(fn
       {name, type}           -> "field #{inspect name}, #{inspect type}"
       {name, type, defaults} -> "field #{inspect name}, #{inspect type}, #{inspect defaults}"
@@ -383,13 +386,13 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  defp missing_field?({name, type, defaults}, ecto_fields, changeset_fields) do
+  defp missing_field?({name, type, defaults}, ecto_fields, ecto_virtual_fields) do
     case defaults[:virtual] do
-      true -> missing_field?(name, type, changeset_fields)
+      true -> missing_field?(name, type, ecto_virtual_fields)
       _any -> missing_field?(name, type, ecto_fields)
     end
   end
-  defp missing_field?({name, type}, ecto_fields, _changeset_fields),
+  defp missing_field?({name, type}, ecto_fields, _ecto_virtual_fields),
     do: missing_field?(name, type, ecto_fields)
   defp missing_field?(name, type, existing_fields) do
     not Enum.any?(existing_fields, fn
