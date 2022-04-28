@@ -29,9 +29,7 @@ jobs:
         include:
           - elixir: 1.13.3
             otp: 24.2
-          - elixir: 1.7
-            otp: 22.0.2
-          - elixir: 1.8
+          - elixir: 1.11.0
             otp: 22.0.2
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     steps:

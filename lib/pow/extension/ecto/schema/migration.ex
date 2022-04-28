@@ -46,8 +46,8 @@ defmodule Pow.Extension.Ecto.Schema.Migration do
     |> Enum.reject(&is_nil/1)
   end
 
-  defp attr_from_assoc({:belongs_to, name, :users}, opts) do
-    {String.to_atom("#{name}_id"), {:references, opts[:schema_plural]}}
+  defp attr_from_assoc({:belongs_to, name, :users, field_options, migration_options}, opts) do
+    {String.to_atom("#{name}_id"), {:references, opts[:schema_plural]}, field_options, migration_options}
   end
   defp attr_from_assoc(_assoc, _opts), do: nil
 

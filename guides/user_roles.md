@@ -13,7 +13,7 @@ defmodule MyApp.Users.User do
   use Pow.Ecto.Schema
 
   schema "users" do
-    field :role, :string, null: false, default: "user"
+    field :role, :string, default: "user"
 
     pow_user_fields()
 

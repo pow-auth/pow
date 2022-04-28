@@ -82,24 +82,39 @@ defmodule Pow.Ecto.Schema.Migration do
   end
 
   defp migration_attrs(attrs) do
+    :ok = Enum.each(attrs, &validate!/1)
+
     attrs
     |> Enum.reject(&is_virtual?/1)
+    |> Enum.map(&normalize_migration_options/1)
     |> Enum.map(&to_migration_attr/1)
   end
 
-  defp is_virtual?({_name, _type}), do: false
-  defp is_virtual?({_name, _type, defaults}) do
-    Keyword.get(defaults, :virtual, false)
+  defp validate!({_name, _type, _field_options, _migration_options}), do: :ok
+  defp validate!(value) do
+    raise """
+    The attribute is required to have the format `{name, type, field_options, migration_options}`.
+
+    The attribute provided was: #{inspect value}
+    """
   end
 
-  defp to_migration_attr({name, type}) do
+  defp is_virtual?({_name, _type, field_options, _migration_options}), do: Keyword.get(field_options, :virtual, false)
+
+  defp normalize_migration_options({name, type, field_options, migration_options}) do
+    options =
+      field_options
+      |> Keyword.take([:default])
+      |> Keyword.merge(migration_options)
+
+      {name, type, options}
+  end
+
+  defp to_migration_attr({name, type, []}) do
     {name, type, ""}
   end
-  defp to_migration_attr({name, type, []}) do
-    to_migration_attr({name, type})
-  end
   defp to_migration_attr({name, type, defaults}) do
-    defaults = Enum.map_join(defaults, ", ", fn {k, v} -> "#{k}: #{v}" end)
+    defaults = Enum.map_join(defaults, ", ", fn {k, v} -> "#{k}: #{inspect v}" end)
 
     {name, type, ", #{defaults}"}
   end

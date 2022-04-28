@@ -67,8 +67,8 @@ defmodule Pow.Extension.Ecto.Schema do
   @doc false
   defmacro __register_extension_fields__ do
     quote do
-      for attr <- unquote(__MODULE__).attrs(@pow_extension_config) do
-        Module.put_attribute(__MODULE__, :pow_fields, attr)
+      for {name, value, options, _migration_options} <- unquote(__MODULE__).attrs(@pow_extension_config) do
+        Module.put_attribute(__MODULE__, :pow_fields, {name, value, options})
       end
     end
   end
@@ -79,8 +79,8 @@ defmodule Pow.Extension.Ecto.Schema do
       @pow_extension_config
       |> unquote(__MODULE__).assocs()
       |> Enum.map(fn
-        {:belongs_to, name, :users} -> {:belongs_to, name, __MODULE__}
-        {:has_many, name, :users, opts} -> {:has_many, name, __MODULE__, opts}
+        {type, name, :users, field_options, _migration_options} -> {type, name, __MODULE__, field_options}
+        {type, name, module, field_options, _migration_options} -> {type, name, module, field_options}
       end)
       |> Enum.each(&Module.put_attribute(__MODULE__, :pow_assocs, &1))
     end
@@ -122,7 +122,12 @@ defmodule Pow.Extension.Ecto.Schema do
 
       Enum.concat(attrs, extension_attrs)
     end)
+    |> Enum.map(&normalize_attr/1)
   end
+
+  defp normalize_attr({name, value}), do: {name, value, [], []}
+  defp normalize_attr({name, value, field_options}), do: {name, value, field_options, []}
+  defp normalize_attr({name, value, field_options, migration_options}), do: {name, value, field_options, migration_options}
 
   @doc """
   Merge all extension associations together to one list.
@@ -140,7 +145,12 @@ defmodule Pow.Extension.Ecto.Schema do
 
       Enum.concat(assocs, extension_assocs)
     end)
+    |> Enum.map(&normalize_assoc/1)
   end
+
+  defp normalize_assoc({type, name, module}), do: {type, name, module, [], []}
+  defp normalize_assoc({type, name, module, field_options}), do: {type, name, module, field_options, []}
+  defp normalize_assoc({type, name, module, field_options, migration_options}), do: {type, name, module, field_options, migration_options}
 
   @doc """
   Merge all extension indexes together to one list.

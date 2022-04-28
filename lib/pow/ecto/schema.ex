@@ -84,8 +84,8 @@ defmodule Pow.Ecto.Schema do
         use Ecto.Schema
         use Pow.Ecto.Schema
 
-        @pow_assocs {:belongs_to, :invited_by, __MODULE__}
-        @pow_assocs {:has_many, :invited, __MODULE__}
+        @pow_assocs {:belongs_to, :invited_by, __MODULE__, []}
+        @pow_assocs {:has_many, :invited, __MODULE__, []}
 
         schema "users" do
           belongs_to :invited_by, __MODULE__, foreign_key: :user_id
@@ -105,7 +105,7 @@ defmodule Pow.Ecto.Schema do
         use Pow.Ecto.Schema, user_id_field: :email
 
         schema "users" do
-          field :email,            :string, null: false
+          field :email,            :string
           field :password_hash,    :string
           field :current_password, :string, virtual: true
           field :password,         :string, virtual: true
@@ -237,17 +237,11 @@ defmodule Pow.Ecto.Schema do
       unquote(assocs)
       |> unquote(__MODULE__).__filter_new_assocs__(unquote(ecto_assocs))
       |> Enum.each(fn
-        {:belongs_to, name, queryable} ->
-          belongs_to(name, queryable)
+        {:belongs_to, name, queryable, options} ->
+          belongs_to(name, queryable, options)
 
-        {:belongs_to, name, queryable, defaults} ->
-          belongs_to(name, queryable, defaults)
-
-        {:has_many, name, queryable} ->
-          has_many(name, queryable)
-
-        {:has_many, name, queryable, defaults} ->
-          has_many(name, queryable, defaults)
+        {:has_many, name, queryable, options} ->
+          has_many(name, queryable, options)
       end)
     end
   end
@@ -291,9 +285,11 @@ defmodule Pow.Ecto.Schema do
     quote do
       Module.register_attribute(__MODULE__, :pow_fields, accumulate: true)
 
-      for attr <- unquote(__MODULE__).Fields.attrs(@pow_config) do
-        Module.put_attribute(__MODULE__, :pow_fields, attr)
-      end
+      @pow_config
+      |> unquote(__MODULE__).Fields.attrs()
+      |> Enum.each(fn {name, value, field_options, _migration_options} ->
+        Module.put_attribute(__MODULE__, :pow_fields, {name, value, field_options})
+      end)
     end
   end
 
@@ -341,18 +337,28 @@ defmodule Pow.Ecto.Schema do
 
     module
     |> Module.get_attribute(:pow_assocs)
+    |> Enum.map(&validate_assoc!/1)
     |> Enum.reverse()
-    |> Enum.filter(fn assoc ->
-      not Enum.any?(ecto_assocs, &assocs_match?(elem(assoc, 0), elem(assoc, 1), &1))
+    |> Enum.filter(fn {type, name, _queryable, _defaults} ->
+      not Enum.any?(ecto_assocs, &assocs_match?(type, name, &1))
     end)
     |> Enum.map(fn
-      {type, name, queryable}           -> "#{type} #{inspect name}, #{inspect queryable}"
+      {type, name, queryable, []}       -> "#{type} #{inspect name}, #{inspect queryable}"
       {type, name, queryable, defaults} -> "#{type} #{inspect name}, #{inspect queryable}, #{inspect defaults}"
     end)
     |> case do
       []         -> :ok
       assoc_defs -> warn_missing_assocs_error(module, assoc_defs)
     end
+  end
+
+  defp validate_assoc!({_type, _name, _module, _defaults} = assoc), do: assoc
+  defp validate_assoc!(value) do
+    raise """
+    `@pow_assocs` is required to have the format `{type, field, module, defaults}`.
+
+    The value provided was: #{inspect value}
+    """
   end
 
   defp warn_missing_assocs_error(module, assoc_defs) do
@@ -366,15 +372,18 @@ defmodule Pow.Ecto.Schema do
 
   @doc false
   def __require_fields__(module) do
-    ecto_fields      = Module.get_attribute(module, :ecto_fields)
-    changeset_fields = Module.get_attribute(module, :changeset_fields)
+    ecto_fields = Module.get_attribute(module, :ecto_fields)
+
+    # TODO: Require Ecto 3.8.0 in 1.1.0 and remove `:changeset_fields`
+    changeset_fields = Module.get_attribute(module, :ecto_changeset_fields) || Module.get_attribute(module, :changeset_fields)
 
     module
     |> Module.get_attribute(:pow_fields)
+    |> Enum.map(&validate_field!/1)
     |> Enum.reverse()
     |> Enum.filter(&missing_field?(&1, ecto_fields, changeset_fields))
     |> Enum.map(fn
-      {name, type}           -> "field #{inspect name}, #{inspect type}"
+      {name, type, []}       -> "field #{inspect name}, #{inspect type}"
       {name, type, defaults} -> "field #{inspect name}, #{inspect type}, #{inspect defaults}"
     end)
     |> case do
@@ -383,15 +392,24 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  defp missing_field?({name, type, defaults}, ecto_fields, changeset_fields) do
-    case defaults[:virtual] do
+
+  defp validate_field!({_name, _type, _defaults} = assoc), do: assoc
+  defp validate_field!(value) do
+    raise """
+    `@pow_fields` is required to have the format `{name, type, defaults}`.
+
+    The value provided was: #{inspect value}
+    """
+  end
+
+  defp missing_field?({name, type, field_options}, ecto_fields, changeset_fields) do
+    case field_options[:virtual] do
       true -> missing_field?(name, type, changeset_fields)
       _any -> missing_field?(name, type, ecto_fields)
     end
   end
-  defp missing_field?({name, type}, ecto_fields, _changeset_fields),
-    do: missing_field?(name, type, ecto_fields)
-  defp missing_field?(name, type, existing_fields) do
+
+  defp missing_field?(name, type, existing_fields) when is_atom(name) do
     not Enum.any?(existing_fields, fn
       {^name, ^type}  -> true
       {^name, e_type} -> not Type.primitive?(e_type)
