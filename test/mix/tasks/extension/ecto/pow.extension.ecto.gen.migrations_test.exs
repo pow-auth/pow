@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
     @impl true
     def attrs(config) do
-      [{:custom_string, :string, null: config[:binary_id] == true}]
+      [{:custom_string, :string, [], [null: config[:binary_id] == true]}]
     end
 
     @impl true

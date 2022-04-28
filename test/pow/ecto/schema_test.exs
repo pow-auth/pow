@@ -51,10 +51,10 @@ defmodule Pow.Ecto.SchemaTest do
 
     @ecto_derive_inspect_for_redacted_fields false
 
-    @pow_assocs {:has_many, :users, __MODULE__}
+    @pow_assocs {:has_many, :users, __MODULE__, []}
 
-    @pow_assocs {:belongs_to, :parent, __MODULE__}
-    @pow_assocs {:has_many, :children, __MODULE__}
+    @pow_assocs {:belongs_to, :parent, __MODULE__, []}
+    @pow_assocs {:has_many, :children, __MODULE__, []}
 
     schema "users" do
       belongs_to :parent, __MODULE__, on_replace: :mark_as_invalid
@@ -82,7 +82,7 @@ defmodule Pow.Ecto.SchemaTest do
         use Pow.Ecto.Schema
 
         @pow_assocs {:belongs_to, :invited_by, __MODULE__, foreign_key: :user_id}
-        @pow_assocs {:has_many, :invited, __MODULE__}
+        @pow_assocs {:has_many, :invited, __MODULE__, []}
 
         schema "users" do
           timestamps()
@@ -111,7 +111,7 @@ defmodule Pow.Ecto.SchemaTest do
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.MissingFieldsUser:
 
-      field :email, :string, [null: false]
+      field :email, :string
       field :password_hash, :string, [redact: true]
       field :current_password, :string, [virtual: true, redact: true]
       field :password, :string, [virtual: true, redact: true]
@@ -137,7 +137,7 @@ defmodule Pow.Ecto.SchemaTest do
       """
       Please define the following field(s) in the schema for Pow.Ecto.SchemaTest.InvalidFieldUser:
 
-      field :email, :string, [null: false]
+      field :email, :string
       """
   end
 
@@ -171,5 +171,35 @@ defmodule Pow.Ecto.SchemaTest do
         end
       end
     end) == ""
+  end
+
+  test "raises with invalid field defined" do
+    assert_raise RuntimeError, "`@pow_fields` is required to have the format `{name, type, defaults}`.\n\nThe value provided was: :invalid\n", fn ->
+      defmodule InvalidPowFieldsUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        @pow_fields :invalid
+
+        schema "users" do
+          timestamps()
+        end
+      end
+    end
+  end
+
+  test "raises with invalid assocs defined" do
+    assert_raise RuntimeError, "`@pow_assocs` is required to have the format `{type, field, module, defaults}`.\n\nThe value provided was: {:belongs_to, :invited_by, Test}\n", fn ->
+      defmodule InvalidPowAssocsUser do
+        use Ecto.Schema
+        use Pow.Ecto.Schema
+
+        @pow_assocs {:belongs_to, :invited_by, Test}
+
+        schema "users" do
+          timestamps()
+        end
+      end
+    end
   end
 end

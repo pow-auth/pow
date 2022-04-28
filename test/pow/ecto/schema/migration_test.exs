@@ -16,6 +16,10 @@ defmodule Pow.Ecto.Schema.MigrationTest do
     assert schema.migration_name == "CreateOrganizations"
     assert schema.repo == Test.Repo
     assert schema.binary_id
+
+    assert_raise RuntimeError, "The attribute is required to have the format `{name, type, field_options, migration_options}`.\n\nThe attribute provided was: :invalid\n", fn ->
+      Migration.new(Pow, "users", attrs: [:invalid])
+    end
   end
 
   test "gen/1" do
@@ -43,10 +47,10 @@ defmodule Pow.Ecto.Schema.MigrationTest do
     assert content =~ "create table(:organizations) do"
     assert content =~ "create unique_index(:organizations, [:email])"
 
-    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}]))
+    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}, [], []}]))
     assert content =~ "add :organization_id, references(\"organizations\", on_delete: :nothing)"
 
-    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}}], binary_id: true))
+    content = Migration.gen(Migration.new(Pow, "users", attrs: [{:organization_id, {:references, "organizations"}, [], []}], binary_id: true))
     assert content =~ "add :organization_id, references(\"organizations\", on_delete: :nothing, type: :binary_id)"
 
     content = Migration.gen(Migration.new(Pow, "users", indexes: [{:key, true}]))

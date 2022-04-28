@@ -13,7 +13,7 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
     @impl true
     def attrs(_config) do
       [
-        {:custom_string, :string, null: false},
+        {:custom_string, :string, [default: "test"], [null: false]},
         {:custom_at, :utc_datetime}
       ]
     end
@@ -59,7 +59,7 @@ defmodule Pow.Extension.Ecto.Schema.MigrationTest do
 
     assert content =~ "defmodule Pow.Repo.Migrations.Add#{@extension_name}ToUsers do"
     assert content =~ "alter table(:users)"
-    assert content =~ "add :custom_string, :string, null: false"
+    assert content =~ "add :custom_string, :string, default: \"test\", null: false"
     assert content =~ "add :custom_at, :utc_datetime"
     assert content =~ "add :parent_id, references(\"users\", on_delete: :nothing)"
     assert content =~ "create unique_index(:users, [:custom_string])"
