@@ -4,6 +4,8 @@
 
 Now supports `ecto_sql` 1.8.x and requires Elixir 1.11+.
 
+### Enhancements
+
 * [`Pow.Ecto.Schema`] has been refactored to conform the `@pow_fields` and `@pow_assocs` attributes with separate migration options
 
 ## v1.0.26 (2021-11-06)
