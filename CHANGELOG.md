@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.27 (TBA)
+## v1.0.27 (2022-04-27)
 
 Now supports `ecto_sql` 1.8.x and requires Elixir 1.11+.
 
