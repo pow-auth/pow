@@ -11,8 +11,13 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
     use Pow.Extension.Ecto.Schema.Base
 
     @impl true
-    def attrs(config) do
-      [{:custom_string, :string, [], [null: config[:binary_id] == true]}]
+    def attrs(_config) do
+      [{:custom_string, :string, []}]
+    end
+
+    @impl true
+    def assocs(_config) do
+      [{:belongs_to, :user, :users}]
     end
 
     @impl true
@@ -54,7 +59,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
       assert file =~ "defmodule #{inspect(Repo)}.Migrations.Add#{@extension_name}ToUsers do"
       assert file =~ "alter table(:users)"
-      assert file =~ "add :custom_string, :string, null: false"
+      assert file =~ "add :custom_string, :string"
+      assert file =~ "add :user_id, references(\"users\", on_delete: :nothing)"
       assert file =~ "create unique_index(:users, [:custom_string])"
     end)
   end
@@ -85,7 +91,8 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
 
       file = @migrations_path |> Path.join(migration_file) |> File.read!()
 
-      assert file =~ "add :custom_string, :string, null: true"
+      assert file =~ "add :custom_string, :string"
+      assert file =~ "add :user_id, references(\"users\", on_delete: :nothing, type: :binary_id)"
     end)
   end
 
@@ -114,6 +121,24 @@ defmodule Mix.Tasks.Pow.Extension.Ecto.Gen.MigrationsTest do
       assert_raise Mix.Error, "migration can't be created, there is already a migration file with name Add#{@extension_name}ToUsers.", fn ->
         Migrations.run(options)
       end
+    end)
+  end
+
+  test "generates with `:generators` config" do
+    Application.put_env(:pow, :generators, binary_id: true)
+    on_exit(fn ->
+      Application.delete_env(:pow, :generators)
+    end)
+
+    File.cd!(@tmp_path, fn ->
+      Migrations.run(@options)
+
+      assert [migration_file] = File.ls!(@migrations_path)
+
+      file = @migrations_path |> Path.join(migration_file) |> File.read!()
+
+      assert file =~ "add :custom_string, :string"
+      assert file =~ "add :user_id, references(\"users\", on_delete: :nothing, type: :binary_id)"
     end)
   end
 end

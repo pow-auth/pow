@@ -73,6 +73,20 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
+  test "generates with `:generators` config" do
+    Application.put_env(:pow, :generators, context_app: {:my_app, "my_app"})
+    on_exit(fn ->
+      Application.delete_env(:pow, :generators)
+    end)
+
+    File.cd!(@tmp_path, fn ->
+      Install.run(@options)
+
+      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+      assert msg =~ "user: MyApp.Users.User,"
+    end)
+  end
+
   test "raises error in app with no top level phoenix dep" do
     File.cd!(@tmp_path, fn ->
       File.write!("mix.exs", """

@@ -42,13 +42,31 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
     end)
   end
 
-  test "generates with binary_id" do
+  test "generates with `:binary_id`" do
     options = @options ++ ~w(--binary-id)
     File.cd!(@tmp_path, fn ->
       Migration.run(options)
 
       assert [migration_file] = File.ls!(@migrations_path)
       assert String.match?(migration_file, ~r/^\d{14}_create_users\.exs$/)
+
+      file = @migrations_path |> Path.join(migration_file) |> File.read!()
+
+      assert file =~ "create table(:users, primary_key: false)"
+      assert file =~ "add :id, :binary_id, primary_key: true"
+    end)
+  end
+
+  test "generates with `:generators` config" do
+    Application.put_env(:pow, :generators, binary_id: true)
+    on_exit(fn ->
+      Application.delete_env(:pow, :generators)
+    end)
+
+    File.cd!(@tmp_path, fn ->
+      Migration.run(@options)
+
+      assert [migration_file] = File.ls!(@migrations_path)
 
       file = @migrations_path |> Path.join(migration_file) |> File.read!()
 

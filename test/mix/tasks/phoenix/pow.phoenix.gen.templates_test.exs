@@ -43,6 +43,8 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
 
       assert_received {:mix_shell, :info, [@expected_msg <> msg]}
       assert msg =~ "config :pow, :pow,"
+      assert msg =~ "user: Pow.Users.User,"
+      assert msg =~ "repo: Pow.Repo,"
       assert msg =~ "web_module: PowWeb"
     end)
   end
@@ -62,6 +64,35 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
         refute_received {:mix_shell, :info, [@expected_msg <> _msg]}
       end)
     end
+  end
+
+  test "generates with `:context_app`" do
+    options = ~w(--context-app my_app)
+
+    File.cd!(@tmp_path, fn ->
+      Templates.run(options)
+
+      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "user: MyApp.Users.User,"
+      assert msg =~ "repo: MyApp.Repo,"
+    end)
+  end
+
+  test "generates with `:generators` config" do
+    Application.put_env(:pow, :generators, context_app: {:my_app, "my_app"})
+    on_exit(fn ->
+      Application.delete_env(:pow, :generators)
+    end)
+
+    File.cd!(@tmp_path, fn ->
+      Templates.run([])
+
+      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "user: MyApp.Users.User,"
+      assert msg =~ "repo: MyApp.Repo,"
+    end)
   end
 
   defp ls(path), do: path |> File.ls!() |> Enum.sort()
