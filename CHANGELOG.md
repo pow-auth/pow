@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.28 (TBA)
+
+### Enhancements
+
+* [`Mix.Pow`] `Mix.Pow.parse_options/3` now merges option defaults with `:otp_app, :generators` configuration
+
 ## v1.0.27 (2022-04-27)
 
 Now supports `ecto_sql` 3.8.x and requires Elixir 1.11+.

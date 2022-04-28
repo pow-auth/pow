@@ -73,15 +73,22 @@ defmodule Mix.Pow do
   """
   @spec parse_options(OptionParser.argv(), Keyword.t(), Keyword.t()) :: {map(), OptionParser.argv(), OptionParser.errors()}
   def parse_options(args, switches, default_opts) do
+    generator_opts = parse_context_app(Application.get_env(otp_app(), :generators, []))
+    default_opts   = Keyword.merge(default_opts, generator_opts)
+
     {opts, parsed, invalid} = OptionParser.parse(args, switches: switches)
     default_opts            = to_map(default_opts)
-    opts                    = to_map(opts)
-    config                  =
-      default_opts
-      |> Map.merge(opts)
-      |> context_app_to_atom()
+    opts                    = context_app_to_atom(to_map(opts))
+    config                  = Map.merge(default_opts, opts)
 
     {config, parsed, invalid}
+  end
+
+  defp parse_context_app(options) do
+    case options[:context_app] do
+      {context_app, _path} -> Keyword.put(options, :context_app, context_app)
+      _context_app         -> options
+    end
   end
 
   defp to_map(keyword) do
