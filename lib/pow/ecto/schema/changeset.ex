@@ -294,9 +294,9 @@ defmodule Pow.Ecto.Schema.Changeset do
     - separate quoted and unquoted content with a single dot
     - only have letters, digits, and the following characters outside quoted
       content:
-        ```text
-        !#$%&'*+-/=?^_`{|}~.
-        ```
+  ```text
+  !#$%&'*+-/=?^_`{|}~.
+  ```
     - not have any consecutive dots outside quoted content
   - Domain should;
     - be at most 255 octets
