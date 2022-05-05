@@ -141,10 +141,8 @@ defmodule MyAppWeb.APIAuthPlug do
         conn
       end)
     else
-      _any -> :ok
+      _any -> conn
     end
-
-    conn
   end
 
   @doc """

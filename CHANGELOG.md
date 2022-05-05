@@ -6,6 +6,10 @@
 
 * [`Mix.Pow`] `Mix.Pow.parse_options/3` now merges option defaults with `:otp_app, :generators` configuration
 
+### Documentation
+
+* Updated [api guide](guides/api.md) to correctly return updated `conn` for delete calls
+
 ## v1.0.27 (2022-04-27)
 
 Now supports `ecto_sql` 3.8.x and requires Elixir 1.11+.
