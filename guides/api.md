@@ -1,6 +1,6 @@
 # How to use Pow in an API
 
-Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefore Pow encourages that you build custom controllers, and use the plug methods for API integration.
+Pow comes with plug n' play support for Phoenix as HTML web interface. API's work differently, and the developer should have full control over the flow in a proper built API. Therefore Pow encourages that you build custom controllers, and use the plug functions for API integration.
 
 To get you started, here's the first steps to build a Pow enabled API interface.
 
@@ -18,7 +18,7 @@ defmodule MyAppWeb.Router do
   use MyAppWeb, :router
 
   # # If you wish to also use Pow in your HTML frontend with session, then you
-  # # should set the `Pow.Plug.Session method here rather than in the endpoint:
+  # # should set the `Pow.Plug.Session` plug here rather than in the endpoint:
   # pipeline :browser do
   #   plug :accepts, ["html"]
   #   plug :fetch_session
@@ -307,7 +307,7 @@ That's it!
 
 You can now set up your client to connect to your API and generate session tokens. The session and renewal token should be send with the `authorization` header. When you receive a 401 error, you should renew the session with the renewal token and then try again.
 
-You can run the following curl methods to test it out:
+You can run the following curl commands to test it out:
 
 ```bash
 $ curl -X POST -d "user[email]=test@example.com&user[password]=secret1234&user[password_confirmation]=secret1234" http://localhost:4000/api/v1/registration

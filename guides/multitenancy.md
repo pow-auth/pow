@@ -1,6 +1,6 @@
 # Multitenancy with Pow
 
-You can pass repo options to the methods used in `Pow.Ecto.Context` by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
+You can pass repo options to the functions used in `Pow.Ecto.Context` by using the `:repo_opts` configuration option. This makes it possible to pass on the prefix option used in multitenancy apps, so you can do the following:
 
 ```elixir
 config :my_app, :pow,

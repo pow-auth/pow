@@ -76,7 +76,7 @@ defmodule Pow.Plug.Session do
   session metadata, while `:ip` and `:user_agent` will be updated each time the
   session is created.
 
-  The method should be called after `Pow.Plug.Session.call/2` has been called
+  The function should be called after `Pow.Plug.Session.call/2` has been called
   to ensure that the metadata, if any, has been fetched.
 
   ## Session expiration
@@ -126,7 +126,7 @@ defmodule Pow.Plug.Session do
   `:pow_session_metadata` key in the conn so it may be used in `create/3`.
 
   If the credentials cache returns a `nil` value the session will be
-  immediately deleted as it means the context method could not find the
+  immediately deleted as it means the context function could not find the
   associated user.
 
   The session id will be decoded and verified with `Pow.Plug.verify_token/4`.

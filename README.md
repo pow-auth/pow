@@ -288,9 +288,9 @@ The generated view files contain the subject lines for the emails.
 
 ## Configuration
 
-Pow is built to be modular, and easy to configure. The configuration is passed to method calls as well as plug options, and they will take priority over any environment configuration. It's ideal in case you got an umbrella app with multiple separate user domains.
+Pow is built to be modular, and easy to configure. The configuration is passed to function calls as well as plug options, and they will take priority over any environment configuration. It's ideal in case you got an umbrella app with multiple separate user domains.
 
-The easiest way to use Pow with Phoenix is to use a `:otp_app` in method calls and set the app environment configuration. It will keep a persistent fallback configuration that you configure in one place.
+The easiest way to use Pow with Phoenix is to use a `:otp_app` in function calls and set the app environment configuration. It will keep a persistent fallback configuration that you configure in one place.
 
 ### Module groups
 
@@ -298,7 +298,7 @@ Pow has three main groups of modules that each can be used individually, or in c
 
 #### Pow.Plug
 
-This group will handle the plug connection. The configuration will be assigned to `conn.private[:pow_config]` and passed through the controller to the users' context module. The Plug module has methods to authenticate, create, update, and delete users, and will generate/renew the session automatically.
+This group will handle the plug connection. The configuration will be assigned to `conn.private[:pow_config]` and passed through the controller to the users' context module. The Plug module has functions to authenticate, create, update, and delete users, and will generate/renew the session automatically.
 
 #### Pow.Ecto
 
@@ -376,7 +376,7 @@ end
 
 ### Ecto changeset
 
-The user module has a fallback `changeset/2` method. If you want to add custom validations, you can use the `pow_changeset/2` method like so:
+The user module has a fallback `changeset/2` function. If you want to add custom validations, you can use the `pow_changeset/2` function like so:
 
 ```elixir
 defmodule MyApp.Users.User do
@@ -402,7 +402,7 @@ end
 
 ### Phoenix controllers
 
-Controllers in Pow are very slim and consists of just one `Pow.Plug` method call with response methods. If you wish to change the flow of the `Pow.Phoenix.RegistrationController` and `Pow.Phoenix.SessionController`, the best way is to create your own and modify `router.ex`.
+Controllers in Pow are very slim and consists of just one `Pow.Plug` function call with response functions. If you wish to change the flow of the `Pow.Phoenix.RegistrationController` and `Pow.Phoenix.SessionController`, the best way is to create your own and modify `router.ex`.
 
 However, to make it easier to integrate extension, you can add callbacks to the controllers that do some light pre/post-processing of the request:
 
@@ -418,7 +418,7 @@ defmodule MyCustomExtension.Phoenix.ControllerCallbacks do
 end
 ```
 
-You can add methods for `before_process/4` (before the action happens) and `before_respond/4` (before parsing the results from the action).
+You can add functions for `before_process/4` (before the action happens) and `before_respond/4` (before parsing the results from the action).
 
 #### Testing with authenticated users
 
@@ -449,8 +449,8 @@ defmodule MyAppWeb.Pow.Messages do
 
   def user_not_authenticated(_conn), do: gettext("You need to sign in to see this page.")
 
-  # Message methods for extensions has to be prepended with the snake cased
-  # extension name. So the `email_has_been_sent/1` method from
+  # Message fucntions for extensions has to be prepended with the snake cased
+  # extension name. So the `email_has_been_sent/1` function from
   # `PowResetPassword` is written as `pow_reset_password_email_has_been_sent/1`
   # in your messages module.
   def pow_reset_password_email_has_been_sent(_conn), do: gettext("An email with reset instructions has been sent to you. Please check your inbox.")

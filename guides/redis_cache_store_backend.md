@@ -113,14 +113,14 @@ defmodule MyAppWeb.Pow.RedisCache do
 
   defp current_timestamp, do: DateTime.to_unix(DateTime.utc_now(), :millisecond)
 
-  defp command_builder(key, method) do
+  defp command_builder(key, fun) do
     count = Enum.count(key)
 
     1..count
     |> Enum.map(fn i ->
       key
       |> Enum.split(i)
-      |> method.()
+      |> fun.()
     end)
     |> Enum.reduce([], &flatten/2)
   end

@@ -6,7 +6,7 @@ First, we'll remove coherence.
 
   1. Remove `:coherence` config from `config/config.exs` (also any coherence config in `config/dev.exs`, `config/prod.exs` and `config/test.exs`)
   2. Delete `coherence_messages.ex`, `coherence_web.ex`, `coherence/redirects.ex`, `emails/coherence`, `templates/coherence`, and `views/coherence`.
-  3. Remove coherence from `user.ex`. This includes the coherence specific changeset method `def changeset(model, params, :password)`, and the `:email` field in schema.
+  3. Remove coherence from `user.ex`. This includes the coherence specific changeset function `def changeset(model, params, :password)`, and the `:email` field in schema.
   4. Remove coherence from `router.ex`. Pipeline `:public` can be removed entirely if it's only used for coherence, as well as scopes that only contains coherence routes.
   5. Remove `:coherence` from `mix.exs` and run `mix deps.unlock coherence`
 

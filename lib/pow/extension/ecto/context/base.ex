@@ -6,7 +6,7 @@ defmodule Pow.Extension.Ecto.Context.Base do
   @doc false
   defmacro __using__(_opts) do
     quote do
-      IO.warn("use #{unquote(__MODULE__)} is deprecated, please use methods in #{Context} instead")
+      IO.warn("use #{unquote(__MODULE__)} is deprecated, please use functions in #{Context} instead")
 
       defdelegate user_schema_mod(config), to: Context
       defdelegate repo(config), to: Context

@@ -6,7 +6,7 @@ defmodule PowInvitation.Ecto.SchemaTest do
   alias PowInvitation.PowEmailConfirmation.Test.Users.User, as: UserEmailConfirmation
   alias PowInvitation.Test.Users.User
 
-  defmodule OverridenMethodsUser do
+  defmodule OverridenChangesetsUser do
     @moduledoc false
     use Ecto.Schema
     use Pow.Ecto.Schema
@@ -67,8 +67,8 @@ defmodule PowInvitation.Ecto.SchemaTest do
       assert changeset.errors[:email]
     end
 
-    test "with overridden method" do
-      changeset = OverridenMethodsUser.invite_changeset(%OverridenMethodsUser{}, @invited_by, @valid_params)
+    test "with overridden changesets" do
+      changeset = OverridenChangesetsUser.invite_changeset(%OverridenChangesetsUser{}, @invited_by, @valid_params)
 
       assert changeset.valid?
       assert changeset.changes.organization_id == 1
@@ -112,8 +112,8 @@ defmodule PowInvitation.Ecto.SchemaTest do
       assert changeset.changes[:unconfirmed_email] == "new@example.com"
     end
 
-    test "with overridden method" do
-      changeset = OverridenMethodsUser.accept_invitation_changeset(%OverridenMethodsUser{}, @valid_params)
+    test "with overridden changesets" do
+      changeset = OverridenChangesetsUser.accept_invitation_changeset(%OverridenChangesetsUser{}, @valid_params)
 
       assert changeset.valid?
       assert changeset.changes.invitation_accepted_ip == "127.0.0.1"

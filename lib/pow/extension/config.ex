@@ -38,7 +38,7 @@ defmodule Pow.Extension.Config do
   @doc """
   Returns a binary of the extension atom.
 
-  This is usually used to create extension namespaces for methods to be used
+  This is usually used to create extension namespaces for functions to be used
   in shared modules.
   """
   @deprecated "Create the namespace directly in your module"

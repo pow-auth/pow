@@ -8,7 +8,7 @@ No global configuration!
 
 Unlike most alternative user management libraries, Pow is built to be a functional component in your app. You can have numerous separate Pow setups in the same app, e.g., a super admin backend and a regular user login.
 
-Configuration can be passed to nearly all methods in runtime or compile time.
+Configuration can be passed to nearly all functions in runtime or compile time.
 
 ## Modular
 

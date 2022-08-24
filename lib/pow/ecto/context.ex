@@ -5,7 +5,7 @@ defmodule Pow.Ecto.Context do
   ## Usage
 
   This module will be used by pow by default. If you
-  wish to have control over context methods, you can
+  wish to have control over context functions, you can
   do configure `lib/my_project/users/users.ex`
   the following way:
 
@@ -21,7 +21,7 @@ defmodule Pow.Ecto.Context do
 
   Remember to update configuration with `users_context: MyApp.Users`.
 
-  The following Pow methods can be accessed:
+  The following Pow functions can be accessed:
 
     * `pow_authenticate/1`
     * `pow_create/1`
@@ -83,10 +83,10 @@ defmodule Pow.Ecto.Context do
   User schema module and repo module will be fetched from the config. The user
   id field is fetched from the user schema module.
 
-  The method will return nil if either the fetched user, or password is nil.
+  The function will return nil if either the fetched user or password is nil.
 
   To prevent timing attacks, a blank user struct will be passed to the
-  `verify_password/2` method for the user schema module to ensure that the
+  `verify_password/2` function for the user schema module to ensure that the
   the response time will be equal as when a password is verified.
   """
   @spec authenticate(map(), Config.t()) :: user() | nil

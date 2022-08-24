@@ -1,6 +1,6 @@
 defmodule PowEmailConfirmation.Plug do
   @moduledoc """
-  Plug helper methods.
+  Plug helper functions.
   """
   alias Plug.Conn
   alias Pow.{Operations, Plug}

@@ -2,7 +2,7 @@ defmodule Pow.Extension.Ecto.Schema.Base do
   @moduledoc """
   Used for extensions to extend user schemas.
 
-  The macro will add fallback methods to the module, that can be overridden.
+  The macro will add fallback functions to the module, that can be overridden.
 
   ## Usage
 

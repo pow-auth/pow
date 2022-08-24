@@ -48,7 +48,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     @impl true
     defmacro __using__(_config) do
       quote do
-        def custom_method, do: true
+        def custom_function, do: true
       end
     end
   end
@@ -127,9 +127,9 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     assert changeset.errors[:custom] == {"custom error", []}
   end
 
-  test "has custom method definitions" do
-    assert Kernel.function_exported?(User, :custom_method, 0)
-    assert User.custom_method()
+  test "has custom function definitions" do
+    assert Kernel.function_exported?(User, :custom_function, 0)
+    assert User.custom_function()
   end
 
   test "validates attributes" do

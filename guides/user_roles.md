@@ -4,7 +4,7 @@ Adding user roles is very simple, and you won't need an extension for this. This
 
 ## Update your schema
 
-Add a `role` column to your user schema. In our example, we'll set the default role to `user` and add a `changeset_role/2` method that ensures the role can only be `user` or `admin`.
+Add a `role` column to your user schema. In our example, we'll set the default role to `user` and add a `changeset_role/2` function that ensures the role can only be `user` or `admin`.
 
 ```elixir
 # lib/my_app/users/user.ex
@@ -29,7 +29,7 @@ defmodule MyApp.Users.User do
 end
 ```
 
-To keep your app secure you shouldn't allow any direct calls to `changeset_role/2` with params provided by the user. Instead you should set up methods in your users context module to either create an admin user or update the role of an existing user:
+To keep your app secure you shouldn't allow any direct calls to `changeset_role/2` with params provided by the user. Instead you should set up functions in your users context module to either create an admin user or update the role of an existing user:
 
 ```elixir
 # lib/my_app/users.ex
@@ -152,7 +152,7 @@ end
 
 ## Using role permissions with layout
 
-You may wish to render certain sections in your layout for certain roles. First let's add a helper method to the users context:
+You may wish to render certain sections in your layout for certain roles. First let's add a helper function to the users context:
 
 ```elixir
 # lib/my_app/users.ex
@@ -227,7 +227,7 @@ defmodule MyApp.UsersTest do
     assert user.role == "admin"
   end
 
-  # Uncomment if you added this method to your users context
+  # Uncomment if you added this function to your users context
   # test "is_admin?/1" do
   #   refute Users.is_admin?(nil)
   #
