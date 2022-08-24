@@ -189,7 +189,7 @@ Remember to create the view files `WEB_PATH/views/registration_view.ex` and `WEB
 
 That's all you need to do to have custom controllers with Pow! From here on you can customize your flow.
 
-You may want to utilize some of the extensions, but since you have created a custom controller, it's highly recommended that you do not rely on any controller methods in the extensions. Instead, you should implement the logic yourself to keep your controllers as explicit as possible. This is only an example:
+You may want to utilize some of the extensions, but since you have created a custom controller, it's highly recommended that you do not rely on any controller actions in the extensions. Instead, you should implement the logic yourself to keep your controllers as explicit as possible. This is only an example:
 
 ```elixir
 defmodule MyAppWeb.SessionController do

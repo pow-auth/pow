@@ -1,8 +1,8 @@
 defmodule Pow.Ecto.Schema.Changeset do
   @moduledoc """
-  Handles changesets methods for Pow schema.
+  Handles changesets functions for Pow schema.
 
-  These methods should never be called directly, but instead the methods
+  These functions should never be called directly, but instead the functions
   build in macros in `Pow.Ecto.Schema` should be used. This is to ensure
   that only compile time configuration is used.
 
@@ -12,17 +12,18 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     * `:password_min_length`   - minimum password length, defaults to 8
     * `:password_max_length`   - maximum password length, defaults to 4096
-    * `:password_hash_methods` - the password hash and verify methods to use,
+    * `:password_hash_methods` - the password hash and verify functions to use,
       defaults to:
 
           {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
           &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
-    * `:email_validator`       - the email validation method, defaults to:
+    * `:email_validator`       - the email validation function, defaults to:
 
 
           &Pow.Ecto.Schema.Changeset.validate_email/1
 
-        The method should either return `:ok`, `:error`, or `{:error, reason}`.
+        The function should either return `:ok`, `:error`, or
+        `{:error, reason}`.
   """
   alias Ecto.Changeset
   alias Pow.{Config, Ecto.Schema, Ecto.Schema.Password}
@@ -165,10 +166,10 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
 
   defp maybe_validate_email_format(changeset, :email, config) do
-    validate_method = email_validator(config)
+    validator = get_email_validator(config)
 
-    Changeset.validate_change(changeset, :email, {:email_format, validate_method}, fn :email, email ->
-      case validate_method.(email) do
+    Changeset.validate_change(changeset, :email, {:email_format, validator}, fn :email, email ->
+      case validator.(email) do
         :ok              -> []
         :error           -> [email: {"has invalid format", validation: :email_format}]
         {:error, reason} -> [email: {"has invalid format", validation: :email_format, reason: reason}]
@@ -215,14 +216,14 @@ defmodule Pow.Ecto.Schema.Changeset do
   @spec verify_password(Ecto.Schema.t(), binary(), Config.t()) :: boolean()
   def verify_password(%{password_hash: nil}, _password, config) do
     config
-    |> password_hash_method()
+    |> get_password_hash_function()
     |> apply([""])
 
     false
   end
   def verify_password(%{password_hash: password_hash}, password, config) do
     config
-    |> password_verify_method()
+    |> get_password_verify_function()
     |> apply([password, password_hash])
   end
 
@@ -259,27 +260,27 @@ defmodule Pow.Ecto.Schema.Changeset do
 
   defp hash_password(password, config) do
     config
-    |> password_hash_method()
+    |> get_password_hash_function()
     |> apply([password])
   end
 
-  defp password_hash_method(config) do
-    {password_hash_method, _} = password_hash_methods(config)
+  defp get_password_hash_function(config) do
+    {password_hash_function, _} = get_password_hash_functions(config)
 
-    password_hash_method
+    password_hash_function
   end
 
-  defp password_verify_method(config) do
-    {_, password_verify_method} = password_hash_methods(config)
+  defp get_password_verify_function(config) do
+    {_, password_verify_function} = get_password_hash_functions(config)
 
-    password_verify_method
+    password_verify_function
   end
 
-  defp password_hash_methods(config) do
+  defp get_password_hash_functions(config) do
     Config.get(config, :password_hash_methods, {&Password.pbkdf2_hash/1, &Password.pbkdf2_verify/2})
   end
 
-  defp email_validator(config) do
+  defp get_email_validator(config) do
     Config.get(config, :email_validator, &__MODULE__.validate_email/1)
   end
 

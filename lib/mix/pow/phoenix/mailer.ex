@@ -9,7 +9,7 @@ defmodule Mix.Pow.Phoenix.Mailer do
   """
   @spec create_view_file(atom(), binary(), atom(), binary(), [binary()]) :: :ok
   def create_view_file(module, name, web_mod, web_prefix, mails) do
-    subjects = subjects_methods(module, name, mails)
+    subjects = subject_functions(module, name, mails)
     path     = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
     content  = """
     defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
@@ -44,7 +44,7 @@ defmodule Mix.Pow.Phoenix.Mailer do
 
   defp template_module(module, name), do: Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
 
-  defp subjects_methods(module, name, mails) do
+  defp subject_functions(module, name, mails) do
     template_module = template_module(module, name)
 
     Enum.map(mails, fn mail ->

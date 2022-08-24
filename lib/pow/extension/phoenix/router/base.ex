@@ -30,11 +30,11 @@ defmodule Pow.Extension.Phoenix.Router.Base do
     quote do
       @behaviour unquote(__MODULE__)
 
-      unquote(__MODULE__).__create_scope_routes_method__(unquote(extension))
+      unquote(__MODULE__).__create_scope_routes_function__(unquote(extension))
     end
   end
 
-  defmacro __create_scope_routes_method__(extension) do
+  defmacro __create_scope_routes_function__(extension) do
     quote do
       @doc false
       defmacro scoped_routes(config) do

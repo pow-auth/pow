@@ -8,10 +8,10 @@ defmodule Pow.Ecto.Schema do
   `pow_user_fields/0` macro will use these attributes to create fields and
   associations in the ecto schema.
 
-  The macro will add two overridable methods to your module; `changeset/2`
+  The macro will add two overridable functions to your module; `changeset/2`
   and `verify_password/2`. See the customization section below for more.
 
-  The following helper methods are added for changeset customization:
+  The following helper functions are added for changeset customization:
 
     - `pow_changeset/2`,
     - `pow_verify_password/2`
@@ -19,7 +19,7 @@ defmodule Pow.Ecto.Schema do
     - `pow_password_changeset/2`,
     - `pow_current_password_changeset/2`,
 
-  Finally `pow_user_id_field/0` method is added to the module that is used to
+  Finally `pow_user_id_field/0` function is added to the module that is used to
   fetch the user id field name.
 
   A `@pow_config` module attribute is created containing the options that were
@@ -124,9 +124,9 @@ defmodule Pow.Ecto.Schema do
 
   ## Customize Pow changeset
 
-  You can extract individual changeset methods to modify the changeset flow
+  You can extract individual changeset functions to modify the changeset flow
   entirely. As an example, this is how you can remove the validation check for
-  confirm password in the changeset method:
+  confirm password in the changeset function:
 
       defmodule MyApp.Users.User do
         use Ecto.Schema
@@ -144,7 +144,7 @@ defmodule Pow.Ecto.Schema do
         end
       end
 
-  Note that the changeset methods in `Pow.Ecto.Schema.Changeset` require the
+  Note that the changeset functions in `Pow.Ecto.Schema.Changeset` require the
   Pow ecto module configuration that is passed to the
   `use Pow.Ecto.Schema, ...` call. This can be fetched by using the
   `@pow_config` module attribute.
@@ -172,7 +172,7 @@ defmodule Pow.Ecto.Schema do
 
       defoverridable unquote(__MODULE__)
 
-      unquote(__MODULE__).__pow_methods__()
+      unquote(__MODULE__).__pow_functions__()
       unquote(__MODULE__).__register_fields__()
       unquote(__MODULE__).__register_assocs__()
       unquote(__MODULE__).__register_user_id_field__()
@@ -180,17 +180,17 @@ defmodule Pow.Ecto.Schema do
     end
   end
 
-  @changeset_methods [:user_id_field_changeset, :password_changeset, :current_password_changeset]
+  @changeset_functions [:user_id_field_changeset, :password_changeset, :current_password_changeset]
 
   @doc false
-  defmacro __pow_methods__ do
-    quoted_changeset_methods =
-      for method <- @changeset_methods do
-        pow_method_name = String.to_atom("pow_#{method}")
+  defmacro __pow_functions__ do
+    quoted_changeset_functions =
+      for changeset_function <- @changeset_functions do
+        pow_function_name = String.to_atom("pow_#{changeset_function}")
 
         quote do
-          def unquote(pow_method_name)(user_or_changeset, attrs) do
-            unquote(__MODULE__).Changeset.unquote(method)(user_or_changeset, attrs, @pow_config)
+          def unquote(pow_function_name)(user_or_changeset, attrs) do
+            unquote(__MODULE__).Changeset.unquote(changeset_function)(user_or_changeset, attrs, @pow_config)
           end
         end
       end
@@ -205,7 +205,7 @@ defmodule Pow.Ecto.Schema do
         |> pow_password_changeset(attrs)
       end
 
-      unquote(quoted_changeset_methods)
+      unquote(quoted_changeset_functions)
 
       def pow_verify_password(user, password) do
         unquote(__MODULE__).Changeset.verify_password(user, password, @pow_config)
@@ -277,7 +277,7 @@ defmodule Pow.Ecto.Schema do
   end
 
   # TODO: Remove by 1.1.0
-  @deprecated "No longer public method"
+  @deprecated "No longer public function"
   def filter_new_fields(fields, existing_fields), do: __filter_new_fields__(fields, existing_fields)
 
   @doc false

@@ -6,7 +6,7 @@ defmodule Pow.Plug.Base do
 
   Any writes to backend store or client should occur in `:before_send` callback
   as defined in `Plug.Conn`. To ensure that the callbacks are called in the
-  order they were set, a `register_before_send/2` method is used to set
+  order they were set, a `register_before_send/2` function is used to set
   callbacks instead of `Plug.Conn.register_before_send/2`.
 
   ## Configuration options

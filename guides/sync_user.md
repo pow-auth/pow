@@ -76,7 +76,7 @@ end
 
 ## Update user in the credentials cache
 
-Let's say that you want to show the user `plan` on most pages. In this case, we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions use the below method.
+Let's say that you want to show the user `plan` on most pages. In this case, we can safely rely on the cached credentials since we don't need to know the actual value in the database. The worst case is that a different plan may be shown if you haven't ensured that all plan update actions use the below function.
 
 We can use `Pow.Plug.create/2` to call the plug and update the cached credentials.
 
@@ -136,4 +136,4 @@ As you can see in the above, the cached user credentials will be updated after a
 
 Another thing to note is that if you're using `Pow.Plug.Session`, then the session id will also be regenerated this way. This is ideal for authorization level change (what the above `plan` change action maybe).
 
-You may also update the `plan` field in a background task. In this case, you won't have access to any current session, and you would have to use the `Pow.Store.CredentialsCache.put/3` to update the credentials cache. However, since there are some caveats to this, it's instead recommended to find an alternative solution with the above methods.
+You may also update the `plan` field in a background task. In this case, you won't have access to any current session, and you would have to use the `Pow.Store.CredentialsCache.put/3` to update the credentials cache. However, since there are some caveats to this, it's instead recommended to find an alternative solution with the above functions.

@@ -4,7 +4,7 @@ defmodule Pow.Extension.Ecto.Schema do
 
   The macro will append fields to the `@pow_fields` module attribute using the
   attributes from `[Pow Extension].Ecto.Schema.attrs/1`, so they can be used in
-  the `Pow.Ecto.Schema.pow_user_fields/0` method call.
+  the `Pow.Ecto.Schema.pow_user_fields/0` function call.
 
   After module compilation `[Pow Extension].Ecto.Schema.validate!/2` will run.
 
@@ -48,7 +48,7 @@ defmodule Pow.Extension.Ecto.Schema do
 
       unquote(__MODULE__).__register_extension_fields__()
       unquote(__MODULE__).__register_extension_assocs__()
-      unquote(__MODULE__).__pow_extension_methods__()
+      unquote(__MODULE__).__pow_extension_functions__()
       unquote(__MODULE__).__register_after_compile_validation__()
     end
   end
@@ -87,7 +87,7 @@ defmodule Pow.Extension.Ecto.Schema do
   end
 
   @doc false
-  defmacro __pow_extension_methods__ do
+  defmacro __pow_extension_functions__ do
     quote do
       def pow_extension_changeset(changeset, attrs) do
         unquote(__MODULE__).changeset(changeset, attrs, @pow_extension_config)
@@ -190,7 +190,7 @@ defmodule Pow.Extension.Ecto.Schema do
   This will run `validate!/2` on all extension ecto schema modules.
 
   It's used to ensure certain fields are available, e.g. an `:email` field. The
-  method should either raise an exception, or return `:ok`. Compilation will
+  function should either raise an exception, or return `:ok`. Compilation will
   fail when the exception is raised.
   """
   @spec validate!(Config.t(), atom()) :: :ok

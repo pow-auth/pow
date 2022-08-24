@@ -4,7 +4,7 @@ Locking users is trivial, and you won't need an extension for this. It can be do
 
 ## Update your schema
 
-Add a `locked_at` column to your user schema, and a `lock_changeset/1` method to lock the account:
+Add a `locked_at` column to your user schema, and a `lock_changeset/1` function to lock the account:
 
 ```elixir
 # lib/my_app/users/user.ex
@@ -216,7 +216,7 @@ defmodule MyAppWeb.ResetPasswordController do
 end
 ```
 
-To make the code simpler for us we're leveraging the methods from `PowResetPassword.Phoenix.ResetPasswordController` here.
+To make the code simpler for us we're leveraging the functions from `PowResetPassword.Phoenix.ResetPasswordController` here.
 
 Now all we got to do is to catch the route before the `pow_extension_routes/0` call:
 

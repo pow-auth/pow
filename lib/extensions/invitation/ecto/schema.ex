@@ -29,7 +29,7 @@ defmodule PowInvitation.Ecto.Schema do
 
   ## Customize PowInvitation changeset
 
-  You can extract individual changeset methods to modify the changeset flow
+  You can extract individual changeset functions to modify the changeset flow
   entirely. As an example, this is how you can invite a user through email
   while using `username` as the user id field:
 
@@ -101,9 +101,9 @@ defmodule PowInvitation.Ecto.Schema do
   Invites user.
 
   It's important to note that this changeset should not include the changeset
-  method in the user schema module if `PowEmailConfirmation` has been enabled.
-  This is because the e-mail is assumed confirmed already if the user can
-  accept the invitation.
+  function in the user schema module if `PowEmailConfirmation` has been
+  enabled. This is because the e-mail is assumed confirmed already if the user
+  can accept the invitation.
 
   A unique `:invitation_token` will be generated, and `invited_by` association
   will be set. Only the user id will be set, and the persisted user won't have
@@ -152,7 +152,7 @@ defmodule PowInvitation.Ecto.Schema do
   @doc """
   Accepts an invitation.
 
-  The changeset method in user schema module is called, and
+  The changeset function in user schema module is called, and
   `:invitation_accepted_at` will be updated. The password can be set, and the
   user id updated.
   """

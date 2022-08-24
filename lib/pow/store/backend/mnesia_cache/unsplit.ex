@@ -19,7 +19,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
 
   ## Usage
 
-  To start the GenServer, add it to your application `start/2` method:
+  To start the GenServer, add it to your application `start/2` function:
 
       defmodule MyApp.Application do
         use Application

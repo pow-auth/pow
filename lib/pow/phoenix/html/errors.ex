@@ -7,7 +7,7 @@ defmodule Pow.Phoenix.HTML.ErrorHelpers do
   @doc """
   Generates tag for inlined form input errors.
 
-  It'll call a simple mock method to interpolate, as translations should be
+  It'll call a simple mock function to interpolate, as translations should be
   handled in the Phoenix app implementing Pow.
   """
   def error_tag(form, field) do

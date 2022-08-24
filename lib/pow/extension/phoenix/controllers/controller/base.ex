@@ -17,12 +17,12 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
     quote do
       use Controller, unquote(config)
 
-      unquote(__MODULE__).__define_helper_methods__(unquote(config))
+      unquote(__MODULE__).__define_helper_functions__(unquote(config))
     end
   end
 
   @doc false
-  defmacro __define_helper_methods__(config) do
+  defmacro __define_helper_functions__(config) do
     quote do
       @messages_fallback unquote(__MODULE__).__messages_fallback__(unquote(config), __MODULE__, __ENV__)
 

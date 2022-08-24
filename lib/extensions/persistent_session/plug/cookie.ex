@@ -183,8 +183,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   `:pow_session_metadata` key in the conn.
 
   If the persistent session cache returns a `nil` value the persistent session
-  will be deleted as it means the context method could not find the associated
-  user.
+  will be deleted as it means the context function could not find the
+  associated user.
 
   The persistent session token will be decoded and verified with
   `Pow.Plug.verify_token/4`.

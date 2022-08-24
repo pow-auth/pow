@@ -27,11 +27,11 @@ defmodule Pow.Phoenix.Template do
   end
 
   @doc """
-  Generates template methods.
+  Generates template functions.
 
   This macro that will compile a phoenix view template from the provided
-  binary, and add the compiled version to a `render/2` method. The `html/1`
-  method outputs the binary.
+  binary, and add the compiled version to a `render/2` function. The `html/1`
+  function outputs the binary.
   """
   @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
   defmacro template(action, :html, content) do

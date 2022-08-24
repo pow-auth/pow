@@ -1,7 +1,7 @@
 defmodule Pow.Phoenix.Mailer.View do
   @moduledoc """
-  View macros for `Pow.Phoenix.Mailer` that calls render methods generated with
-  `Pow.Phoenix.Mailer.Template`.
+  View macros for `Pow.Phoenix.Mailer` that calls render functions generated
+  with `Pow.Phoenix.Mailer.Template`.
 
   ## Usage
 

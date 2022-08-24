@@ -7,7 +7,7 @@ defmodule Pow.Store.CredentialsCache do
   `{credentials, session_metadata}`, where session metadata is data exclusive
   to the session id.
 
-  This module also adds two utility methods:
+  This module also adds two utility functions:
 
     * `users/2` - to list all current users
     * `sessions/2` - to list all current sessions
@@ -18,8 +18,8 @@ defmodule Pow.Store.CredentialsCache do
 
   ## Custom credentials cache module
 
-  Pow may use the utility methods in this module. To ensure all required
-  methods has been implemented in a custom credentials cache module, the
+  Pow may use the utility functions in this module. To ensure all required
+  functions has been implemented in a custom credentials cache module, the
   `@behaviour` of this module should be used:
 
       defmodule MyApp.CredentialsStore do

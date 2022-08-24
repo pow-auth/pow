@@ -1,6 +1,6 @@
 defmodule PowPersistentSession.Plug do
   @moduledoc """
-  Plug helper methods.
+  Plug helper functions.
   """
   alias Plug.Conn
   alias Pow.Config

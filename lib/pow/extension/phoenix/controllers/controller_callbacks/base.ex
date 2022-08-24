@@ -26,8 +26,8 @@ defmodule Pow.Extension.Phoenix.ControllerCallbacks.Base do
       require Base
       require Controller
 
-      Base.__define_helper_methods__(unquote(config))
-      Controller.__define_helper_methods__()
+      Base.__define_helper_functions__(unquote(config))
+      Controller.__define_helper_functions__()
 
       @before_compile unquote(__MODULE__)
     end

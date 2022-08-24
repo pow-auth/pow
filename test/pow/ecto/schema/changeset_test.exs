@@ -210,7 +210,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       end) =~ "passing `confirm_password` value to `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has been deprecated, please use `password_confirmation` instead"
     end
 
-    test "can use custom password hash methods" do
+    test "can use custom password hash functions" do
       password_hash = &(&1 <> "123")
       password_verify = &(&1 == &2 <> "123")
       config = [password_hash_methods: {password_hash, password_verify}]
