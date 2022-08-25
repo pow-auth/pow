@@ -3,18 +3,10 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
 
   alias Mix.Tasks.Pow.Ecto.Gen.Schema
 
-  @tmp_path      Path.join(["tmp", inspect(Schema)])
   @expected_file Path.join(["lib", "pow", "users", "user.ex"])
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
-
-    :ok
-  end
-
-  test "generates schema file" do
-    File.cd!(@tmp_path, fn ->
+  test "generates schema file", context do
+    File.cd!(context.tmp_path, fn ->
       Schema.run([])
 
       assert File.exists?(@expected_file)
@@ -24,10 +16,10 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     end)
   end
 
-  test "generates with `:binary_id` and `:context_app`" do
+  test "generates with `:binary_id` and `:context_app`", context do
     options = ~w(--binary-id --context-app pow)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Schema.run(options)
 
       assert File.exists?(@expected_file)
@@ -38,8 +30,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     end)
   end
 
-  test "doesn't make duplicate files" do
-    File.cd!(@tmp_path, fn ->
+  test "doesn't make duplicate files", context do
+    File.cd!(context.tmp_path, fn ->
       Schema.run([])
 
       assert_raise Mix.Error, "schema file can't be created, there is already a schema file in lib/pow/users/user.ex.", fn ->
@@ -48,7 +40,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
     end)
   end
 
-  test "generates with `:generators` config" do
+  test "generates with `:generators` config", context do
     Application.put_env(:pow, :generators, binary_id: true, context_app: {:my_app, "my_app"})
     on_exit(fn ->
       Application.delete_env(:pow, :generators)
@@ -56,7 +48,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.SchemaTest do
 
     file = Path.join(["my_app", "lib", "my_app", "users", "user.ex"])
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Schema.run([])
 
       assert File.exists?(file)

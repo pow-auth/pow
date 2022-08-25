@@ -14,7 +14,6 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
   """
   use Mix.Task
 
-  alias Pow.Config
   alias Mix.{Pow, Pow.Phoenix}
 
   @switches [context_app: :string]
@@ -50,32 +49,41 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
       Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
     end)
 
+    Mix.shell().info("Pow Phoenix templates and views has been generated.")
+
     %{structure: structure}
   end
 
-  defp print_shell_instructions(%{structure: %{web_app: web_app, web_module: web_module, context_base: context_base}}, %{schema_name: schema_name}) do
-    case web_module_set?(web_app, web_module) do
-      true ->
-        :ok
+  defp print_shell_instructions(%{structure: structure} = config, schema_opts) do
+    case Pow.inject_files([config_file_injection(structure, schema_opts)]) do
+      :ok ->
+        config
 
-      false ->
-        Mix.shell().info(
-          """
-          Pow Phoenix templates and views has been generated.
-
-          Please add `web_module: #{inspect(web_module)}` to your configuration.
-
-          config #{inspect(web_app)}, :pow,
-            user: #{inspect(context_base)}.#{schema_name},
-            repo: #{inspect(context_base)}.Repo,
-            web_module: #{inspect(web_module)}
-          """)
+      :error ->
+        Mix.raise "Couldn't configure Pow! Did you run this inside your Phoenix app?"
     end
   end
 
-  defp web_module_set?(web_app, web_module) do
-    [otp_app: web_app]
-    |> Config.get(:web_module)
-    |> Kernel.==(web_module)
+  defp config_file_injection(structure, schema_opts) do
+    file = Path.expand(Keyword.fetch!(Mix.Project.config(), :config_path))
+    content = "  web_module: #{inspect(structure.web_module)},"
+
+    %{
+      file: file,
+      injections: [%{
+        content: content,
+        test: "web_module: #{inspect(structure.web_module)}",
+        needle: "config #{inspect(structure.web_app)}, :pow,"
+      }],
+      instructions:
+        """
+        Add `#{String.trim(content)}` to your configuration in #{Path.relative_to_cwd(file)}:
+
+        config #{inspect(structure.web_app)}, :pow,
+        #{content}
+          user: #{inspect(structure.context_base)}.#{schema_opts.schema_name},
+          # ...
+        """
+    }
   end
 end

@@ -3,17 +3,8 @@ defmodule Mix.Tasks.PowTest do
 
   alias Mix.Tasks.Pow
 
-  @tmp_path Path.join(["tmp", inspect(Pow)])
-
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
-
-    :ok
-  end
-
-  test "prints information" do
-    File.cd!(@tmp_path, fn ->
+  test "prints information", context do
+    File.cd!(context.tmp_path, fn ->
       File.write!("mix.exs", """
       defmodule MyApp.MixProject do
         use Mix.Project
