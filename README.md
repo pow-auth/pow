@@ -59,7 +59,7 @@ WEB_PATH/endpoint.ex
 WEB_PATH/router.ex
 ```
 
-Run `mix ecto.setup` and you can now visit `http://localhost:4000/registration/new`, and create a new user.
+Run migrations with `mix setup`, start the server with `mix phx.server`, and you can now visit `http://localhost:4000/registration/new` to create a user.
 
 ### Modify templates
 
