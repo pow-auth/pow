@@ -5,62 +5,55 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
 
   defmodule Repo do
     def __adapter__, do: true
-    def config, do: [priv: "", otp_app: :pow]
+    def config, do: [priv: "./", otp_app: :pow]
   end
 
-  @tmp_path Path.join(["tmp", inspect(Install)])
-  @options  ["-r", inspect(Repo)]
+  @options ["-r", inspect(Repo)]
+  @migrations_path "migrations"
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
-
-    :ok
-  end
-
-  test "generates files" do
-    File.cd!(@tmp_path, fn ->
+  test "generates files", context do
+    File.cd!(context.tmp_path, fn ->
       Install.run(@options)
 
       assert File.ls!("lib/pow/users") == ["user.ex"]
-      assert [_one] = File.ls!("migrations")
+      assert [_one] = File.ls!(@migrations_path)
     end)
   end
 
-  test "generates with schema name and table" do
+  test "generates with schema name and table", context do
     options = @options ++ ~w(Organizations.Organization organizations --extension PowResetPassword --extension PowEmailConfirmation)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Install.run(options)
 
       assert File.ls!("lib/pow/organizations") == ["organization.ex"]
-      assert [one, two] = Enum.sort(File.ls!("migrations"))
+      assert [one, two] = Enum.sort(File.ls!(@migrations_path))
       assert one =~ "_create_organizations.exs"
       assert two =~ "_add_pow_email_confirmation_to_organizations.exs"
 
-      content = File.read!("migrations/#{one}")
+      content = File.read!(Path.join(@migrations_path, one))
       assert content =~ "table(:organizations)"
 
-      content = File.read!("migrations/#{two}")
+      content = File.read!(Path.join(@migrations_path, two))
       assert content =~ "table(:organizations)"
     end)
   end
 
-  test "generates with extensions" do
+  test "generates with extensions", context do
     options = @options ++ ~w(--extension PowResetPassword --extension PowEmailConfirmation)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Install.run(options)
 
       assert File.ls!("lib/pow/users") == ["user.ex"]
-      assert [one, two] = Enum.sort(File.ls!("migrations"))
+      assert [one, two] = Enum.sort(File.ls!(@migrations_path))
       assert one =~ "_create_users.exs"
       assert two =~ "_add_pow_email_confirmation_to_users.exs"
     end)
   end
 
-  test "raises error in app with no ecto dep" do
-    File.cd!(@tmp_path, fn ->
+  test "raises error in app with no ecto dep", context do
+    File.cd!(context.tmp_path, fn ->
       File.write!("mix.exs", """
       defmodule MissingTopLevelEctoDep.MixProject do
         use Mix.Project
@@ -111,8 +104,8 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
       end)
     end
 
-    test "uses namespace for context module names" do
-      File.cd!(@tmp_path, fn ->
+    test "uses namespace for context module names", context do
+      File.cd!(context.tmp_path, fn ->
         Install.run(@options)
 
         assert File.read!("lib/pow/users/user.ex") =~ "defmodule POW.Users.User do"

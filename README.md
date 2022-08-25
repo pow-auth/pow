@@ -51,65 +51,15 @@ LIB_PATH/users/user.ex
 PRIV_PATH/repo/migrations/TIMESTAMP_create_users.ex
 ```
 
-Add the following to `config/config.exs`:
+And also update the following files:
 
-```elixir
-use Mix.Config
-
-# ... existing config
-  
-config :my_app, :pow,
-  user: MyApp.Users.User,
-  repo: MyApp.Repo
-
-# ... import_config
+```bash
+config/config.exs
+WEB_PATH/endpoint.ex
+WEB_PATH/router.ex
 ```
 
-Set up `WEB_PATH/endpoint.ex` to enable session based authentication (`Pow.Plug.Session` is added after `Plug.Session`):
-
-```elixir
-defmodule MyAppWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :my_app
-
-  # ...
-
-  plug Plug.Session, @session_options
-  plug Pow.Plug.Session, otp_app: :my_app
-  plug MyAppWeb.Router
-end
-```
-
-Add Pow routes to `WEB_PATH/router.ex`:
-
-```elixir
-defmodule MyAppWeb.Router do
-  use MyAppWeb, :router
-  use Pow.Phoenix.Router
-
-  # ... pipelines
-
-  pipeline :protected do
-    plug Pow.Plug.RequireAuthenticated,
-      error_handler: Pow.Phoenix.PlugErrorHandler
-  end
-
-  scope "/" do
-    pipe_through :browser
-
-    pow_routes()
-  end
-
-  scope "/", MyAppWeb do
-    pipe_through [:browser, :protected]
-
-    # Add your protected routes here
-  end
-
-  # ... routes
-end
-```
-
-That's it! Run `mix ecto.setup` and you can now visit `http://localhost:4000/registration/new`, and create a new user.
+Run `mix ecto.setup` and you can now visit `http://localhost:4000/registration/new`, and create a new user.
 
 ### Modify templates
 
@@ -121,13 +71,7 @@ If you wish to modify the templates, you can generate them (and the view files) 
 mix pow.phoenix.gen.templates
 ```
 
-Remember to add `web_module: MyAppWeb` to the configuration so that the view you've just generated will be used instead:
-
-```elixir
-config :my_app, :pow,
-  # ...
-  web_module: MyAppWeb
-```
+This will also add `web_module: MyAppWeb` to the configuration in `config/config.exs`.
 
 ## Extensions
 
@@ -248,41 +192,13 @@ This mailer module will only output the mail to your log, so you can e.g. try ou
 
 #### Modify mailer templates
 
-Since Phoenix doesn't ship with a mailer setup by default you should first modify `my_app_web.ex` with a `:mailer_view` macro:
-
-```elixir
-defmodule MyAppWeb do
-  # ...
-
-  def mailer_view do
-    quote do
-      use Phoenix.View, root: "lib/my_app_web/templates",
-                        namespace: MyAppWeb
-
-      use Phoenix.HTML
-    end
-  end
-
-  # ...
-
-end
-```
-
-Now generate the view and template files:
+Generate the view and template files:
 
 ```bash
 mix pow.extension.phoenix.mailer.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-This will generate view files in `WEB_PATH/views/POW_EXTENSION/mailer/`, and html and text templates in `WEB_PATH/templates/POW_EXTENSION/mailer/` directory.
-
-Add `web_mailer_module: MyAppWeb` to the configuration so Pow will use the views you've just generated:
-
-```elixir
-config :my_app, :pow,
-  # ...
-  web_mailer_module: MyAppWeb
-```
+This will generate view files in `WEB_PATH/views/POW_EXTENSION/mailer/`, and html and text templates in `WEB_PATH/templates/POW_EXTENSION/mailer/` directory. This will also add the necessary ` mailer_view/0` macro to `WEB_PATH/my_app_web.ex` and update the pow config with ``web_mailer_module: MyAppWeb`.
 
 The generated view files contain the subject lines for the emails.
 

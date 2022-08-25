@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
     args
     |> Pow.parse_options(@switches, @default_opts)
     |> create_template_files()
-    |> print_shell_instructions()
+    |> print_shell_instructions(Pow.schema_options_from_args())
   end
 
   @extension_templates %{
@@ -71,32 +71,86 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates do
       Mailer.create_view_file(extension, name, web_module, web_prefix, mails)
       Mailer.create_templates(extension, name, web_prefix, mails)
     end)
+
+    Mix.shell().info("Pow mailer templates has been installed in your phoenix app!")
   end
 
-  defp print_shell_instructions(%{extensions: [], web_app: web_app}) do
+  defp print_shell_instructions(%{extensions: [], web_app: web_app}, _schema_opts) do
     Extension.no_extensions_error(web_app)
   end
-  defp print_shell_instructions(%{structure: %{web_module: web_base, web_prefix: web_prefix}}) do
-    Mix.shell().info(
-      """
-      Pow mailer templates has been installed in your phoenix app!
+  defp print_shell_instructions(%{structure: structure} = config, schema_opts) do
+    [
+      config_file_injection(structure, schema_opts),
+      web_file_injection(structure)
+    ]
+    |> Pow.inject_files()
+    |> case do
+      :ok ->
+        config
 
-      Remember to set up #{web_prefix}.ex with `mailer_view/0` function if you haven't already:
+      :error ->
+        Mix.raise "Couldn't configure Pow! Did you run this inside your Phoenix app?"
+    end
+  end
 
-      defmodule #{inspect(web_base)} do
-        # ...
+  defp config_file_injection(structure, schema_opts) do
+    file = Path.expand(Keyword.fetch!(Mix.Project.config(), :config_path))
+    content = "  web_mailer_module: #{inspect(structure.web_module)},"
 
-        def mailer_view do
-          quote do
-            use Phoenix.View, root: "#{web_prefix}/templates",
-                              namespace: #{inspect(web_base)}
+    %{
+      file: file,
+      injections: [%{
+        content: content,
+        test: "web_mailer_module: #{inspect(structure.web_module)}",
+        needle: "config #{inspect(structure.web_app)}, :pow,"
+      }],
+      instructions:
+        """
+        Add `#{String.trim(content)}` to your configuration in #{Path.relative_to_cwd(file)}:
 
-            use Phoenix.HTML
-          end
+        config #{inspect(structure.web_app)}, :pow,
+        #{content}
+          user: #{inspect(structure.context_base)}.#{schema_opts.schema_name},
+          # ...
+        """
+    }
+  end
+
+  defp web_file_injection(structure) do
+    file = Path.expand("#{structure.web_prefix}.ex")
+
+    content =
+    """
+      def mailer_view do
+        quote do
+          use Phoenix.View, root: "#{structure.web_prefix}/templates",
+                            namespace: #{inspect(structure.web_module)}
+
+          use Phoenix.HTML
         end
-
-        # ...
       end
-      """)
+    """
+
+    %{
+      file: file,
+      injections: [%{
+        content: content,
+        test: "def mailer_view do",
+        needle: "def router do",
+        prepend: true
+      }],
+      instructions:
+        """
+        Add `mailer_view/0` to #{Path.relative_to_cwd(file)}:
+
+        defmodule #{inspect(structure.web_module)} do
+          # ...
+
+          #{content}
+
+          # ...
+        end
+        """
+    }
   end
 end

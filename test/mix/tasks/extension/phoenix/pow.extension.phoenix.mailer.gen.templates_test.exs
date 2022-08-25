@@ -3,8 +3,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
   alias Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates
 
-  @tmp_path Path.join(["tmp", inspect(Templates)])
-  @expected_msg "Pow mailer templates has been installed in your phoenix app!"
+  @success_msg "Pow mailer templates has been installed in your phoenix app!"
   @expected_template_files [
     {PowResetPassword, %{
       "mailer" => ["reset_password.html.eex", "reset_password.text.eex"]
@@ -18,17 +17,52 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   ]
   @options Enum.flat_map(@expected_template_files, &["--extension", inspect(elem(&1, 0))])
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
+  setup context do
+    web_file = context.paths.web_path <> ".ex"
 
-    :ok
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path,
+        """
+        import Config
+
+        config :#{Macro.underscore(context.context_module)}, :pow,
+          user: #{context.context_module}.Users.User,
+          repo: #{context.context_module}.Repo
+        """)
+
+      File.write!(web_file,
+        """
+        defmodule PowWeb do
+          def controller do
+            quote do
+              use Phoenix.Controller, namespace: FrontlineWeb
+            end
+          end
+
+          def view do
+            quote do
+              use Phoenix.View,
+                root: "lib/frontline_web/templates",
+                namespace: FrontlineWeb
+            end
+          end
+
+          def router do
+            quote do
+              use Phoenix.Router
+            end
+          end
+        end
+        """)
+    end)
+
+    {:ok, web_file: web_file}
   end
 
-  test "generates mailer templates" do
+  test "generates mailer templates", context do
     Mix.shell().flush
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Templates.run(@options)
 
       for {module, expected_templates} <- @expected_template_files do
@@ -62,24 +96,98 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         assert view_content =~ "def subject(:#{template}, _assigns), do:"
       end
 
-      assert_receive {:mix_shell, :info, [@expected_msg <> msg]}
-      assert msg =~ "lib/pow_web.ex"
-      assert msg =~ "`mailer_view/0`"
-      assert msg =~ "def mailer_view"
-      assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
+      assert_received {:mix_shell, :info, [@success_msg]}
+      assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
+
+      expected_config =
+        """
+        config :pow, :pow,
+          web_mailer_module: PowWeb,
+          user: Pow.Users.User,
+          repo: Pow.Repo
+        """
+
+      assert File.read!("config/config.exs") =~ expected_config
+
+      assert_received {:mix_shell, :info, ["* injecting lib/pow_web.ex"]}
+
+      expected_content =
+        """
+          def mailer_view do
+            quote do
+              use Phoenix.View, root: "lib/pow_web/templates",
+                                namespace: PowWeb
+
+              use Phoenix.HTML
+            end
+          end
+        """
+
+      assert File.read!(context.web_file) =~ expected_content
     end)
   end
 
-  test "warns if no extensions" do
-    File.cd!(@tmp_path, fn ->
+  test "when web file don't exist", context do
+    File.cd!(context.tmp_path, fn ->
+      File.rm_rf!(context.paths.config_path)
+      File.rm_rf!(context.web_file)
+
+      assert_raise Mix.Error, "Couldn't configure Pow! Did you run this inside your Phoenix app?", fn ->
+        Templates.run(@options)
+      end
+
+      assert_received {:mix_shell, :error, [msg]}
+      assert msg =~ "Could not find the following file(s)"
+      assert msg =~ context.paths.config_path
+      assert msg =~ context.web_file
+    end)
+  end
+
+  test "when web file can't be configured", context do
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path, "")
+      File.write!(context.web_file, "")
+
+      Templates.run(@options)
+
+      assert_received {:mix_shell, :error, ["Could not configure the following files" <> msg]}
+      assert msg =~ context.paths.config_path
+      assert msg =~ context.web_file
+
+      assert_received {:mix_shell, :info, ["To complete please do the following" <> msg]}
+      assert msg =~ "Add `web_mailer_module: PowWeb,` to your configuration in config/config.exs:"
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "web_mailer_module: PowWeb,"
+      assert msg =~ "Add `mailer_view/0` to #{context.web_file}:"
+      assert msg =~ "def mailer_view do"
+      assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\","
+    end)
+  end
+
+  test "when web file already configured", context do
+    File.cd!(context.tmp_path, fn ->
+      Templates.run(@options)
+      Templates.run(@options)
+
+      for path <- [context.paths.config_path, context.web_file] do
+        message = "* already configured #{path}"
+        assert_received {:mix_shell, :info, [^message]}
+      end
+
+      assert_received {:mix_shell, :info, [@success_msg]}
+    end)
+  end
+
+  test "warns if no extensions", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run([])
 
       assert_received {:mix_shell, :error, ["No extensions was provided as arguments, or found in `config :pow, :pow` configuration."]}
     end)
   end
 
-  test "warns no mailer templates" do
-    File.cd!(@tmp_path, fn ->
+  test "warns no mailer templates", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run(~w(--extension PowPersistentSession))
 
       assert_received {:mix_shell, :info, ["Notice: No mailer view or template files will be generated for PowPersistentSession as this extension doesn't have any mailer views defined."]}
@@ -94,8 +202,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
       end)
     end
 
-    test "generates mailer templates" do
-      File.cd!(@tmp_path, fn ->
+    test "generates mailer templates", context do
+      File.cd!(context.tmp_path, fn ->
         Templates.run([])
 
         for {module, expected_templates} <- @expected_template_files do
@@ -112,11 +220,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
           assert view_content =~ "use PowWeb, :mailer_view"
         end
 
-        assert_received {:mix_shell, :info, [@expected_msg <> msg]}
-        assert msg =~ "lib/pow_web.ex"
-        assert msg =~ "`mailer_view/0`"
-        assert msg =~ "def mailer_view"
-        assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\""
+        assert_received {:mix_shell, :info, ["* injecting lib/pow_web.ex"]}
+        assert_received {:mix_shell, :info, [@success_msg]}
       end)
     end
   end

@@ -3,24 +3,30 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
 
   alias Mix.Tasks.Pow.Phoenix.Gen.Templates
 
-  @tmp_path Path.join(["tmp", inspect(Templates)])
-
-  @expected_msg "Pow Phoenix templates and views has been generated."
+  @success_msg "Pow Phoenix templates and views has been generated."
   @expected_template_files %{
     "registration" => ["edit.html.eex", "new.html.eex"],
     "session" => ["new.html.eex"]
   }
   @expected_views Map.keys(@expected_template_files)
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
+  setup context do
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path,
+        """
+        import Config
+
+        config :#{Macro.underscore(context.context_module)}, :pow,
+          user: #{context.context_module}.Users.User,
+          repo: #{context.context_module}.Repo
+        """)
+    end)
 
     :ok
   end
 
-  test "generates templates" do
-    File.cd!(@tmp_path, fn ->
+  test "generates templates", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run([])
 
       templates_path = Path.join(["lib", "pow_web", "templates", "pow"])
@@ -41,57 +47,95 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
       assert view_content =~ "defmodule PowWeb.Pow.SessionView do"
       assert view_content =~ "use PowWeb, :view"
 
-      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
-      assert msg =~ "config :pow, :pow,"
-      assert msg =~ "user: Pow.Users.User,"
-      assert msg =~ "repo: Pow.Repo,"
-      assert msg =~ "web_module: PowWeb"
+      assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
+      assert_received {:mix_shell, :info, [@success_msg]}
+
+      expected_config =
+        """
+        config :pow, :pow,
+          web_module: PowWeb,
+          user: Pow.Users.User,
+          repo: Pow.Repo
+        """
+
+      assert File.read!("config/config.exs") =~ expected_config
     end)
   end
 
-  describe "with `:web_module` environment config set" do
-    setup do
-      Application.put_env(:pow, :pow, web_module: PowWeb)
-      on_exit(fn ->
-        Application.delete_env(:pow, :pow)
-      end)
-    end
+  test "when config file don't exist", context do
+    File.cd!(context.tmp_path, fn ->
+      File.rm_rf!(context.paths.config_path)
 
-    test "doesn't print web_module instructions" do
-      File.cd!(@tmp_path, fn ->
+      assert_raise Mix.Error, "Couldn't configure Pow! Did you run this inside your Phoenix app?", fn ->
         Templates.run([])
+      end
 
-        refute_received {:mix_shell, :info, [@expected_msg <> _msg]}
-      end)
-    end
+      assert_received {:mix_shell, :error, [msg]}
+      assert msg =~ "Could not find the following file(s)"
+      assert msg =~ context.paths.config_path
+    end)
   end
 
-  test "generates with `:context_app`" do
+  test "when config file can't be configured", context do
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path, "")
+
+      Templates.run([])
+
+      assert_received {:mix_shell, :error, ["Could not configure the following files" <> msg]}
+      assert msg =~ context.paths.config_path
+
+      assert_received {:mix_shell, :info, ["To complete please do the following" <> msg]}
+      assert msg =~ "Add `web_module: PowWeb,` to your configuration in config/config.exs:"
+      assert msg =~ "config :pow, :pow,"
+      assert msg =~ "web_module: PowWeb,"
+    end)
+  end
+
+  test "when config file already configured", context do
+    File.cd!(context.tmp_path, fn ->
+      Templates.run([])
+      Templates.run([])
+
+      message = "* already configured #{context.paths.config_path}"
+      assert_received {:mix_shell, :info, [^message]}
+
+      assert_received {:mix_shell, :info, [@success_msg]}
+    end)
+  end
+
+  test "generates instructions with `:context_app`", context do
     options = ~w(--context-app my_app)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path, "")
+
       Templates.run(options)
 
-      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+      assert_received {:mix_shell, :info, ["To complete please do the following" <> msg]}
+      assert msg =~ "Add `web_module: Pow,` to your configuration in config/config.exs:"
       assert msg =~ "config :pow, :pow,"
+      assert msg =~ "web_module: Pow,"
       assert msg =~ "user: MyApp.Users.User,"
-      assert msg =~ "repo: MyApp.Repo,"
     end)
   end
 
-  test "generates with `:generators` config" do
+  test "generates instructions with `:generators` config", context do
     Application.put_env(:pow, :generators, context_app: {:my_app, "my_app"})
     on_exit(fn ->
       Application.delete_env(:pow, :generators)
     end)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
+      File.write!(context.paths.config_path, "")
+
       Templates.run([])
 
-      assert_received {:mix_shell, :info, [@expected_msg <> msg]}
+      assert_received {:mix_shell, :info, ["To complete please do the following" <> msg]}
+      assert msg =~ "Add `web_module: Pow,` to your configuration in config/config.exs:"
       assert msg =~ "config :pow, :pow,"
+      assert msg =~ "web_module: Pow,"
       assert msg =~ "user: MyApp.Users.User,"
-      assert msg =~ "repo: MyApp.Repo,"
     end)
   end
 

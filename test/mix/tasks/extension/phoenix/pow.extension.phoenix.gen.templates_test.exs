@@ -3,7 +3,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
 
   alias Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates
 
-  @tmp_path Path.join(["tmp", inspect(Templates)])
   @expected_template_files [
     {PowResetPassword, %{
       "reset_password" => ["edit.html.eex", "new.html.eex"]
@@ -14,15 +13,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
   ]
   @options Enum.flat_map(@expected_template_files, &["--extension", inspect(elem(&1, 0))])
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
-
-    :ok
-  end
-
-  test "generates templates" do
-    File.cd!(@tmp_path, fn ->
+  test "generates templates", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run(@options)
 
       for {module, expected_templates} <- @expected_template_files do
@@ -51,16 +43,16 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
     end)
   end
 
-  test "warns if no extensions" do
-    File.cd!(@tmp_path, fn ->
+  test "warns if no extensions", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run([])
 
       assert_received {:mix_shell, :error, ["No extensions was provided as arguments, or found in `config :pow, :pow` configuration."]}
     end)
   end
 
-  test "warns no templates" do
-    File.cd!(@tmp_path, fn ->
+  test "warns no templates", context do
+    File.cd!(context.tmp_path, fn ->
       Templates.run(~w(--extension PowPersistentSession))
 
       assert_received {:mix_shell, :info, ["Notice: No view or template files will be generated for PowPersistentSession as this extension doesn't have any views defined."]}
@@ -75,8 +67,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
       end)
     end
 
-    test "generates templates" do
-      File.cd!(@tmp_path, fn ->
+    test "generates templates", context do
+      File.cd!(context.tmp_path, fn ->
         Templates.run([])
 
         for {module, expected_templates} <- @expected_template_files do

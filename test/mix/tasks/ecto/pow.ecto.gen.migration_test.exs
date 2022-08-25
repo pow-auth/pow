@@ -5,23 +5,18 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
 
   defmodule Repo do
     def __adapter__, do: true
-    def config, do: [priv: "tmp/#{inspect(Migration)}", otp_app: :pow]
+    def config, do: [priv: "./", otp_app: :pow]
   end
 
-  @tmp_path        Path.join(["tmp", inspect(Migration)])
-  @migrations_path Path.join([@tmp_path, "migrations"])
-  @options         ["-r", inspect(Repo)]
+  @options ["-r", inspect(Repo)]
+  @migrations_path "migrations"
 
-  setup do
-    File.rm_rf!(@tmp_path)
-    File.mkdir_p!(@tmp_path)
-
-    :ok
-  end
-
-  test "generates migration" do
-    File.cd!(@tmp_path, fn ->
+  test "generates migration", context do
+    File.cd!(context.tmp_path, fn ->
       Migration.run(@options)
+
+      assert_received {:mix_shell, :info, ["* creating ./migrations"]}
+      assert_received {:mix_shell, :info, ["* creating ./migrations/" <> _]}
 
       assert [migration_file] = File.ls!(@migrations_path)
       assert String.match?(migration_file, ~r/^\d{14}_create_users\.exs$/)
@@ -32,8 +27,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
     end)
   end
 
-  test "doesn't make duplicate migrations" do
-    File.cd!(@tmp_path, fn ->
+  test "doesn't make duplicate migrations", context do
+    File.cd!(context.tmp_path, fn ->
       Migration.run(@options)
 
       assert_raise Mix.Error, "migration can't be created, there is already a migration file with name CreateUsers.", fn ->
@@ -42,9 +37,9 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
     end)
   end
 
-  test "generates with `:binary_id`" do
+  test "generates with `:binary_id`", context do
     options = @options ++ ~w(--binary-id)
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Migration.run(options)
 
       assert [migration_file] = File.ls!(@migrations_path)
@@ -57,13 +52,13 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
     end)
   end
 
-  test "generates with `:generators` config" do
+  test "generates with `:generators` config", context do
     Application.put_env(:pow, :generators, binary_id: true)
     on_exit(fn ->
       Application.delete_env(:pow, :generators)
     end)
 
-    File.cd!(@tmp_path, fn ->
+    File.cd!(context.tmp_path, fn ->
       Migration.run(@options)
 
       assert [migration_file] = File.ls!(@migrations_path)
