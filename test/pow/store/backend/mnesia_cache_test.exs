@@ -7,14 +7,11 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
   @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
 
+  @test_node :"test@127.0.0.1"
+
   setup_all do
     # Turn node into a distributed node with the given long name
-    :net_kernel.start([:"master@127.0.0.1"])
-
-    # Allow spawned nodes to fetch all code from this node
-    :erl_boot_server.start([])
-    {:ok, ipv4} = :inet.parse_ipv4_address('127.0.0.1')
-    :erl_boot_server.add_slave(ipv4)
+    {:ok, _pid} = :net_kernel.start([@test_node])
 
     :ok
   end
@@ -182,9 +179,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       File.mkdir_p!("tmp/mnesia_multi")
 
       on_exit(fn ->
-        :slave.stop(:'a@127.0.0.1')
-        :slave.stop(:'b@127.0.0.1')
-        :slave.stop(:'c@127.0.0.1')
+        stop_node(:'a@127.0.0.1')
+        stop_node(:'b@127.0.0.1')
+        stop_node(:'c@127.0.0.1')
       end)
 
       :ok
@@ -229,7 +226,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, MnesiaCache, :put, [config, {"short_ttl_key_set_on_a", "value"}])
 
       # Stop node a
-      :ok = :slave.stop(node_a)
+      :ok = stop_node(node_a)
       :timer.sleep(50)
       assert :rpc.call(node_b, :mnesia, :system_info, [:running_db_nodes]) == [node_b]
 
@@ -258,7 +255,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert :rpc.call(node_a, MnesiaCache, :get, [config, "short_ttl_key_2_set_on_b"]) == "value"
 
       # Stop node b
-      :ok = :slave.stop(node_b)
+      :ok = stop_node(node_b)
 
       # Node a invalidates short TTL value written on node b
       time = System.monotonic_time(:millisecond) - startup_timestamp
@@ -393,7 +390,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # Reconnect
       connect(node_b, node_a)
 
-      # Node a used as master cluster and node b is purged
+      # Node a used as primary cluster and node b is purged
       assert_receive {:log, _node, :warn, "Detected a netsplit in the mnesia cluster with node " <> _reported_node}, @assertion_timeout
       assert_receive {:log, _node, :info, "The node :\"b@127.0.0.1\" has been healed and joined the mnesia cluster [:\"a@127.0.0.1\"]"}, @assertion_timeout
       assert :rpc.call(node_a, :mnesia, :system_info, [:running_db_nodes]) == [node_b, node_a]
@@ -498,13 +495,25 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   end
 
   defp spawn_node(sname) do
-    fn -> init_node(sname) end
-    |> Task.async()
-    |> Task.await(30_000)
+    case init_node(sname) do
+      {node, pid} ->
+        Process.put(node, pid)
+
+        node
+
+      node ->
+        node
+    end
   end
 
   defp init_node(sname) do
-    {:ok, node} = :slave.start('127.0.0.1', String.to_atom(sname), '-loader inet -hosts 127.0.0.1 -setcookie #{:erlang.get_cookie()}')
+    node_or_pid_node = start_node(sname)
+
+    node =
+      case node_or_pid_node do
+        {node, _pid} -> node
+        node -> node
+      end
 
     # Copy code
     rpc(node, :code, :add_paths, [:code.get_path()])
@@ -529,7 +538,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     # Remove logger to prevent logs
     rpc(node, Logger, :remove_backend, [:console])
 
-    node
+    node_or_pid_node
   end
 
   defp rpc(node, module, function, args) do
@@ -552,7 +561,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
         def init(__MODULE__), do: {:ok, %{}}
 
         def handle_event({level, _gl, {Logger, msg, _ts, meta}}, state) do
-          {:log, _, _, _} = :rpc.block_call(:"master@127.0.0.1", Kernel, :send, [:test_process, {:log, node(), level, to_string(msg)}])
+          {:log, _, _, _} = :rpc.block_call(unquote(@test_node), Kernel, :send, [:test_process, {:log, node(), level, to_string(msg)}])
 
           {:ok, state}
         end
@@ -574,6 +583,48 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     :ok = :rpc.block_call(node, Supervisor, :delete_child, [Pow.Supervisor, MnesiaCache.Unsplit])
     {:ok, pid} = :rpc.block_call(node, Supervisor, :start_child, [Pow.Supervisor, {MnesiaCache.Unsplit, config}])
     :rpc.call(node, Kernel, :send, [pid, {:mnesia_system_event, {:inconsistent_database, nil, cluster_node}}])
+  end
+
+  if Code.ensure_loaded?(:peer) and function_exported?(:peer, :start, 1) do
+    defp start_node(sname) do
+      {:ok, pid, node} =
+        :peer.start_link(%{
+          name: String.to_atom(sname),
+          host: '127.0.0.1',
+          args: [
+            '-kernel', 'prevent_overlapping_partitions', 'false'
+          ]})
+
+      {node, pid}
+    end
+
+    defp stop_node(node) do
+      case Process.get(node) do
+        nil ->
+          :ok
+
+        pid ->
+          Process.delete(node)
+          :peer.stop(pid)
+
+          :ok
+        end
+    end
+  else
+    defp start_node(sname) do
+      # Allow spawned nodes to fetch all code from this node
+      :erl_boot_server.start([])
+      {:ok, ipv4} = :inet.parse_ipv4_address('127.0.0.1')
+      :erl_boot_server.add_slave(ipv4)
+
+      {:ok, node} = :slave.start('127.0.0.1', String.to_atom(sname), '-loader inet -hosts 127.0.0.1 -setcookie #{:erlang.get_cookie()}')
+
+      node
+    end
+
+    defp stop_node(node) do
+      :slave.stop(node)
+    end
   end
 
   # TODO: Remove by 1.1.0
