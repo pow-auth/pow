@@ -60,8 +60,6 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   end
 
   test "generates mailer templates", context do
-    Mix.shell().flush
-
     File.cd!(context.tmp_path, fn ->
       Templates.run(@options)
 
@@ -136,8 +134,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         Templates.run(@options)
       end
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "Could not find the following file(s)"
+      assert_received {:mix_shell, :error, ["Could not find the following file(s):" <> msg]}
       assert msg =~ context.paths.config_path
       assert msg =~ context.web_file
     end)
@@ -167,6 +164,8 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   test "when web file already configured", context do
     File.cd!(context.tmp_path, fn ->
       Templates.run(@options)
+      Mix.shell().flush()
+
       Templates.run(@options)
 
       for path <- [context.paths.config_path, context.web_file] do

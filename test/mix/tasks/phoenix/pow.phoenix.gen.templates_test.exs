@@ -70,8 +70,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
         Templates.run([])
       end
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "Could not find the following file(s)"
+      assert_received {:mix_shell, :error, ["Could not find the following file(s):" <> msg]}
       assert msg =~ context.paths.config_path
     end)
   end
@@ -95,6 +94,8 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.TemplatesTest do
   test "when config file already configured", context do
     File.cd!(context.tmp_path, fn ->
       Templates.run([])
+      Mix.shell().flush()
+
       Templates.run([])
 
       message = "* already configured #{context.paths.config_path}"

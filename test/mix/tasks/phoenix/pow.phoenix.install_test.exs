@@ -70,8 +70,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         Install.run(@options)
       end
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "Could not find the following file(s)"
+      assert_received {:mix_shell, :error, ["Could not find the following file(s)" <> msg]}
       assert msg =~ context.paths.config_path
       assert msg =~ context.paths.endpoint_path
       assert msg =~ context.paths.router_path
@@ -86,14 +85,12 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
       Install.run(@options)
 
-      assert_received {:mix_shell, :error, [msg]}
-      assert msg =~ "Could not configure the following files"
+      assert_received {:mix_shell, :error, ["Could not configure the following files:" <> msg]}
       assert msg =~ context.paths.config_path
       assert msg =~ context.paths.endpoint_path
       assert msg =~ context.paths.router_path
 
-      assert_received {:mix_shell, :info, [msg]}
-      assert msg =~ "To complete please do the following"
+      assert_received {:mix_shell, :info, ["To complete please do the following:" <> msg]}
       assert msg =~ "Append this to config/config.exs:"
       assert msg =~ "config :pow, :pow,"
       assert msg =~ "user: Pow.Users.User,"
@@ -109,11 +106,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
   test "when files already configured", context do
     File.cd!(context.tmp_path, fn ->
       Install.run(@options)
-
-      assert_received {:mix_shell, :info, _}
-      assert_received {:mix_shell, :info, _}
-      assert_received {:mix_shell, :info, _}
-      assert_received {:mix_shell, :info, [@success_msg]}
+      Mix.shell().flush()
 
       Install.run(@options)
 
