@@ -152,7 +152,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
   # Callbacks
 
   @impl GenServer
-  @spec init(Base.config()) :: {:ok, map()} | {:stop, any()}
   def init(config) do
     case init_mnesia(config) do
       :ok ->
@@ -164,7 +163,6 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   @impl GenServer
-  @spec handle_cast({:append_validators, Base.config(), [Base.record()], integer()}, map()) :: {:noreply, map()}
   def handle_cast({:append_validators, config, records, ttl}, %{invalidators: invalidators} = state) do
     invalidators =
       Enum.reduce(records, invalidators, fn {key, _}, invalidators ->
@@ -176,34 +174,29 @@ defmodule Pow.Store.Backend.MnesiaCache do
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:cache, Base.config(), Base.record() | [Base.record()], integer()}, map()) :: {:noreply, map()}
   def handle_cast({:cache, config, record_or_records, ttl}, state) do
     records = table_insert(record_or_records, ttl, config)
 
     handle_cast({:append_validators, config, records, ttl}, state)
   end
 
-  @spec handle_cast({:clear_invalidator, Base.config(), Base.key() | [Base.key()]}, map()) :: {:noreply, map()}
   def handle_cast({:clear_invalidator, _config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(key, invalidators)
 
     {:noreply, %{state | invalidators: invalidators}}
   end
 
-  @spec handle_cast({:delete, Base.config(), Base.key() | [Base.key()]}, map()) :: {:noreply, map()}
   def handle_cast({:delete, config, key}, state) do
     key = table_delete(key, config)
 
     handle_cast({:clear_invalidator, config, key}, state)
   end
 
-  @spec handle_cast({:refresh_invalidators, Base.config()}, map()) :: {:noreply, map()}
   def handle_cast({:refresh_invalidators, config}, %{invalidators: invalidators} = state) do
     {:noreply, %{state | invalidators: init_invalidators(config, invalidators)}}
   end
 
   @impl GenServer
-  @spec handle_info({:invalidate, Base.config(), [Base.key()]}, map()) :: {:noreply, map()}
   def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
     invalidators = delete_or_reschedule(key, invalidators, config)
 

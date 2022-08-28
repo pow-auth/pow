@@ -99,7 +99,6 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   # Callbacks
 
   @impl true
-  @spec init(Config.t()) :: {:ok, map()}
   def init(config) do
     {:ok, _node} = :mnesia.subscribe(:system)
     :ok = :net_kernel.monitor_nodes(true)
@@ -108,14 +107,12 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   end
 
   @impl true
-  @spec handle_info({:nodeup | :nodedown, atom()}, map()) :: {:noreply, map()}
   def handle_info({:nodeup, node}, %{config: config} = state) do
     :global.trans({__MODULE__, self()}, fn -> autoinit(node, config) end)
 
     {:noreply, state}
   end
 
-  @spec handle_info({:mnesia_system_event, {:inconsistent_database, any(), any()}} | any(), map()) :: {:noreply, map()}
   def handle_info({:mnesia_system_event, {:inconsistent_database, _context, node}}, %{config: config} = state) do
     :global.trans({__MODULE__, self()}, fn -> autoheal(node, config) end)
 
