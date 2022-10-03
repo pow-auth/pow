@@ -140,7 +140,7 @@ defmodule Pow.Ecto.Schema do
           user_or_changeset
           |> pow_user_id_field_changeset(attrs)
           |> pow_current_password_changeset(attrs)
-          |> new_password_changeset(attrs, @pow_config)
+          |> pow_password_changeset(attrs)
         end
       end
 
