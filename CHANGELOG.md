@@ -8,6 +8,7 @@
 * [`Mix.Pow.Mix.Tasks.Pow.Phoenix.Mailer.Gen.Templates`] Now injects `config/config.exs` and `WEB_PATH/WEB_APP.ex`
 * [`Mix.Pow.Mix.Tasks.Pow.Phoenix.Gen.Templates`] Now injects `config/config.exs`
 * [`Mix.Tasks.Pow.Phoenix.Install`] Now injects `config/config.exs`, `WEB_PATH/endpoint.ex`, and `WEB_PATH/router.ex`
+* [`Phoenix.Router.Route`] Updated to support Phoenix 1.7 breaking changes
 
 ### Documentation
 
