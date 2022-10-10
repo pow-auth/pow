@@ -356,7 +356,7 @@ defmodule MyAppWeb.EnsureUserNotLockedPlugTest do
     |> Plug.Test.conn("/")
     |> Plug.Test.init_test_session(%{})
     |> Pow.Plug.put_config(pow_config)
-    |> Phoenix.Controller.fetch_flash()
+    |> fetch_flash()
   end
 end
 ```

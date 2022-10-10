@@ -231,7 +231,7 @@ defmodule MyAppWeb.Pow.TriplexSessionPlugTest do
     :get
     |> Plug.Test.conn("/")
     |> Plug.Test.init_test_session(%{})
-    |> Phoenix.Controller.fetch_flash()
+    |> fetch_flash()
   end
 
   defp set_triplex_tenant(conn, tenant) do
