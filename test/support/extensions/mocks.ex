@@ -165,7 +165,8 @@ defmodule Pow.Test.ExtensionMocks do
       using do
         quote do
           import Plug.Conn
-          import Phoenix.ConnTest
+          import Phoenix.ConnTest, except: [get_flash: 2]
+          import Pow.Test.Phoenix.ConnCase, only: [get_flash: 2]
           import ControllerAssertions
 
           alias Router.Helpers, as: Routes

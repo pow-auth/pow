@@ -267,7 +267,7 @@ defmodule MyAppWeb.EnsureRolePlugTest do
     conn = EnsureRolePlug.call(conn, opts)
 
     assert conn.halted
-    assert Phoenix.ConnTest.redirected_to(conn) == Routes.page_path(conn, :index)
+    assert redirected_to(conn) == Routes.page_path(conn, :index)
   end
 
   test "call/2 with non-admin user", %{conn: conn} do
@@ -278,7 +278,7 @@ defmodule MyAppWeb.EnsureRolePlugTest do
       |> EnsureRolePlug.call(opts)
 
     assert conn.halted
-    assert Phoenix.ConnTest.redirected_to(conn) == Routes.page_path(conn, :index)
+    assert redirected_to(conn) == Routes.page_path(conn, :index)
   end
 
   test "call/2 with non-admin user and multiple roles", %{conn: conn} do

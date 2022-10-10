@@ -152,14 +152,16 @@ defmodule Pow.Phoenix.Router do
   @doc false
   defmacro pow_resources(path, controller, opts) do
     quote location: :keep do
-      opts = unquote(__MODULE__).__filter_resource_actions__(@phoenix_routes, __ENV__.line, __ENV__.module, unquote(path), unquote(controller), unquote(opts))
+      phoenix_routes = Module.get_attribute(__ENV__.module, :phoenix_routes)
+      phoenix_forwards = Module.get_attribute(__ENV__.module, :phoenix_forwards)
+      opts = unquote(__MODULE__).__filter_resource_actions__({phoenix_routes, phoenix_forwards}, __ENV__.line, __ENV__.module, unquote(path), unquote(controller), unquote(opts))
 
       resources unquote(path), unquote(controller), opts
     end
   end
 
   @doc false
-  def __filter_resource_actions__(phoenix_routes, line, module, path, controller, options) do
+  def __filter_resource_actions__({phoenix_routes, phoenix_forwards}, line, module, path, controller, options) do
     resource    = Phoenix.Router.Resource.build(path, controller, options)
     param       = resource.param
     action_opts =
@@ -188,43 +190,53 @@ defmodule Pow.Phoenix.Router do
       Enum.reject(resource.actions, fn plug_opts ->
         {verb, path} = Keyword.fetch!(action_opts, plug_opts)
 
-        __route_defined__(phoenix_routes, line, module, verb, path, controller, plug_opts, options)
+        __route_defined__({phoenix_routes, phoenix_forwards}, line, module, verb, path, controller, plug_opts, options)
       end)
 
     Keyword.put(options, :only, only)
   end
 
   @doc false
-  def __route_defined__(phoenix_routes, line, module, verb, path, plug, plug_opts, options) do
+  def __route_defined__({phoenix_routes, phoenix_forwards}, line, module, verb, path, plug, plug_opts, options) do
     line
     |> Phoenix.Router.Scope.route(module, :match, verb, path, plug, plug_opts, options)
     |> case do
       %{plug_opts: _, helper: _} = route ->
-        any_matching_routes?(phoenix_routes, route, [:plug_opts, :helper])
+        any_matching_routes?(phoenix_routes, phoenix_forwards, route, [:plug_opts, :helper])
 
       # TODO: Remove this match by 1.1.0, and up requirement for Phoenix to minimum 1.4.7
       %{opts: _, helper: _} = route ->
-        any_matching_routes?(phoenix_routes, route, [:opts, :helper])
+        any_matching_routes?(phoenix_routes, phoenix_forwards, route, [:opts, :helper])
 
       _any ->
         false
     end
   end
 
-  defp any_matching_routes?(phoenix_routes, route, keys) do
+  defp any_matching_routes?(phoenix_routes, phoenix_forwards, route, keys) do
     needle       = Map.take(route, keys)
-    route_exprs  = Phoenix.Router.Route.exprs(route)
+    route_exprs  = exprs(route, phoenix_forwards)
 
-    Enum.any?(phoenix_routes, &Map.take(&1, keys) == needle && equal_binding_length?(&1, route_exprs))
+    Enum.any?(phoenix_routes, &Map.take(&1, keys) == needle && equal_binding_length?(&1, route_exprs, phoenix_forwards))
   end
 
-  defp equal_binding_length?(route, exprs) do
-    length(exprs.binding) == length(Phoenix.Router.Route.exprs(route).binding)
+  defp equal_binding_length?(route, exprs, forwards) do
+    length(exprs.binding) == length(exprs(route, forwards).binding)
+  end
+
+  # TODO: Remove when Phoenix 1.7 is required
+  if Code.ensure_loaded?(Phoenix.Router.Route) and function_exported?(Phoenix.Router.Route, :exprs, 1) do
+    def exprs(route, _forwards), do: Phoenix.Router.Route.exprs(route)
+  else
+    defdelegate exprs(route, forwards), to: Phoenix.Router.Route
   end
 
   defmacro pow_route(verb, path, plug, plug_opts, options \\ []) do
     quote location: :keep do
-      unless unquote(__MODULE__).__route_defined__(@phoenix_routes, __ENV__.line, __ENV__.module, unquote(verb), unquote(path), unquote(plug), unquote(plug_opts), unquote(options)) do
+      phoenix_routes = Module.get_attribute(__ENV__.module, :phoenix_routes)
+      phoenix_forwards = Module.get_attribute(__ENV__.module, :phoenix_forwards)
+
+      unless unquote(__MODULE__).__route_defined__({phoenix_routes, phoenix_forwards}, __ENV__.line, __ENV__.module, unquote(verb), unquote(path), unquote(plug), unquote(plug_opts), unquote(options)) do
         unquote(verb)(unquote(path), unquote(plug), unquote(plug_opts), unquote(options))
       end
     end
