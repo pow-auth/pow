@@ -1,6 +1,7 @@
 defmodule Pow.Test.Phoenix.ControllerAssertions do
   @moduledoc false
-  import Phoenix.ConnTest
+  import Phoenix.ConnTest, except: [get_flash: 2]
+  import Pow.Test.Phoenix.ConnCase, only: [get_flash: 2]
 
   alias Pow.Phoenix.{Messages, Routes}
 

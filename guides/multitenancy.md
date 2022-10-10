@@ -311,7 +311,7 @@ defmodule MyAppWeb.AccountControllerTest do
     test "with valid params", %{conn: conn} do
       conn = post(conn, Routes.account_path(conn, :create, @valid_params))
 
-      assert get_flash(conn, :info) == "Welcome!"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) == "Welcome!"
       assert redirected_to(conn) == Routes.page_path(conn, :index)
 
       assert Pow.Plug.current_user(conn)

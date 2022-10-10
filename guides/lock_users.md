@@ -282,7 +282,7 @@ defmodule MyAppWeb.Admin.UserControllerTest do
 
       conn = post(conn, Routes.admin_user_path(conn, :lock, user.id))
 
-      assert get_flash(conn, :info) == "User has been locked."
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) == "User has been locked."
       assert redirected_to(conn) == "/"
     end
 
@@ -291,7 +291,7 @@ defmodule MyAppWeb.Admin.UserControllerTest do
 
       conn = post(conn, Routes.admin_user_path(conn, :lock, user.id))
 
-      assert get_flash(conn, :error) == "User couldn't be locked."
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "User couldn't be locked."
       assert redirected_to(conn) == "/"
     end
   end
@@ -345,7 +345,7 @@ defmodule MyAppWeb.EnsureUserNotLockedPlugTest do
       |> Pow.Plug.assign_current_user(@locked_user, @pow_config)
       |> EnsureUserNotLockedPlug.call(opts)
 
-    assert get_flash(conn, :error) == "Sorry, your account is locked."
+    assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Sorry, your account is locked."
     assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
   end
 
@@ -377,7 +377,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
 
       conn = post(conn, Routes.reset_password_path(conn, :create, @valid_params))
 
-      assert get_flash(conn, :info)
+      assert Phoenix.Flash.get(conn.assigns.flash, :info)
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
 
       assert count_reset_password_tokens_for_user(conn, user) == 1
@@ -388,7 +388,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
 
       conn = post(conn, Routes.reset_password_path(conn, :create, @valid_params))
 
-      assert get_flash(conn, :info)
+      assert Phoenix.Flash.get(conn.assigns.flash, :info)
       assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
 
       assert count_reset_password_tokens_for_user(conn, user) == 0

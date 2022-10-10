@@ -2,7 +2,8 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
   use ExUnit.Case
   doctest Pow.Phoenix.PlugErrorHandler
 
-  import Phoenix.ConnTest
+  import Phoenix.ConnTest, except: [get_flash: 2]
+  import Pow.Test.Phoenix.ConnCase, only: [get_flash: 2]
 
   alias Plug.Conn
   alias Pow.Phoenix.{Messages, PlugErrorHandler}
@@ -17,7 +18,8 @@ defmodule Pow.Phoenix.PlugErrorHandlerTest do
   defp prepare_conn(conn) do
     conn
     |> Conn.put_private(:pow_config, messages_backend: Messages)
-    |> Conn.put_private(:phoenix_flash, %{})
+    |> Conn.put_private(:phoenix_flash, %{}) # TODO: Remove when Phoenix 1.7 is required
+    |> Map.update(:assigns, %{}, & Map.put(&1, :flash, %{}))
     |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
     |> Conn.fetch_query_params()
   end
