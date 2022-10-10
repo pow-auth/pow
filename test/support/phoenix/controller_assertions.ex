@@ -1,6 +1,7 @@
 defmodule Pow.Test.Phoenix.ControllerAssertions do
   @moduledoc false
-  alias Phoenix.ConnTest
+  import Phoenix.ConnTest
+
   alias Pow.Phoenix.{Messages, Routes}
 
   @spec assert_authenticated_redirect(Plug.Conn.t()) :: Macro.t()
@@ -8,8 +9,8 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
     quote do
       routes = Keyword.get(unquote(conn).private.pow_config, :routes_backend, Routes)
 
-      assert ConnTest.redirected_to(unquote(conn)) == routes.after_sign_in_path(unquote(conn))
-      assert ConnTest.get_flash(unquote(conn), :error) == Messages.user_already_authenticated(unquote(conn))
+      assert redirected_to(unquote(conn)) == routes.after_sign_in_path(unquote(conn))
+      assert get_flash(unquote(conn), :error) == Messages.user_already_authenticated(unquote(conn))
     end
   end
 
@@ -24,8 +25,8 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
           _any  -> router.pow_session_path(conn, :new)
         end
 
-      assert ConnTest.redirected_to(conn) == expected_path
-      assert ConnTest.get_flash(conn, :error) == Messages.user_not_authenticated(conn)
+      assert redirected_to(conn) == expected_path
+      assert get_flash(conn, :error) == Messages.user_not_authenticated(conn)
     end
   end
 end
