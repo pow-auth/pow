@@ -365,7 +365,7 @@ defmodule MyAppWeb.Pow.Messages do
 
   def user_not_authenticated(_conn), do: gettext("You need to sign in to see this page.")
 
-  # Message fucntions for extensions has to be prepended with the snake cased
+  # Message functions for extensions has to be prepended with the snake cased
   # extension name. So the `email_has_been_sent/1` function from
   # `PowResetPassword` is written as `pow_reset_password_email_has_been_sent/1`
   # in your messages module.
