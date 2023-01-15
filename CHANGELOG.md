@@ -10,6 +10,10 @@
 * [`Mix.Tasks.Pow.Phoenix.Install`] Now injects `config/config.exs`, `WEB_PATH/endpoint.ex`, and `WEB_PATH/router.ex`
 * [`Phoenix.Router.Route`] Updated to support Phoenix 1.7 breaking changes
 
+### Bug fixes
+
+* `:phoenix` removed from the compilers
+
 ### Documentation
 
 * Updated [api guide](guides/api.md) to correctly return updated `conn` for delete calls
