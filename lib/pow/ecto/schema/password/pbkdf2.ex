@@ -4,7 +4,7 @@ defmodule Pow.Ecto.Schema.Password.Pbkdf2 do
   [Plug.Crypto.KeyGenerator](https://github.com/elixir-plug/plug_crypto/blob/v1.2.1/lib/plug/crypto/key_generator.ex)
   and is under Apache 2 license.
   """
-  use Bitwise
+  import Bitwise
 
   @doc """
   Compares the two binaries in constant-time to avoid timing attacks.

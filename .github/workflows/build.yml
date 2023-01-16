@@ -9,9 +9,6 @@ on:
 
 jobs:
   test:
-    # It's necessary to run on ubunto 20.04 for OTP 20 - 25
-    # See https://github.com/erlef/setup-beam
-    runs-on: ubuntu-20.04
     services:
       postgres:
         image: postgres:latest
@@ -29,17 +26,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.13.4
-            otp: 25.0.4
-          - elixir: 1.11.0
-            otp: 22.0.2
-    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+          - otp: 25.0
+            elixir: 1.14.0
+            os: ubuntu-latest
+          - otp: 22.0
+            elixir: 1.11.0
+            # It's necessary to run on ubunto 20.04 for OTP 20 - 25
+            # See https://github.com/erlef/setup-beam
+            os: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
       - run: mix deps.get
       - run: mix test
         env:
@@ -51,12 +53,12 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     name: Deploy published release
     env:
-      HEX_API_KEY: ${{secrets.HEX_API_KEY}}
+      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: 24.0
-          elixir-version: 1.12.0
+          otp-version: 25.0
+          elixir-version: 1.14.0
       - run: mix deps.get
       - run: mix hex.publish --yes

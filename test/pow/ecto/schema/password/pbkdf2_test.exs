@@ -1,6 +1,6 @@
 defmodule Pow.Ecto.Schema.Password.Pbkdf2Test do
   use ExUnit.Case
-  use Bitwise
+  import Bitwise
 
   alias Pow.Ecto.Schema.Password.Pbkdf2
 
