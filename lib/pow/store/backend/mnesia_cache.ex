@@ -218,6 +218,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
             |> clear_invalidator(invalidators)
 
           ttl ->
+            :mnesia.report_event({:reschedule_invalidator, {@mnesia_cache_tab, key, {:pid, self()}}})
             append_invalidator(key, invalidators, ttl, config)
         end
     end

@@ -47,12 +47,12 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       MnesiaCache.put(config, {"key", "value"})
       assert MnesiaCache.get(config, "key") == :not_found
-      :timer.sleep(100)
+      assert_receive {:mnesia_table_event, {:write, _, _}} # Wait for async write
       assert MnesiaCache.get(config, "key") == "value"
 
       MnesiaCache.delete(config, "key")
       assert MnesiaCache.get(config, "key") == "value"
-      :timer.sleep(100)
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for async delete
       assert MnesiaCache.get(config, "key") == :not_found
     end
 
@@ -89,10 +89,13 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       MnesiaCache.put(config, {"key", "value"})
       MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
+      flush_process_mailbox() # Ignore sync write messages
       assert MnesiaCache.get(config, "key") == "value"
       assert MnesiaCache.get(config, "key1") == "1"
       assert MnesiaCache.get(config, "key2") == "2"
-      :timer.sleep(100)
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert MnesiaCache.get(config, "key") == :not_found
       assert MnesiaCache.get(config, "key1") == :not_found
       assert MnesiaCache.get(config, "key2") == :not_found
@@ -100,21 +103,28 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       # After restart
       MnesiaCache.put(config, {"key", "value"})
       MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
+      flush_process_mailbox() # Ignore sync write messages
       restart(config)
       assert MnesiaCache.get(config, "key") == "value"
       assert MnesiaCache.get(config, "key1") == "1"
       assert MnesiaCache.get(config, "key2") == "2"
-      :timer.sleep(100)
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert MnesiaCache.get(config, "key") == :not_found
       assert MnesiaCache.get(config, "key1") == :not_found
       assert MnesiaCache.get(config, "key2") == :not_found
 
       # After record expiration updated reschedules
+      :mnesia.subscribe(:system) # Subscribe so the process can listen to user events
+      :global.register_name(:mnesia_global_logger, self()) # Suppress the default logger event
       MnesiaCache.put(config, {"key", "value"})
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], {"value", :os.system_time(:millisecond) + 150}})
-      :timer.sleep(100)
+      flush_process_mailbox() # Ignore sync write messages
+      assert_receive {:mnesia_system_event, {:mnesia_user, {:reschedule_invalidator, {_, _, _}}}} # Wait for reschedule event
+      assert_receive {:io_request, _, _, _} # The io:format that Mnesia will send by default
       assert MnesiaCache.get(config, "key") == "value"
-      :timer.sleep(100)
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert MnesiaCache.get(config, "key") == :not_found
     end
 
@@ -165,6 +175,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
   defp start(config) do
     start_supervised!({MnesiaCache, config})
+    :mnesia.subscribe({:table, MnesiaCache, :simple})
   end
 
   defp restart(config) do
