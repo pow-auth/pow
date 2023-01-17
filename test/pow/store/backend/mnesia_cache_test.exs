@@ -567,6 +567,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     node_or_pid_node
   end
 
+  # credo:disable-for-next-line
   defp add_listener_module(node) do
     {:module, Pow.Test.Listener, _, _} = rpc(node, Module, :create, [Pow.Test.Listener,
       quote do
