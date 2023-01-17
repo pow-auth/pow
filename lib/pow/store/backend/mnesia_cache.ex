@@ -193,6 +193,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   def handle_cast({:refresh_invalidators, config}, %{invalidators: invalidators} = state) do
+    :mnesia.report_event({:refresh_invalidators, {@mnesia_cache_tab, {:pid, self()}}})
+
     {:noreply, %{state | invalidators: init_invalidators(config, invalidators)}}
   end
 
