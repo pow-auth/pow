@@ -193,6 +193,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   def handle_cast({:refresh_invalidators, config}, %{invalidators: invalidators} = state) do
+    :mnesia.report_event({:refresh_invalidators, {@mnesia_cache_tab, {:pid, self()}}})
+
     {:noreply, %{state | invalidators: init_invalidators(config, invalidators)}}
   end
 
@@ -218,6 +220,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
             |> clear_invalidator(invalidators)
 
           ttl ->
+            :mnesia.report_event({:reschedule_invalidator, {@mnesia_cache_tab, key, {:pid, self()}}})
             append_invalidator(key, invalidators, ttl, config)
         end
     end
@@ -238,7 +241,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     :running_db_nodes
     |> :mnesia.system_info()
     |> Enum.reject(& &1 == node())
-    |> Enum.each(&:rpc.call(&1, GenServer, :cast, [__MODULE__, {:refresh_invalidators, config}]))
+    |> Enum.each(&GenServer.cast({__MODULE__, &1}, {:refresh_invalidators, config}))
   end
 
   defp clear_invalidator(key, invalidators) do
