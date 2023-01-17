@@ -1,6 +1,8 @@
 # ![Pow](assets/logo-full.svg)
 
-![Build Status](https://img.shields.io/github/workflow/status/danschultzer/pow/CI/master) [![hex.pm](https://img.shields.io/hexpm/v/pow.svg?style=flat)](https://hex.pm/packages/pow)
+[![Github CI](https://github.com/danschultzer/pow/workflows/CI/badge.svg)](https://github.com/danschultzer/pow/actions?query=workflow%3ACI)
+[![hexdocs.pm](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/pow)
+[![hex.pm](https://img.shields.io/hexpm/v/pow.svg?style=flat)](https://hex.pm/packages/pow)
 
 Pow is a robust, modular, and extendable authentication and user management solution for Phoenix and Plug-based apps.
 
