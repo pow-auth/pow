@@ -241,7 +241,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
     :running_db_nodes
     |> :mnesia.system_info()
     |> Enum.reject(& &1 == node())
-    |> Enum.each(&:rpc.call(&1, GenServer, :cast, [__MODULE__, {:refresh_invalidators, config}]))
+    |> Enum.each(&GenServer.cast({__MODULE__, &1}, {:refresh_invalidators, config}))
   end
 
   defp clear_invalidator(key, invalidators) do
