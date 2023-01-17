@@ -10,7 +10,7 @@ defmodule Pow.MixProject do
       elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      compilers: [:phoenix] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       deps: deps(),
       xref: [exclude: [:mnesia]],
 
