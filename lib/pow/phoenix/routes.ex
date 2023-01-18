@@ -6,10 +6,10 @@ defmodule Pow.Phoenix.Routes do
 
       defmodule MyAppWeb.Pow.Routes do
         use Pow.Phoenix.Routes
-        alias MyAppWeb.Router.Helpers, as: Routes
+        use MyAppWeb, :verified_routes
 
         @impl true
-        def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
+        def after_sign_out_path(conn), do: ~p"/some-path"
       end
 
   Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
@@ -18,12 +18,12 @@ defmodule Pow.Phoenix.Routes do
 
       defmodule MyAppWeb.Pow.Routes do
         use Pow.Phoenix.Routes
-        alias MyAppWeb.Router.Helpers, as: Routes
+        use MyAppWeb, :verified_routes
 
         @impl true
         def url_for(conn, verb, vars \\ [], query_params \\ [])
         def url_for(conn, PowEmailConfirmation.Phoenix.ConfirmationController, :show, [token], _query_params),
-          do: Routes.custom_confirmation_url(conn, :new, token)
+          do: ~p"/custom-confirmation/\#{token}"
         def url_for(conn, plug, verb, vars, query_params),
           do: Pow.Phoenix.Routes.url_for(conn, plug, verb, vars, query_params)
       end
@@ -168,12 +168,12 @@ defmodule Pow.Phoenix.Routes do
     gen_route(:url, conn, plug, verb, vars, query_params)
   end
 
-  defp gen_route(type, conn, plug, verb, vars, query_params) do
-    alias  = Controller.route_helper(plug)
-    helper = :"#{alias}_#{type}"
-    router = Module.concat([conn.private.phoenix_router, Helpers])
-    args   = [conn, verb] ++ vars ++ [query_params]
+    defp gen_route(type, conn, plug, verb, vars, query_params) do
+      alias  = Controller.route_helper(plug)
+      helper = :"#{alias}_#{type}"
+      router = Module.concat([conn.private.phoenix_router, Helpers])
+      args   = [conn, verb] ++ vars ++ [query_params]
 
-    apply(router, helper, args)
+      apply(router, helper, args)
+    end
   end
-end

@@ -56,14 +56,14 @@ defmodule MyAppWeb.AuthErrorHandler do
   def call(conn, :not_authenticated) do
     conn
     |> put_flash(:error, "You've to be authenticated first")
-    |> redirect(to: Routes.login_path(conn, :new))
+    |> redirect(to: ~p"/login")
   end
 
   @spec call(Conn.t(), atom()) :: Conn.t()
   def call(conn, :already_authenticated) do
     conn
     |> put_flash(:error, "You're already authenticated")
-    |> redirect(to: Routes.page_path(conn, :index))
+    |> redirect(to: ~p"/")
   end
 end
 ```
@@ -102,7 +102,7 @@ defmodule MyAppWeb.RegistrationController do
       {:ok, user, conn} ->
         conn
         |> put_flash(:info, "Welcome!")
-        |> redirect(to: Routes.page_path(conn, :index))
+        |> redirect(to: ~p"/")
 
       {:error, changeset, conn} ->
         render(conn, "new.html", changeset: changeset)
@@ -130,7 +130,7 @@ defmodule MyAppWeb.SessionController do
       {:ok, conn} ->
         conn
         |> put_flash(:info, "Welcome back!")
-        |> redirect(to: Routes.page_path(conn, :index))
+        |> redirect(to: ~p"/")
 
       {:error, conn} ->
         changeset = Pow.Plug.change_user(conn, conn.params["user"])
@@ -144,7 +144,7 @@ defmodule MyAppWeb.SessionController do
   def delete(conn, _params) do
     conn
     |> Pow.Plug.delete()
-    |> redirect(to: Routes.page_path(conn, :index))
+    |> redirect(to: ~p"/")
   end
 end
 ```
@@ -154,7 +154,7 @@ end
 Create `WEB_PATH/templates/registration/new.html.eex`:
 
 ```elixir
-<%= form_for @changeset, Routes.signup_path(@conn, :create), fn f -> %>
+<%= form_for @changeset, ~p"/signup", fn f -> %>
   <%= label f, :email %>
   <%= email_input f, :email %>
   <%= error_tag f, :email %>
@@ -176,7 +176,7 @@ Create `WEB_PATH/templates/session/new.html.eex`:
 ```elixir
 <h1>Log in</h1>
 
-<%= form_for @changeset, Routes.login_path(@conn, :create), fn f -> %>
+<%= form_for @changeset, ~p"/login", fn f -> %>
   <%= text_input f, :email %>
   <%= password_input f, :password %>
   <%= submit "Log in" %>
@@ -209,13 +209,13 @@ defmodule MyAppWeb.SessionController do
       true ->
         conn
         |> put_flash(:info, "Welcome back!")
-        |> redirect(to: Routes.page_path(conn, :index))
+        |> redirect(to: ~p"/")
 
       false ->
         conn
         |> Pow.Plug.delete()
         |> put_flash(:info, "Your e-mail address has not been confirmed.")
-        |> redirect(to: Routes.login_path(conn, :new))
+        |> redirect(to: ~p"/login")
     end
   end
   defp verify_confirmed({:error, conn}) do

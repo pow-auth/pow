@@ -77,7 +77,8 @@ defmodule MyAppWeb.EnsureRolePlug do
   """
   import Plug.Conn, only: [halt: 1]
 
-  alias MyAppWeb.Router.Helpers, as: Routes
+  use MyAppWeb, :verified_routes
+
   alias Phoenix.Controller
   alias Plug.Conn
   alias Pow.Plug
@@ -105,7 +106,7 @@ defmodule MyAppWeb.EnsureRolePlug do
   defp maybe_halt(_any, conn) do
     conn
     |> Controller.put_flash(:error, "Unauthorized access")
-    |> Controller.redirect(to: Routes.page_path(conn, :index))
+    |> Controller.redirect(to: ~p"/")
     |> halt()
   end
 end
@@ -267,7 +268,7 @@ defmodule MyAppWeb.EnsureRolePlugTest do
     conn = EnsureRolePlug.call(conn, opts)
 
     assert conn.halted
-    assert redirected_to(conn) == Routes.page_path(conn, :index)
+    assert redirected_to(conn) == ~p"/"
   end
 
   test "call/2 with non-admin user", %{conn: conn} do
@@ -278,7 +279,7 @@ defmodule MyAppWeb.EnsureRolePlugTest do
       |> EnsureRolePlug.call(opts)
 
     assert conn.halted
-    assert redirected_to(conn) == Routes.page_path(conn, :index)
+    assert redirected_to(conn) == ~p"/"
   end
 
   test "call/2 with non-admin user and multiple roles", %{conn: conn} do

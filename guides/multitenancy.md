@@ -173,7 +173,7 @@ defmodule MyAppWeb.AccountController do
         conn
         |> Pow.Plug.create(user)
         |> put_flash(:info, "Welcome!")
-        |> redirect(to: Routes.page_path(conn, :index))
+        |> redirect(to: ~p"/")
 
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
@@ -302,17 +302,17 @@ defmodule MyAppWeb.AccountControllerTest do
     @invalid_params %{"account" => @tenant_id, "user" => %{"email" => "test@example.com", "password" => "secret1234"}}
 
     test "with invalid params", %{conn: conn} do
-      conn = post(conn, Routes.account_path(conn, :create, @invalid_params))
+      conn = post(conn, ~p"/account", @invalid_params)
 
       assert html_response(conn, 500)
       refute Pow.Plug.current_user(conn)
     end
 
     test "with valid params", %{conn: conn} do
-      conn = post(conn, Routes.account_path(conn, :create, @valid_params))
+      conn = post(conn, ~p"/account", @valid_params)
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) == "Welcome!"
-      assert redirected_to(conn) == Routes.page_path(conn, :index)
+      assert redirected_to(conn) == ~p"/"
 
       assert Pow.Plug.current_user(conn)
     end
