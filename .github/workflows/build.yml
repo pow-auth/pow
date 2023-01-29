@@ -56,7 +56,7 @@ jobs:
       HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
     steps:
       - uses: actions/checkout@v3
-      - uses: erlef/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: 25.0
           elixir-version: 1.14.0
