@@ -116,15 +116,6 @@ defmodule Pow.Phoenix.Controller do
     |> Config.get(:routes_backend, fallback)
   end
 
-  @spec route_helper(atom()) :: binary()
-  def route_helper(plug) do
-    as             = Phoenix.Naming.resource_name(plug, "Controller")
-    [base | _rest] = Module.split(plug)
-    base           = Macro.underscore(base)
-
-    "#{base}_#{as}"
-  end
-
   @doc """
   Ensures that user has been authenticated.
 
@@ -167,5 +158,15 @@ defmodule Pow.Phoenix.Controller do
       @default_cache_control_header -> Conn.put_resp_header(conn, "cache-control", @no_cache_control_header)
       _any                          -> conn
     end
+  end
+
+  # TODO: Remove when Phoenix 1.7 is required
+  @spec route_helper(atom()) :: binary()
+  def route_helper(plug) do
+    as             = Phoenix.Naming.resource_name(plug, "Controller")
+    [base | _rest] = Module.split(plug)
+    base           = Macro.underscore(base)
+
+    "#{base}_#{as}"
   end
 end

@@ -6,10 +6,10 @@ defmodule Pow.Phoenix.Routes do
 
       defmodule MyAppWeb.Pow.Routes do
         use Pow.Phoenix.Routes
-        alias MyAppWeb.Router.Helpers, as: Routes
+        use MyAppWeb, :verified_routes
 
         @impl true
-        def after_sign_out_path(conn), do: Routes.some_path(conn, :index)
+        def after_sign_out_path(conn), do: ~p"/some-path"
       end
 
   Update configuration with `routes_backend: MyAppWeb.Pow.Routes`.
@@ -18,18 +18,18 @@ defmodule Pow.Phoenix.Routes do
 
       defmodule MyAppWeb.Pow.Routes do
         use Pow.Phoenix.Routes
-        alias MyAppWeb.Router.Helpers, as: Routes
+        use MyAppWeb, :verified_routes
 
         @impl true
         def url_for(conn, verb, vars \\ [], query_params \\ [])
         def url_for(conn, PowEmailConfirmation.Phoenix.ConfirmationController, :show, [token], _query_params),
-          do: Routes.custom_confirmation_url(conn, :new, token)
+          do: ~p"/custom-confirmation/\#{token}"
         def url_for(conn, plug, verb, vars, query_params),
           do: Pow.Phoenix.Routes.url_for(conn, plug, verb, vars, query_params)
       end
   """
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
+  alias Pow.Phoenix.{RegistrationController, SessionController}
 
   @callback user_not_authenticated_path(Conn.t()) :: binary()
   @callback user_already_authenticated_path(Conn.t()) :: binary()
@@ -168,12 +168,51 @@ defmodule Pow.Phoenix.Routes do
     gen_route(:url, conn, plug, verb, vars, query_params)
   end
 
-  defp gen_route(type, conn, plug, verb, vars, query_params) do
-    alias  = Controller.route_helper(plug)
-    helper = :"#{alias}_#{type}"
-    router = Module.concat([conn.private.phoenix_router, Helpers])
-    args   = [conn, verb] ++ vars ++ [query_params]
+  # TODO: Force verified routes when Phoenix 1.7 is required
+  if Code.ensure_loaded?(Phoenix.VerifiedRoutes) do
+    defp gen_route(:url, conn, plug, plug_opts, vars, query_params) do
+      path = gen_route(:path, conn, plug, plug_opts, vars, query_params)
+      Phoenix.VerifiedRoutes.unverified_url(conn, path)
+    end
+    defp gen_route(:path, conn, plug, plug_opts, vars, query_params) do
+      router = conn.private.phoenix_router
 
-    apply(router, helper, args)
+      %{path: "/" <> path} =
+        Enum.find(router.__routes__(), fn route ->
+          route.plug == plug and route.plug_opts == plug_opts
+        end) || raise "Route not found for #{inspect plug}.#{plug_opts}/2 in #{inspect router}"
+
+      {segments, _index} =
+        path
+        |> String.split("/")
+        |> Enum.reduce({[], 0}, fn
+          ":" <> _var, {segments, index} ->
+            segment = to_param(Enum.at(vars, index) || raise "Missing argument")
+
+            {segments ++ [segment], index + 1}
+
+          segment, {segments, index} ->
+            {segments ++ [segment], index}
+        end)
+
+      path = "/" <> Enum.map_join(segments, "/", fn segment -> URI.encode(segment, &URI.char_unreserved?/1) end)
+
+      Phoenix.VerifiedRoutes.unverified_path(conn, router, path, query_params)
+    end
+
+    defp to_param(int) when is_integer(int), do: Integer.to_string(int)
+    defp to_param(bin) when is_binary(bin), do: bin
+    defp to_param(false), do: "false"
+    defp to_param(true), do: "true"
+    defp to_param(data), do: Phoenix.Param.to_param(data)
+  else
+    defp gen_route(type, conn, plug, verb, vars, query_params) do
+      alias  = Pow.Phoenix.Controller.route_helper(plug)
+      helper = :"#{alias}_#{type}"
+      router = Module.concat([conn.private.phoenix_router, Helpers])
+      args   = [conn, verb] ++ vars ++ [query_params]
+
+      apply(router, helper, args)
+    end
   end
 end

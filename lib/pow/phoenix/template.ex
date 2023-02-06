@@ -22,7 +22,14 @@ defmodule Pow.Phoenix.Template do
       import Pow.Phoenix.HTML.ErrorHelpers, only: [error_tag: 2]
       import Phoenix.HTML.{Form, Link}
 
-      alias Pow.Phoenix.Router.Helpers, as: Routes
+      unquote do
+        # TODO: Remove when Phoenix 1.7 is required
+        unless Code.ensure_loaded?(Phoenix.VerifiedRoutes) do
+          quote do
+            alias Pow.Phoenix.Router.Helpers, as: Routes
+          end
+        end
+      end
     end
   end
 
@@ -49,6 +56,17 @@ defmodule Pow.Phoenix.Template do
       end
 
       def html(unquote(action)), do: unquote(content)
+    end
+  end
+
+  if Code.ensure_loaded?(Phoenix.VerifiedRoutes) do
+    def __inline_route__(plug, plug_opts) do
+      "Pow.Phoenix.Routes.path_for(@conn, #{inspect plug}, #{inspect plug_opts})"
+    end
+  else
+    # TODO: Remove when Phoenix 1.7 is required
+    def __inline_route__(plug, plug_opts) do
+      "Routes.#{Pow.Phoenix.Controller.route_helper(plug)}_path(@conn, #{inspect plug_opts}) %>"
     end
   end
 end

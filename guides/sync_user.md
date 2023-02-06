@@ -121,7 +121,7 @@ defmodule MyAppWeb.PlanController do
         conn
         |> sync_user(user) # Update the user in the credentials cache
         |> put_flash(:info, "Plan updated successfully.")
-        |> redirect(to: Routes.profile_path(conn, :show))
+        |> redirect(to: ~p"/profile")
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "plan.html", changeset: changeset)

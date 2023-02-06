@@ -20,6 +20,6 @@ defmodule PowResetPassword.Phoenix.ResetPasswordTemplate do
     {:password, :password_confirmation}
   ]) %>
 
-  <span><%%= link "Sign in", to: Routes.<%= Pow.Phoenix.Controller.route_helper(Pow.Phoenix.SessionController) %>_path(@conn, :new) %></span>
+  <span><%%= link "Sign in", to: <%= Pow.Phoenix.Template.__inline_route__(Pow.Phoenix.SessionController, :new) %>%></span>
   """
 end

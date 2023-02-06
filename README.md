@@ -384,9 +384,9 @@ You can customize callback routes by creating the following module:
 ```elixir
 defmodule MyAppWeb.Pow.Routes do
   use Pow.Phoenix.Routes
-  alias MyAppWeb.Router.Helpers, as: Routes
+  use MyAppWeb, :verified_routes
 
-  def after_sign_in_path(conn), do: Routes.some_path(conn, :index)
+  def after_sign_in_path(conn), do: ~p"/home"
 end
 ```
 
@@ -421,10 +421,10 @@ This can be used to show the sign in or sign out links in your Phoenix template:
 
 ```elixir
 <%= if Pow.Plug.current_user(@conn) do %>
-  <span><%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %></span>
+  <span><%= link "Sign out", to: ~p"/session", method: :delete %></span>
 <% else %>
-  <span><%= link "Register", to: Routes.pow_registration_path(@conn, :new) %></span>
-  <span><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></span>
+  <span><%= link "Register", to: ~p"/registration" %></span>
+  <span><%= link "Sign in", to: ~p"/session" %></span>
 <% end %>
 ```
 
