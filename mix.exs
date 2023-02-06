@@ -58,7 +58,7 @@ defmodule Pow.MixProject do
       maintainers: ["Dan Schultzer"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/danschultzer/pow",
+        "GitHub" => "https://github.com/pow-auth/pow",
         "Sponsor" => "https://github.com/sponsors/danschultzer"
       },
       files: ~w(lib LICENSE mix.exs README.md)
@@ -71,7 +71,7 @@ defmodule Pow.MixProject do
       source_ref: "v#{@version}",
       main: "README",
       canonical: "http://hexdocs.pm/pow",
-      source_url: "https://github.com/danschultzer/pow",
+      source_url: "https://github.com/pow-auth/pow",
       logo: "assets/logo.svg",
       assets: "assets",
       extras: [

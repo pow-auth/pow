@@ -1,6 +1,6 @@
 # ![Pow](assets/logo-full.svg)
 
-[![Github CI](https://github.com/danschultzer/pow/workflows/CI/badge.svg)](https://github.com/danschultzer/pow/actions?query=workflow%3ACI)
+[![Github CI](https://github.com/pow-auth/pow/workflows/CI/badge.svg)](https://github.com/pow-auth/pow/actions?query=workflow%3ACI)
 [![hexdocs.pm](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/pow)
 [![hex.pm](https://img.shields.io/hexpm/v/pow.svg?style=flat)](https://hex.pm/packages/pow)
 
@@ -498,7 +498,7 @@ See [security practices](guides/security_practices.md).
 
 ## Other libraries
 
-[PowAssent](https://github.com/danschultzer/pow_assent) - Multi-provider support for Pow with strategies for Twitter, Github, Google, Facebook and more
+[PowAssent](https://github.com/pow-auth/pow_assent) - Multi-provider support for Pow with strategies for Twitter, Github, Google, Facebook and more
 
 ## Contributing
 
