@@ -15,6 +15,7 @@ defmodule Pow.Phoenix.RoutesTest do
     {:ok, conn: conn}
   end
 
+  # TODO: Refactor when Phoenix 1.7 has been released
   test "can customize routes", %{conn: conn} do
     conn = Plug.Conn.put_private(conn, :pow_config, [])
     assert Routes.after_sign_in_path(conn) == "/"

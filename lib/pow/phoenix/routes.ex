@@ -29,7 +29,7 @@ defmodule Pow.Phoenix.Routes do
       end
   """
   alias Plug.Conn
-  alias Pow.Phoenix.{Controller, RegistrationController, SessionController}
+  alias Pow.Phoenix.{RegistrationController, SessionController}
 
   @callback user_not_authenticated_path(Conn.t()) :: binary()
   @callback user_already_authenticated_path(Conn.t()) :: binary()
@@ -168,8 +168,46 @@ defmodule Pow.Phoenix.Routes do
     gen_route(:url, conn, plug, verb, vars, query_params)
   end
 
+  # TODO: Force verified routes when Phoenix 1.7 is required
+  if Code.ensure_loaded?(Phoenix.VerifiedRoutes) do
+    defp gen_route(:url, conn, plug, plug_opts, vars, query_params) do
+      path = gen_route(:path, conn, plug, plug_opts, vars, query_params)
+      Phoenix.VerifiedRoutes.unverified_url(conn, path)
+    end
+    defp gen_route(:path, conn, plug, plug_opts, vars, query_params) do
+      router = conn.private.phoenix_router
+
+      %{path: "/" <> path} =
+        Enum.find(router.__routes__(), fn route ->
+          route.plug == plug and route.plug_opts == plug_opts
+        end) || raise "Route not found for #{inspect plug}.#{plug_opts}/2 in #{inspect router}"
+
+      {segments, _index} =
+        path
+        |> String.split("/")
+        |> Enum.reduce({[], 0}, fn
+          ":" <> _var, {segments, index} ->
+            segment = to_param(Enum.at(vars, index) || raise "Missing argument")
+
+            {segments ++ [segment], index + 1}
+
+          segment, {segments, index} ->
+            {segments ++ [segment], index}
+        end)
+
+      path = "/" <> Enum.map_join(segments, "/", fn segment -> URI.encode(segment, &URI.char_unreserved?/1) end)
+
+      Phoenix.VerifiedRoutes.unverified_path(conn, router, path, query_params)
+    end
+
+    defp to_param(int) when is_integer(int), do: Integer.to_string(int)
+    defp to_param(bin) when is_binary(bin), do: bin
+    defp to_param(false), do: "false"
+    defp to_param(true), do: "true"
+    defp to_param(data), do: Phoenix.Param.to_param(data)
+  else
     defp gen_route(type, conn, plug, verb, vars, query_params) do
-      alias  = Controller.route_helper(plug)
+      alias  = Pow.Phoenix.Controller.route_helper(plug)
       helper = :"#{alias}_#{type}"
       router = Module.concat([conn.private.phoenix_router, Helpers])
       args   = [conn, verb] ++ vars ++ [query_params]
@@ -177,3 +215,4 @@ defmodule Pow.Phoenix.Routes do
       apply(router, helper, args)
     end
   end
+end

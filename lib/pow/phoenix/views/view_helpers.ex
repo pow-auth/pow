@@ -107,9 +107,14 @@ defmodule Pow.Phoenix.ViewHelpers do
   end
 
   defp build_layout({Pow.Phoenix.LayoutView, template}, web_module) do
-    view = Module.concat([web_module, LayoutView])
+    layouts = Module.concat([web_module, Layouts])
 
-    {view, template}
+    if Code.ensure_loaded?(layouts) do
+      {layouts, template}
+    else
+      # TODO: Remove this when Phoenix 1.7 is required
+      {Module.concat([web_module, LayoutView]), template}
+    end
   end
   defp build_layout(layout, _web_module), do: layout
 
