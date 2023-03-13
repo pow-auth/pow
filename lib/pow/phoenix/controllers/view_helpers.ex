@@ -1,13 +1,13 @@
 defmodule Pow.Phoenix.ViewHelpers do
   @moduledoc """
-  Module that renders views.
+  Module that renders templates.
 
-  By default, the controller views and templates in this library will be used,
-  and the layout view will be based on the module namespace of the Endpoint
+  By default, the controller templates in this library will be used, and the
+  layout templates will be based on the module namespace of the Endpoint
   module.
 
-  By setting the `:web_module` key in config, the controller and layout views
-  can be used from this context app.
+  By setting the `:web_module` key in config, the controller and layout
+  templates can be used from this context app.
 
   So if you set up your endpoint like this:
 
@@ -15,21 +15,21 @@ defmodule Pow.Phoenix.ViewHelpers do
         plug Pow.Plug.Session
       end
 
-  Only `MyAppWeb.LayoutView` will be used from your app. However, if you set up
+  Only `MyAppWeb.Layouts` will be used from your app. However, if you set up
   the endpoint with a `:web_module` key:
 
       defmodule MyAppWeb.Endpoint do
         plug Pow.Plug.Session, web_module: MyAppWeb
       end
 
-  The following modules are will be used from your app:
+  The following modules will be used from your app:
 
-    * `MyAppWeb.LayoutView`
-    * `MyAppWeb.Pow.RegistrationView`
-    * `MyAppWeb.Pow.SessionView`
+    * `MyAppWeb.Layouts`
+    * `MyAppWeb.Pow.RegistrationHTML`
+    * `MyAppWeb.Pow.SessionHTML`
 
   And also the following templates has to exist in
-  `lib/my_project_web/templates/pow`:
+  `lib/my_project_web/controllers/pow`:
 
     * `registration/new.html.eex`
     * `registration/edit.html.eex`
@@ -40,14 +40,14 @@ defmodule Pow.Phoenix.ViewHelpers do
   alias Pow.{Config, Plug}
 
   @doc """
-  Updates the view and layout view in the connection.
+  Updates the layout module in the connection.
 
-  The layout view is always updated. If `:web_module` is not provided, it'll be
-  computed from the Endpoint module, and the default Pow view module is
-  returned.
+  The layout template is always updated. If `:web_module` is not provided,
+  it'll be computed from the Endpoint module, and the default Pow template
+  module is returned.
 
-  When `:web_module` is provided, both the view module and the layout view
-  module will be computed. See `build_view_module/2` for more.
+  When `:web_module` is provided, both the template module and the layout
+  template module will be computed. See `build_view_module/2` for more.
   """
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
@@ -91,12 +91,12 @@ defmodule Pow.Phoenix.ViewHelpers do
   end
 
   @doc """
-  Generates the view module atom.
+  Generates the template module atom.
 
-  If no `web_module` is provided, the Pow view module is returned.
+  If no `web_module` is provided, the Pow template module is returned.
 
-  When `web_module` is provided, the view module will be changed from
-  `Pow.Phoenix.RegistrationView` to `CustomWeb.Pow.RegistrationView`
+  When `web_module` is provided, the template module will be changed from
+  `Pow.Phoenix.RegistrationHTML` to `CustomWeb.Pow.RegistrationHTML`
   """
   @spec build_view_module(module(), module() | nil) :: module()
   def build_view_module(default_view, nil), do: default_view
@@ -106,7 +106,8 @@ defmodule Pow.Phoenix.ViewHelpers do
     Module.concat([web_module, base, view])
   end
 
-  defp build_layout({Pow.Phoenix.LayoutView, template}, web_module) do
+  # TODO: Remove `Pow.Phoenix.LayoutView` guard when Phoenix 1.7 is required
+  defp build_layout({layout_view, template}, web_module) when layout_view in [Pow.Phoenix.Layouts, Pow.Phoenix.LayoutView] do
     layouts = Module.concat([web_module, Layouts])
 
     if Code.ensure_loaded?(layouts) do

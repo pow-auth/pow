@@ -63,7 +63,7 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
       assert mail.subject == "You've been invited"
       assert mail.text =~ "You've been invited by #{@user.email}."
       assert mail.text =~ @url_regex
-      assert mail.html =~ "<p>You&#39;ve been invited by #{@user.email}."
+      assert mail.html =~ "<p>You've been invited by <strong>#{@user.email}</strong>."
       assert mail.html =~ @url_regex
 
       assert redirected_to(conn) == Routes.pow_invitation_invitation_path(conn, :new)

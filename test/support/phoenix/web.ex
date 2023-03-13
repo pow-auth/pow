@@ -1,29 +1,34 @@
 defmodule Pow.Test.Phoenix.Web do
   @moduledoc false
 
-  def view do
+  def mail do
     quote do
-      use Phoenix.View,
-        root: "test/support/phoenix/templates",
-        namespace: Pow.Test.Phoenix
+      use Pow.Phoenix.Mailer.Component
+
+      unquote(html_helpers())
     end
   end
 
-  def web_module_view do
+  def html do
     quote do
-      use Phoenix.View,
-        root: "test/support/phoenix/web_module/templates",
-        namespace: Pow.Test.Phoenix.Pow
+      import Phoenix.Template, only: [embed_templates: 1, embed_templates: 2]
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller,
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      # Include general helpers for rendering HTML
+      unquote(html_helpers())
     end
   end
 
-  def mailer_view do
+  defp html_helpers do
     quote do
-      use Phoenix.View,
-        root: "test/support/phoenix/web_module/templates",
-        namespace: Pow.Test.Phoenix.Pow
+      # HTML escaping functionality
+      import Phoenix.HTML
 
-      use Phoenix.HTML
+      # Shortcut for generating JS commands
+      alias Phoenix.LiveView.JS
     end
   end
 

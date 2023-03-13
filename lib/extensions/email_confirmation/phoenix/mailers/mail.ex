@@ -1,4 +1,4 @@
-defmodule PowEmailConfirmation.Phoenix.MailerTemplate do
+defmodule PowEmailConfirmation.Phoenix.Mail do
   @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
@@ -12,8 +12,8 @@ defmodule PowEmailConfirmation.Phoenix.MailerTemplate do
   <%= @url %>
   """,
   """
-  <%= content_tag(:h3, "Hi,") %>
-  <%= content_tag(:p, "Please use the following link to confirm your e-mail address:") %>
-  <%= content_tag(:p, link(@url, to: @url)) %>
+  <h3>Hi</h3>
+  <p>Please use the following link to confirm your e-mail address:</p>
+  <p><a href="<%= @url %>"><%= @url %></a></p>
   """
 end

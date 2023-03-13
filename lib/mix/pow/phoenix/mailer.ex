@@ -5,51 +5,50 @@ defmodule Mix.Pow.Phoenix.Mailer do
   alias Mix.Generator
 
   @doc """
-  Creates a mailer view file for the web module.
+  Creates a mail template file.
   """
-  @spec create_view_file(atom(), binary(), atom(), binary(), [binary()]) :: :ok
-  def create_view_file(module, name, web_mod, web_prefix, mails) do
-    subjects = subject_functions(module, name, mails)
-    path     = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
-    content  = """
-    defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
-      use #{inspect(web_mod)}, :mailer_view
+  @spec create_mail_module(atom(), [atom()], atom(), binary()) :: :ok
+  def create_mail_module(module, mails, web_module, web_prefix) do
+    templates = template_functions(module, mails)
+    path      = Path.join([web_prefix, "mails", "#{Macro.underscore(module)}_mail.ex"])
 
-      #{Enum.join(subjects, "\n")}
-    end
-    """
+    content =
+      """
+      defmodule #{inspect(web_module)}.#{inspect(module)}Mail do
+        use #{inspect(web_module)}, :mail
+      #{templates |> Enum.join("\n") |> indent("  ")}
+      end
+      """
 
     Generator.create_file(path, content)
 
     :ok
   end
 
-  @doc """
-  Creates mailer template files for the web module.
-  """
-  @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
-  def create_templates(module, name, web_prefix, mails) do
-    template_module = template_module(module, name)
-    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
+  defp template_functions(module, mails) do
+    mail_module = mail_module(module)
 
-    Enum.each(mails, fn mail ->
-      for type <- [:html, :text] do
-        content   = apply(template_module, type, [mail])
-        file_path = Path.join(path, "#{mail}.#{type}.eex")
-
-        Generator.create_file(file_path, content)
+    Enum.map(mails, fn mail ->
+      """
+      def #{mail}(assigns) do
+        %Pow.Phoenix.Mailer.Template{
+          subject: \"#{mail_module.subject(mail)}\",
+          html: ~H\"""#{indent(mail_module.html(mail), "      ")}
+            ""\",
+          text: ~P\"""#{indent(mail_module.text(mail),  "      ")}
+            ""\"
+        }
       end
+      """
     end)
   end
 
-  defp template_module(module, name), do: Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
+  defp mail_module(module), do: Module.concat([module, Phoenix, "Mail"])
 
-  defp subject_functions(module, name, mails) do
-    template_module = template_module(module, name)
-
-    Enum.map(mails, fn mail ->
-      subject = template_module.subject(mail)
-      "def subject(#{inspect(mail)}, _assigns), do: #{inspect(subject)}"
-    end)
+  defp indent(multiline_string, indent) do
+    multiline_string
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map_join(&"\n#{indent}#{&1}")
   end
 end

@@ -1,6 +1,6 @@
 defmodule Pow.Phoenix.Template do
   @moduledoc """
-  Module that can builds templates for Phoenix views using EEx with
+  Module that can builds templates for Phoenix using EEx with
   `Phoenix.HTML.Engine`.
 
   ## Example
@@ -11,12 +11,14 @@ defmodule Pow.Phoenix.Template do
         template :new, :html, "<%= content_tag(:span, "Template") %>"
       end
 
-      MyApp.ResourceTemplate.render("new.html", assigns)
+      MyApp.ResourceTemplate.new(assigns)
   """
 
   @doc false
   defmacro __using__(_opts) do
     quote do
+      @after_compile {unquote(__MODULE__), :__after_compile_phoenix_view__}
+
       import unquote(__MODULE__)
 
       import Pow.Phoenix.HTML.ErrorHelpers, only: [error_tag: 2]
@@ -33,12 +35,35 @@ defmodule Pow.Phoenix.Template do
     end
   end
 
-  @doc """
-  Generates template functions.
+  # TODO: Remove when Phoenix 1.7 is required
+  @doc false
+  def __after_compile_phoenix_view__(env, _bytecode) do
+    if Code.ensure_loaded?(Phoenix.View) do
+      view_module =
+        env.module
+        |> Phoenix.Naming.unsuffix("HTML")
+        |> Kernel.<>("View")
+        |> String.to_atom()
 
-  This macro that will compile a phoenix view template from the provided
-  binary, and add the compiled version to a `render/2` function. The `html/1`
-  function outputs the binary.
+      Module.create(
+        view_module,
+        for {name, 1} <- env.module.__info__(:functions) do
+          quote do
+            def render(unquote("#{name}.html"), assigns) do
+              apply(unquote(env.module), unquote(name), [assigns])
+            end
+          end
+        end,
+        Macro.Env.location(__ENV__))
+    end
+  end
+
+  @doc """
+  Generates HTML template functions.
+
+  This macro that will compile a phoenix template from the provided binary, and
+  add the compiled version to a `:action/2` function. The `html/1` function
+  outputs the binary.
   """
   @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
   defmacro template(action, :html, content) do
@@ -50,7 +75,7 @@ defmodule Pow.Phoenix.Template do
     quoted = EEx.compile_string(content, engine: Phoenix.HTML.Engine, line: 1, trim: true)
 
     quote do
-      def render(unquote("#{action}.html"), var!(assigns)) do
+      def unquote(action)(var!(assigns)) do
         _ = var!(assigns)
         unquote(quoted)
       end

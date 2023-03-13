@@ -2,11 +2,18 @@
 
 ## v1.0.29 (TBA)
 
-Pow no longer requires the `phoenix_view` dependency.
+This version is updated to work with Phoenix 1.7, in particular using the new template components structure. All views have been removed, and Pow no longer requires the `phoenix_view` dependency.
 
 ### Enhancements
 
-* [`Pow.Phoenix.Mailer.Mail`] Updated to use `Phoenix.Template` instead of `Phoenix.View`
+* [`Pow.Phoenix.Mailer.Mail`] Revamped to conform to template component structure of Phoenix 1.7
+
+### Deprecations
+
+* [`Pow.Phoenix.Mailer.Mail`] Deprecated `:pow_mailer_layout` in favor of `:pow_mailer_layouts`
+* [`Mix.Pow.Phoenix.Mailer`] Removed `Mix.Pow.Phoenix.Mailer.create_view_file/5`
+* [`Mix.Pow.Phoenix.Mailer`] Removed `Mix.Pow.Phoenix.Mailer.create_templates/4`
+* [`Mix.Pow.Phoenix`] Removed `Mix.Pow.Phoenix.create_view_file/4`
 
 ## v1.0.28 (2023-03-17)
 

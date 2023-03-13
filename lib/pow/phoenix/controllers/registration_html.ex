@@ -1,4 +1,4 @@
-defmodule Pow.Phoenix.RegistrationTemplate do
+defmodule Pow.Phoenix.RegistrationHTML do
   @moduledoc false
   use Pow.Phoenix.Template
 

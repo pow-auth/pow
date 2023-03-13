@@ -151,39 +151,68 @@ end
 
 ### Templates
 
-Create `WEB_PATH/templates/registration/new.html.eex`:
+Create `WEB_PATH/controllers/registration_html/new.html.heex`:
 
 ```elixir
-<%= form_for @changeset, ~p"/signup", fn f -> %>
-  <%= label f, :email %>
-  <%= email_input f, :email %>
-  <%= error_tag f, :email %>
+<div class="mx-auto max-w-sm">
+  <.header class="text-center">
+    Register account
+    <:subtitle>
+      Already registered?
+      <.link navigate={~p"/login"} class="font-semibold text-brand hover:underline">
+        Log in
+      </.link>
+      instead.
+    </:subtitle>
+  </.header>
 
-  <%= label f, :password %>
-  <%= password_input f, :password %>
-  <%= error_tag f, :password %>
+  <.simple_form :let={f} for={@changeset} action={~p"/signup"}>
+    <.error :if={@changeset.action == :insert}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
 
-  <%= label f, :password_confirmation %>
-  <%= password_input f, :password_confirmation %>
-  <%= error_tag f, :password_confirmation %>
+    <.input field={f[:email]} type="email" label="Email" required />
+    <.input field={f[:password]} type="password" label="Password" required />
+    <.input field={f[:password_confirmation]} type="password" label="Confirm password" required />
 
-  <%= submit "Register" %>
-<% end %>
+    <:actions>
+      <.button phx-disable-with="Registering account..." class="w-full">Register</.button>
+    </:actions>
+  </.simple_form>
+</div>
 ```
 
-Create `WEB_PATH/templates/session/new.html.eex`:
+Create `WEB_PATH/controllers/session_html/new.html.heex`:
 
 ```elixir
-<h1>Log in</h1>
+<div class="mx-auto max-w-sm">
+  <.header class="text-center">
+    Sign in
+    <:subtitle>
+      No account?
+      <.link navigate={~p"/signup"} class="font-semibold text-brand hover:underline">
+        Register
+      </.link>
+      instead.
+    </:subtitle>
+  </.header>
 
-<%= form_for @changeset, ~p"/login", fn f -> %>
-  <%= text_input f, :email %>
-  <%= password_input f, :password %>
-  <%= submit "Log in" %>
-<% end %>
+  <.simple_form :let={f} for={@changeset} action={~p"/login"}>
+    <.error :if={@changeset.action == :insert}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+
+    <.input field={f[:email]} type="email" label="Email" required />
+    <.input field={f[:password]} type="password" label="Password" required />
+
+    <:actions>
+      <.button phx-disable-with="Registering account..." class="w-full">Register</.button>
+    </:actions>
+  </.simple_form>
+</div>
 ```
 
-Remember to create the view files `WEB_PATH/views/registration_view.ex` and `WEB_PATH/views/session_view.ex` too.
+Remember to create the template files `WEB_PATH/controllers/registration_html.ex` and `WEB_PATH/controllers/session_html.ex` too.
 
 ## Further customization
 

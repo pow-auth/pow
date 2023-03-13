@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
   ## Arguments
 
     * `--context-app` - app to use for path and module names
-    * `--templates` - generate templates and views
+    * `--templates` - generate templates
     * `--extension` - extensions to generate templates for
   """
   use Mix.Task

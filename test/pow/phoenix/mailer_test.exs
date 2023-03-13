@@ -11,13 +11,13 @@ defmodule Pow.Phoenix.MailerTest do
   doctest Pow.Phoenix.Mailer
 
   alias Pow.Phoenix.Mailer
-  alias Pow.Test.Phoenix.Pow.MailerView
+  alias Pow.Test.Phoenix.PowMail
 
   setup %{conn: conn} do
     email =
       conn
       |> Plug.Conn.put_private(:pow_config, [])
-      |> Mailer.Mail.new(%{email: "test@example.com"}, {MailerView, :mail_test}, value: "test")
+      |> Mailer.Mail.new(%{email: "test@example.com"}, {PowMail, :test}, value: "test")
 
     {:ok, email: email}
   end

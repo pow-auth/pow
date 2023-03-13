@@ -4,18 +4,12 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
   alias Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.Templates
 
   @success_msg "Pow mailer templates has been installed in your phoenix app!"
-  @expected_template_files [
-    {PowResetPassword, %{
-      "mailer" => ["reset_password.html.eex", "reset_password.text.eex"]
-    }},
-    {PowEmailConfirmation, %{
-      "mailer" => ["email_confirmation.html.eex", "email_confirmation.text.eex"]
-    }},
-    {PowInvitation, %{
-      "mailer" => ["invitation.html.eex", "invitation.text.eex"]
-    }}
+  @expected_templates [
+    {PowResetPassword, ~w(reset_password)},
+    {PowEmailConfirmation, ~w(email_confirmation)},
+    {PowInvitation, ~w(invitation)},
   ]
-  @options Enum.flat_map(@expected_template_files, &["--extension", inspect(elem(&1, 0))])
+  @options Enum.flat_map(@expected_templates, &["--extension", inspect(elem(&1, 0))])
 
   setup context do
     web_file = context.paths.web_path <> ".ex"
@@ -35,21 +29,39 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
         defmodule PowWeb do
           def controller do
             quote do
-              use Phoenix.Controller, namespace: FrontlineWeb
-            end
-          end
+              use Phoenix.Controller,
+                formats: [:html, :json],
+                layouts: [html: PowWeb.Layouts]
 
-          def view do
-            quote do
-              use Phoenix.View,
-                root: "lib/frontline_web/templates",
-                namespace: FrontlineWeb
+              import Plug.Conn
+              import PowWeb.Gettext
+
+              unquote(verified_routes())
             end
           end
 
           def router do
             quote do
               use Phoenix.Router
+            end
+          end
+
+          defp html_helpers do
+            quote do
+              # HTML escaping functionality
+              import Phoenix.HTML
+
+              # Shortcut for generating JS commands
+              alias Phoenix.LiveView.JS
+            end
+          end
+
+          def verified_routes do
+            quote do
+              use Phoenix.VerifiedRoutes,
+                endpoint: PowWeb.Endpoint,
+                router: PowWeb.Router,
+                statics: PowWeb.static_paths()
             end
           end
         end
@@ -63,35 +75,16 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     File.cd!(context.tmp_path, fn ->
       Templates.run(@options)
 
-      for {module, expected_templates} <- @expected_template_files do
-        templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
-        expected_dirs  = Map.keys(expected_templates)
+      for {module, expected_templates} <- @expected_templates do
+        templates_path = Path.join(["lib", "pow_web", "mails"])
+        content = templates_path |> Path.join(Macro.underscore(module) <> "_mail.ex") |> File.read!()
 
-        assert ls(templates_path) == expected_dirs
+        assert content =~ "defmodule PowWeb.#{inspect(module)}Mail do"
+        assert content =~ "use PowWeb, :mail"
 
-        for {dir, expected_files} <- expected_templates do
-          files = templates_path |> Path.join(dir) |> ls()
-          assert files == expected_files
+        for expected_template <- expected_templates do
+          assert content =~ "def #{expected_template}(assigns) do"
         end
-
-        views_path          = Path.join(["lib", "pow_web", "views", Macro.underscore(module)])
-        expected_view_files = expected_templates |> Map.keys() |> Enum.map(&"#{&1}_view.ex")
-
-        assert ls(views_path) == expected_view_files
-
-        [base_name | _rest] = expected_templates |> Map.keys() |> Enum.sort()
-        view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
-
-        assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-        assert view_content =~ "use PowWeb, :mailer_view"
-
-        template =
-          expected_templates
-          |> Map.get(base_name)
-          |> List.first()
-          |> String.split(".html.eex")
-
-        assert view_content =~ "def subject(:#{template}, _assigns), do:"
       end
 
       assert_received {:mix_shell, :info, [@success_msg]}
@@ -111,12 +104,11 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
       expected_content =
         """
-          def mailer_view do
+          def mail do
             quote do
-              use Phoenix.View, root: "lib/pow_web/templates",
-                                namespace: PowWeb
+              use Pow.Phoenix.Mailer.Component
 
-              use Phoenix.HTML
+              unquote(html_helpers())
             end
           end
         """
@@ -155,9 +147,9 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
       assert msg =~ "Add `web_mailer_module: PowWeb,` to your configuration in config/config.exs:"
       assert msg =~ "config :pow, :pow,"
       assert msg =~ "web_mailer_module: PowWeb,"
-      assert msg =~ "Add `mailer_view/0` to #{context.web_file}:"
-      assert msg =~ "def mailer_view do"
-      assert msg =~ "use Phoenix.View, root: \"lib/pow_web/templates\","
+      assert msg =~ "Add `mail/0` to #{context.web_file}:"
+      assert msg =~ "def mail do"
+      assert msg =~ "use Pow.Phoenix.Mailer.Component"
     end)
   end
 
@@ -189,13 +181,13 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
     File.cd!(context.tmp_path, fn ->
       Templates.run(~w(--extension PowPersistentSession))
 
-      assert_received {:mix_shell, :info, ["Notice: No mailer view or template files will be generated for PowPersistentSession as this extension doesn't have any mailer views defined."]}
+      assert_received {:mix_shell, :info, ["Notice: No mailer templates will be generated for PowPersistentSession as this extension doesn't have any mailer template defined."]}
     end)
   end
 
   describe "with extensions in env config" do
     setup do
-      Application.put_env(:pow, :pow, extensions: Enum.map(@expected_template_files, &elem(&1, 0)))
+      Application.put_env(:pow, :pow, extensions: Enum.map(@expected_templates, &elem(&1, 0)))
       on_exit(fn ->
         Application.delete_env(:pow, :pow)
       end)
@@ -205,18 +197,16 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
       File.cd!(context.tmp_path, fn ->
         Templates.run([])
 
-        for {module, expected_templates} <- @expected_template_files do
-          templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
-          dirs           = templates_path |> File.ls!() |> Enum.sort()
+        for {module, expected_templates} <- @expected_templates do
+          templates_path = Path.join(["lib", "pow_web", "mails"])
+          content = templates_path |> Path.join(Macro.underscore(module) <> "_mail.ex") |> File.read!()
 
-          assert dirs == Map.keys(expected_templates)
+          assert content =~ "defmodule PowWeb.#{inspect(module)}Mail do"
+          assert content =~ "use PowWeb, :mail"
 
-          views_path          = Path.join(["lib", "pow_web", "views", Macro.underscore(module)])
-          [base_name | _rest] = expected_templates |> Map.keys()
-          view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
-
-          assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-          assert view_content =~ "use PowWeb, :mailer_view"
+          for expected_template <- expected_templates do
+            assert content =~ "def #{expected_template}(assigns) do"
+          end
         end
 
         assert_received {:mix_shell, :info, ["* injecting lib/pow_web.ex"]}
@@ -224,6 +214,4 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
       end)
     end
   end
-
-  defp ls(path), do: path |> File.ls!() |> Enum.sort()
 end

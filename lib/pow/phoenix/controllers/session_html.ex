@@ -1,4 +1,4 @@
-defmodule Pow.Phoenix.SessionTemplate do
+defmodule Pow.Phoenix.SessionHTML do
   @moduledoc false
   use Pow.Phoenix.Template
 
@@ -12,6 +12,6 @@ defmodule Pow.Phoenix.SessionTemplate do
   ],
   button_label: "Sign in") %>
 
-  <span><%%= link "Register", to: <%= Pow.Phoenix.Template.__inline_route__(Pow.Phoenix.RegistrationController, :new) %>%></span>
+  <span><%%= link "Register", to: <%= Pow.Phoenix.Template.__inline_route__(Pow.Phoenix.RegistrationController, :new) %> %></span>
   """
 end
