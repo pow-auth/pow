@@ -68,7 +68,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
   defp render(view_module, template, conn, assigns, format) do
     view_assigns = prepare_assigns(conn, assigns, format)
 
-    Phoenix.View.render_to_string(view_module, "#{template}.#{format}", view_assigns)
+    Phoenix.Template.render_to_string(view_module, to_string(template), to_string(format), view_assigns)
   end
 
   defp prepare_assigns(conn, assigns, format) do

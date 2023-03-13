@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.29 (TBA)
+
+Pow no longer requires the `phoenix_view` dependency.
+
+### Enhancements
+
+* [`Pow.Phoenix.Mailer.Mail`] Updated to use `Phoenix.Template` instead of `Phoenix.View`
+
 ## v1.0.28 (2023-03-17)
 
 ### Enhancements
