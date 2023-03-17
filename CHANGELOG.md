@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.28 (TBA)
+## v1.0.28 (2023-03-17)
 
 ### Enhancements
 
