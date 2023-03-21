@@ -8,6 +8,12 @@ defmodule PowResetPassword.Phoenix.ResetPasswordHTML do
   <div class="mx-auto max-w-sm">
     <.header class="text-center">
       Reset password
+      <:subtitle>
+        Know your password?
+        <.link navigate={<%= __inline_route__(Pow.Phoenix.SessionController, :new) %>} class="font-semibold text-brand hover:underline">
+          Sign in
+        </.link> now.
+      </:subtitle>
     </.header>
 
     <.simple_form :let={f} for={<%= "@changeset" %>} as={:user} action={<%= "@action" %>} phx-update="ignore">

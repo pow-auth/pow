@@ -13,5 +13,5 @@ Follow the instructions for extensions in [README.md](../../../README.md#add-ext
 Add the following link to your `WEB_PATH/controllers/pow/session/new.html.heex` template (you may need to generate the templates first):
 
 ```elixir
-link("Reset password", to: ~p"/reset-password")
+<.link navigate={~p"/reset-password/new"} class="text-sm font-semibold">Forgot your password?<./link>
 ```

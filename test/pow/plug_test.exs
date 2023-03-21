@@ -152,6 +152,12 @@ defmodule Pow.PlugTest do
     assert Plug.verify_token(conn, "salt", signed_token) == {:ok, "token"}
   end
 
+  test "extension_enabled?/2" do
+    refute Plug.extension_enabled?(conn(@default_config), PowResetPassword)
+    assert Plug.extension_enabled?(conn(@default_config ++ [extensions: [PowResetPassword]]), PowResetPassword)
+    refute Plug.extension_enabled?(conn(@default_config ++ [extensions: [PowResetPassword]]), PowEmailConfirmation)
+  end
+
   defp auth_user_conn() do
     conn        = conn_with_session_plug()
     {:ok, conn} = Plug.authenticate_user(conn, %{"email" => "mock@example.com", "password" => "secret"})
