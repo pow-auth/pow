@@ -31,9 +31,9 @@ defmodule Pow.Phoenix.ViewHelpers do
   And also the following templates has to exist in
   `lib/my_project_web/controllers/pow`:
 
-    * `registration/new.html.eex`
-    * `registration/edit.html.eex`
-    * `session/new.html.eex`
+    * `registration_html/new.html.heex`
+    * `registration_html;/edit.html.heex`
+    * `session_html/new.html.heex`
   """
   alias Phoenix.Controller
   alias Plug.Conn

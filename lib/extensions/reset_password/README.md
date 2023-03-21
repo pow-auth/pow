@@ -10,7 +10,7 @@ Follow the instructions for extensions in [README.md](../../../README.md#add-ext
 
 ## Configuration
 
-Add the following link to your `WEB_PATH/controllers/pow/session/new.html.heex` template (you may need to generate the templates first):
+Add the following link to your `WEB_PATH/controllers/pow/session_html/new.html.heex` template (you may need to generate the templates first):
 
 ```elixir
 <.link navigate={~p"/reset-password/new"} class="text-sm font-semibold">Forgot your password?<./link>

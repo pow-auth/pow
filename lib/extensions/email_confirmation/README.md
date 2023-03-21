@@ -14,7 +14,7 @@ Follow the instructions for extensions in [README.md](../../../README.md#add-ext
 
 ## Configuration
 
-Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the `pow_user_id_field` field:
+Add the following section to your `WEB_PATH/controllers/pow/registration_html/edit.html.heex` template (you may need to generate the templates first) after the `pow_user_id_field` field:
 
 ```elixir
 <p :if={@changeset.data.unconfirmed_email} class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-rose-600">

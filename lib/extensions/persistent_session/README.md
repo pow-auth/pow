@@ -20,7 +20,7 @@ end
 
 ## Configuration
 
-By default, the persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/templates/pow/session/new.html.eex` (you may need to generate the templates first):
+By default, the persistent session is automatically used if the extension has been enabled. If you wish to let the user manage this, you should add the following checkbox to the form in `WEB_PATH/controllers/pow/session_html/new.html.heex` (you may need to generate the templates first):
 
 ```elixir
 <.input field={f[:persistent_session]} type="checkbox" label="Keep me logged in" />
