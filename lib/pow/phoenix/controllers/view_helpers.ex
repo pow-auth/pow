@@ -111,13 +111,19 @@ defmodule Pow.Phoenix.ViewHelpers do
     layouts = Module.concat([web_module, Layouts])
 
     if Code.ensure_loaded?(layouts) do
-      {layouts, template}
+      [html: {layouts, template}]
     else
       # TODO: Remove this when Phoenix 1.7 is required
       {Module.concat([web_module, LayoutView]), template}
     end
   end
+
+  if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+  defp build_layout(layout, _web_module), do: [html: layout]
+  else
+  # TODO: Remove this when Phoenix 1.7 is required
   defp build_layout(layout, _web_module), do: layout
+  end
 
   defp split_default_view(module) do
     module

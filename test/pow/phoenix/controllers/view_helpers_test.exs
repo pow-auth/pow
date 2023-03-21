@@ -20,8 +20,9 @@ defmodule Pow.Phoenix.ViewHelpersTest do
       |> Map.put(:params, %{"_format" => "html"})
       |> Conn.put_private(:pow_config, [])
       |> Conn.put_private(:phoenix_endpoint, Pow.Test.Phoenix.Endpoint)
+      |> Conn.put_private(:phoenix_format, "html")
       |> Conn.put_private(:phoenix_view, %{_: Pow.Phoenix.SessionHTML})
-      |> Conn.put_private(:phoenix_layout, %{_: {Pow.Phoenix.Layouts, :app}})
+      |> Conn.put_private(:phoenix_layout, %{"html" => {Pow.Phoenix.Layouts, :app}})
       |> Conn.put_private(:phoenix_router, Pow.Test.Phoenix.Router)
       |> Conn.assign(:changeset, User.changeset(%User{}, %{}))
       |> Conn.assign(:action, "/")
@@ -34,7 +35,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: Pow.Phoenix.SessionHTML}
-    assert conn.private[:phoenix_layout] == %{_: {Pow.Test.Phoenix.Layouts, :app}}
+    assert conn.private[:phoenix_layout] == %{"html" => {Pow.Test.Phoenix.Layouts, :app}}
   end
 
   test "layout/1 with `:web_module`", %{conn: conn} do
@@ -45,7 +46,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: Pow.Test.Phoenix.Pow.SessionHTML}
-    assert conn.private[:phoenix_layout] == %{_: {Pow.Test.Phoenix.Layouts, :app}}
+    assert conn.private[:phoenix_layout] == %{"html" => {Pow.Test.Phoenix.Layouts, :app}}
   end
 
   test "layout/1 in extension", %{conn: conn} do
@@ -56,7 +57,7 @@ defmodule Pow.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: PowTest.Phoenix.TestHTML}
-    assert conn.private[:phoenix_layout] == %{_: {Pow.Test.Phoenix.Layouts, :app}}
+    assert conn.private[:phoenix_layout] == %{"html" => {Pow.Test.Phoenix.Layouts, :app}}
   end
 
   test "layout/1 in extension with `:web_module`", %{conn: conn} do
@@ -68,28 +69,28 @@ defmodule Pow.Phoenix.ViewHelpersTest do
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: Pow.Test.Phoenix.PowTest.TestHTML}
-    assert conn.private[:phoenix_layout] == %{_: {Pow.Test.Phoenix.Layouts, :app}}
+    assert conn.private[:phoenix_layout] == %{"html" => {Pow.Test.Phoenix.Layouts, :app}}
   end
 
   test "layout/1 with no layout", %{conn: conn} do
     conn =
       conn
-      |> Phoenix.Controller.put_layout(false)
+      |> Phoenix.Controller.put_layout(html: false)
       |> ViewHelpers.layout()
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: Pow.Phoenix.SessionHTML}
-    assert conn.private[:phoenix_layout] == %{_: false}
+    assert conn.private[:phoenix_layout] == %{"html" => false}
   end
 
   test "layout/1 with custom layout", %{conn: conn} do
     conn =
       conn
-      |> Phoenix.Controller.put_layout({MyAppWeb.Layouts, :custom})
+      |> Phoenix.Controller.put_layout(html: {MyAppWeb.Layouts, :custom})
       |> ViewHelpers.layout()
 
     assert conn.private[:phoenix_endpoint] == Pow.Test.Phoenix.Endpoint
     assert conn.private[:phoenix_view] == %{_: Pow.Phoenix.SessionHTML}
-    assert conn.private[:phoenix_layout] == %{_: {MyAppWeb.Layouts, :custom}}
+    assert conn.private[:phoenix_layout] == %{"html" => {MyAppWeb.Layouts, :custom}}
   end
 end
