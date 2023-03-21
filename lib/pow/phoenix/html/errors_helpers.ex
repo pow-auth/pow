@@ -1,7 +1,7 @@
+# TODO: Remove module when requiring Phoenix 1.7.0
+unless Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
 defmodule Pow.Phoenix.HTML.ErrorHelpers do
-  @moduledoc """
-  Conveniences for building error messages.
-  """
+  @moduledoc false
   alias Phoenix.HTML.Tag
 
   @doc """
@@ -29,4 +29,5 @@ defmodule Pow.Phoenix.HTML.ErrorHelpers do
       end
     end)
   end
+end
 end

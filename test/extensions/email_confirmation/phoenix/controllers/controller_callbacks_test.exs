@@ -1,6 +1,7 @@
 defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
   use PowEmailConfirmation.TestWeb.Phoenix.ConnCase
 
+  alias Phoenix.LiveViewTest.DOM
   alias Plug.Conn
   alias PowEmailConfirmation.Plug
   alias Pow.Ecto.Schema.Password
@@ -49,7 +50,7 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
   describe "Pow.Phoenix.RegistrationController.create/2" do
     @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password, "password_confirmation" => @password}}
-    @invalid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => "s"}}
+    @invalid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => "invalid"}}
     @valid_params_email_taken %{"user" => %{"email" => "taken@example.com", "password" => @password, "password_confirmation" => @password}}
 
     test "with valid params", %{conn: conn} do
@@ -72,8 +73,16 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
       conn = post(conn, Routes.pow_registration_path(conn, :create, @invalid_params_email_taken))
 
       assert html = html_response(conn, 200)
-      refute html =~ "<span class=\"help-block\">has already been taken</span>"
-      assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
+
+      html_tree = DOM.parse(html)
+
+      assert [_input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p") == []
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
+      assert DOM.attribute(input_elem, "value") == "invalid"
+      assert DOM.to_text(error_elem) =~ "does not match confirmation"
     end
 
     test "with valid params and email taken", %{conn: conn} do
@@ -95,7 +104,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
         |> post(Routes.pow_registration_path(conn, :create, @valid_params_email_taken))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<span class=\"help-block\">has already been taken</span>"
+
+      html_tree = DOM.parse(html)
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert DOM.attribute(input_elem, "value") == "taken@example.com"
+      assert DOM.to_text(error_elem) =~ "has already been taken"
     end
   end
 

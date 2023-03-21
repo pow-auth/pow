@@ -4,9 +4,12 @@
 
 This version is updated to work with Phoenix 1.7, in particular using the new template components structure. All views have been removed, and Pow no longer requires the `phoenix_view` dependency.
 
+Now requires Elixir 1.12+.
+
 ### Enhancements
 
 * [`Pow.Phoenix.Mailer.Mail`] Revamped to conform to template component structure of Phoenix 1.7
+* [`Pow.Phoenix.Template`] Now renders Tailwind based template components on Phoenix 1.7
 
 ### Deprecations
 

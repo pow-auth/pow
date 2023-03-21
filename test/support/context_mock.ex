@@ -3,8 +3,8 @@ defmodule Pow.Test.ContextMock do
   alias Pow.Test.Ecto.Users.User
   use Pow.Ecto.Context
 
-  @valid_params %{"email" => "test@example.com", "password" => "secret"}
-  @user %User{id: 1, email: "test@example.com", password_hash: ""}
+  @valid_params %{"email" => "mock@example.com"}
+  @user %User{id: 1, email: "mock@example.com", password_hash: ""}
 
   def authenticate(@valid_params), do: @user
   def authenticate(_params), do: nil
