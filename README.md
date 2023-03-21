@@ -418,12 +418,9 @@ You can use `Pow.Plug.current_user/1` to fetch the current user from the connect
 This can be used to show the sign in or sign out links in your Phoenix template:
 
 ```elixir
-<%= if Pow.Plug.current_user(@conn) do %>
-  <span><%= link "Sign out", to: ~p"/session", method: :delete %></span>
-<% else %>
-  <span><%= link "Register", to: ~p"/registration" %></span>
-  <span><%= link "Sign in", to: ~p"/session" %></span>
-<% end %>
+<.link :if={Pow.Plug.current_user(@conn)} href={~p"/session"} method="delete">Sign out</.link>
+<.link :if={is_nil Pow.Plug.current_user(@conn)} navigate={~p"/registration/new"}>Registration</.link>
+<.link :if={is_nil Pow.Plug.current_user(@conn)} navigate={~p"/session/new"}>Sign In</.link>
 ```
 
 The current user can also be fetched by using the template assigns set in the configuration with `:current_user_assigns_key` (defaults to `@current_user`).

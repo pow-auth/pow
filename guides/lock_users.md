@@ -346,7 +346,7 @@ defmodule MyAppWeb.EnsureUserNotLockedPlugTest do
       |> EnsureUserNotLockedPlug.call(opts)
 
     assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Sorry, your account is locked."
-    assert redirected_to(conn) == ~p"/session"
+    assert redirected_to(conn) == ~p"/session/new"
   end
 
   defp init_conn() do
@@ -378,7 +378,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
       conn = post(conn, ~p"/reset-password", @valid_params)
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info)
-      assert redirected_to(conn) == ~p"/session"
+      assert redirected_to(conn) == ~p"/session/new"
 
       assert count_reset_password_tokens_for_user(conn, user) == 1
     end
@@ -389,7 +389,7 @@ defmodule MyAppWeb.ResetPasswordControllerTest do
       conn = post(conn, ~p"/reset-password", @valid_params)
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info)
-      assert redirected_to(conn) == ~p"/session"
+      assert redirected_to(conn) == ~p"/session/new"
 
       assert count_reset_password_tokens_for_user(conn, user) == 0
     end
