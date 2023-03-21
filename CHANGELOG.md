@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.29 (TBA)
+## v1.0.29 (2023-03-21)
 
 This version is updated to work with Phoenix 1.7, in particular using the new template components structure. All views have been removed, and Pow no longer requires the `phoenix_view` dependency.
 
