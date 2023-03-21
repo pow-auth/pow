@@ -2,6 +2,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
   use Pow.Test.Phoenix.ConnCase
 
   alias Plug.Conn
+  alias Phoenix.LiveViewTest.DOM
   alias Pow.Plug
 
   describe "new/2" do
@@ -12,13 +13,28 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
       assert html =~ Routes.pow_registration_path(conn, :create)
-      assert html =~ "<label for=\"user_email\">Email</label>"
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
-      assert html =~ "<label for=\"user_password\">Password</label>"
-      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label for=\"user_password_confirmation\">Password confirmation</label>"
-      assert html =~ "<input id=\"user_password_confirmation\" name=\"user[password_confirmation]\" type=\"password\">"
-      assert html =~ "<a href=\"/session/new\">Sign in</a>"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.to_text(label_elem) =~ "Email"
+      assert DOM.attribute(input_elem, "type") == "email"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert DOM.to_text(label_elem) =~ "Password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert DOM.to_text(label_elem) =~ "Confirm password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [_] = DOM.all(html, "a[href=\"/session/new\"]")
     end
 
     test "already signed in", %{conn: conn} do
@@ -37,14 +53,19 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> get(Routes.pow_registration_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_username\">Username</label>"
-      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\">"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert DOM.to_text(label_elem) =~ "Username"
+      assert DOM.attribute(input_elem, "type") == "text"
     end
   end
 
   describe "create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret"}}
-    @invalid_params %{"user" => %{"email" => "test@example.com", "password" => "s"}}
+    @valid_params %{"user" => %{"email" => "mock@example.com", "password" => "secret"}}
+    @invalid_params %{"user" => %{"email" => "invalid@example.com", "password" => "invalid"}}
 
     test "already signed in", %{conn: conn} do
       conn =
@@ -68,10 +89,17 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = post(conn, Routes.pow_registration_path(conn, :create, @invalid_params))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
-      assert html =~ "<label for=\"user_password\">Password</label>"
-      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">should be at least 8 character(s)</span>"
+
+      html_tree = DOM.parse(html)
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.attribute(input_elem, "value") == "invalid@example.com"
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password]\"] > p")
+      assert DOM.attribute(input_elem, "value") == "invalid"
+      assert DOM.to_text(error_elem) =~ "should be at least 8 character(s)"
+
       assert errors = conn.assigns[:changeset].errors
       assert errors[:password]
       refute Plug.current_user(conn)
@@ -87,10 +115,35 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> get(Routes.pow_registration_path(conn, :edit))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_email\">Email</label>"
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
-      assert html =~ "<label for=\"user_current_password\">Current password</label>"
-      assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_current_password]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
+      assert DOM.to_text(label_elem) =~ "Current password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.to_text(label_elem) =~ "Email"
+      assert DOM.attribute(input_elem, "type") == "email"
+      assert DOM.attribute(input_elem, "value") == "mock@example.com"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert DOM.to_text(label_elem) =~ "New password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      refute DOM.attribute(input_elem, "value")
+      refute DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert DOM.to_text(label_elem) =~ "Confirm new password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      refute DOM.attribute(input_elem, "value")
+      refute DOM.attribute(input_elem, "required")
     end
 
     test "shows with username user", %{conn: conn} do
@@ -101,8 +154,14 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         |> get(Routes.pow_registration_path(conn, :edit))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_username\">Username</label>"
-      assert html =~ "<input id=\"user_username\" name=\"user[username]\" type=\"text\" value=\"test\">"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert DOM.to_text(label_elem) =~ "Username"
+      assert DOM.attribute(input_elem, "type") == "text"
+      assert DOM.attribute(input_elem, "value") == "test"
     end
 
     test "not signed in", %{conn: conn} do
@@ -113,8 +172,8 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
   end
 
   describe "update/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => "secret"}}
-    @invalid_params %{"user" => %{"email" => "test@example.com"}}
+    @valid_params %{"user" => %{"email" => "mock@example.com", "password" => "secret"}}
+    @invalid_params %{"user" => %{"email" => "invalid@example.com", "password" => "invalid"}}
 
     test "not signed in", %{conn: conn} do
       conn = put(conn, Routes.pow_registration_path(conn, :update, @valid_params))
@@ -142,11 +201,20 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = put(conn, Routes.pow_registration_path(conn, :update, @invalid_params))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_email\">Email</label>"
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"test@example.com\">"
-      assert html =~ "<label for=\"user_current_password\">Current password</label>"
-      assert html =~ "<input id=\"user_current_password\" name=\"user[current_password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">can&#39;t be blank</span>"
+
+      html_tree = DOM.parse(html)
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
+      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[current_password]\"] > p")
+      refute DOM.attribute(input_elem, "value")
+      assert DOM.to_text(error_elem) =~ "can't be blank"
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.to_text(label_elem) =~ "Email"
+      assert DOM.attribute(input_elem, "type") == "email"
+      assert DOM.attribute(input_elem, "value") == "invalid@example.com"
+
       assert errors = conn.assigns[:changeset].errors
       assert errors[:current_password]
       assert %{id: 1} = Plug.current_user(conn)
@@ -185,8 +253,10 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     end
   end
 
+  @params %{"user" => %{"email" => "mock@example.com"}}
+
   defp create_user_and_sign_in(conn) do
-    conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params))
+    conn = post(conn, Routes.pow_registration_path(conn, :create, @params))
 
     assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]

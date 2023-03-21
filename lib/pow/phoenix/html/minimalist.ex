@@ -1,6 +1,6 @@
 # TODO: Remove module when requiring Phoenix 1.7.0
 unless Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
-defmodule Pow.Phoenix.HTML.Bootstrap do
+defmodule Pow.Phoenix.HTML.Minimalist do
   @moduledoc false
 
   @form_template EEx.compile_string(
@@ -12,14 +12,12 @@ defmodule Pow.Phoenix.HTML.Bootstrap do
         </div>
       <%% end %>
     <%= for {label, input, error} <- inputs, input do %>
-      <div class="form-group">
-        <%= label %>
-        <%= input %>
-        <%= error %>
-      </div>
+      <%= label %>
+      <%= input %>
+      <%= error %>
     <% end %>
-      <div class="form-group">
-        <%%= submit <%= inspect button_label %>, class: "btn btn-primary" %>
+      <div>
+        <%%= submit <%= inspect button_label %> %>
       </div>
     <%% end %>
     """)
@@ -33,17 +31,17 @@ defmodule Pow.Phoenix.HTML.Bootstrap do
   end
 
   defp input(:text, key) do
-    {label(key), ~s(<%= text_input f, #{inspect_key(key)}, class: "form-control" %>), error(key)}
+    {label(key), ~s(<%= text_input f, #{inspect_key(key)} %>), error(key)}
   end
   defp input(:password, key) do
-    {label(key), ~s(<%= password_input f, #{inspect_key(key)}, class: "form-control" %>), error(key)}
+    {label(key), ~s(<%= password_input f, #{inspect_key(key)} %>), error(key)}
   end
 
   defp inspect_key({:changeset, :pow_user_id_field}), do: "Pow.Ecto.Schema.user_id_field(@changeset)"
   defp inspect_key(key), do: inspect(key)
 
   defp label(key) do
-    ~s(<%= label f, #{inspect_key(key)}, class: "control-label" %>)
+    ~s(<%= label f, #{inspect_key(key)} %>)
   end
 
   defp error(key) do

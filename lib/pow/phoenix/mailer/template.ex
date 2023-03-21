@@ -1,6 +1,6 @@
 defmodule Pow.Phoenix.Mailer.Template do
   @moduledoc """
-  Module that builds mailer templates for Phoenix views using EEx with
+  Module that builds mailer templates for Phoenix templates using EEx with
   `Phoenix.HTML.Engine`.
 
   ## Usage
@@ -15,10 +15,13 @@ defmodule Pow.Phoenix.Mailer.Template do
   @doc false
   defmacro __using__(_opts) do
     quote do
+      use Pow.Phoenix.Mailer.Component
       import unquote(__MODULE__)
       import Phoenix.HTML.{Link, Tag}
     end
   end
+
+  defstruct [:subject, :text, :html]
 
   @doc """
   Generate template functions.
@@ -29,23 +32,22 @@ defmodule Pow.Phoenix.Mailer.Template do
   """
   @spec template(atom(), binary(), binary(), binary()) :: Macro.t()
   defmacro template(action, subject, text, html) do
+    quoted_subject = EEx.compile_string(subject)
     quoted_text = EEx.compile_string(text)
     quoted_html = EEx.compile_string(html, engine: Phoenix.HTML.Engine, line: 1, trim: true)
 
     quote do
-      def render(unquote("#{action}.html"), var!(assigns)) do
-        _ = var!(assigns)
-        unquote(quoted_html)
+      def unquote(action)(var!(assigns)) do
+        struct!(unquote(__MODULE__),
+          subject: unquote(quoted_subject),
+          text: unquote(quoted_text),
+          html: unquote(quoted_html)
+        )
       end
 
-      def render(unquote("#{action}.text"), var!(assigns)) do
-        _ = var!(assigns)
-        unquote(quoted_text)
-      end
-
+      def subject(unquote(action)), do: unquote(subject)
       def text(unquote(action)), do: unquote(text)
       def html(unquote(action)), do: unquote(html)
-      def subject(unquote(action)), do: unquote(subject)
     end
   end
 end

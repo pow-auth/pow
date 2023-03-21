@@ -5,10 +5,10 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
 
   @expected_template_files [
     {PowResetPassword, %{
-      "reset_password" => ["edit.html.eex", "new.html.eex"]
+      "reset_password_html" => ["edit.html.heex", "new.html.heex"]
     }},
     {PowInvitation, %{
-      "invitation" => ["edit.html.eex", "new.html.eex", "show.html.eex"]
+      "invitation_html" => ["edit.html.heex", "new.html.heex", "show.html.heex"]
     }}
   ]
   @options Enum.flat_map(@expected_template_files, &["--extension", inspect(elem(&1, 0))])
@@ -18,27 +18,27 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
       Templates.run(@options)
 
       for {module, expected_templates} <- @expected_template_files do
-        templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
+        templates_path = Path.join(["lib", "pow_web", "controllers", Macro.underscore(module)])
         expected_dirs  = Map.keys(expected_templates)
+        expected_files = Enum.map(expected_dirs, &"#{&1}.ex")
 
-        assert ls(templates_path) == expected_dirs
+        assert expected_dirs -- ls(templates_path) == []
+        assert expected_files -- ls(templates_path) == []
 
         for {dir, expected_files} <- expected_templates do
           files = templates_path |> Path.join(dir) |> ls()
 
-          assert files == expected_files
+          assert expected_files -- files == []
         end
 
-        views_path          = Path.join(["lib", "pow_web", "views", Macro.underscore(module)])
-        expected_view_files = expected_templates |> Map.keys() |> Enum.map(&"#{&1}_view.ex")
+        for base_name <- expected_dirs do
+          content     = templates_path |> Path.join(base_name <> ".ex") |> File.read!()
+          module_name = base_name |> Macro.camelize() |> String.replace_suffix("Html", "HTML")
 
-        assert ls(views_path) == expected_view_files
-
-        [base_name | _rest] = expected_templates |> Map.keys()
-        view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
-
-        assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-        assert view_content =~ "use PowWeb, :view"
+          assert content =~ "defmodule PowWeb.#{inspect(module)}.#{module_name} do"
+          assert content =~ "use PowWeb, :html"
+          assert content =~ "embed_templates \"#{base_name}/*\""
+        end
       end
     end)
   end
@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
     File.cd!(context.tmp_path, fn ->
       Templates.run(~w(--extension PowPersistentSession))
 
-      assert_received {:mix_shell, :info, ["Notice: No view or template files will be generated for PowPersistentSession as this extension doesn't have any views defined."]}
+      assert_received {:mix_shell, :info, ["Notice: No template files will be generated for PowPersistentSession as this extension doesn't have any templates defined."]}
     end)
   end
 
@@ -72,18 +72,18 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
         Templates.run([])
 
         for {module, expected_templates} <- @expected_template_files do
-          templates_path = Path.join(["lib", "pow_web", "templates", Macro.underscore(module)])
+          templates_path = Path.join(["lib", "pow_web", "controllers", Macro.underscore(module)])
           dirs           = templates_path |> File.ls!() |> Enum.sort()
 
-          assert dirs == Map.keys(expected_templates)
+          assert Map.keys(expected_templates) -- dirs == []
 
-          views_path = Path.join(["lib", "pow_web", "views", Macro.underscore(module)])
+          [base_name] = expected_templates |> Map.keys()
+          content     = templates_path |> Path.join(base_name <> ".ex") |> File.read!()
+          module_name = base_name |> Macro.camelize() |> String.replace_suffix("Html", "HTML")
 
-          [base_name | _rest] = expected_templates |> Map.keys()
-          view_content        = views_path |> Path.join(base_name <> "_view.ex") |> File.read!()
-
-          assert view_content =~ "defmodule PowWeb.#{inspect(module)}.#{Macro.camelize(base_name)}View do"
-          assert view_content =~ "use PowWeb, :view"
+          assert content =~ "defmodule PowWeb.#{inspect(module)}.#{module_name} do"
+          assert content =~ "use PowWeb, :html"
+          assert content =~ "embed_templates \"#{base_name}/*\""
         end
       end)
     end
@@ -93,24 +93,16 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.TemplatesTest do
 
   # This is for insurance that all available templates are being tested
   test "test all templates" do
-    expected      = Enum.into(@expected_template_files, %{})
-    all_templates =
-      "lib/extensions"
-      |> File.ls!()
-      |> Enum.filter(&File.dir?("lib/extensions/#{&1}/phoenix/views"))
-      |> Enum.map(fn dir ->
-        extension = Module.concat(["Pow#{Macro.camelize(dir)}"])
-        templates =
-          "lib/extensions/#{dir}/phoenix/views"
-          |> File.ls!()
-          |> Enum.map(&String.replace(&1, "_view.ex", ""))
+    expected = Enum.into(@expected_template_files, %{})
 
-        {extension, templates}
-      end)
+    for extension_dir <- File.ls!("lib/extensions"),
+        File.dir?("lib/extensions/#{extension_dir}/phoenix/controllers"),
+        template <- Enum.filter(File.ls!("lib/extensions/#{extension_dir}/phoenix/controllers"), &String.ends_with?(&1, "_html.ex")) do
+      module = Module.concat(["Pow#{Macro.camelize(extension_dir)}"])
+      template = String.replace_suffix(template, ".ex", "")
 
-    for {extension, templates} <- all_templates do
-      assert Map.has_key?(expected, extension), "Missing template tests for #{inspect(extension)} extension"
-      assert Map.keys(expected[extension]) == templates, "Not all templates are tested for the #{inspect(extension)} extension"
+      assert Map.has_key?(expected, module), "Missing template tests for #{inspect(module)} extension"
+      assert template in Map.keys(expected[module]), "Not all templates are tested for the #{inspect(module)} extension"
     end
   end
 end

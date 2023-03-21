@@ -1,4 +1,4 @@
-defmodule PowInvitation.Phoenix.MailerTemplate do
+defmodule PowInvitation.Phoenix.Mail do
   @moduledoc false
   use Pow.Phoenix.Mailer.Template
 
@@ -12,8 +12,8 @@ defmodule PowInvitation.Phoenix.MailerTemplate do
   <%= @url %>
   """,
   """
-  <%= content_tag(:h3, "Hi,") %>
-  <%= content_tag(:p, "You've been invited by \#{@invited_by_user_id}. Please use the following link to accept your invitation:") %>
-  <%= content_tag(:p, link(@url, to: @url)) %>
+  <h3>Hi,</h3>
+  <p>You've been invited by <strong><%= @invited_by_user_id %></strong>. Please use the following link to accept your invitation:</p>
+  <p><a href="<%= @url %>"><%= @url %></a></p>
   """
 end

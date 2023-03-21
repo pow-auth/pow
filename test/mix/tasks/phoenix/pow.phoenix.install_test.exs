@@ -3,15 +3,14 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
   alias Mix.Tasks.Pow.Phoenix.Install
 
-  @options        []
-  @success_msg    "Pow has been installed in your Phoenix app!"
+  @options     []
+  @success_msg "Pow has been installed in your Phoenix app!"
 
   test "default", context do
     File.cd!(context.tmp_path, fn ->
       Install.run(@options)
 
       refute File.exists?(context.paths.templates_path)
-      refute File.exists?(context.paths.views_path)
 
       injecting_config_message = "* injecting #{context.paths.config_path}"
       injecting_endpoint_message = "* injecting #{context.paths.endpoint_path}"
@@ -126,9 +125,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       Install.run(options)
 
       assert File.exists?(context.paths.templates_path)
-      assert [_one, _two] = File.ls!(context.paths.templates_path)
-      assert File.exists?(context.paths.views_path)
-      assert [_one, _two] = File.ls!(context.paths.views_path)
+      assert [_one, _two, _three, _four] = File.ls!(context.paths.templates_path)
     end)
   end
 
@@ -139,11 +136,11 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       Install.run(options)
 
       assert File.exists?(context.paths.templates_path)
-      reset_password_templates = Path.join([context.paths.web_path, "templates", "pow_reset_password"])
-      assert [_one] = File.ls!(reset_password_templates)
-      reset_password_views = Path.join([context.paths.web_path, "views", "pow_reset_password"])
-      assert File.exists?(reset_password_views)
-      assert [_one] = File.ls!(reset_password_views)
+      reset_password_templates = Path.join([context.paths.web_path, "controllers", "pow_reset_password"])
+      assert [_one, _two] = File.ls!(reset_password_templates)
+      reset_password_templates = Path.join([context.paths.web_path, "controllers", "pow_reset_password"])
+      assert File.exists?(reset_password_templates)
+      assert [_one, _two] = File.ls!(reset_password_templates)
     end)
   end
 
@@ -154,7 +151,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
       assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
       assert_received {:mix_shell, :info, [@success_msg]}
-      assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated."]}
+      assert_received {:mix_shell, :info, ["Pow Phoenix templates has been generated."]}
       assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
 
       assert config_content = File.read!(context.paths.config_path)
@@ -245,7 +242,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
         assert_received {:mix_shell, :info, [@success_msg]}
         assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
-        assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated."]}
+        assert_received {:mix_shell, :info, ["Pow Phoenix templates has been generated."]}
         assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
 
         assert config_content = File.read!(context.paths.config_path)
@@ -253,13 +250,13 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         assert config_content =~ "user: POW.Users.User,"
         assert config_content =~ "web_module: POWWeb,"
 
-        view_file = Path.join([context.paths.web_path, "views", "pow", "session_view.ex"])
-        assert File.exists?(view_file)
-        assert File.read!(view_file) =~ "defmodule POWWeb.Pow.SessionView do"
+        template_file = Path.join([context.paths.web_path, "controllers", "pow", "session_html.ex"])
+        assert File.exists?(template_file)
+        assert File.read!(template_file) =~ "defmodule POWWeb.Pow.SessionHTML do"
 
-        view_file = Path.join([context.paths.web_path, "views", "pow_reset_password", "reset_password_view.ex"])
-        assert File.exists?(view_file)
-        assert File.read!(view_file) =~ "defmodule POWWeb.PowResetPassword.ResetPasswordView do"
+        template_file = Path.join([context.paths.web_path, "controllers", "pow_reset_password", "reset_password_html.ex"])
+        assert File.exists?(template_file)
+        assert File.read!(template_file) =~ "defmodule POWWeb.PowResetPassword.ResetPasswordHTML do"
       end)
     end
   end
@@ -290,7 +287,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
         assert_received {:mix_shell, :info, [@success_msg]}
         assert_received {:mix_shell, :info, ["* injecting config/config.exs"]}
-        assert_received {:mix_shell, :info, ["Pow Phoenix templates and views has been generated."]}
+        assert_received {:mix_shell, :info, ["Pow Phoenix templates has been generated."]}
 
         assert File.read!(context.paths.config_path) =~
           """
@@ -303,11 +300,8 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
         assert_received {:mix_shell, :info, ["* injecting lib/my_app_web/endpoint.ex"]}
         assert File.read!(context.paths.endpoint_path) =~ "plug Pow.Plug.Session, otp_app: :my_app_web"
 
-        assert File.exists?(Path.join([context.paths.web_path, "templates", "pow"]))
-        assert File.exists?(Path.join([context.paths.web_path, "views", "pow"]))
-
-        assert File.exists?(Path.join([context.paths.web_path, "templates", "pow_reset_password"]))
-        assert File.exists?(Path.join([context.paths.web_path, "views", "pow_reset_password"]))
+        assert File.exists?(Path.join([context.paths.web_path, "controllers", "pow"]))
+        assert File.exists?(Path.join([context.paths.web_path, "controllers", "pow_reset_password"]))
       end)
     end)
   end

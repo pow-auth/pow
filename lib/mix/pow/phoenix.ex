@@ -44,14 +44,16 @@ defmodule Mix.Pow.Phoenix do
   defp web_prefix(_context_app, this_app), do: Path.join("lib", "#{this_app}")
 
   @doc """
-  Creates a view file for the web module.
+  Creates a HTML template file for the web module.
   """
-  @spec create_view_file(atom(), binary(), atom(), binary()) :: :ok
-  def create_view_file(module, name, web_mod, web_prefix) do
-    path    = Path.join([web_prefix, "views", Macro.underscore(module), "#{name}_view.ex"])
+  @spec create_template_module(atom(), binary(), atom(), binary()) :: :ok
+  def create_template_module(module, name, web_mod, web_prefix) do
+    path    = Path.join([web_prefix, "controllers", Macro.underscore(module), "#{name}_html.ex"])
     content = """
-    defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}View do
-      use #{inspect(web_mod)}, :view
+    defmodule #{inspect(web_mod)}.#{inspect(module)}.#{Macro.camelize(name)}HTML do
+      use #{inspect(web_mod)}, :html
+
+      embed_templates "#{name}_html/*"
     end
     """
 
@@ -61,18 +63,18 @@ defmodule Mix.Pow.Phoenix do
   end
 
   @doc """
-  Creates template files for the web module.
+  Creates templates for the web module.
   """
   @spec create_templates(atom(), binary(), binary(), [binary()]) :: :ok
   def create_templates(module, name, web_prefix, actions) do
-    template_module = Module.concat([module, Phoenix, "#{Macro.camelize(name)}Template"])
-    path            = Path.join([web_prefix, "templates", Macro.underscore(module), name])
+    template_module = Module.concat([module, Phoenix, "#{Macro.camelize(name)}HTML"])
+    path            = Path.join([web_prefix, "controllers", Macro.underscore(module), "#{name}_html"])
 
     actions
     |> Enum.map(&String.to_atom/1)
     |> Enum.each(fn action ->
       content   = template_module.html(action)
-      file_path = Path.join(path, "#{action}.html.eex")
+      file_path = Path.join(path, "#{action}.html.heex")
 
       Generator.create_file(file_path, content)
     end)

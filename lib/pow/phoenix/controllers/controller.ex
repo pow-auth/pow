@@ -33,8 +33,16 @@ defmodule Pow.Phoenix.Controller do
   @doc false
   defmacro __using__(config) do
     quote do
-      use Phoenix.Controller,
-        namespace: Pow.Phoenix
+      use Phoenix.Controller, (
+        if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+          [
+            layouts: [html: Pow.Phoenix.Layouts],
+            formats: [:html]
+          ]
+        else
+          # TODO: Remove when Phoenix 1.7 is required
+          [namespace: Pow.Phoenix]
+        end)
 
       import unquote(__MODULE__), only: [require_authenticated: 2, require_not_authenticated: 2, put_no_cache_header: 2]
 

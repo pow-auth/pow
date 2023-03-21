@@ -1,0 +1,3 @@
+<h1>Pow e-mail</h1>
+
+<%= @inner_content %>

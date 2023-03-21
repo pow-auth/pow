@@ -1,8 +1,8 @@
 defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
-  @shortdoc "Generates views and templates"
+  @shortdoc "Generates templates"
 
   @moduledoc """
-  Generates views and templates.
+  Generates templates.
 
       mix pow.phoenix.gen.templates
 
@@ -45,11 +45,11 @@ defmodule Mix.Tasks.Pow.Phoenix.Gen.Templates do
     web_prefix = structure[:web_prefix]
 
     Enum.each(@templates, fn {name, actions} ->
-      Phoenix.create_view_file(Elixir.Pow, name, web_module, web_prefix)
+      Phoenix.create_template_module(Elixir.Pow, name, web_module, web_prefix)
       Phoenix.create_templates(Elixir.Pow, name, web_prefix, actions)
     end)
 
-    Mix.shell().info("Pow Phoenix templates and views has been generated.")
+    Mix.shell().info("Pow Phoenix templates has been generated.")
 
     %{structure: structure}
   end

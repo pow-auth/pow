@@ -182,7 +182,7 @@ defmodule MyAppWeb.AccountController do
 end
 ```
 
-Now all you need is to set up the view and template, and update your router module.
+Now all you need is to set up the template, and update your router module.
 
 ## Triplex test modules
 

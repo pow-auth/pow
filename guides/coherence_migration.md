@@ -99,7 +99,7 @@ Coherence uses bcrypt, so you'll have to switch to bcrypt in Pow:
 
 ## Mailer
 
-Set up `WEB_PATH/pow/mailer.ex` to enable emails:
+Set up `WEB_PATH/mails/pow_mailer.ex` to enable emails:
 
   ```elixir
   defmodule MyAppWeb.Pow.Mailer do

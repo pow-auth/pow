@@ -1,6 +1,7 @@
 defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
   use PowResetPassword.TestWeb.Phoenix.ConnCase
 
+  alias Phoenix.LiveViewTest.DOM
   alias Plug.Conn
   alias Pow.Plug, as: PowPlug
   alias PowResetPassword.{Plug, Store.ResetTokenCache}
@@ -14,8 +15,15 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :new))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_email\">Email</label>"
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\">"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.to_text(label_elem) =~ "Email"
+      assert DOM.attribute(input_elem, "type") == "email"
+      refute DOM.attribute(input_elem, "value")
+      assert DOM.attribute(input_elem, "required")
     end
 
     test "already signed in", %{conn: conn} do
@@ -70,7 +78,11 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
 
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "No account exists for the provided email. Please try again."
-      assert html =~ "<input id=\"user_email\" name=\"user[email]\" type=\"text\" value=\"invalid@example.com\">"
+
+      html_tree = DOM.parse(html)
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert DOM.attribute(input_elem, "value") == "invalid@example.com"
     end
   end
 
@@ -109,11 +121,22 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :edit, token))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_password\">Password</label>"
-      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<label for=\"user_password_confirmation\">Password confirmation</label>"
-      assert html =~ "<input id=\"user_password_confirmation\" name=\"user[password_confirmation]\" type=\"password\">"
-      assert html =~ "<a href=\"/session/new\">Sign in</a>"
+
+      html_tree = DOM.parse(html)
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert DOM.to_text(label_elem) =~ "New password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert DOM.to_text(label_elem) =~ "Confirm new password"
+      assert DOM.attribute(input_elem, "type") == "password"
+      assert DOM.attribute(input_elem, "required")
+
+      assert [_] = DOM.all(html, "a[href=\"/session/new\"]")
     end
   end
 
@@ -164,9 +187,16 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn = put(conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @invalid_params))
 
       assert html = html_response(conn, 200)
-      assert html =~ "<label for=\"user_password\">Password</label>"
-      assert html =~ "<input id=\"user_password\" name=\"user[password]\" type=\"password\">"
-      assert html =~ "<span class=\"help-block\">does not match confirmation</span>"
+
+      html_tree = DOM.parse(html)
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert DOM.attribute(input_elem, "value") == @password
+
+      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
+      assert DOM.attribute(input_elem, "value") == "invalid"
+      assert DOM.to_text(error_elem) =~ "does not match confirmation"
 
       changeset = conn.assigns[:changeset]
       assert changeset.errors[:password_confirmation]

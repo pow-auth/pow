@@ -1,8 +1,8 @@
 defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
-  @shortdoc "Generates views and templates for extensions"
+  @shortdoc "Generates templates for extensions"
 
   @moduledoc """
-  Generates views and templates for extensions.
+  Generates templates for extensions.
 
       mix pow.extension.phoenix.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 
@@ -52,7 +52,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
               []
           end
 
-        create_views_and_templates(extension, templates, web_module, web_prefix)
+        create_templates(extension, templates, web_module, web_prefix)
 
         extension
       end)
@@ -60,12 +60,12 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Gen.Templates do
     %{extensions: extensions, web_app: web_app, structure: structure}
   end
 
-  defp create_views_and_templates(extension, [], _web_module, _web_prefix) do
-    Mix.shell().info("Notice: No view or template files will be generated for #{inspect extension} as this extension doesn't have any views defined.")
+  defp create_templates(extension, [], _web_module, _web_prefix) do
+    Mix.shell().info("Notice: No template files will be generated for #{inspect extension} as this extension doesn't have any templates defined.")
   end
-  defp create_views_and_templates(extension, templates, web_module, web_prefix) do
+  defp create_templates(extension, templates, web_module, web_prefix) do
     Enum.each(templates, fn {name, actions} ->
-      Phoenix.create_view_file(extension, name, web_module, web_prefix)
+      Phoenix.create_template_module(extension, name, web_module, web_prefix)
       Phoenix.create_templates(extension, name, web_prefix, actions)
     end)
   end

@@ -7,7 +7,7 @@ defmodule Pow.MixProject do
     [
       app: :pow,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       compilers: Mix.compilers(),
@@ -36,8 +36,8 @@ defmodule Pow.MixProject do
       {:ecto, "~> 2.2 or ~> 3.0"},
       {:phoenix, ">= 1.3.0 and < 1.8.0"},
       {:phoenix_html, ">= 2.0.0 and < 4.0.0"},
-      {:phoenix_view, "~> 2.0"},
       {:plug, ">= 1.5.0 and < 2.0.0", optional: true},
+      {:phoenix_live_view, ">= 0.18.0", optional: true},
 
       {:phoenix_ecto, "~> 4.3", only: [:dev, :test]},
       {:credo, "~> 1.5", only: [:dev, :test]},
@@ -47,7 +47,8 @@ defmodule Pow.MixProject do
 
       {:ecto_sql, "~> 3.5", only: [:test]},
       {:plug_cowboy, "~> 2.4", only: [:test]},
-      {:postgrex, "~> 0.15", only: [:test]}
+      {:postgrex, "~> 0.15", only: [:test]},
+      {:floki, ">= 0.30.0", only: :test}
     ]
   end
 
