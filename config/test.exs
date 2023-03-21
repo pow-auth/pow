@@ -2,7 +2,10 @@ import Config
 
 endpoint_config = [
   secret_key_base: String.duplicate("abcdefghijklmnopqrstuvxyz0123456789", 2),
-  render_errors: [view: Pow.Test.Phoenix.ErrorHTML, accepts: ~w(html json)]
+  render_errors: [
+    formats: [html: Pow.Test.Phoenix.ErrorHTML],
+    layout: false
+  ]
 ]
 
 config :pow, Pow.Test.Phoenix.Endpoint, endpoint_config
