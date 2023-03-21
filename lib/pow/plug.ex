@@ -265,4 +265,10 @@ defmodule Pow.Plug do
       module           -> {module, []}
     end
   end
+
+  @doc false
+  @spec extension_enabled?(Conn.t(), atom()) :: boolean()
+  def extension_enabled?(conn, extension) do
+    extension in Config.get(fetch_config(conn), :extensions, [])
+  end
 end

@@ -39,6 +39,9 @@ defmodule Pow.Phoenix.RegistrationHTML do
     </.header>
 
     <.simple_form :let={f} for={<%= "@changeset" %>} as={:user} action={<%= "@action" %>} phx-update="ignore">
+      <.error :if={Pow.Plug.extension_enabled?(@conn, PowResetPassword) && @changeset.data.unconfirmed_email}>
+        <span>Click the link in the confirmation email to change your email to <span class="font-semibold"><%%= @changeset.data.unconfirmed_email %></span>.</span>
+      </.error>
       <.error :if={<%= "@changeset.action" %>}>Oops, something went wrong! Please check the errors below.</.error>
       <.input field={<%= "f[:current_password]" %>} type="password" label="Current password" value={nil} required />
       <.input field={<%= "f[\#{__user_id_field__("@changeset", :key)}]" %>} type={<%= __user_id_field__("@changeset", :type) %>} label={<%= __user_id_field__("@changeset", :label) %>} required />

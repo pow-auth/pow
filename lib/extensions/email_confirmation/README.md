@@ -17,11 +17,10 @@ Follow the instructions for extensions in [README.md](../../../README.md#add-ext
 Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the `pow_user_id_field` field:
 
 ```elixir
-<%= if @changeset.data.unconfirmed_email do %>
-  <div>
-    <p>Click the link in the confirmation email to change your email to <%= content_tag(:span, @changeset.data.unconfirmed_email) %>.</p>
-  </div>
-<% end %>
+<p :if={@changeset.data.unconfirmed_email} class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-rose-600">
+  <.icon name="hero-exclamation-circle-mini" class="mt-0.5 w-5 h-5 flex-none" />
+  Click the link in the confirmation email to change your email to <span class="font-semibold text-brand hover:underline">@changeset.data.unconfirmed_email)</span>.
+</p>
 ```
 
 ## Prevent persistent session sign in

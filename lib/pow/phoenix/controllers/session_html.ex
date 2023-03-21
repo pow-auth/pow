@@ -21,6 +21,13 @@ defmodule Pow.Phoenix.SessionHTML do
       <.input field={<%= "f[\#{__user_id_field__("@changeset", :key)}]" %>} type={<%= __user_id_field__("@changeset", :type) %>} label={<%= __user_id_field__("@changeset", :label) %>} required />
       <.input field={<%= "f[:password]" %>} type="password" label="Password" value={nil} required />
 
+      <:actions :let={f} :if={Pow.Plug.extension_enabled?(@conn, PowPersistentSession) || Pow.Plug.extension_enabled?(@conn, PowResetPassword)}>
+        <.input :if={Pow.Plug.extension_enabled?(@conn, PowPersistentSession)} field={f[:persistent_session]} type="checkbox" label="Keep me logged in" />
+        <.link :if={Pow.Plug.extension_enabled?(@conn, PowResetPassword)} href={<%= __inline_route__(PowResetPassword.Phoenix.ResetPasswordController, :new) %>} class="text-sm font-semibold">
+          Forgot your password?
+        </.link>
+      </:actions>
+
       <:actions>
         <.button phx-disable-with="Signing in..." class="w-full">
           Sign in <span aria-hidden="true">→</span>
