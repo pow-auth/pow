@@ -483,10 +483,6 @@ Will halt connection if no current user is not present in assigns. Expects an `:
 
 Will halt connection if a current user is present in assigns. Expects an `:error_handler` option.
 
-## Migrating from Coherence
-
-If you're currently using Coherence, you can migrate your app to use Pow instead. Follow the instructions in [Coherence migration guide](guides/coherence_migration.md).
-
 ## Pow security practices
 
 See [security practices](guides/security_practices.md).
