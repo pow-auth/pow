@@ -3,7 +3,7 @@ defmodule Pow.Test.Phoenix.ConnCase do
   use ExUnit.CaseTemplate
 
   alias Pow.Test.EtsCacheMock
-  alias Pow.Test.Phoenix.{ControllerAssertions, Endpoint, Router}
+  alias Pow.Test.Phoenix.{ControllerAssertions, Endpoint, Web}
 
   using do
     quote do
@@ -12,9 +12,9 @@ defmodule Pow.Test.Phoenix.ConnCase do
       import unquote(__MODULE__), only: [get_flash: 2]
       import ControllerAssertions
 
-      alias Router.Helpers, as: Routes
-
       @endpoint Endpoint
+
+      use Web, :verified_routes
     end
   end
 

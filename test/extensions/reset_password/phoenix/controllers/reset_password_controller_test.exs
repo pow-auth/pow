@@ -12,7 +12,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
 
   describe "new/2" do
     test "shows", %{conn: conn} do
-      conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :new))
+      conn = get(conn, ~p"/reset-password/new")
 
       assert html = html_response(conn, 200)
 
@@ -30,7 +30,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn =
         conn
         |> PowPlug.assign_current_user(@user, [])
-        |> get(Routes.pow_reset_password_reset_password_path(conn, :new))
+        |> get(~p"/reset-password/new")
 
       assert_authenticated_redirect(conn)
     end
@@ -44,13 +44,13 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn =
         conn
         |> PowPlug.assign_current_user(@user, [])
-        |> get(Routes.pow_reset_password_reset_password_path(conn, :new))
+        |> get(~p"/reset-password/new")
 
       assert_authenticated_redirect(conn)
     end
 
     test "with valid params", %{conn: conn, ets: ets} do
-      conn           = post(conn, Routes.pow_reset_password_reset_password_path(conn, :create, @valid_params))
+      conn           = post(conn, ~p"/reset-password", @valid_params)
       [{[token], _}] = ResetTokenCache.all([backend: ets], [:_])
 
       assert_received {:mail_mock, mail}
@@ -59,14 +59,14 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       assert mail.text =~ "\nhttp://localhost/reset-password/#{sign_token(conn, token)}\n"
       assert mail.html =~ "<a href=\"http://localhost/reset-password/#{sign_token(conn, token)}\">"
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
     end
 
     test "with invalid params", %{conn: conn} do
-      conn = post(conn, Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
+      conn = post(conn, ~p"/reset-password", @invalid_params)
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :info) == "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
     end
 
@@ -74,7 +74,7 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn =
         conn
         |> Conn.put_private(:pow_prevent_user_enumeration, false)
-        |> post(Routes.pow_reset_password_reset_password_path(conn, :create, @invalid_params))
+        |> post(~p"/reset-password", @invalid_params)
 
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "No account exists for the provided email. Please try again."
@@ -97,28 +97,28 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn =
         conn
         |> PowPlug.assign_current_user(@user, [])
-        |> get(Routes.pow_reset_password_reset_password_path(conn, :edit, token))
+        |> get(~p"/reset-password/#{token}")
 
       assert_authenticated_redirect(conn)
     end
 
     test "with invalid token", %{conn: conn} do
-      conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :edit, "invalid"))
+      conn = get(conn, ~p"/reset-password/invalid")
 
-      assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
+      assert redirected_to(conn) == ~p"/reset-password/new"
       assert get_flash(conn, :error) == "The reset token has expired."
     end
 
     test "with unsigned token", %{conn: conn, token: token} do
       token = decode_token(conn, token)
-      conn  = get(conn, Routes.pow_reset_password_reset_password_path(conn, :edit, token))
+      conn  = get(conn, ~p"/reset-password/#{token}")
 
-      assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
+      assert redirected_to(conn) == ~p"/reset-password/new"
       assert get_flash(conn, :error) == "The reset token has expired."
     end
 
     test "valid token", %{conn: conn, token: token} do
-      conn = get(conn, Routes.pow_reset_password_reset_password_path(conn, :edit, token))
+      conn = get(conn, ~p"/reset-password/#{token}")
 
       assert html = html_response(conn, 200)
 
@@ -154,37 +154,37 @@ defmodule PowResetPassword.Phoenix.ResetPasswordControllerTest do
       conn =
         conn
         |> PowPlug.assign_current_user(@user, [])
-        |> put(Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params))
+        |> put(~p"/reset-password/#{token}", @valid_params)
 
       assert_authenticated_redirect(conn)
     end
 
     test "with invalid token", %{conn: conn} do
-      conn = put(conn, Routes.pow_reset_password_reset_password_path(conn, :update, "invalid", @valid_params))
+      conn = put(conn, ~p"/reset-password/invalid", @valid_params)
 
-      assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
+      assert redirected_to(conn) == ~p"/reset-password/new"
       assert get_flash(conn, :error) == "The reset token has expired."
     end
 
     test "with unsigned token", %{conn: conn, token: token} do
       token = decode_token(conn, token)
-      conn  = put(conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params))
+      conn  = put(conn, ~p"/reset-password/#{token}", @valid_params)
 
-      assert redirected_to(conn) == Routes.pow_reset_password_reset_password_path(conn, :new)
+      assert redirected_to(conn) == ~p"/reset-password/new"
       assert get_flash(conn, :error) == "The reset token has expired."
     end
 
     test "with valid params", %{conn: conn, token: token} do
-      conn = put(conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @valid_params))
+      conn = put(conn, ~p"/reset-password/#{token}", @valid_params)
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :info) == "The password has been updated."
 
       assert {:error, _conn} = Plug.load_user_by_token(conn, token)
     end
 
     test "with invalid params", %{conn: conn, token: token} do
-      conn = put(conn, Routes.pow_reset_password_reset_password_path(conn, :update, token, @invalid_params))
+      conn = put(conn, ~p"/reset-password/#{token}", @invalid_params)
 
       assert html = html_response(conn, 200)
 

@@ -1,6 +1,6 @@
 defmodule Pow.Test.Phoenix.Router do
   @moduledoc false
-  use Phoenix.Router
+  use Pow.Test.Phoenix.Web, :router
   use Pow.Phoenix.Router
 
   pipeline :browser do

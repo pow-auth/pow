@@ -6,7 +6,7 @@ First you should follow the [Modify templates](../README.md#modify-templates) se
 
 ## Templates
 
-Open up `WEB_PATH/controllers/pow/session_html/new.html.heex` and remove the `Routes.pow_registration_path/2` link. Delete the `WEB_PATH/controllers/pow/registration_html/new.html.heex` file.
+Open up `WEB_PATH/controllers/pow/session_html/new.html.heex` and remove the registration link. Delete the `WEB_PATH/controllers/pow/registration_html/new.html.heex` file.
 
 ## Routes
 
