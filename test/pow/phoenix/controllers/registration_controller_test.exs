@@ -7,12 +7,12 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
   describe "new/2" do
     test "shows", %{conn: conn} do
-      conn = get(conn, Routes.pow_registration_path(conn, :new))
+      conn = get(conn, ~p"/registration/new")
 
       assert Conn.get_resp_header(conn, "cache-control") == ["no-cache, no-store, must-revalidate"]
 
       assert html = html_response(conn, 200)
-      assert html =~ Routes.pow_registration_path(conn, :create)
+      assert html =~ ~p"/registration"
 
       html_tree = DOM.parse(html)
 
@@ -41,7 +41,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> Plug.assign_current_user(%{id: 1}, [])
-        |> get(Routes.pow_registration_path(conn, :new))
+        |> get(~p"/registration/new")
 
       assert_authenticated_redirect(conn)
     end
@@ -50,7 +50,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> Conn.put_private(:pow_test_config, :username_user)
-        |> get(Routes.pow_registration_path(conn, :new))
+        |> get(~p"/registration/new")
 
       assert html = html_response(conn, 200)
 
@@ -71,13 +71,13 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> Plug.assign_current_user(%{id: 1}, [])
-        |> post(Routes.pow_registration_path(conn, :create, @valid_params))
+        |> post(~p"/registration", @valid_params)
 
       assert_authenticated_redirect(conn)
     end
 
     test "with valid params", %{conn: conn} do
-      conn = post(conn, Routes.pow_registration_path(conn, :create, @valid_params))
+      conn = post(conn, ~p"/registration", @valid_params)
 
       assert redirected_to(conn) == "/"
       assert get_flash(conn, :info) == "user_created"
@@ -86,7 +86,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     end
 
     test "with invalid params", %{conn: conn} do
-      conn = post(conn, Routes.pow_registration_path(conn, :create, @invalid_params))
+      conn = post(conn, ~p"/registration", @invalid_params)
 
       assert html = html_response(conn, 200)
 
@@ -112,7 +112,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> create_user_and_sign_in()
-        |> get(Routes.pow_registration_path(conn, :edit))
+        |> get(~p"/registration/edit")
 
       assert html = html_response(conn, 200)
 
@@ -151,7 +151,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
         conn
         |> Conn.put_private(:pow_test_config, :username_user)
         |> create_user_and_sign_in()
-        |> get(Routes.pow_registration_path(conn, :edit))
+        |> get(~p"/registration/edit")
 
       assert html = html_response(conn, 200)
 
@@ -165,7 +165,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     end
 
     test "not signed in", %{conn: conn} do
-      conn = get(conn, Routes.pow_registration_path(conn, :edit))
+      conn = get(conn, ~p"/registration/edit")
 
       assert_not_authenticated_redirect(conn)
     end
@@ -176,7 +176,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
     @invalid_params %{"user" => %{"email" => "invalid@example.com", "password" => "invalid"}}
 
     test "not signed in", %{conn: conn} do
-      conn = put(conn, Routes.pow_registration_path(conn, :update, @valid_params))
+      conn = put(conn, ~p"/registration", @valid_params)
 
       assert_not_authenticated_redirect(conn)
     end
@@ -185,9 +185,9 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = create_user_and_sign_in(conn)
       session_id = conn.private[:plug_session]["auth"]
 
-      conn = put(conn, Routes.pow_registration_path(conn, :update, @valid_params))
+      conn = put(conn, ~p"/registration", @valid_params)
 
-      assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
+      assert redirected_to(conn) == ~p"/registration/edit"
       assert get_flash(conn, :info) == "Your account has been updated."
       assert user = Plug.current_user(conn)
       assert user.id == :updated
@@ -198,7 +198,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn = create_user_and_sign_in(conn)
       session_id = conn.private[:plug_session]["auth"]
 
-      conn = put(conn, Routes.pow_registration_path(conn, :update, @invalid_params))
+      conn = put(conn, ~p"/registration", @invalid_params)
 
       assert html = html_response(conn, 200)
 
@@ -224,7 +224,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
   describe "delete/2" do
     test "not signed in", %{conn: conn} do
-      conn = delete(conn, Routes.pow_registration_path(conn, :delete))
+      conn = delete(conn, ~p"/registration")
 
       assert_not_authenticated_redirect(conn)
     end
@@ -233,7 +233,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> create_user_and_sign_in()
-        |> delete(Routes.pow_registration_path(conn, :delete))
+        |> delete(~p"/registration")
 
       assert redirected_to(conn) == "/signed_out"
       assert get_flash(conn, :info) == "Your account has been deleted. Sorry to see you go!"
@@ -245,9 +245,9 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       conn =
         conn
         |> Plug.assign_current_user(:fail_deletion, [])
-        |> delete(Routes.pow_registration_path(conn, :delete))
+        |> delete(~p"/registration")
 
-      assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
+      assert redirected_to(conn) == ~p"/registration/edit"
       assert get_flash(conn, :error) == "Your account could not be deleted."
       assert Plug.current_user(conn) == :fail_deletion
     end
@@ -256,7 +256,7 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
   @params %{"user" => %{"email" => "mock@example.com"}}
 
   defp create_user_and_sign_in(conn) do
-    conn = post(conn, Routes.pow_registration_path(conn, :create, @params))
+    conn = post(conn, ~p"/registration", @params)
 
     assert %{id: 1} = Plug.current_user(conn)
     assert conn.private[:plug_session]["auth"]

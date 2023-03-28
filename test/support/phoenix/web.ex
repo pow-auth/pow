@@ -1,6 +1,26 @@
 defmodule Pow.Test.Phoenix.Web do
   @moduledoc false
 
+  def router do
+    quote do
+      use Phoenix.Router, helpers: false
+
+      # Import common connection and controller functions to use in pipelines
+      import Plug.Conn
+      import Phoenix.Controller
+      import Phoenix.LiveView.Router
+    end
+  end
+
+  def verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: Pow.Test.Phoenix.Endpoint,
+        router: Pow.Test.Phoenix.Router,
+        statics: ~w()
+    end
+  end
+
   def mail do
     quote do
       use Pow.Phoenix.Mailer.Component

@@ -88,7 +88,7 @@ defmodule Pow.Test.ExtensionMocks do
   def __phoenix_endpoint__(web_module, config, opts) do
     module = Module.concat([web_module, Phoenix.Router])
     quoted = quote do
-      use Phoenix.Router
+      use Phoenix.Router, helpers: false
       use Pow.Phoenix.Router
       use Pow.Extension.Phoenix.Router, unquote(config)
 
@@ -169,9 +169,12 @@ defmodule Pow.Test.ExtensionMocks do
           import Pow.Test.Phoenix.ConnCase, only: [get_flash: 2]
           import ControllerAssertions
 
-          alias Router.Helpers, as: Routes
-
           @endpoint Endpoint
+
+          use Phoenix.VerifiedRoutes,
+            endpoint: Endpoint,
+            router: Router,
+            statics: ~w()
         end
       end
 

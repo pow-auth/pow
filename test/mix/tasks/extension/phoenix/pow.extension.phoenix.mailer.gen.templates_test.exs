@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Pow.Extension.Phoenix.Mailer.Gen.TemplatesTest do
 
           def router do
             quote do
-              use Phoenix.Router
+              use Phoenix.Router, helpers: false
             end
           end
 

@@ -10,9 +10,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
 
   describe "show/2" do
     test "confirms with valid token", %{conn: conn} do
-      conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("valid")))
+      conn = get(conn, ~p"/confirm-email/#{sign_token("valid")}")
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :info) == "The email address has been confirmed."
 
       assert user = Process.get({:user, 1})
@@ -23,9 +23,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
     end
 
     test "confirms with valid token and :unconfirmed_email", %{conn: conn} do
-      conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("valid-with-unconfirmed-changed-email")))
+      conn = get(conn, ~p"/confirm-email/#{sign_token("valid-with-unconfirmed-changed-email")}")
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :info) == "The email address has been confirmed."
 
       assert user = Process.get({:user, 1})
@@ -35,27 +35,27 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
     end
 
     test "fails with unique constraint", %{conn: conn} do
-      conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("valid-with-taken-email")))
+      conn = get(conn, ~p"/confirm-email/#{sign_token("valid-with-taken-email")}")
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :error) == "The email address couldn't be confirmed."
 
       refute Process.get({:user, 1})
     end
 
     test "fails with invalid token", %{conn: conn} do
-      conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("invalid")))
+      conn = get(conn, ~p"/confirm-email/#{sign_token("invalid")}")
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :error) == "The confirmation token is invalid or has expired."
 
       refute Process.get({:user, 1})
     end
 
     test "fails with unsigned token", %{conn: conn} do
-      conn = get(conn, Routes.pow_email_confirmation_confirmation_path(conn, :show, "valid"))
+      conn = get(conn, ~p"/confirm-email/#{"valid"}")
 
-      assert redirected_to(conn) == Routes.pow_session_path(conn, :new)
+      assert redirected_to(conn) == ~p"/session/new"
       assert get_flash(conn, :error) == "The confirmation token is invalid or has expired."
 
       refute Process.get({:user, 1})
@@ -66,9 +66,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       conn       =
         conn
         |> Pow.Plug.assign_current_user(%User{id: 1}, [])
-        |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("valid")))
+        |> get(~p"/confirm-email/#{sign_token("valid")}")
 
-      assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
+      assert redirected_to(conn) == ~p"/registration/edit"
       assert Pow.Plug.current_user(conn)
       refute conn.private[:plug_session][@session_key] == session_id
     end
@@ -78,9 +78,9 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
       conn       =
         conn
         |> Pow.Plug.assign_current_user(%User{id: 2}, [])
-        |> get(Routes.pow_email_confirmation_confirmation_path(conn, :show, sign_token("valid")))
+        |> get(~p"/confirm-email/#{sign_token("valid")}")
 
-      assert redirected_to(conn) == Routes.pow_registration_path(conn, :edit)
+      assert redirected_to(conn) == ~p"/registration/edit"
       assert Pow.Plug.current_user(conn)
       assert conn.private[:plug_session][@session_key] == session_id
     end

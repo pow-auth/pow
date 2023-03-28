@@ -7,7 +7,7 @@ defmodule Pow.Extension.Phoenix.Router do
   Configure `lib/my_project_web/router.ex` the following way:
 
       defmodule MyAppWeb.Router do
-        use Phoenix.Router
+        use MyAppWeb, :router
         use Pow.Phoenix.Router
         use Pow.Extension.Phoenix.Router,
           extensions: [PowExtensionOne, PowExtensionTwo]

@@ -18,12 +18,10 @@ defmodule Pow.Test.Phoenix.ControllerAssertions do
   @spec assert_not_authenticated_redirect(Plug.Conn.t()) :: Macro.t()
   defmacro assert_not_authenticated_redirect(conn) do
     quote bind_quoted: [conn: conn] do
-      router = Module.concat([conn.private.phoenix_router, Helpers])
-
       expected_path =
         case conn.method do
-          "GET" -> router.pow_session_path(conn, :new, request_path: Phoenix.Controller.current_path(conn))
-          _any  -> router.pow_session_path(conn, :new)
+          "GET" -> ~p"/session/new?#{[request_path: Phoenix.Controller.current_path(conn)]}"
+          _any  -> ~p"/session/new"
         end
 
       assert redirected_to(conn) == expected_path

@@ -26,7 +26,7 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   end
 
   defmodule Router do
-    use Phoenix.Router
+    use Phoenix.Router, helpers: false
     use Pow.Phoenix.Router
     use Pow.Extension.Phoenix.Router,
       extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
@@ -48,7 +48,7 @@ defmodule Pow.Extension.Phoenix.RouterTest do
     try do
       defmodule RouterAliasScope do
         @moduledoc false
-        use Phoenix.Router
+        use Phoenix.Router, helpers: false
         use Pow.Phoenix.Router
         use Pow.Extension.Phoenix.Router,
           extensions: [Pow.Extension.Phoenix.RouterTest.ExtensionMock]
@@ -66,16 +66,14 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   use Pow.Test.Ecto.TestCase
   doctest Pow.Extension.Phoenix.Router
 
-  alias Phoenix.ConnTest
-  alias Router.Helpers, as: Routes
-
-  @conn ConnTest.build_conn()
-
   test "has routes" do
     assert Enum.count(Router.phoenix_routes()) == 15
 
-    assert unquote(Routes.pow_session_path(@conn, :new)) == "/session/new"
-    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :new)) == "/test/new"
+    assert [route] = filter_routes(Pow.Phoenix.SessionController, :new)
+    assert route.path == "/session/new"
+
+    assert [route] = filter_routes(ExtensionMock.Phoenix.TestController, :new)
+    assert route.path == "/test/new"
   end
 
   test "validates no aliases" do
@@ -86,10 +84,14 @@ defmodule Pow.Extension.Phoenix.RouterTest do
   test "can override routes" do
     assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController)) == 6
 
-    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :edit, 1)) == "/test/1/overridden"
-    assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController && &1.plug_opts == :edit)) == 1
+    assert [route] = filter_routes(ExtensionMock.Phoenix.TestController, :edit)
+    assert route.path == "/test/:id/overridden"
 
-    assert unquote(Routes.pow_extension_phoenix_router_test_extension_mock_test_path(@conn, :delete, 1)) == "/overridden/test/1"
-    assert Enum.count(Router.phoenix_routes(), &(&1.plug == ExtensionMock.Phoenix.TestController && &1.plug_opts == :delete)) == 1
+    assert [route] = filter_routes(ExtensionMock.Phoenix.TestController, :delete)
+    assert route.path == "/overridden/test/:id"
+  end
+
+  defp filter_routes(plug, opts) do
+    Enum.filter(Router.phoenix_routes(), & &1.plug == plug && &1.plug_opts == opts)
   end
 end

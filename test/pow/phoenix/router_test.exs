@@ -2,7 +2,7 @@ module_raised_with =
   try do
     defmodule Pow.Test.Phoenix.RouterAliasScope do
       @moduledoc false
-      use Phoenix.Router
+      use Phoenix.Router, helpers: false
       use Pow.Phoenix.Router
 
       scope "/", Test do
@@ -18,7 +18,7 @@ module_raised_with =
 defmodule Pow.Test.Phoenix.OverriddenRouteRouter do
   @moduledoc false
 
-  use Phoenix.Router
+  use Phoenix.Router, helpers: false
   use Pow.Phoenix.Router
 
   scope "/", Pow.Phoenix, as: "pow" do
@@ -41,10 +41,7 @@ defmodule Pow.Phoenix.RouterTest do
   use ExUnit.Case
   doctest Pow.Phoenix.Router
 
-  alias Phoenix.ConnTest
-  alias Pow.Test.Phoenix.OverriddenRouteRouter.Helpers, as: OverriddenRoutes
-
-  @conn ConnTest.build_conn()
+  alias Pow.Test.Phoenix.OverriddenRouteRouter
 
   test "validates no aliases" do
     assert unquote(module_raised_with) =~ "Pow routes should not be defined inside scopes with aliases: Test"
@@ -52,12 +49,16 @@ defmodule Pow.Phoenix.RouterTest do
   end
 
   test "can override routes" do
-    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new)) == "/registration/overridden"
-    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :new, "test")) == "/test/registration/new"
-    assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.plug_opts == :new)) == 2
+    assert [route_1, route_2] = filter_routes(Pow.Phoenix.RegistrationController, :new)
+    assert route_1.path == "/:extra/registration/new"
+    assert route_2.path == "/registration/overridden"
 
-    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :edit)) == "/registration/overridden/edit"
-    assert unquote(OverriddenRoutes.pow_registration_path(@conn, :edit, "test")) == "/test/registration/edit"
-    assert Enum.count(Pow.Test.Phoenix.OverriddenRouteRouter.phoenix_routes(), &(&1.plug == Pow.Phoenix.RegistrationController && &1.plug_opts == :edit)) == 2
+    assert [route_1, route_2] = filter_routes(Pow.Phoenix.RegistrationController, :edit)
+    assert route_1.path == "/:extra/registration/edit"
+    assert route_2.path == "/registration/overridden/edit"
+  end
+
+  defp filter_routes(plug, opts) do
+    Enum.filter(OverriddenRouteRouter.phoenix_routes(), & &1.plug == plug && &1.plug_opts == opts)
   end
 end
