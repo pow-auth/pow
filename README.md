@@ -200,7 +200,7 @@ Generate the template files:
 mix pow.extension.phoenix.mailer.gen.templates --extension PowResetPassword --extension PowEmailConfirmation
 ```
 
-This will generate template files in the `WEB_PATH/mails/` directory. This will also add the necessary ` mail/0` macro to `WEB_PATH/my_app_web.ex` and update the pow config with ``web_mailer_module: MyAppWeb`.
+This will generate template files in the `WEB_PATH/mails/` directory. This will also add the necessary `mail/0` macro to `WEB_PATH/my_app_web.ex` and update the pow config with `web_mailer_module: MyAppWeb`.
 
 ## Configuration
 
