@@ -34,7 +34,9 @@ defmodule Pow.Phoenix.Controller do
   defmacro __using__(config) do
     quote do
       use Phoenix.Controller, (
-        if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+        # Credo will complain about unless statement but we want this first
+        # credo:disable-for-next-line
+        unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
           [
             layouts: [html: Pow.Phoenix.Layouts],
             formats: [:html]

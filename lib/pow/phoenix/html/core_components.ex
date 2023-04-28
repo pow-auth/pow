@@ -1,5 +1,7 @@
 # TODO: Remove conditional when LiveView for Phoenix 1.7+ is required
-if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+# Credo will complain about unless statement but we want this first
+# credo:disable-for-next-line
+unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
 defmodule Pow.Phoenix.HTML.CoreComponents do
   @moduledoc false
   use Phoenix.Component
