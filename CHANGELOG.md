@@ -2,7 +2,7 @@
 
 ## v1.0.30 (2023-04-28)
 
-#### Bug fixes
+### Bug fixes
 
 - [`Pow`] Ensure the dependency is loaded before matching version in `Pow.dependency_vsn_match?/2`
 
