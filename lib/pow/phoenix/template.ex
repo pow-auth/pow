@@ -20,7 +20,9 @@ defmodule Pow.Phoenix.Template do
       import unquote(__MODULE__)
 
       unquote do
-        if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+        # Credo will complain about unless statement but we want this first
+        # credo:disable-for-next-line
+        unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
           quote do
             use Phoenix.Component
             import Pow.Phoenix.HTML.CoreComponents
@@ -90,7 +92,9 @@ defmodule Pow.Phoenix.Template do
     import_functions = [{__MODULE__, [__inline_route__: 2, __user_id_field__: 2]}]
 
     import_functions =
-      if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+      # Credo will complain about unless statement but we want this first
+      # credo:disable-for-next-line
+      unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
         import_functions
       else
         # TODO: Remove when Phoenix 1.7 required
@@ -99,7 +103,9 @@ defmodule Pow.Phoenix.Template do
 
     content =
       # TODO: Remove when Phoenix 1.7 required and fallback templates removed
-      if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+      # Credo will complain about unless statement but we want this first
+      # credo:disable-for-next-line
+      unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
         String.replace(content, "<%= render_form", "<%% render_form")
       else
         content
@@ -115,7 +121,9 @@ defmodule Pow.Phoenix.Template do
         caller: __CALLER__)
 
     opts =
-      if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+      # Credo will complain about unless statement but we want this first
+      # credo:disable-for-next-line
+      unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
         [
           engine: Phoenix.LiveView.TagEngine,
           file: __CALLER__.file,

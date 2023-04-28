@@ -118,7 +118,9 @@ defmodule Pow.Phoenix.ViewHelpers do
     end
   end
 
-  if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+  # Credo will complain about unless statement but we want this first
+  # credo:disable-for-next-line
+  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
   defp build_layout(layout, _web_module), do: [html: layout]
   else
   # TODO: Remove this when Phoenix 1.7 is required

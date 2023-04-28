@@ -2,7 +2,9 @@ defmodule PowResetPassword.Phoenix.ResetPasswordHTML do
   @moduledoc false
   use Pow.Phoenix.Template
 
-  if Pow.dependency_vsn_match?(:phoenix, ">= 1.7.0") do
+  # Credo will complain about unless statement but we want this first
+  # credo:disable-for-next-line
+  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
   template :new, :html,
   """
   <div class="mx-auto max-w-sm">
