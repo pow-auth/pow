@@ -36,13 +36,23 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
           plug Pow.Plug.Session, otp_app: :pow
         """
 
-      expected_router_head =
+      expected_router_use =
         """
           use PowWeb, :router
           use Pow.Phoenix.Router
         """
 
-      expected_router_body =
+      expected_router_pipeline =
+        """
+          pipeline :protected do
+            plug Pow.Plug.RequireAuthenticated,
+              error_handler: Pow.Phoenix.PlugErrorHandler
+          end
+
+          scope "/" do
+        """
+
+      expected_router_scope =
         """
           scope "/" do
             pipe_through :browser
@@ -55,8 +65,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
 
       assert File.read!(context.paths.config_path) =~ expected_config
       assert File.read!(context.paths.endpoint_path) =~ expected_endpoint
-      assert File.read!(context.paths.router_path) =~ expected_router_head
-      assert File.read!(context.paths.router_path) =~ expected_router_body
+      assert File.read!(context.paths.router_path) =~ expected_router_use
+      assert File.read!(context.paths.router_path) =~ expected_router_pipeline
+      assert File.read!(context.paths.router_path) =~ expected_router_scope
     end)
   end
 
@@ -98,6 +109,7 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
       assert msg =~ "plug Pow.Plug.Session, otp_app: :pow"
       assert msg =~ "Update `lib/pow_web/router.ex` with the Pow routes:"
       assert msg =~ "use Pow.Phoenix.Router"
+      assert msg =~ "plug Pow.Plug.RequireAuthenticated"
       assert msg =~ "pow_routes()"
     end)
   end

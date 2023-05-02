@@ -136,6 +136,14 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
         end
       """
 
+    router_pipeline_content =
+      """
+        pipeline :protected do
+          plug Pow.Plug.RequireAuthenticated,
+            error_handler: Pow.Phoenix.PlugErrorHandler
+        end
+      """
+
     %{
       file: file,
       injections: [
@@ -149,6 +157,12 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
           test: "pow_routes()",
           needle: "scope ",
           prepend: true,
+        },
+        %{
+          content: router_pipeline_content,
+          test: "plug Pow.Plug.RequireAuthenticated",
+          needle: "scope ",
+          prepend: true
         }
       ],
       instructions:
@@ -159,7 +173,9 @@ defmodule Mix.Tasks.Pow.Phoenix.Install do
           use #{inspect(structure.web_module)}, :router
         #{router_use_content}
 
-          # ... pipelines
+        # ... pipelines
+
+        #{router_pipeline_content}
 
         #{router_scope_content}
 

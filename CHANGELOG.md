@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.31 (TBA)
+
+- [`Mix.Tasks.Pow.Phoenix.Install`] Now sets up protected pipeline
+
 ## v1.0.30 (2023-04-28)
 
 ### Bug fixes
