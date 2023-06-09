@@ -136,8 +136,8 @@ defmodule Pow.Phoenix.Mailer.Mail do
   defp fallback_render(module, template, assigns, layouts) do
     %Template{
       subject: module.subject(template, assigns),
-      html: Phoenix.Template.render_to_string(module, to_string(template), "text", put_layout(assigns, layouts, :text)),
-      text: Phoenix.Template.render_to_string(module, to_string(template), "html", put_layout(assigns, layouts, :html))
+      text: Phoenix.Template.render_to_string(module, to_string(template), "text", put_layout(assigns, layouts, :text)),
+      html: Phoenix.Template.render_to_string(module, to_string(template), "html", put_layout(assigns, layouts, :html))
     }
   end
 

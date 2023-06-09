@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.31 (TBA)
+
+## Bug fixes
+
+- [`Pow.Phoenix.Mailer.Mail`] Now renders html and text correctly in fallback mode for deprecated MailView
+
 ## v1.0.30 (2023-04-28)
 
 ### Bug fixes
