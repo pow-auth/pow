@@ -304,8 +304,8 @@ defmodule MyAppWeb.Pow.RedisCache do
     end)
   end
 
-  @spec raise_ttl_error! :: no_return()
-  defp raise_ttl_error!,
+  @spec raise_ttl_error!() :: no_return()
+  defp raise_ttl_error!(),
     do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 end
 ```

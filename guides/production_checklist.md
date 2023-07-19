@@ -96,7 +96,7 @@ defmodule MyAppWeb.Pow.Mailer do
   def process(email) do
     case check_rate(email) do
       {:allow, _count} -> deliver(email)
-      {:deny, _count}  -> Logger.warn("Mailer backend failed due to rate limitation: #{inspect(email)}")
+      {:deny, _count}  -> Logger.warning("Mailer backend failed due to rate limitation: #{inspect(email)}")
     end
   end
 

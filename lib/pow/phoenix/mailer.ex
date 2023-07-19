@@ -52,6 +52,7 @@ defmodule Pow.Phoenix.Mailer do
   end
 
   @spec raise_no_mailer_backend_set!() :: no_return()
-  defp raise_no_mailer_backend_set!,
-    do: Config.raise_error("No :mailer_backend configuration option found for plug.")
+  defp raise_no_mailer_backend_set!() do
+    Config.raise_error("No :mailer_backend configuration option found for plug.")
+  end
 end
