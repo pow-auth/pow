@@ -32,7 +32,7 @@ defmodule Pow.Phoenix.ViewHelpers do
   `lib/my_project_web/controllers/pow`:
 
     * `registration_html/new.html.heex`
-    * `registration_html;/edit.html.heex`
+    * `registration_html/edit.html.heex`
     * `session_html/new.html.heex`
   """
   alias Phoenix.Controller
