@@ -46,9 +46,9 @@ defmodule Pow.Plug.MessageVerifier do
   end
 
   defp validate_secret_key_base(nil),
-    do: raise ArgumentError, "No conn.secret_key_base set"
+    do: raise(ArgumentError, "No conn.secret_key_base set")
   defp validate_secret_key_base(secret_key_base) when byte_size(secret_key_base) < 64,
-    do: raise ArgumentError, "conn.secret_key_base has to be at least 64 bytes"
+    do: raise(ArgumentError, "conn.secret_key_base has to be at least 64 bytes")
   defp validate_secret_key_base(secret_key_base), do: secret_key_base
 
   defp key_opts(config), do: Keyword.get(config, :key_generator_opts, [])

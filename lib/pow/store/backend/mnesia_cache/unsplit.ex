@@ -165,7 +165,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   end
 
   defp reset_node(node, _config) do
-    Logger.warn("Resetting mnesia on #{inspect node()} and restarting the mnesia cache to connect to #{inspect node}")
+    Logger.warning("Resetting mnesia on #{inspect node()} and restarting the mnesia cache to connect to #{inspect node}")
 
     :mnesia.stop()
     :mnesia.delete_schema([node()])
@@ -183,7 +183,7 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
         :ok
 
       false ->
-        Logger.warn("Detected a netsplit in the mnesia cluster with node #{inspect node}")
+        Logger.warning("Detected a netsplit in the mnesia cluster with node #{inspect node}")
 
         heal(node, config)
     end

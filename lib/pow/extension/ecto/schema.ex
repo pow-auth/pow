@@ -234,5 +234,5 @@ defmodule Pow.Extension.Ecto.Schema do
 
   @spec raise_missing_field_error!(module(), atom(), atom()) :: no_return()
   defp raise_missing_field_error!(module, field, extension),
-    do: raise SchemaError, message: "A `#{inspect field}` schema field should be defined in #{inspect module} to use #{inspect extension}"
+    do: raise(SchemaError, message: "A `#{inspect field}` schema field should be defined in #{inspect module} to use #{inspect extension}")
 end

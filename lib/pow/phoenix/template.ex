@@ -115,7 +115,7 @@ defmodule Pow.Phoenix.Template do
       EEx.eval_string(
         content,
         [],
-        functions: import_functions,
+        imports: import_functions,
         file: __CALLER__.file,
         line: __CALLER__.line + 1,
         caller: __CALLER__)
