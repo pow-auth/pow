@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.32 (TBA)
+## v1.0.32 (2023-08-30)
 
 Removed deprecation warnings for Elixir 1.15.
 
