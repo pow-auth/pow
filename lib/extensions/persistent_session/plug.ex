@@ -30,6 +30,6 @@ defmodule PowPersistentSession.Plug do
   end
 
   @spec raise_no_plug_error!() :: no_return()
-  defp raise_no_plug_error!,
+  defp raise_no_plug_error!(),
     do: Config.raise_error("PowPersistentSession plug module not installed. Please add the PowPersistentSession.Plug.Cookie plug to your endpoint.")
 end

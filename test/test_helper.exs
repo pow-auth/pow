@@ -1,7 +1,7 @@
 Application.put_env(:mnesia, :dir, 'tmp/mnesia')
 Application.ensure_all_started(:mnesia)
 
-Logger.configure(level: :warn)
+Logger.configure(level: :warning)
 
 :ok = Supervisor.terminate_child(Pow.Supervisor, Pow.Store.Backend.EtsCache)
 

@@ -2,6 +2,8 @@
 
 ## v1.0.32 (TBA)
 
+Removed deprecation warnings for Elixir 1.15.
+
 ## Bug fixes
 
 - [`Pow.Phoenix.Controller`] Now uses `Phoenix.View` when it's available with `:namespace` option to prevent upgrade issues

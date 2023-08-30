@@ -89,16 +89,16 @@ defmodule Pow.Phoenix.Template do
   """
   @spec template(atom(), atom(), binary() | {atom(), any()}) :: Macro.t()
   defmacro template(action, :html, content) do
-    import_functions = [{__MODULE__, [__inline_route__: 2, __user_id_field__: 2]}]
+    content = "<% import #{__MODULE__}, only: [__inline_route__: 2, __user_id_field__: 2] %>#{content}"
 
-    import_functions =
+    content =
       # Credo will complain about unless statement but we want this first
       # credo:disable-for-next-line
       unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
-        import_functions
+        content
       else
         # TODO: Remove when Phoenix 1.7 required
-        import_functions ++ [{Pow.Phoenix.HTML.FormTemplate, [render_form: 1, render_form: 2]}]
+        "<% import #{Pow.Phoenix.HTML.FormTemplate}, only: [render_form: 1, render_form: 2] %>#{content}"
       end
 
     content =
@@ -115,7 +115,6 @@ defmodule Pow.Phoenix.Template do
       EEx.eval_string(
         content,
         [],
-        functions: import_functions,
         file: __CALLER__.file,
         line: __CALLER__.line + 1,
         caller: __CALLER__)

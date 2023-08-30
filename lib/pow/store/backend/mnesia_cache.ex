@@ -461,14 +461,14 @@ defmodule Pow.Store.Backend.MnesiaCache do
 
           # TODO: Remove by 1.1.0
           {@mnesia_cache_tab, key, {_key, _value, _config, expire}}, invalidators when is_binary(key) and is_number(expire) ->
-            Logger.warn("Deleting old record in the mnesia cache: #{inspect key}")
+            Logger.warning("Deleting old record in the mnesia cache: #{inspect key}")
 
             :mnesia.delete({@mnesia_cache_tab, key})
 
             invalidators
 
           {@mnesia_cache_tab, key, _value}, invalidators ->
-            Logger.warn("Found an unexpected record in the mnesia cache, please delete it: #{inspect key}")
+            Logger.warning("Found an unexpected record in the mnesia cache, please delete it: #{inspect key}")
 
             invalidators
         end,
@@ -494,7 +494,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   @spec raise_ttl_error!() :: no_return()
-  defp raise_ttl_error!,
+  defp raise_ttl_error!(),
     do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 
   # TODO: Remove by 1.1.0

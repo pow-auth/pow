@@ -98,6 +98,7 @@ defmodule Pow.Ecto.Schema.Password do
   end
 
   @spec raise_not_valid_password_hash!() :: no_return()
-  defp raise_not_valid_password_hash!,
-    do: raise ArgumentError, "not a valid encoded password hash"
+  defp raise_not_valid_password_hash!() do
+    raise ArgumentError, "not a valid encoded password hash"
+  end
 end

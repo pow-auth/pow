@@ -202,11 +202,11 @@ defmodule Pow.Plug do
   def delete(conn, config), do: get_plug(config).do_delete(conn, config)
 
   @spec no_config_error!() :: no_return()
-  defp no_config_error!,
+  defp no_config_error!(),
     do: Config.raise_error("Pow configuration not found in connection. Please use a Pow plug that puts the Pow configuration in the plug connection.")
 
   @spec no_plug_error!() :: no_return()
-  defp no_plug_error!,
+  defp no_plug_error!(),
     do: Config.raise_error("Pow plug was not found in config. Please use a Pow plug that puts the `:plug` in the Pow configuration.")
 
   @doc false
