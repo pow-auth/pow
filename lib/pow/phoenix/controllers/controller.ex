@@ -34,16 +34,14 @@ defmodule Pow.Phoenix.Controller do
   defmacro __using__(config) do
     quote do
       use Phoenix.Controller, (
-        # Credo will complain about unless statement but we want this first
-        # credo:disable-for-next-line
-        unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
+        # TODO: Remove when Phoenix 1.7 is required
+        if Code.ensure_loaded?(Phoenix.View) do
+          [namespace: Pow.Phoenix]
+        else
           [
             layouts: [html: Pow.Phoenix.Layouts],
             formats: [:html]
           ]
-        else
-          # TODO: Remove when Phoenix 1.7 is required
-          [namespace: Pow.Phoenix]
         end)
 
       import unquote(__MODULE__), only: [require_authenticated: 2, require_not_authenticated: 2, put_no_cache_header: 2]
