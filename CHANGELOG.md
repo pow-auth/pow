@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.32 (TBA)
+
+## Bug fixes
+
+- [`Pow.Phoenix.Controller`] Now uses `Phoenix.View` when it's available with `:namespace` option to prevent upgrade issues
+
 ## v1.0.31 (2023-06-09)
 
 ## Bug fixes
