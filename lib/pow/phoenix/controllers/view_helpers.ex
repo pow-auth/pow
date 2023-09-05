@@ -102,8 +102,20 @@ defmodule Pow.Phoenix.ViewHelpers do
   def build_view_module(default_view, nil), do: default_view
   def build_view_module(default_view, web_module) when is_atom(web_module) do
     [base, view] = split_default_view(default_view)
+    module = Module.concat([web_module, base, view])
 
-    Module.concat([web_module, base, view])
+    case Code.ensure_loaded?(Phoenix.View) and not Code.ensure_loaded?(module) do
+      # TODO: Remove when Phoenix 1.7 is required
+      true ->
+        module
+        |> to_string()
+        |> Phoenix.Naming.unsuffix("HTML")
+        |> Kernel.<>("View")
+        |> String.to_atom()
+
+      false ->
+        module
+    end
   end
 
   # TODO: Remove `Pow.Phoenix.LayoutView` guard when Phoenix 1.7 is required
