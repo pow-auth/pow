@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.33 (TBA)
+
+## Bug fixes
+
+- [`Pow.Phoenix.Controller`] Fixed regression bug with `Phoenix.View` and `:namespace` option
+- [`Pow.Phoenix.ViewHelpers`] Now falls back to view named modules to prevent upgrade issues
+
 ## v1.0.32 (2023-08-30)
 
 Removed deprecation warnings for Elixir 1.15.
