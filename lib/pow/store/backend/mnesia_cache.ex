@@ -155,7 +155,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
   def init(config) do
     case init_mnesia(config) do
       :ok ->
-        {:ok, %{invalidators: init_invalidators(config)}}
+        Process.send_after(self(), {:init, config}, 1)
+
+        {:ok, %{}}
 
       {:error, error} ->
         {:stop, error}
@@ -199,6 +201,10 @@ defmodule Pow.Store.Backend.MnesiaCache do
   end
 
   @impl GenServer
+  def handle_info({:init, config}, _state) do
+    {:noreply, %{invalidators: init_invalidators(config)}}
+  end
+
   def handle_info({:invalidate, config, key}, %{invalidators: invalidators} = state) do
     invalidators = delete_or_reschedule(key, invalidators, config)
 

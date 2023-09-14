@@ -125,6 +125,18 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(config, "key") == :not_found
     end
 
+    test "expired records are purged immediately on startup" do
+      config = Config.put(@default_config, :ttl, -1)
+
+      # After restart
+      MnesiaCache.put(config, {"key", "value"})
+      flush_process_mailbox() # Ignore sync write messages
+      stop()
+      start(config)
+      assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait delete to happen
+      assert MnesiaCache.get(config, "key") == :not_found
+    end
+
     test "when initiated with unexpected records" do
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], :invalid_value})
 
@@ -176,9 +188,13 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     :mnesia.subscribe({:table, MnesiaCache, :simple})
   end
 
-  defp restart(config) do
+  defp stop do
     :ok = stop_supervised(MnesiaCache)
     :mnesia.stop()
+  end
+
+  defp restart(config) do
+    stop()
     start(config)
   end
 
