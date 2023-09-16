@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.34 (TBA)
+
+**Note:** This release contains an important security fix. It is recommended to update  immediately if you are using the `Pow.Store.Backend.MnesiaCache`.
+
+## Bug fixes
+
+- [`Pow.Store.Backend.MnesiaCache`] Fixed bug where expired cached keys are not invalidated on startup
+
 ## v1.0.33 (2023-09-05)
 
 ## Bug fixes

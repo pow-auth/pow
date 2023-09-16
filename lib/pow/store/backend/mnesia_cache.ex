@@ -454,10 +454,9 @@ defmodule Pow.Store.Backend.MnesiaCache do
         :mnesia.foldl(fn
           {@mnesia_cache_tab, key, {_value, expire}}, invalidators when is_list(key) ->
             ttl = Enum.max([expire - timestamp(), 0])
-
-            key
-            |> unwrap()
-            |> append_invalidator(invalidators, ttl, config)
+            [namespace | key] = key
+            config = Config.put(config, :namespace, namespace)
+            append_invalidator(key, invalidators, ttl, config)
 
           # TODO: Remove by 1.1.0
           {@mnesia_cache_tab, key, {_key, _value, _config, expire}}, invalidators when is_binary(key) and is_number(expire) ->

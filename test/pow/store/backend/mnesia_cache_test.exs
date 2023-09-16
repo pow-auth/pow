@@ -23,7 +23,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       File.rm_rf!("tmp/mnesia")
       File.mkdir_p!("tmp/mnesia")
 
-      start(@default_config)
+      start()
 
       :ok
     end
@@ -34,7 +34,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       MnesiaCache.put(@default_config, {"key", "value"})
       assert MnesiaCache.get(@default_config, "key") == "value"
 
-      restart(@default_config)
+      restart()
 
       assert MnesiaCache.get(@default_config, "key") == "value"
 
@@ -63,7 +63,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       assert MnesiaCache.get(@default_config, "key1") == "1"
       assert MnesiaCache.get(@default_config, "key2") == "2"
 
-      restart(@default_config)
+      restart()
 
       assert MnesiaCache.get(@default_config, "key1") == "1"
       assert MnesiaCache.get(@default_config, "key2") == "2"
@@ -85,51 +85,52 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     end
 
     test "records auto purge with persistent storage" do
-      config = Config.put(@default_config, :ttl, 50)
+      config_1 = Config.put(@default_config, :ttl, 50)
+      config_2 = Config.put(config_1, :namespace, "other-namespace")
 
-      MnesiaCache.put(config, {"key", "value"})
-      MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
+      MnesiaCache.put(config_1, {"key", "value"})
+      MnesiaCache.put(config_2, [{"key1", "1"}, {"key2", "2"}])
       flush_process_mailbox() # Ignore sync write messages
-      assert MnesiaCache.get(config, "key") == "value"
-      assert MnesiaCache.get(config, "key1") == "1"
-      assert MnesiaCache.get(config, "key2") == "2"
+      assert MnesiaCache.get(config_1, "key") == "value"
+      assert MnesiaCache.get(config_2, "key1") == "1"
+      assert MnesiaCache.get(config_2, "key2") == "2"
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
-      assert MnesiaCache.get(config, "key") == :not_found
-      assert MnesiaCache.get(config, "key1") == :not_found
-      assert MnesiaCache.get(config, "key2") == :not_found
+      assert MnesiaCache.get(config_1, "key") == :not_found
+      assert MnesiaCache.get(config_2, "key1") == :not_found
+      assert MnesiaCache.get(config_2, "key2") == :not_found
 
       # After restart
-      MnesiaCache.put(config, {"key", "value"})
-      MnesiaCache.put(config, [{"key1", "1"}, {"key2", "2"}])
+      MnesiaCache.put(config_1, {"key", "value"})
+      MnesiaCache.put(config_2, [{"key1", "1"}, {"key2", "2"}])
       flush_process_mailbox() # Ignore sync write messages
-      restart(config)
-      assert MnesiaCache.get(config, "key") == "value"
-      assert MnesiaCache.get(config, "key1") == "1"
-      assert MnesiaCache.get(config, "key2") == "2"
+      restart()
+      assert MnesiaCache.get(config_1, "key") == "value"
+      assert MnesiaCache.get(config_2, "key1") == "1"
+      assert MnesiaCache.get(config_2, "key2") == "2"
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
       assert_receive {:mnesia_table_event, {:delete, _, _}} # Wait for TTL reached
-      assert MnesiaCache.get(config, "key") == :not_found
-      assert MnesiaCache.get(config, "key1") == :not_found
-      assert MnesiaCache.get(config, "key2") == :not_found
+      assert MnesiaCache.get(config_1, "key") == :not_found
+      assert MnesiaCache.get(config_2, "key1") == :not_found
+      assert MnesiaCache.get(config_2, "key2") == :not_found
 
       # After record expiration updated reschedules
-      MnesiaCache.put(config, {"key", "value"})
+      MnesiaCache.put(config_1, {"key", "value"})
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], {"value", :os.system_time(:millisecond) + 150}})
       flush_process_mailbox() # Ignore sync write messages
       assert_receive {:mnesia_system_event, {:mnesia_user, {:reschedule_invalidator, {_, _, _}}}} # Wait for reschedule event
-      assert MnesiaCache.get(config, "key") == "value"
+      assert MnesiaCache.get(config_1, "key") == "value"
       assert_receive {:mnesia_table_event, {:delete, _, _}}, 150 # Wait for TTL reached
-      assert MnesiaCache.get(config, "key") == :not_found
+      assert MnesiaCache.get(config_1, "key") == :not_found
     end
 
     test "when initiated with unexpected records" do
       :mnesia.dirty_write({MnesiaCache, ["pow:test", "key"], :invalid_value})
 
       assert CaptureLog.capture_log([format: "[$level]  $message", colors: [enabled: false]], fn ->
-        restart(@default_config)
+        restart()
       end) =~ ~r/\[(warn|warning|)\]  #{Regex.escape("Found an unexpected record in the mnesia cache, please delete it: [\"pow:test\", \"key\"]")}/
     end
 
@@ -170,16 +171,16 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     end
   end
 
-  defp start(config) do
-    start_supervised!({MnesiaCache, config})
+  defp start do
+    start_supervised!(MnesiaCache)
     :mnesia.subscribe(:system)
     :mnesia.subscribe({:table, MnesiaCache, :simple})
   end
 
-  defp restart(config) do
+  defp restart do
     :ok = stop_supervised(MnesiaCache)
     :mnesia.stop()
-    start(config)
+    start()
   end
 
   describe "distributed nodes" do
@@ -773,7 +774,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       :stopped = :mnesia.stop()
 
       assert CaptureLog.capture_log([format: "[$level]  $message", colors: [enabled: false]], fn ->
-        start(@default_config)
+        start()
       end) =~ ~r/\[(warn|warning|)\]  #{Regex.escape("Deleting old record in the mnesia cache: \"pow:test:key1\"")}/
 
       assert :mnesia.dirty_read({MnesiaCache, key}) == []
