@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.34 (TBA)
+## v1.0.34 (2023-09-18)
 
 **Note:** This release contains an important security fix. It is recommended to update  immediately if you are using the `Pow.Store.Backend.MnesiaCache`.
 
