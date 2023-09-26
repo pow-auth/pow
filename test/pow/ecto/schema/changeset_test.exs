@@ -177,7 +177,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       refute changeset.valid?
       refute changeset.errors[:password_hash]
 
-      config = [password_hash_methods: {fn _ -> nil end, & &1}]
+      config = [password_hash_verify: {fn _ -> nil end, & &1}]
       changeset = Changeset.password_changeset(%User{}, @valid_params, config)
 
       refute changeset.valid?
@@ -213,7 +213,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     test "can use custom password hash functions" do
       password_hash = &(&1 <> "123")
       password_verify = &(&1 == &2 <> "123")
-      config = [password_hash_methods: {password_hash, password_verify}]
+      config = [password_hash_verify: {password_hash, password_verify}]
 
       changeset = Changeset.password_changeset(%User{}, @valid_params, config)
 
@@ -263,7 +263,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
     test "prevents timing attacks" do
       config = [
-        password_hash_methods: {
+        password_hash_verify: {
           fn password ->
             send(self(), {:password_hash, password})
 

@@ -65,8 +65,8 @@ You can easily change the password hashing method in Pow. Here's how you can use
 defmodule MyApp.Users.User do
   use Ecto.Schema
   use Pow.Ecto.Schema,
-    password_hash_methods: {&Argon2.hash_pwd_salt/1,
-                            &Argon2.verify_pass/2}
+    password_hash_verify: {&Argon2.hash_pwd_salt/1,
+                           &Argon2.verify_pass/2}
 
   # ...
 end
