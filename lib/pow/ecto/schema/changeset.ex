@@ -12,12 +12,15 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     * `:password_min_length`   - minimum password length, defaults to 8
     * `:password_max_length`   - maximum password length, defaults to 4096
-    * `:password_hash_verify`  - the password hash and verify functions to use,
-      defaults to:
+    * `:password_hash_verify`  - the password hash and verify anonymous
+      functions or MFAs, defaults to:
 
           {&Pow.Ecto.Schema.Password.pbkdf2_hash/1,
           &Pow.Ecto.Schema.Password.pbkdf2_verify/2}
-    * `:email_validator`       - the email validation function, defaults to:
+
+      It may be anonymous functions of MFAs.
+    * `:email_validator`       - the email validation anonymous function or
+      MFA, defaults to:
 
 
           &Pow.Ecto.Schema.Changeset.validate_email/1
@@ -169,7 +172,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     validator = get_email_validator(config)
 
     Changeset.validate_change(changeset, :email, {:email_format, validator}, fn :email, email ->
-      case validator.(email) do
+      case apply_function_or_mfa(validator, [email]) do
         :ok              -> []
         :error           -> [email: {"has invalid format", validation: :email_format}]
         {:error, reason} -> [email: {"has invalid format", validation: :email_format, reason: reason}]
@@ -215,16 +218,12 @@ defmodule Pow.Ecto.Schema.Changeset do
   """
   @spec verify_password(Ecto.Schema.t(), binary(), Config.t()) :: boolean()
   def verify_password(%{password_hash: nil}, _password, config) do
-    config
-    |> get_password_hash_function()
-    |> apply([""])
+    apply_password_hash_function(config, [""])
 
     false
   end
   def verify_password(%{password_hash: password_hash}, password, config) do
-    config
-    |> get_password_verify_function()
-    |> apply([password, password_hash])
+    apply_password_verify_function(config, [password, password_hash])
   end
 
   defp maybe_require_password(%{data: %{password_hash: nil}} = changeset) do
@@ -259,21 +258,26 @@ defmodule Pow.Ecto.Schema.Changeset do
   defp maybe_validate_password_hash(changeset), do: changeset
 
   defp hash_password(password, config) do
-    config
-    |> get_password_hash_function()
-    |> apply([password])
+    apply_password_hash_function(config, [password])
   end
 
-  defp get_password_hash_function(config) do
+  defp apply_password_hash_function(config, args) do
     {password_hash_function, _} = get_password_hash_functions(config)
 
-    password_hash_function
+    apply_function_or_mfa(password_hash_function, args)
   end
 
-  defp get_password_verify_function(config) do
+  defp apply_function_or_mfa(fun_or_mfa, apply_args) do
+    case fun_or_mfa do
+      fun when is_function(fun) -> apply(fun, apply_args)
+      {mod, fun, args} when is_list(args) -> apply(mod, fun, args ++ apply_args)
+    end
+  end
+
+  defp apply_password_verify_function(config, args) do
     {_, password_verify_function} = get_password_hash_functions(config)
 
-    password_verify_function
+    apply_function_or_mfa(password_verify_function, args)
   end
 
   defp get_password_hash_functions(config) do
