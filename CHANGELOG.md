@@ -2,6 +2,11 @@
 
 ## v1.0.35 (TBA)
 
+### Enhancements
+
+* [`Pow.Ecto.Schema.Changeset`] Now handles MFA for `:password_hash_verify`
+* [`Pow.Ecto.Schema.Changeset`] Now handles MFA for `:email_validator`
+
 ### Deprecations
 
 * [`Pow.Ecto.Schema.Changeset`] Deprecated `:password_hash_methods` in favor of `:password_hash_verify`

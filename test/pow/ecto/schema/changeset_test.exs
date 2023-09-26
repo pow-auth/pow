@@ -48,7 +48,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       assert changeset.valid?
     end
 
-    test "can validate with custom e-mail validator" do
+    test "can validate with custom anonymous function e-mail validator" do
       config    = [email_validator: &{:error, "custom message #{&1}"}]
       changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
 
@@ -58,6 +58,31 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
       config    = [email_validator: fn _email -> :ok end]
       changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
+      assert changeset.valid?
+    end
+
+    defmodule CustomEmailValidator do
+      def email_validate("ok@example.com") do
+        :ok
+      end
+
+      def email_validate(email) do
+        {:error, "custom message #{email}"}
+      end
+    end
+
+    test "can validate with custom MFA function e-mail validator" do
+      config    = [email_validator: {CustomEmailValidator, :email_validate, []}]
+      changeset = Changeset.user_id_field_changeset(%User{}, @valid_params, config)
+
+      refute changeset.valid?
+      assert changeset.errors[:email] == {"has invalid format", [validation: :email_format, reason: "custom message john.doe@example.com"]}
+      assert changeset.validations[:email] == {:email_format, config[:email_validator]}
+
+      config    = [email_validator: fn _email -> :ok end]
+      params    = Map.put(@valid_params, "email", "ok@example.com")
+      changeset = Changeset.user_id_field_changeset(%User{}, params, config)
 
       assert changeset.valid?
     end
@@ -210,12 +235,35 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
       end) =~ "passing `confirm_password` value to `Pow.Ecto.Schema.Changeset.confirm_password_changeset/3` has been deprecated, please use `password_confirmation` instead"
     end
 
-    test "can use custom password hash functions" do
+    test "can use custom anonymous password hash functions" do
       password_hash = &(&1 <> "123")
       password_verify = &(&1 == &2 <> "123")
       config = [password_hash_verify: {password_hash, password_verify}]
+      params = Map.put(@valid_params, "current_password", "secret")
 
-      changeset = Changeset.password_changeset(%User{}, @valid_params, config)
+      changeset = Changeset.password_changeset(%User{password: "secret123"}, params, config)
+
+      assert changeset.valid?
+      assert changeset.changes[:password_hash] == "secret1234123"
+    end
+
+    defmodule CustomPasswordHash do
+      def hash(password), do: password <> "123"
+      def verify(_password, hash), do: hash == "hashed"
+    end
+
+    test "can use custom MFA password hash functions" do
+      config =
+        [
+          password_hash_verify: {
+            {CustomPasswordHash, :hash, []},
+            {CustomPasswordHash, :verify, []}
+          }
+        ]
+
+      params = Map.put(@valid_params, "current_password", "secret")
+
+      changeset = Changeset.password_changeset(%User{password_hash: "secret123"}, params, config)
 
       assert changeset.valid?
       assert changeset.changes[:password_hash] == "secret1234123"
