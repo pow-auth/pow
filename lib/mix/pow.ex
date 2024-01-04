@@ -2,7 +2,7 @@ defmodule Mix.Pow do
   @moduledoc """
   Utilities module for mix tasks.
   """
-  alias Mix.{Dep, Project}
+  alias Mix.{Dep.Converger, Project}
 
   @doc """
   Raises an exception if the project is an umbrella app.
@@ -22,7 +22,7 @@ defmodule Mix.Pow do
   @spec ensure_dep!(binary(), atom(), OptionParser.argv()) :: :ok
   def ensure_dep!(task, dep, _args) do
     []
-    |> Dep.load_on_environment()
+    |> __dependencies__()
     |> top_level_dep_in_deps?(dep)
     |> case do
       true ->
@@ -33,12 +33,17 @@ defmodule Mix.Pow do
     end
   end
 
+  @doc false
+  def __dependencies__(opts) do
+    Converger.converge(nil, nil, opts, &{&1, &2, &3}) |> elem(0)
+  end
+
   @doc """
   Raises an exception if application doesn't have Ecto as dependency.
   """
   @spec ensure_ecto!(binary(), OptionParser.argv()) :: :ok
   def ensure_ecto!(task, _args) do
-    deps = Dep.load_on_environment([])
+    deps = __dependencies__([])
 
     cond do
       top_level_dep_in_deps?(deps, :ecto) -> :ok
@@ -60,7 +65,7 @@ defmodule Mix.Pow do
   @spec ensure_phoenix!(binary(), OptionParser.argv()) :: :ok
   def ensure_phoenix!(task, _args) do
     []
-    |> Dep.load_on_environment()
+    |> __dependencies__()
     |> top_level_dep_in_deps?(:phoenix)
     |> case do
       true -> :ok
