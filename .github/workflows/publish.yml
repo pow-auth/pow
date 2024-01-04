@@ -1,0 +1,25 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Publish release
+    env:
+      HEX_API_KEY: ${{secrets.HEX_API_KEY}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 26.0
+          elixir-version: 1.15
+      - run: mix deps.get
+      - run: mix hex.publish --yes
