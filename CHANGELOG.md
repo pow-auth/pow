@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.35 (TBA)
+## v1.0.35 (2024-01-04)
 
 Handles Elixir 1.16 deprecations.
 
