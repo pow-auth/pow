@@ -84,7 +84,7 @@ defmodule Mix.Tasks.Pow.Ecto.InstallTest do
 
       Mix.Project.in_project(:missing_top_level_ecto_dep, ".", fn _ ->
         # Insurance that we do test for top level ecto inclusion
-        assert Enum.any?(Mix.Dep.load_on_environment([]), fn
+        assert Enum.any?(Mix.Pow.__dependencies__([]), fn
           %{app: :ecto_sql} -> true
           _ -> false
         end), "Ecto not loaded by dependency"

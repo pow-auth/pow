@@ -2,6 +2,8 @@
 
 ## v1.0.35 (TBA)
 
+Handles Elixir 1.16 deprecations.
+
 ### Enhancements
 
 * [`Pow.Ecto.Schema.Changeset`] Now handles MFA for `:password_hash_verify`

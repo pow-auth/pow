@@ -60,7 +60,7 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.Schema do
   defp dir_name(schema_name) do
     schema_name
     |> String.split(".")
-    |> Enum.slice(0..-2)
+    |> Enum.slice(0..-2//1)
     |> Enum.join(".")
     |> Macro.underscore()
   end

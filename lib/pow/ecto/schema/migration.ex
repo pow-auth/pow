@@ -85,7 +85,7 @@ defmodule Pow.Ecto.Schema.Migration do
     :ok = Enum.each(attrs, &validate!/1)
 
     attrs
-    |> Enum.reject(&is_virtual?/1)
+    |> Enum.reject(&virtual?/1)
     |> Enum.map(&normalize_migration_options/1)
     |> Enum.map(&to_migration_attr/1)
   end
@@ -99,7 +99,7 @@ defmodule Pow.Ecto.Schema.Migration do
     """
   end
 
-  defp is_virtual?({_name, _type, field_options, _migration_options}), do: Keyword.get(field_options, :virtual, false)
+  defp virtual?({_name, _type, field_options, _migration_options}), do: Keyword.get(field_options, :virtual, false)
 
   defp normalize_migration_options({name, type, field_options, migration_options}) do
     options =

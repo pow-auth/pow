@@ -15,8 +15,8 @@ defmodule Mix.Tasks.Pow.Ecto.Gen.MigrationTest do
     File.cd!(context.tmp_path, fn ->
       Migration.run(@options)
 
-      assert_received {:mix_shell, :info, ["* creating ./migrations"]}
-      assert_received {:mix_shell, :info, ["* creating ./migrations/" <> _]}
+      assert_received {:mix_shell, :info, ["* creating" <> _]}
+      assert_received {:mix_shell, :info, ["* creating" <> _]}
 
       assert [migration_file] = File.ls!(@migrations_path)
       assert String.match?(migration_file, ~r/^\d{14}_create_users\.exs$/)

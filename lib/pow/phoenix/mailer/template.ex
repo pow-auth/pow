@@ -17,7 +17,19 @@ defmodule Pow.Phoenix.Mailer.Template do
     quote do
       use Pow.Phoenix.Mailer.Component
       import unquote(__MODULE__)
-      import Phoenix.HTML.{Link, Tag}
+
+      # Credo will complain about unless statement but we want this first
+      # credo:disable-for-next-line
+      unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
+        quote do
+          use Phoenix.Component
+        end
+      else
+        # TODO: Remove when Phoenix 1.7 is required
+        quote do
+          import Phoenix.HTML.{Form, Link}
+        end
+      end
     end
   end
 
