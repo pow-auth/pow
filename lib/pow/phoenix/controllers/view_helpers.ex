@@ -52,8 +52,8 @@ defmodule Pow.Phoenix.ViewHelpers do
   @spec layout(Conn.t()) :: Conn.t()
   def layout(conn) do
     web_module = web_module(conn)
-    view       = view(conn, web_module)
-    layout     = layout(conn, web_module)
+    view       = html_view(conn, web_module)
+    layout     = html_layout(conn, web_module)
 
     conn
     |> Controller.put_view(view)
@@ -66,16 +66,39 @@ defmodule Pow.Phoenix.ViewHelpers do
     |> Config.get(:web_module)
   end
 
-  defp view(conn, web_module) do
+  # Credo will complain about unless statement but we want this first
+  # credo:disable-for-next-line
+  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
+  defp html_view(conn, web_module) do
+    [html: conn
+           |> Controller.view_module("html")
+           |> build_view_module(web_module)]
+  end
+  else
+  # TODO: Remove this when Phoenix 1.7 is required
+  defp html_view(conn, web_module) do
     conn
     |> Controller.view_module()
     |> build_view_module(web_module)
   end
+  end
 
-  defp layout(conn, web_module) do
+
+  # Credo will complain about unless statement but we want this first
+  # credo:disable-for-next-line
+  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
+  defp html_layout(conn, web_module) do
+    [html: conn
+           |> Controller.layout("html")
+           |> build_layout(web_module || web_base(conn))]
+  end
+  else
+  # TODO: Remove this when Phoenix 1.7 is required
+  defp html_layout(conn, web_module) do
     conn
     |> Controller.layout()
     |> build_layout(web_module || web_base(conn))
+  end
   end
 
   defp web_base(conn) do
@@ -118,24 +141,27 @@ defmodule Pow.Phoenix.ViewHelpers do
     end
   end
 
-  # TODO: Remove `Pow.Phoenix.LayoutView` guard when Phoenix 1.7 is required
+  # Credo will complain about unless statement but we want this first
+  # credo:disable-for-next-line
+  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
   defp build_layout({layout_view, template}, web_module) when layout_view in [Pow.Phoenix.Layouts, Pow.Phoenix.LayoutView] do
     layouts = Module.concat([web_module, Layouts])
 
     if Code.ensure_loaded?(layouts) do
-      [html: {layouts, template}]
+      {layouts, template}
     else
-      # TODO: Remove this when Phoenix 1.7 is required
+      # TODO: Remove this when Phoenix 1.7 is required and Layouts module is required
       {Module.concat([web_module, LayoutView]), template}
     end
   end
 
-  # Credo will complain about unless statement but we want this first
-  # credo:disable-for-next-line
-  unless Pow.dependency_vsn_match?(:phoenix, "< 1.7.0") do
-  defp build_layout(layout, _web_module), do: [html: layout]
+  defp build_layout(layout, _web_module), do: layout
   else
   # TODO: Remove this when Phoenix 1.7 is required
+  defp build_layout({Pow.Phoenix.LayoutView, template}, web_module) do
+    {Module.concat([web_module, LayoutView]), template}
+  end
+
   defp build_layout(layout, _web_module), do: layout
   end
 
