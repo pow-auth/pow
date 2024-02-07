@@ -126,18 +126,14 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
   def handle_info({:nodedown, _node}, state), do: {:noreply, state}
 
   defp autoinit(node, config) do
-    cond do
-      Config.get(config, :auto_initialize_cluster, true) !== true ->
-        :ok
-
-      node in :mnesia.system_info(:db_nodes) ->
-        :ok
-
-      is_nil(:rpc.call(node, Process, :whereis, [Pow.Store.Backend.MnesiaCache])) ->
-        :ok
-
-      true ->
-        do_autoinit(node, config)
+    with true <- Config.get(config, :auto_initialize_cluster, true),
+         # The node must not already be in the cluster
+         false <- node in :mnesia.system_info(:db_nodes),
+         # MnesiaCache must run on the node
+         false <- is_nil(:rpc.call(node, Process, :whereis, [Pow.Store.Backend.MnesiaCache])) do
+      do_autoinit(node, config)
+    else
+      _any -> :ok
     end
   end
 
@@ -263,8 +259,9 @@ defmodule Pow.Store.Backend.MnesiaCache.Unsplit do
     for node <- nodes do
       :stopped = :rpc.call(node, :mnesia, :stop, [])
 
-      for table <- tables,
-          do: :ok = :rpc.call(node, :mnesia, :set_master_nodes, [table, master_nodes])
+      for table <- tables do
+        :ok = :rpc.call(node, :mnesia, :set_master_nodes, [table, master_nodes])
+      end
 
       :ok = :rpc.block_call(node, :mnesia, :start, [])
       :ok = :rpc.call(node, :mnesia, :wait_for_tables, [tables, :timer.seconds(15)])
