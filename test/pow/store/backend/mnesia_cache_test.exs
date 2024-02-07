@@ -560,8 +560,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       rpc(node, Application, :ensure_all_started, [app_name])
     end
 
-    # Remove logger to prevent logs
-    rpc(node, Logger, :remove_backend, [:console])
+    # Silence console logging on node
+    rpc(node, :logger, :remove_handler, [:default])
+    rpc(node, Logger, :remove_backend, [:console]) # TODO: Remove when Elixir 1.15 is required
 
     add_listener_module(node)
 
