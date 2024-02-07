@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.36 (TBA)
+
+#### Bug fixes
+
+* [`Pow.Phoenix.ViewHelpers`] Now ensures format for layouts in Phoenix 1.7 is conformed to prevent `conflicting layouts found` warnings
+
 ## v1.0.35 (2024-01-04)
 
 Handles Elixir 1.16 deprecations.
