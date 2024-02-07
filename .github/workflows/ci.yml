@@ -17,7 +17,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: 26.0
-          elixir-version: 1.15
+          elixir-version: 1.16
       - run: mix deps.get
       - run: mix compile --warnings-as-errors
       - run: mix credo --ignore design.tagtodo
@@ -41,7 +41,7 @@ jobs:
       matrix:
         version:
           - otp: 26.0
-            elixir: 1.15.0
+            elixir: 1.16.0
             os: ubuntu-latest
           - otp: 22.0
             elixir: 1.12.0
