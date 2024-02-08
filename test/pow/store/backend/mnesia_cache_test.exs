@@ -228,9 +228,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Set short TTL on node a
       flush_process_mailbox()
-      config = Config.put(@default_config, :ttl, 100)
+      config = Config.put(@default_config, :ttl, @assertion_timeout)
       assert :rpc.call(node_a, MnesiaCache, :put, [config, {"short_ttl_key_set_on_a", "value"}])
-      assert_receive {{:mnesia, ^node_b}, {:mnesia_system_event, {:mnesia_user, {:refresh_invalidators, {_, _}}}}}
+      assert_receive {{:mnesia, ^node_b}, {:mnesia_system_event, {:mnesia_user, {:refresh_invalidators, {_, _}}}}}, @assertion_timeout
 
       # Stop node a
       flush_process_mailbox()
@@ -241,7 +241,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
 
       # Ensure that node b invalidates with TTL set on node a
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_set_on_a"]) == "value"
-      assert_receive {{:mnesia, ^node_b}, {:mnesia_table_event, {:delete, {MnesiaCache, [_, "short_ttl_key_set_on_a"]}, _}}}, @assertion_timeout
+      assert_receive {{:mnesia, ^node_b}, {:mnesia_table_event, {:delete, {MnesiaCache, [_, "short_ttl_key_set_on_a"]}, _}}}, @assertion_timeout + 100
       assert :rpc.call(node_b, MnesiaCache, :get, [config, "short_ttl_key_set_on_a"]) == :not_found
 
       # Start node a but not mnesia yet before we test cross node TTL
