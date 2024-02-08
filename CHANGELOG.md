@@ -2,7 +2,7 @@
 
 ## v1.0.36 (2024-02-07)
 
-#### Bug fixes
+### Bug fixes
 
 * [`Pow.Phoenix.ViewHelpers`] Now ensures format for layouts in Phoenix 1.7 is conformed to prevent `conflicting layouts found` warnings
 
@@ -23,13 +23,13 @@ Handles Elixir 1.16 deprecations.
 
 **Note:** This release contains an important security fix. It is recommended to update  immediately if you are using the `Pow.Store.Backend.MnesiaCache`.
 
-## Bug fixes
+### Bug fixes
 
 - [`Pow.Store.Backend.MnesiaCache`] Fixed bug where expired cached keys are not invalidated on startup
 
 ## v1.0.33 (2023-09-05)
 
-## Bug fixes
+### Bug fixes
 
 - [`Pow.Phoenix.Controller`] Fixed regression bug with `Phoenix.View` and `:namespace` option
 - [`Pow.Phoenix.ViewHelpers`] Now falls back to view named modules to prevent upgrade issues
@@ -38,13 +38,13 @@ Handles Elixir 1.16 deprecations.
 
 Removed deprecation warnings for Elixir 1.15.
 
-## Bug fixes
+### Bug fixes
 
 - [`Pow.Phoenix.Controller`] Now uses `Phoenix.View` when it's available with `:namespace` option to prevent upgrade issues
 
 ## v1.0.31 (2023-06-09)
 
-## Bug fixes
+### Bug fixes
 
 - [`Pow.Phoenix.Mailer.Mail`] Now renders html and text correctly in fallback mode for deprecated MailView
 
