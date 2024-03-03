@@ -127,7 +127,7 @@ defmodule Pow.Phoenix.Template do
           engine: Phoenix.LiveView.TagEngine,
           file: __CALLER__.file,
           line: __CALLER__.line + 1,
-          caller: __CALLER__,
+          caller: %{__CALLER__ | function: {:template, 3}},
           source: expr,
           tag_handler: Phoenix.LiveView.HTMLEngine]
       else

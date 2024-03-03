@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.37 (TBA)
+
+### Bug fixes
+
+* [`Pow.Phoenix.Template`] Now sets the function annotation in caller environment to prevent compile error when `:debug_heex_annotations` is set to `true`
+
 ## v1.0.36 (2024-02-07)
 
 ### Bug fixes

@@ -29,3 +29,5 @@ for extension <- extension_test_modules do
 end
 
 config :pow, :extension_test_modules, extension_test_modules
+
+config :phoenix_live_view, debug_heex_annotations: true
