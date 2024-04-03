@@ -61,7 +61,7 @@ defmodule Pow.Phoenix.Mailer.Mail do
   defp handle_deprecated_layout(conn) do
     case Map.has_key?(conn.private, :pow_mailer_layout) do
       true ->
-        IO.warn("`:pow_mailer_layout` in conn.private has been deprecated, please change it to `:pow_mailer_layouts`")
+        IO.warn("`pow_mailer_layout: #{inspect conn.private[:pow_mailer_layout]}` in conn.private has been deprecated, please change it to `pow_mailer_layouts: [_: #{inspect conn.private[:pow_mailer_layout]}]`")
 
         %{conn | private: Map.put(conn.private, :pow_mailer_layouts, _: conn.private[:pow_mailer_layout])}
 
