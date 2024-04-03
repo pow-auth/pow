@@ -418,4 +418,33 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     assert Changeset.validate_email("john.doe@#{String.duplicate("x", 64)}.com") == {:error, "dns label too long"}
     assert Changeset.validate_email("john.doe@#{String.duplicate("x", 64)}.example.com") == {:error, "dns label too long"}
   end
+
+  defmodule UserDataAttribute do
+    @moduledoc false
+    use Ecto.Schema
+    use Pow.Ecto.Schema
+
+    schema "users" do
+      pow_user_fields()
+
+      field(:data, :string)
+    end
+  end
+
+  describe "User struct with data field" do
+    @password "password"
+
+    test "pow_current_password_changeset/2" do
+      password_hash = Password.pbkdf2_hash(@password)
+
+      user = %UserDataAttribute{password_hash: password_hash}
+
+      assert UserDataAttribute.changeset(user, %{})
+      assert UserDataAttribute.pow_changeset(user, %{})
+      assert UserDataAttribute.pow_verify_password(user, @password)
+      assert UserDataAttribute.pow_user_id_field_changeset(user, %{})
+      assert UserDataAttribute.pow_password_changeset(user, %{})
+      assert UserDataAttribute.pow_current_password_changeset(user, %{"current_password" => @password})
+    end
+  end
 end

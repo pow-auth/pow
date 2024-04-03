@@ -161,7 +161,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> Changeset.prepare_changes(&Changeset.delete_change(&1, :current_password))
   end
 
-  defp reset_current_password_field(%{data: user} = changeset) do
+  defp reset_current_password_field(%Changeset{data: user} = changeset) do
     %{changeset | data: reset_current_password_field(user)}
   end
   defp reset_current_password_field(user) do
@@ -181,7 +181,7 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
   defp maybe_validate_email_format(changeset, _type, _config), do: changeset
 
-  defp maybe_validate_current_password(%{data: %{password_hash: nil}} = changeset, _config),
+  defp maybe_validate_current_password(%Changeset{data: %{password_hash: nil}} = changeset, _config),
     do: changeset
   defp maybe_validate_current_password(changeset, config) do
     changeset = Changeset.validate_required(changeset, [:current_password])
@@ -192,7 +192,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     end
   end
 
-  defp validate_current_password(%{data: user, changes: %{current_password: password}} = changeset, config) do
+  defp validate_current_password(%Changeset{data: user, changes: %{current_password: password}} = changeset, config) do
     user
     |> verify_password(password, config)
     |> case do
@@ -226,7 +226,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     apply_password_verify_function(config, [password, password_hash])
   end
 
-  defp maybe_require_password(%{data: %{password_hash: nil}} = changeset) do
+  defp maybe_require_password(%Changeset{data: %{password_hash: nil}} = changeset) do
     Changeset.validate_required(changeset, [:password])
   end
   defp maybe_require_password(changeset), do: changeset
