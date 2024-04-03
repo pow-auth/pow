@@ -64,6 +64,8 @@ Removed deprecation warnings for Elixir 1.15.
 
 This version is updated to work with Phoenix 1.7, in particular using the new template components structure. All views have been removed, and Pow no longer requires the `phoenix_view` dependency.
 
+Instead of `pow_mailer_layout: {MyAppWeb.LayoutView, :email})` you should use `pow_mailer_layouts: [html: {MyAppWeb.Layouts, :email}, text: {MyAppWeb.Layouts, :email_text}]` in `conn.private`.
+
 Now requires Elixir 1.12+.
 
 ### Enhancements
