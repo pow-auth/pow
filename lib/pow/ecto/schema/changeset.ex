@@ -111,6 +111,7 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     do_confirm_password_changeset(user_or_changeset, params)
   end
+
   def confirm_password_changeset(user_or_changeset, %{"confirm_password" => password_confirmation} = params, _config) do
     params =
       params
@@ -119,6 +120,7 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     convert_confirm_password_param(user_or_changeset, params)
   end
+
   def confirm_password_changeset(user_or_changeset, params, _config),
     do: do_confirm_password_changeset(user_or_changeset, params)
 
@@ -161,9 +163,10 @@ defmodule Pow.Ecto.Schema.Changeset do
     |> Changeset.prepare_changes(&Changeset.delete_change(&1, :current_password))
   end
 
-  defp reset_current_password_field(%{data: user} = changeset) do
+  defp reset_current_password_field(%Changeset{data: user} = changeset) do
     %{changeset | data: reset_current_password_field(user)}
   end
+
   defp reset_current_password_field(user) do
     %{user | current_password: nil}
   end
@@ -181,8 +184,9 @@ defmodule Pow.Ecto.Schema.Changeset do
   end
   defp maybe_validate_email_format(changeset, _type, _config), do: changeset
 
-  defp maybe_validate_current_password(%{data: %{password_hash: nil}} = changeset, _config),
+  defp maybe_validate_current_password(%Changeset{data: %{password_hash: nil}} = changeset, _config),
     do: changeset
+
   defp maybe_validate_current_password(changeset, config) do
     changeset = Changeset.validate_required(changeset, [:current_password])
 
@@ -192,7 +196,7 @@ defmodule Pow.Ecto.Schema.Changeset do
     end
   end
 
-  defp validate_current_password(%{data: user, changes: %{current_password: password}} = changeset, config) do
+  defp validate_current_password(%Changeset{data: user, changes: %{current_password: password}} = changeset, config) do
     user
     |> verify_password(password, config)
     |> case do
@@ -222,13 +226,15 @@ defmodule Pow.Ecto.Schema.Changeset do
 
     false
   end
+
   def verify_password(%{password_hash: password_hash}, password, config) do
     apply_password_verify_function(config, [password, password_hash])
   end
 
-  defp maybe_require_password(%{data: %{password_hash: nil}} = changeset) do
+  defp maybe_require_password(%Changeset{data: %{password_hash: nil}} = changeset) do
     Changeset.validate_required(changeset, [:password])
   end
+
   defp maybe_require_password(changeset), do: changeset
 
   defp maybe_validate_password(changeset, config) do
@@ -250,11 +256,13 @@ defmodule Pow.Ecto.Schema.Changeset do
   defp maybe_put_password_hash(%Changeset{valid?: true, changes: %{password: password}} = changeset, config) do
     Changeset.put_change(changeset, :password_hash, hash_password(password, config))
   end
+
   defp maybe_put_password_hash(changeset, _config), do: changeset
 
   defp maybe_validate_password_hash(%Changeset{valid?: true} = changeset) do
     Changeset.validate_required(changeset, [:password_hash])
   end
+
   defp maybe_validate_password_hash(changeset), do: changeset
 
   defp hash_password(password, config) do
@@ -413,6 +421,7 @@ defmodule Pow.Ecto.Schema.Changeset do
       _label, error -> {:halt, error}
     end)
   end
+
   defp validate_dns_labels({:error, error}), do: {:error, error}
 
   defp validate_dns_label(label) do
