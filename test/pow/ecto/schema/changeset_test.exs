@@ -424,10 +424,12 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     use Ecto.Schema
     use Pow.Ecto.Schema
 
+    @ecto_derive_inspect_for_redacted_fields false
+
     schema "users" do
       pow_user_fields()
 
-      field(:data, :string)
+      field :data, :string
     end
   end
 
@@ -436,7 +438,6 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
 
     test "pow_current_password_changeset/2" do
       password_hash = Password.pbkdf2_hash(@password)
-
       user = %UserDataAttribute{password_hash: password_hash}
 
       assert UserDataAttribute.changeset(user, %{})

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.38 (TBA)
+
+### Bug fixes
+
+* [`Pow.Ecto.Schema.Changeset`] Fixed issue with schemas having a `:data` field not being handled correctly in changeset functions
+
 ## v1.0.37 (2024-03-03)
 
 ### Bug fixes
