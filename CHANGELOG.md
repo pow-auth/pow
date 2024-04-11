@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.38 (TBA)
+## v1.0.38 (2024-04-11)
 
 ### Bug fixes
 
