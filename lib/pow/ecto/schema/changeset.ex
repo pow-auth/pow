@@ -312,6 +312,8 @@ defmodule Pow.Ecto.Schema.Changeset do
     Config.get(config, :email_validator, &__MODULE__.validate_email/1)
   end
 
+  # TODO: Switch to https://github.com/rbkmoney/email_validator or use a similar ABNF approach.
+  # See https://github.com/pow-auth/pow/issues/728
   @doc """
   Validates an e-mail.
 
