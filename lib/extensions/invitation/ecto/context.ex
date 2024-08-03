@@ -28,7 +28,7 @@ defmodule PowInvitation.Ecto.Context do
   def update(%user_mod{} = user, params, config) do
     user
     |> user_mod.accept_invitation_changeset(params)
-    |> Context.do_update(config)
+    |> Operations.do_update(config)
   end
 
   @doc """

@@ -37,7 +37,7 @@ defmodule PowEmailConfirmation.Ecto.Context do
   def confirm_email(%user_mod{} = user, params, config) do
     user
     |> user_mod.confirm_email_changeset(params)
-    |> Context.do_update(config)
+    |> Operations.do_update(config)
   end
 
   # TODO: Remove by 1.1.0
