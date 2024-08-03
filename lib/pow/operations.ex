@@ -58,7 +58,7 @@ defmodule Pow.Operations do
       module  -> module.create(params)
     end
   end
-  
+
   @doc """
   Update an existing user.
 
