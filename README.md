@@ -471,7 +471,7 @@ config :my_app, :pow,
   cache_store_backend: Pow.Store.Backend.MnesiaCache
 ```
 
-Remember to add `:mnesia` to your `:extra_applications` so it'll be available for your release build. Mnesia will write files to the current working directory. The path can be changed with `config :mnesia, dir: '/path/to/dir'`.
+Remember to add `:mnesia` to your `:extra_applications` so it'll be available for your release build. Mnesia will write files to the current working directory. The path can be changed with `config :mnesia, dir: ~c"/path/to/dir"`.
 
 The MnesiaCache requires write access. If you've got a read-only file system you should take a look at the [Redis cache backend store guide](guides/redis_cache_store_backend.md).
 

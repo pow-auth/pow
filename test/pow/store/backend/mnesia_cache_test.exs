@@ -551,7 +551,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     end
 
     # Set mnesia directory
-    rpc(node, Application, :put_env, [:mnesia, :dir, 'tmp/mnesia_multi/#{sname}'])
+    rpc(node, Application, :put_env, [:mnesia, :dir, ~c"tmp/mnesia_multi/#{sname}"])
 
     # Start all apps
     rpc(node, Application, :ensure_all_started, [:mix])
@@ -708,9 +708,9 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
       {:ok, pid, node} =
         :peer.start_link(%{
           name: String.to_atom(sname),
-          host: '127.0.0.1',
+          host: ~c"127.0.0.1",
           args: [
-            '-kernel', 'prevent_overlapping_partitions', 'false'
+            ~c"-kernel", ~c"prevent_overlapping_partitions", ~c"false"
           ]})
 
       {node, pid}
@@ -738,10 +738,10 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     defp start_node(sname) do
       # Allow spawned nodes to fetch all code from this node
       :erl_boot_server.start([])
-      {:ok, ipv4} = :inet.parse_ipv4_address('127.0.0.1')
+      {:ok, ipv4} = :inet.parse_ipv4_address(~c"127.0.0.1")
       :erl_boot_server.add_slave(ipv4)
 
-      {:ok, node} = :slave.start('127.0.0.1', String.to_atom(sname), '-loader inet -hosts 127.0.0.1 -setcookie #{:erlang.get_cookie()}')
+      {:ok, node} = :slave.start(~c"127.0.0.1", String.to_atom(sname), ~c"-loader inet -hosts 127.0.0.1 -setcookie #{:erlang.get_cookie()}")
 
       node
     end

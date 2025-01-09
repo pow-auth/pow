@@ -9,7 +9,7 @@ defmodule Pow.Store.Backend.MnesiaCache do
   Mnesia will create a `Mnesia.Node` directory in the current working directory
   to write files to. This can be changed by setting the `-mnesia dir` config:
 
-      config :mnesia, dir: '/path/to/dir'
+      config :mnesia, dir: ~c"/path/to/dir"
 
   The directory path should be accessible, otherwise MnesiaCache will crash on
   startup.
