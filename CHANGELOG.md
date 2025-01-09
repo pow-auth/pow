@@ -2,6 +2,8 @@
 
 ## v1.0.39 (TBA)
 
+Now requires Elixir 1.14+.
+
 ### Bug fixes
 
 * [`Pow.Extension.Ecto.Schema`] Fixed deprecation warning in Elixir 1.18
