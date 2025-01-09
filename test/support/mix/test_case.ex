@@ -19,7 +19,7 @@ defmodule Pow.Test.Mix.TestCase do
 
     context =
       context
-      |> Map.put(:tmp_path, Path.join(["tmp", inspect(context.case)]))
+      |> Map.put(:tmp_path, Path.join(["tmp", inspect(context.module)]))
       |> build_context()
       |> init_phoenix_app_dir()
 
