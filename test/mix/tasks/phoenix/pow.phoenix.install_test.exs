@@ -161,8 +161,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
-  @tag web_module: "Pow", context_module: "MyApp"
   describe "with `:generators` config set" do
+    @describetag web_module: "Pow", context_module: "MyApp"
+
     setup do
       Application.put_env(:pow, :generators, context_app: {:my_app, "my_app"})
       on_exit(fn ->
@@ -227,8 +228,9 @@ defmodule Mix.Tasks.Pow.Phoenix.InstallTest do
     end)
   end
 
-  @tag web_module: "POWWeb", context_module: "POW"
   describe "with `:namespace` environment config set" do
+    @describetag web_module: "POWWeb", context_module: "POW"
+
     setup do
       Application.put_env(:pow, :namespace, POW)
       on_exit(fn ->
