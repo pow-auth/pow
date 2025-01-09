@@ -70,12 +70,11 @@ defmodule Mix.Pow.Ecto.Migration do
   defp pad(i), do: to_string(i)
 
   # TODO: Remove by 1.1.0 and only use Ecto 3.0
-  defp source_repo_priv(repo) do
-    mod =
-      if Pow.dependency_vsn_match?(:ecto, "< 3.0.0"),
-        do: Mix.Ecto,
-        else: Mix.EctoSQL
+  @mod Pow.dependency_vsn_match?(:ecto, "< 3.0.0") && Mix.Ecto || Mix.EctoSQL
 
-    mod.source_repo_priv(repo)
+  Code.ensure_loaded(@mod)
+
+  defp source_repo_priv(repo) do
+    @mod.source_repo_priv(repo)
   end
 end
