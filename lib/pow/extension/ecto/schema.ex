@@ -44,7 +44,7 @@ defmodule Pow.Extension.Ecto.Schema do
     quote do
       @pow_extension_config Config.merge(@pow_config, unquote(config))
 
-      Module.eval_quoted(__MODULE__, unquote(__MODULE__).__use_extensions__(@pow_extension_config))
+      Code.eval_quoted(unquote(__MODULE__).__use_extensions__(@pow_extension_config), [], module: __MODULE__)
 
       unquote(__MODULE__).__register_extension_fields__()
       unquote(__MODULE__).__register_extension_assocs__()

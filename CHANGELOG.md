@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.39 (TBA)
+
+### Bug fixes
+
+* [`Pow.Extension.Ecto.Schema`] Fixed deprecation warning in Elixir 1.18
+
 ## v1.0.38 (2024-04-11)
 
 ### Bug fixes
