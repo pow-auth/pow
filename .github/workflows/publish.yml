@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 26.0
-          elixir-version: 1.16
+          otp-version: 27.0
+          elixir-version: 1.18
       - run: mix deps.get
       - run: mix hex.publish --yes
