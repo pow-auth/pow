@@ -8,6 +8,7 @@ defmodule Pow.Context do
   @callback authenticate(map()) :: user() | nil
   @callback create(map()) :: {:ok, user()} | {:error, changeset()}
   @callback update(user(), map()) :: {:ok, user()} | {:error, changeset()}
+  @callback do_update(changeset()) :: {:ok, map()} | {:error, changeset()}
   @callback delete(user()) :: {:ok, user()} | {:error, changeset()}
   @callback get_by(Keyword.t() | map()) :: user() | nil
 end

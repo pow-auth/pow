@@ -72,6 +72,20 @@ defmodule Pow.Operations do
       module  -> module.update(user, params)
     end
   end
+  
+  @doc """
+  Update the database given a changeset.
+
+  This calls `Pow.Ecto.Context.do_update/2` or `do_update/1` on a custom context
+  module.
+  """
+  @spec do_update(Context.changeset(), Config.t()) :: {:ok, map()} | {:error, map()}
+  def do_update(changeset, config) do
+    case context_module(config) do
+      Context -> Context.do_update(changeset, config)
+      module  -> module.do_update(changeset)
+    end
+  end
 
   @doc """
   Delete an existing user.
