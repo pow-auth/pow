@@ -273,7 +273,15 @@ defmodule Pow.Ecto.Schema do
 
   @doc false
   def __filter_new_fields__(fields, existing_fields) do
-    Enum.filter(fields, &not Enum.member?(existing_fields, {elem(&1, 0), elem(&1, 1)}))
+    Enum.reject(fields, fn {key, type, _opts} ->
+      Enum.find_value(existing_fields, fn
+        {^key, {^type, _writable}} -> true
+        {_key, {_type, _writable}} -> false
+        # TODO: Remove the below once Ecto >= 3.12.0 is required
+        {^key, ^type} -> true
+        {_key, _type} -> false
+      end)
+    end)
   end
 
   # TODO: Remove by 1.1.0
@@ -410,11 +418,14 @@ defmodule Pow.Ecto.Schema do
   end
 
   defp missing_field?(name, type, existing_fields) when is_atom(name) do
-    not Enum.any?(existing_fields, fn
-      {^name, ^type}  -> true
-      {^name, e_type} -> not Type.primitive?(e_type)
-      _any            -> false
-    end)
+    case Keyword.get(existing_fields, name) do
+      nil -> true
+      {^type, _writable} -> false
+      {e_type, _writable} -> Type.primitive?(e_type)
+      # TODO: Remove the below once Ecto >= 3.12.0 is required
+      ^type -> false
+      e_type -> Type.primitive?(e_type)
+    end
   end
 
   defp warn_missing_fields_error(module, field_defs) do

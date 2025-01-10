@@ -1,4 +1,4 @@
-Application.put_env(:mnesia, :dir, 'tmp/mnesia')
+Application.put_env(:mnesia, :dir, ~c"tmp/mnesia")
 Application.ensure_all_started(:mnesia)
 
 Logger.configure(level: :warning)

@@ -2,9 +2,13 @@
 
 ## v1.0.39 (TBA)
 
+Now requires Elixir 1.14+.
+
 ### Bug fixes
 
 * [`Pow.Extension.Ecto.Schema`] Fixed deprecation warning in Elixir 1.18
+* [`Mix.Pow.Ecto.Migration`] Fixed compilation warning in Elixir 1.18
+* [`Pow.Ecto.Schema`] Fixed issues caused by changes in Ecto 3.12.0
 
 ## v1.0.38 (2024-04-11)
 
