@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.39 (TBA)
+## v1.0.39 (2025-01-11)
 
 Now requires Elixir 1.14+.
 
