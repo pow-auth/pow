@@ -26,6 +26,7 @@ defmodule Pow.Ecto.Context do
     * `pow_authenticate/1`
     * `pow_create/1`
     * `pow_update/2`
+    * `pow_do_update/1`
     * `pow_delete/1`
     * `pow_get_by/1`
 
@@ -50,6 +51,7 @@ defmodule Pow.Ecto.Context do
       def authenticate(params), do: pow_authenticate(params)
       def create(params), do: pow_create(params)
       def update(user, params), do: pow_update(user, params)
+      def do_update(changeset), do: pow_do_update(changeset)
       def delete(user), do: pow_delete(user)
       def get_by(clauses), do: pow_get_by(clauses)
 
@@ -63,6 +65,10 @@ defmodule Pow.Ecto.Context do
 
       def pow_update(user, params) do
         unquote(__MODULE__).update(user, params, @pow_config)
+      end
+
+      def pow_do_update(changeset) do
+        unquote(__MODULE__).do_update(changeset, @pow_config)
       end
 
       def pow_delete(user) do
