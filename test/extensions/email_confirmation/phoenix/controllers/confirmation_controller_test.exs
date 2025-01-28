@@ -69,6 +69,7 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
         |> get(~p"/confirm-email/#{sign_token("valid")}")
 
       assert redirected_to(conn) == ~p"/registration/edit"
+      assert get_flash(conn, :info) == "The email address has been confirmed."
       assert Pow.Plug.current_user(conn)
       refute conn.private[:plug_session][@session_key] == session_id
     end
@@ -81,8 +82,29 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationControllerTest do
         |> get(~p"/confirm-email/#{sign_token("valid")}")
 
       assert redirected_to(conn) == ~p"/registration/edit"
+      assert get_flash(conn, :info) == "The email address has been confirmed."
       assert Pow.Plug.current_user(conn)
       assert conn.private[:plug_session][@session_key] == session_id
+    end
+
+    test "when in user signed in with invalid token", %{conn: conn} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(%User{id: 1, email_confirmation_token: "valid"}, [])
+        |> get(~p"/confirm-email/#{sign_token("invalid")}")
+
+      assert redirected_to(conn) == ~p"/registration/edit"
+      assert get_flash(conn, :error) == "The confirmation token is invalid or has expired."
+    end
+
+    test "when in user signed in with invalid token and no confirmation token for user", %{conn: conn} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(%User{id: 1}, [])
+        |> get(~p"/confirm-email/#{sign_token("invalid")}")
+
+      assert redirected_to(conn) == ~p"/registration/edit"
+      assert get_flash(conn, :info) == "The email address has been confirmed."
     end
   end
 
