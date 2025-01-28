@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.40 (TBA)
+
+### Enhancements
+
+* [`PowEmailConfirmation.Phoenix.ConfirmationController`] Now redirects with success message for invalid confirmation token when signed in user has no email confirmation token
+
 ## v1.0.39 (2025-01-11)
 
 Now requires Elixir 1.14+.

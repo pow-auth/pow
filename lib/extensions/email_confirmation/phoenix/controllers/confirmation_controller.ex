@@ -33,12 +33,22 @@ defmodule PowEmailConfirmation.Phoenix.ConfirmationController do
     case Plug.load_user_by_token(conn, token) do
       {:error, conn} ->
         conn
-        |> put_flash(:error, extension_messages(conn).invalid_token(conn))
+        |> put_confirmation_flash_message()
         |> redirect(to: redirect_to(conn))
         |> halt()
 
       {:ok, conn} ->
         conn
+    end
+  end
+
+  defp put_confirmation_flash_message(conn) do
+    case Pow.Plug.current_user(conn) do
+      %{email_confirmation_token: nil} ->
+        put_flash(conn, :info, extension_messages(conn).email_has_been_confirmed(conn))
+
+      _ ->
+        put_flash(conn, :error, extension_messages(conn).invalid_token(conn))
     end
   end
 end
