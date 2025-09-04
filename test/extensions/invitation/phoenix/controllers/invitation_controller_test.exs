@@ -25,10 +25,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       refute DOM.attribute(input_elem, "value")
@@ -44,10 +44,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_username]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[username]\"]")
       assert DOM.to_text(label_elem) =~ "Username"
       assert DOM.attribute(input_elem, "type") == "text"
     end
@@ -91,10 +91,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
       assert DOM.attribute(input_elem, "value") == "invalid"
       assert DOM.to_text(error_elem) =~ "has invalid format"
     end
@@ -120,10 +120,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
       assert DOM.attribute(input_elem, "value") == "taken@example.com"
       assert DOM.to_text(error_elem) =~ "has already been taken"
     end
@@ -189,22 +189,22 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
       assert DOM.to_text(label_elem) =~ "Password"
       assert DOM.attribute(input_elem, "type") == "password"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
       assert DOM.to_text(label_elem) =~ "Confirm password"
       assert DOM.attribute(input_elem, "type") == "password"
       assert DOM.attribute(input_elem, "required")
@@ -253,10 +253,10 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
       assert DOM.attribute(input_elem, "value") == "taken@example.com"
       assert DOM.to_text(error_elem) =~ "has already been taken"
     end
@@ -266,15 +266,15 @@ defmodule PowInvitation.Phoenix.InvitationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
       assert DOM.attribute(input_elem, "value") == "invalid"
       assert DOM.to_text(error_elem) =~ "has invalid format"
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
       assert DOM.attribute(input_elem, "value") == "invalid"
       assert DOM.to_text(error_elem) =~ "does not match confirmation"
 

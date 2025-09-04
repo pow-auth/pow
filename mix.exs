@@ -10,7 +10,7 @@ defmodule Pow.MixProject do
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      compilers: Mix.compilers(),
+      compilers: [:phoenix_live_view] ++ Mix.compilers(),
       deps: deps(),
       xref: [exclude: [:mnesia]],
 
@@ -34,10 +34,10 @@ defmodule Pow.MixProject do
   defp deps do
     [
       {:ecto, "~> 2.2 or ~> 3.0"},
-      {:phoenix, ">= 1.3.0 and < 1.8.0"},
+      {:phoenix, "~> 1.8"},
       {:phoenix_html, ">= 2.0.0 and < 5.0.0"},
       {:plug, ">= 1.5.0 and < 2.0.0", optional: true},
-      {:phoenix_live_view, ">= 0.18.0", optional: true},
+      {:phoenix_live_view, "~> 1.1"},
 
       {:phoenix_ecto, "~> 4.3", only: [:dev, :test]},
       {:credo, "~> 1.5", only: [:dev, :test]},
@@ -47,7 +47,7 @@ defmodule Pow.MixProject do
 
       {:ecto_sql, "~> 3.5", only: [:test]},
       {:postgrex, "~> 0.15", only: [:test]},
-      {:floki, ">= 0.30.0", only: :test}
+      {:lazy_html, ">= 0.0.0", only: :test},
     ]
   end
 

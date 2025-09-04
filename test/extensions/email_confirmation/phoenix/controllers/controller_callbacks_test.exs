@@ -74,13 +74,13 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [_input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p") == []
+      assert _input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert Enum.empty?(DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p"))
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[password_confirmation]\"] > p")
       assert DOM.attribute(input_elem, "value") == "invalid"
       assert DOM.to_text(error_elem) =~ "does not match confirmation"
     end
@@ -105,10 +105,10 @@ defmodule PowEmailConfirmation.Phoenix.ControllerCallbacksTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[email]\"] > p")
       assert DOM.attribute(input_elem, "value") == "taken@example.com"
       assert DOM.to_text(error_elem) =~ "has already been taken"
     end

@@ -9,7 +9,8 @@ defmodule Pow.Extension.Phoenix.RouterTest do
 
   # To prevent the `TestController.init/1 is undefined` warnings
   defmodule ExtensionMock.Phoenix.TestController do
-    use Phoenix.Controller, namespace: Pow.Extension.Phoenix.RouterTest
+    use Phoenix.Controller, formats: []
+    plug :put_layout, html: Pow.Extension.Phoenix.RouterTest.LayoutView
   end
 
   defmodule ExtensionMock.Phoenix.Router do

@@ -424,7 +424,7 @@ defmodule Pow.Ecto.Schema.ChangesetTest do
     use Ecto.Schema
     use Pow.Ecto.Schema
 
-    @ecto_derive_inspect_for_redacted_fields false
+    @derive_inspect_for_redacted_fields false
 
     schema "users" do
       pow_user_fields()

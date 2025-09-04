@@ -30,4 +30,6 @@ end
 
 config :pow, :extension_test_modules, extension_test_modules
 
-config :phoenix_live_view, debug_heex_annotations: true
+config :phoenix_live_view,
+  debug_heex_annotations: true,
+  debug_attributes: true

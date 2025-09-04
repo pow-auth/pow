@@ -59,7 +59,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
     use Pow.Extension.Ecto.Schema,
       extensions: [Pow.Extension.Ecto.SchemaTest.ExtensionMock]
 
-    @ecto_derive_inspect_for_redacted_fields false
+    @derive_inspect_for_redacted_fields false
 
     schema "users" do
       pow_user_fields()
@@ -83,7 +83,7 @@ defmodule Pow.Extension.Ecto.SchemaTest do
         use Pow.Extension.Ecto.Schema,
           extensions: [Pow.Extension.Ecto.SchemaTest.ExtensionMock]
 
-        @ecto_derive_inspect_for_redacted_fields false
+        @derive_inspect_for_redacted_fields false
 
         schema "users" do
           pow_user_fields()

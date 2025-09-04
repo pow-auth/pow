@@ -14,27 +14,27 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
       assert html = html_response(conn, 200)
       assert html =~ ~p"/registration"
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
       assert DOM.to_text(label_elem) =~ "Password"
       assert DOM.attribute(input_elem, "type") == "password"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
       assert DOM.to_text(label_elem) =~ "Confirm password"
       assert DOM.attribute(input_elem, "type") == "password"
       assert DOM.attribute(input_elem, "required")
 
-      assert [_] = DOM.all(html, "a[href=\"/session/new\"]")
+      assert _ = DOM.all(html_tree, "a[href=\"/session/new\"]")
     end
 
     test "already signed in", %{conn: conn} do
@@ -54,10 +54,10 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_username]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[username]\"]")
       assert DOM.to_text(label_elem) =~ "Username"
       assert DOM.attribute(input_elem, "type") == "text"
     end
@@ -90,13 +90,13 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.attribute(input_elem, "value") == "invalid@example.com"
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[password]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[password]\"] > p")
       assert DOM.attribute(input_elem, "value") == "invalid"
       assert DOM.to_text(error_elem) =~ "should be at least 8 character(s)"
 
@@ -116,30 +116,30 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_current_password]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_current_password]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
       assert DOM.to_text(label_elem) =~ "Current password"
       assert DOM.attribute(input_elem, "type") == "password"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       assert DOM.attribute(input_elem, "value") == "mock@example.com"
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
       assert DOM.to_text(label_elem) =~ "New password"
       assert DOM.attribute(input_elem, "type") == "password"
       refute DOM.attribute(input_elem, "value")
       refute DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password_confirmation]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password_confirmation]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password_confirmation]\"]")
       assert DOM.to_text(label_elem) =~ "Confirm new password"
       assert DOM.attribute(input_elem, "type") == "password"
       refute DOM.attribute(input_elem, "value")
@@ -155,10 +155,10 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_username]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[username]\"]")
       assert DOM.to_text(label_elem) =~ "Username"
       assert DOM.attribute(input_elem, "type") == "text"
       assert DOM.attribute(input_elem, "value") == "test"
@@ -202,15 +202,15 @@ defmodule Pow.Phoenix.RegistrationControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
-      assert [error_elem] = DOM.all(html_tree, "*[phx-feedback-for=\"user[current_password]\"] > p")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[current_password]\"]")
+      assert error_elem = DOM.all(html_tree, "*[phx-feedback-for=\"user[current_password]\"] > p")
       refute DOM.attribute(input_elem, "value")
       assert DOM.to_text(error_elem) =~ "can't be blank"
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       assert DOM.attribute(input_elem, "value") == "invalid@example.com"
