@@ -26,7 +26,7 @@ defmodule Pow.Ecto.SchemaTest do
     use Ecto.Schema
     use Pow.Ecto.Schema
 
-    @ecto_derive_inspect_for_redacted_fields false
+    @derive_inspect_for_redacted_fields false
 
     schema "users" do
       field :password_hash, :string, source: :encrypted_password
@@ -49,7 +49,7 @@ defmodule Pow.Ecto.SchemaTest do
     use Ecto.Schema
     use Pow.Ecto.Schema
 
-    @ecto_derive_inspect_for_redacted_fields false
+    @derive_inspect_for_redacted_fields false
 
     @pow_assocs {:has_many, :users, __MODULE__, []}
 
@@ -159,7 +159,7 @@ defmodule Pow.Ecto.SchemaTest do
         use Ecto.Schema
         use Pow.Ecto.Schema
 
-        @ecto_derive_inspect_for_redacted_fields false
+        @derive_inspect_for_redacted_fields false
 
         schema "users" do
           field :email, CustomType

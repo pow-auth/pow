@@ -24,23 +24,23 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert html =~ ~p"/session"
       refute html =~ "request_path="
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_email]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_email]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.to_text(label_elem) =~ "Email"
       assert DOM.attribute(input_elem, "type") == "email"
       refute DOM.attribute(input_elem, "value")
       assert DOM.attribute(input_elem, "required")
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_password]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_password]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
       assert DOM.to_text(label_elem) =~ "Password"
       assert DOM.attribute(input_elem, "type") == "password"
       refute DOM.attribute(input_elem, "value")
       assert DOM.attribute(input_elem, "required")
 
-      assert [_] = DOM.all(html, "a[href=\"/registration/new\"]")
+      assert _ = DOM.all(html_tree, "a[href=\"/registration/new\"]")
     end
 
     test "with request_path", %{conn: conn} do
@@ -58,10 +58,10 @@ defmodule Pow.Phoenix.SessionControllerTest do
 
       assert html = html_response(conn, 200)
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [label_elem] = DOM.all(html_tree, "label[for=user_username]")
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[username]\"]")
+      assert label_elem = DOM.all(html_tree, "label[for=user_username]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[username]\"]")
       assert DOM.to_text(label_elem) =~ "Username"
       assert DOM.attribute(input_elem, "type") == "text"
     end
@@ -95,12 +95,12 @@ defmodule Pow.Phoenix.SessionControllerTest do
       assert html = html_response(conn, 200)
       assert get_flash(conn, :error) == "The provided login details did not work. Please verify your credentials, and try again."
 
-      html_tree = DOM.parse(html)
+      {html_tree, _} = DOM.parse_document(html)
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[email]\"]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[email]\"]")
       assert DOM.attribute(input_elem, "value") == "invalid@example.com"
 
-      assert [input_elem] = DOM.all(html_tree, "input[name=\"user[password]\"]")
+      assert input_elem = DOM.all(html_tree, "input[name=\"user[password]\"]")
       refute DOM.attribute(input_elem, "value")
 
       refute Plug.current_user(conn)

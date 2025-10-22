@@ -20,7 +20,13 @@ config :pow, Pow.Ecto.Schema.Password, iterations: 1
 
 config :phoenix, :json_library, Jason
 
-extension_test_modules = [PowEmailConfirmation, PowInvitation, PowEmailConfirmation.PowInvitation, PowPersistentSession, PowResetPassword]
+extension_test_modules = [
+  PowEmailConfirmation,
+  PowInvitation,
+  PowEmailConfirmation.PowInvitation,
+  PowPersistentSession,
+  PowResetPassword
+]
 
 for extension <- extension_test_modules do
   endpoint_module = Module.concat([extension, TestWeb.Phoenix.Endpoint])
@@ -30,4 +36,4 @@ end
 
 config :pow, :extension_test_modules, extension_test_modules
 
-config :phoenix_live_view, debug_heex_annotations: true
+config :phoenix_live_view, debug_heex_annotations: true, debug_attributes: true

@@ -13,7 +13,7 @@ defmodule PowInvitation.Ecto.SchemaTest do
     use Pow.Extension.Ecto.Schema,
       extensions: [PowInvitation]
 
-    @ecto_derive_inspect_for_redacted_fields false
+    @derive_inspect_for_redacted_fields false
 
     schema "users" do
       field :organization_id, :integer
